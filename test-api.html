@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Report Data</title></head>
+<body>
+  <h1>Test API</h1>
+  <input id="id" value="01226edb-3b6e-47d2-bda6-f959411515c2" style="width:500px;padding:10px;">
+  <button onclick="test()">Test</button>
+  <pre id="result" style="margin-top:20px;background:#eee;padding:20px;"></pre>
+  <script>
+    async function test() {
+      const id = document.getElementById('id').value;
+      const res = await fetch('http://localhost:3000/api/report-data', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({attemptId: id})
+      });
+      const text = await res.text();
+      document.getElementById('result').textContent = res.status + '\n' + text;
+    }
+  </script>
+</body>
+</html>
