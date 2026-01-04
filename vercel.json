@@ -1,6 +1,15 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/app/$1" }
+  "version": 2,
+  "builds": [
+    {
+      "src": "next.config.ts",
+      "use": "@vercel/next"
+    }
   ],
-  "cleanUrls": true
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ]
 }
