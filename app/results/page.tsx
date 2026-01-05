@@ -200,18 +200,11 @@ export default function ResultsPage() {
   const threats = useMemo(() => orderedResults.filter((c) => c.tier === "Threat"), [orderedResults]);
   const weaknesses = useMemo(() => orderedResults.filter((c) => c.tier === "Weakness"), [orderedResults]);
 
-  /** ===== ✅ UPDATED: Generate PDF via Railway ===== */
-  const handleDownloadPDF = () => {
-    if (!attemptId) return;
-    const pdfServiceUrl = process.env.NEXT_PUBLIC_PDF_SERVICE_URL;
-    if (!pdfServiceUrl) {
-      // Fallback to old method if PDF service not configured (e.g., during dev)
-      const fallbackUrl = `/print-report?attemptId=${attemptId}&lang=${language}`;
-      window.open(fallbackUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-    const url = `${pdfServiceUrl}/api/generate-pdf?attemptId=${encodeURIComponent(attemptId)}&lang=${language}`;
-    window.open(url, "_blank");
+  /** ===== ✅ FINAL: Generate PDF via Public Service (WORKING) ===== */
+const handleDownloadPDF = () => {
+  if (!attemptId) return;
+  const url = `https://dyad-pdf.kifah.dev/api/generate-pdf?attemptId=${encodeURIComponent(attemptId)}&lang=${language}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   /** ===== Render states ===== */
@@ -265,7 +258,7 @@ export default function ResultsPage() {
               </div>
 
               <Button
-                onClick={handleDownloadPDF} // ✅ Updated handler
+                onClick={handleDownloadPDF}
                 className="gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
                 size="lg"
               >
@@ -385,7 +378,7 @@ export default function ResultsPage() {
               </div>
 
               <Button
-                onClick={handleDownloadPDF} // ✅ Updated handler
+                onClick={handleDownloadPDF}
                 className="gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
                 size="lg"
               >
