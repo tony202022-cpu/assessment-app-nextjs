@@ -31,15 +31,13 @@ const COMPETENCY_META: Record<
   mental_toughness: {
     labelEn: "Mental Toughness",
     labelAr: "الصلابة الذهنية",
-    diagnosticEn:
-      "Your ability to stay focused, resilient, and emotionally stable during field challenges.",
+    diagnosticEn: "Your ability to stay focused, resilient, and emotionally stable during field challenges.",
     diagnosticAr: "قدرتك على البقاء مركزاً ومرناً ومستقراً عاطفياً أثناء تحديات العمل الميداني.",
   },
   opening_conversations: {
     labelEn: "Opening Conversations",
     labelAr: "فتح المحادثات",
-    diagnosticEn:
-      "How effectively you initiate conversations and create positive first impressions.",
+    diagnosticEn: "How effectively you initiate conversations and create positive first impressions.",
     diagnosticAr: "مدى فعالية بدء المحادثات وخلق انطباعات أولى إيجابية.",
   },
   identifying_real_needs: {
@@ -194,6 +192,7 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
       ],
     },
   },
+
   opening_conversations: {
     Weakness: {
       en: [
@@ -244,6 +243,7 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
       ],
     },
   },
+
   identifying_real_needs: {
     Weakness: {
       en: [
@@ -294,6 +294,7 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
       ],
     },
   },
+
   destroying_objections: {
     Weakness: {
       en: [
@@ -344,6 +345,7 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
       ],
     },
   },
+
   creating_irresistible_offers: {
     Weakness: {
       en: [
@@ -394,6 +396,7 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
       ],
     },
   },
+
   mastering_closing: {
     Weakness: {
       en: [
@@ -444,6 +447,7 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
       ],
     },
   },
+
   follow_up_discipline: {
     Weakness: {
       en: [
@@ -543,6 +547,8 @@ export default function PrintReportPage() {
   const searchParams = useSearchParams();
   const attemptId = searchParams.get("attemptId") || "";
 
+  const puppeteerMode = (searchParams.get("puppeteer") || "") === "1";
+
   // locale language is ONLY a fallback now
   const { language: localeLanguage } = useLocale();
 
@@ -584,6 +590,7 @@ export default function PrintReportPage() {
           ...r,
           competencyId: normalizeCompetencyId((r as any).competencyId),
         }));
+
         setResults(normalized);
         setTotal(Number(data?.total_percentage) || 0);
         setLoading(false);
@@ -593,26 +600,24 @@ export default function PrintReportPage() {
         setLoading(false);
       }
     };
+
     load();
-    // IMPORTANT: include langParam + localeLanguage so language locks correctly
-  }, [attemptId, langParam, localeLanguage, isArabic]);
+    // ✅ IMPORTANT: do NOT depend on isArabic (it changes after setReportLang and can retrigger)
+  }, [attemptId, langParam, localeLanguage]);
 
   // B) Stable order (and keep extras if any)
   const ordered = useMemo(() => {
     const map = new Map<string, CompetencyResult>();
     results.forEach((r) => map.set(r.competencyId, r));
 
-    const orderedCore = COMPETENCY_ORDER.map((id) => map.get(id)).filter(
-      Boolean
-    ) as CompetencyResult[];
-    const extras = results.filter(
-      (r) => !(COMPETENCY_ORDER as readonly string[]).includes(r.competencyId)
-    );
+    const orderedCore = COMPETENCY_ORDER.map((id) => map.get(id)).filter(Boolean) as CompetencyResult[];
+    const extras = results.filter((r) => !(COMPETENCY_ORDER as readonly string[]).includes(r.competencyId));
     return [...orderedCore, ...extras];
   }, [results]);
 
-  // C) Auto-print ONLY after data is present (safer)
+  // C) Auto-print ONLY for humans (not Puppeteer)
   useEffect(() => {
+    if (puppeteerMode) return;
     if (!loading && ordered.length > 0) {
       const t = window.setTimeout(() => {
         try {
@@ -624,7 +629,34 @@ export default function PrintReportPage() {
       }, 900);
       return () => window.clearTimeout(t);
     }
-  }, [loading, ordered.length]);
+  }, [loading, ordered.length, puppeteerMode]);
+
+  // D) PDF-ready signal for Puppeteer (prevents missing donut/total/cards)
+  useEffect(() => {
+    if (!puppeteerMode) return;
+    if (loading) return;
+    if (!ordered.length) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // @ts-ignore
+        if (document?.fonts?.ready) await (document as any).fonts.ready;
+
+        await new Promise<void>((r) => requestAnimationFrame(() => r()));
+        await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+        if (!cancelled) document.body.dataset.pdfReady = "1";
+      } catch {
+        if (!cancelled) document.body.dataset.pdfReady = "1";
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [puppeteerMode, loading, ordered.length]);
 
   if (loading) {
     return (
@@ -662,12 +694,8 @@ export default function PrintReportPage() {
         {/* ===== PAGE 1: COVER ===== */}
         <div className="page cover-page">
           <div className="logo-circle">D</div>
-          <h1 className="cover-title">
-            {isArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}
-          </h1>
-          <h2 className="cover-subtitle">
-            {isArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}
-          </h2>
+          <h1 className="cover-title">{isArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}</h1>
+          <h2 className="cover-subtitle">{isArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}</h2>
 
           <div className="cover-info-grid">
             <div className="cover-info-card">
@@ -693,9 +721,7 @@ export default function PrintReportPage() {
             <p className="cover-score-label">{isArabic ? "النتيجة الإجمالية" : "Overall Score"}</p>
             <p className="cover-score-percentage">{clampPct(total)}%</p>
             <p className="cover-note">
-              {isArabic
-                ? "ملخص سريع لأدائك في 7 كفاءات أساسية."
-                : "A fast snapshot of your 7 core competencies."}
+              {isArabic ? "ملخص سريع لأدائك في 7 كفاءات أساسية." : "A fast snapshot of your 7 core competencies."}
             </p>
             <p className="cover-note-small">
               {isArabic
@@ -725,17 +751,14 @@ export default function PrintReportPage() {
                 <div key={c.competencyId} className="competency-summary-card">
                   <div className="competency-summary-header">
                     <h3 className="competency-summary-label">{label}</h3>
-                    <span className="competency-summary-tier" style={{ color: color }}>
+                    <span className="competency-summary-tier" style={{ color }}>
                       {tierLabel(c.tier, isArabic)}
                     </span>
                   </div>
                   <p className="competency-summary-diagnostic">{diag}</p>
                   <div className="competency-summary-progress">
                     <div className="competency-summary-bar-track">
-                      <div
-                        className="competency-summary-bar-fill"
-                        style={{ width: `${pct}%`, backgroundColor: color }}
-                      />
+                      <div className="competency-summary-bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
                     </div>
                     <span className="competency-summary-percentage">{pct}%</span>
                     <span className="competency-summary-score">
@@ -751,9 +774,7 @@ export default function PrintReportPage() {
         {/* ===== PAGE 3: SWOT ===== */}
         <div className="page swot-page">
           <h2 className="section-title">{isArabic ? "تحليل SWOT" : "SWOT Analysis"}</h2>
-          <p className="section-subtitle">
-            {isArabic ? "نظرة سريعة على الصورة الاستراتيجية." : "A quick strategic overview."}
-          </p>
+          <p className="section-subtitle">{isArabic ? "نظرة سريعة على الصورة الاستراتيجية." : "A quick strategic overview."}</p>
 
           <div className="swot-grid">
             <div className="swot-card swot-strength">
@@ -850,13 +871,12 @@ export default function PrintReportPage() {
               const key = normalizeCompetencyId(c.competencyId);
               const meta = COMPETENCY_META[key];
               const title = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
-              // ✅ use reportLang (not locale)
               const recs = getRecommendations(key, c.tier, reportLang);
               const color = tierColor(c.tier);
 
               return (
                 <div key={c.competencyId} className="recommendation-card">
-                  <h3 className="recommendation-card-title" style={{ color: color }}>
+                  <h3 className="recommendation-card-title" style={{ color }}>
                     {title}
                     <span className="recommendation-card-tier"> ({tierLabel(c.tier, isArabic)})</span>
                   </h3>
@@ -881,9 +901,7 @@ export default function PrintReportPage() {
         <div className="page upsell-page">
           <h2 className="section-title">{isArabic ? "الخطوة التالية" : "Your Next Step"}</h2>
           <p className="section-subtitle">
-            {isArabic
-              ? "هذا التقرير هو التشخيص. النسخة المتقدمة هي الخطة + المتابعة."
-              : "This report is diagnosis. The advanced version is the plan + accountability."}
+            {isArabic ? "هذا التقرير هو التشخيص. النسخة المتقدمة هي الخطة + المتابعة." : "This report is diagnosis. The advanced version is the plan + accountability."}
           </p>
 
           <div className="upsell-box">
@@ -891,27 +909,17 @@ export default function PrintReportPage() {
               {isArabic ? "MRI Outdoor Sales Assessment — النسخة المتقدمة" : "MRI Outdoor Sales Assessment — Advanced"}
             </h3>
             <ul className="upsell-features">
-              <li>
-                {isArabic ? "✅ 75 سؤالاً عميقاً — يكشف السلوك الحقيقي" : "✅ 75 deep questions — reveals real field behavior"}
-              </li>
-              <li>
-                {isArabic ? "✅ 12 كفاءة — تشخيص أدق لنقاط القوة والخلل" : "✅ 12 competencies — sharper diagnosis of strengths & gaps"}
-              </li>
-              <li>
-                {isArabic ? "✅ 25 صفحة تقرير PDF — تحليل احترافي تفصيلي" : "✅ 25-page PDF report — professional detailed analysis"}
-              </li>
-              <li>
-                {isArabic ? "✅ خطة عمل 90 يوم — خطوات أسبوعية قابلة للتطبيق" : "✅ 90-day action plan — weekly, executable steps"}
-              </li>
+              <li>{isArabic ? "✅ 75 سؤالاً عميقاً — يكشف السلوك الحقيقي" : "✅ 75 deep questions — reveals real field behavior"}</li>
+              <li>{isArabic ? "✅ 12 كفاءة — تشخيص أدق لنقاط القوة والخلل" : "✅ 12 competencies — sharper diagnosis of strengths & gaps"}</li>
+              <li>{isArabic ? "✅ 25 صفحة تقرير PDF — تحليل احترافي تفصيلي" : "✅ 25-page PDF report — professional detailed analysis"}</li>
+              <li>{isArabic ? "✅ خطة عمل 90 يوم — خطوات أسبوعية قابلة للتطبيق" : "✅ 90-day action plan — weekly, executable steps"}</li>
             </ul>
             <a href="#" className="upsell-cta">
               {isArabic ? "اطلب النسخة المتقدمة الآن" : "Get the Advanced Edition"}
             </a>
           </div>
 
-          <div className="report-footer">
-            {isArabic ? "Dyad © 2026" : "Dyad © 2026"}
-          </div>
+          <div className="report-footer">{isArabic ? "Dyad © 2026" : "Dyad © 2026"}</div>
         </div>
       </div>
 
@@ -921,41 +929,55 @@ export default function PrintReportPage() {
       <style jsx global>{`
         @page {
           size: A4;
-          margin: 0; /* Remove default margins for full control */
+          margin: 0;
         }
 
+        html,
         body {
-          font-family: 'Cairo', sans-serif; /* Ensure Cairo is used for Arabic */
-          background: white;
           margin: 0;
           padding: 0;
-          color: #111827;
-          line-height: 1.6;
-          unicode-bidi: isolate;
-          -webkit-print-color-adjust: exact; /* For background colors in print */
+          background: white;
+          -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
 
+        body {
+          font-family: "Cairo", sans-serif;
+          color: #111827;
+          line-height: 1.6;
+          unicode-bidi: isolate;
+        }
+
         .report-container {
-          width: 210mm; /* A4 width */
+          width: 210mm;
           margin: 0 auto;
+          overflow: visible;
         }
 
         .page {
           width: 210mm;
-          height: 297mm; /* A4 height */
-          padding: 20mm; /* Consistent padding for all pages */
+
+          /* ✅ IMPORTANT: allow content to extend (prevents cutting / missing sections) */
+          min-height: 297mm;
+
+          padding: 20mm;
           box-sizing: border-box;
+
+          break-after: page;
           page-break-after: always;
+
           background: white;
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
           align-items: stretch;
+
+          overflow: visible;
         }
 
         .page:last-child {
-          page-break-after: avoid;
+          break-after: auto;
+          page-break-after: auto;
         }
 
         /* === RTL FIXES === */
@@ -965,7 +987,7 @@ export default function PrintReportPage() {
         }
 
         [dir="rtl"] .cover-info-grid {
-          direction: rtl; /* Ensure grid items align right */
+          direction: rtl;
         }
 
         [dir="rtl"] .cover-info-label,
@@ -997,6 +1019,15 @@ export default function PrintReportPage() {
         [dir="rtl"] .recommendation-list li,
         [dir="rtl"] .upsell-features li {
           text-align: right;
+        }
+
+        /* ✅ Prevent ugly splits across pages */
+        .competency-summary-card,
+        .recommendation-card,
+        .swot-card,
+        .upsell-box {
+          break-inside: avoid;
+          page-break-inside: avoid;
         }
 
         /* Cover Page */
@@ -1040,7 +1071,7 @@ export default function PrintReportPage() {
           grid-template-columns: 1fr 1fr;
           gap: 15px;
           width: 100%;
-          max-width: 300px; /* Adjust as needed */
+          max-width: 300px;
           margin-bottom: 40px;
         }
 
@@ -1342,7 +1373,7 @@ export default function PrintReportPage() {
         }
 
         .report-footer {
-          margin-top: auto; /* Pushes footer to the bottom */
+          margin-top: auto;
           padding-top: 20px;
           font-size: 12px;
           color: #6b7280;
