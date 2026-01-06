@@ -144,7 +144,7 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const attemptId = searchParams.get("attemptId");
   const { language } = useLocale();
-  const { user, loading: isSessionLoading } = useSession();
+  const { user, isLoading: isSessionLoading } = useSession();
 
   const [competencyResults, setCompetencyResults] = useState<CompetencyResult[]>([]);
   const [totalPercentage, setTotalPercentage] = useState<number | null>(null);
