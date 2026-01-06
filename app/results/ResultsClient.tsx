@@ -8,7 +8,7 @@ import { getTranslation } from "@/lib/translations";
 import { toast } from "sonner";
 import { useSession } from "@/contexts/SessionContext";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { createSupabaseBrowserClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 /** ===== Types (match your schema) ===== */
 type Tier = "Strength" | "Opportunity" | "Threat" | "Weakness";
@@ -154,8 +154,6 @@ export default function ResultsClient() {
   useEffect(() => {
     const fetchResults = async () => {
       if (!attemptId) return;
-
-      const supabase = createSupabaseBrowserClient();
 
       const { data, error } = await supabase
         .from("quiz_attempts")
