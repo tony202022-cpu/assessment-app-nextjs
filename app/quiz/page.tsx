@@ -164,7 +164,7 @@ export default function QuizPage() {
     const copy = [...selectedAnswers];
     copy[currentQuestionIndex] = {
       questionId: currentQuestion.id,
-      competencyId: currentQuestion.competency_id,
+      competencyId: (currentQuestion.competency_id ?? ""), 
       selectedScore: score,
     };
     setSelectedAnswers(copy);
