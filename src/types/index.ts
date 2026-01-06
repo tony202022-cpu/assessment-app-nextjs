@@ -8,8 +8,15 @@ export interface Question {
   question_ar: string;
   options_en: QuestionOption[];
   options_ar: QuestionOption[];
+
+  // ✅ ADDED — type only, does NOT affect runtime or shuffle logic
+  options_scores?: number[] | null;
+
   correct_answer_index: number;
   created_at: string;
+
+  // (optional safety if DB includes it)
+  competency_id?: string;
 }
 
 export type AnswerPayload = {
@@ -17,7 +24,6 @@ export type AnswerPayload = {
   competencyId: string;
   selectedScore: number;
 };
-
 
 export interface QuizAnswer {
   question_id: string;
