@@ -1,54 +1,67 @@
 // app/api/report-data/route.ts
 
-import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { createClient } from "@supabase/supabase-js"
+import { NextResponse } from "next/server"
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabaseAdmin() {
+  const url = process.env.SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  // IMPORTANT: Don't crash at import/build time
+  if (!url || !serviceRoleKey) return null
+
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  })
+}
 
 export async function POST(req: Request) {
   try {
-    const { attemptId } = await req.json();
-
-    if (!attemptId) {
+    const supabase = getSupabaseAdmin()
+    if (!supabase) {
       return NextResponse.json(
-        { error: 'Missing attemptId' },
-        { status: 400 }
-      );
+        {
+          error:
+            "Server is missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. Add them in Vercel Project Settings → Environment Variables.",
+        },
+        { status: 500 }
+      )
+    }
+
+    const body = await req.json().catch(() => ({} as any))
+    const attemptId = body?.attemptId
+
+    if (!attemptId || typeof attemptId !== "string") {
+      return NextResponse.json({ error: "Missing attemptId" }, { status: 400 })
     }
 
     const { data, error } = await supabase
-      .from('attempts')
-      .select(`
+      .from("attempts")
+      .select(
+        `
         id,
         user_id,
         competency_results
-      `)
-      .eq('id', attemptId)
-      .single();
+      `
+      )
+      .eq("id", attemptId)
+      .single()
 
     if (error || !data) {
-      return NextResponse.json(
-        { error: 'Attempt not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Attempt not found" }, { status: 404 })
     }
 
-    // ✅ ALWAYS return a safe object shape
     return NextResponse.json({
-      user_id: data.user_id ?? '—',
-      competency_results: Array.isArray(data.competency_results)
-        ? data.competency_results
+      user_id: data.user_id ?? "—",
+      competency_results: Array.isArray((data as any).competency_results)
+        ? (data as any).competency_results
         : [],
-    });
-
+    })
   } catch (err) {
-    console.error('report-data error:', err);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("report-data error:", err)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
