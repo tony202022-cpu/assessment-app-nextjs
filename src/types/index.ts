@@ -12,6 +12,13 @@ export interface Question {
   created_at: string;
 }
 
+export type AnswerPayload = {
+  questionId: string;
+  competencyId: string;
+  selectedScore: number;
+};
+
+
 export interface QuizAnswer {
   question_id: string;
   selected_option_index: number;
