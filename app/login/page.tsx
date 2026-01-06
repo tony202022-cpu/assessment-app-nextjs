@@ -41,7 +41,7 @@ export default function LoginPage() {
                   email_input_placeholder: getTranslation('yourEmail', language),
                   password_input_placeholder: getTranslation('yourPassword', language),
                   button_label: getTranslation('signIn', language),
-                  social_auth_text: getTranslation('signInWith', language),
+                  social_provider_text: getTranslation('signInWith', language),
                   link_text: getTranslation('alreadyHaveAccount', language),
                 },
                 sign_up: {
