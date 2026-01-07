@@ -214,13 +214,17 @@ export default function ResultsClient() {
   );
 
   /** ===== ✅ FINAL: Generate PDF via Public Service (WORKING) ===== */
-  const handleDownloadPDF = () => {
-    if (!attemptId) return;
-    const url = `https://dyad-pdf.kifah.dev/api/generate-pdf?attemptId=${encodeURIComponent(
-      attemptId
-    )}&lang=${language}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+ const handleDownloadPDF = () => {
+  if (!attemptId) return;
+
+  const url =
+    `https://dyad-pdf-service.vercel.app/api/generate-pdf` +
+    `?attemptId=${encodeURIComponent(attemptId)}` +
+    `&lang=${encodeURIComponent(language)}`;
+
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
 
   /** ===== Render states ===== */
   if (loading || isSessionLoading) {
