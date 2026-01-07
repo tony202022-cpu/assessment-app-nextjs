@@ -36,3 +36,50 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* =========================================
+   GLOBAL RTL HELPERS (ADD — DO NOT REPLACE)
+========================================= */
+@layer base {
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+  }
+
+  [dir="rtl"] .num,
+  [dir="rtl"] .ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+    text-align: left;
+    display: inline-block;
+  }
+
+  [dir="rtl"] .competency-summary-header {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  [dir="rtl"] .competency-summary-label {
+    text-align: right;
+  }
+
+  [dir="rtl"] .competency-summary-tier {
+    text-align: left;
+  }
+
+  [dir="rtl"] .competency-summary-progress {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+  }
+
+  [dir="rtl"] .swot-list,
+  [dir="rtl"] .recommendation-list,
+  [dir="rtl"] .upsell-features {
+    padding-right: 25px;
+    padding-left: 0;
+  }
+}

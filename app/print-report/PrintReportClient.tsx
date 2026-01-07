@@ -189,11 +189,7 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
         "Take on tougher streets or time slots where your composure gives you an advantage.",
         "Track emotional patterns to identify your peak hours and route yourself strategically.",
       ],
-      ar: [
-        "قد بالقدوة من خلال مرونتك وشارك روتينك لرفع طاقة الفريق.",
-        "تولَّ شوارع أو فترات زمنية أصعب حيث يمنحك هدوؤك ميزة.",
-        "تتبع الأنماط العاطفية لتحديد ساعات الذروة وتوجيه نفسك استراتيجياً.",
-      ],
+      ar: ["قد بالقدوة من خلال مرونتك وشارك روتينك لرفع طاقة الفريق.", "تولَّ شوارع أو فترات زمنية أصعب حيث يمنحك هدوؤك ميزة.", "تتبع الأنماط العاطفية لتحديد ساعات الذروة وتوجيه نفسك استراتيجياً."],
     },
   },
 
@@ -537,7 +533,9 @@ function Donut({ value, color }: { value: number; color: string }) {
           transform="rotate(-90 50 50)"
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center font-bold text-xl text-gray-900">
+
+      {/* ✅ Numbers inside Arabic should be LTR */}
+      <div className="absolute inset-0 flex items-center justify-center font-bold text-xl text-gray-900 num">
         {pct}%
       </div>
     </div>
@@ -550,7 +548,6 @@ function Donut({ value, color }: { value: number; color: string }) {
 export default function PrintReportClient() {
   const searchParams = useSearchParams();
   const attemptId = searchParams.get("attemptId") || "";
-
   const puppeteerMode = (searchParams.get("puppeteer") || "") === "1";
 
   // locale language is ONLY a fallback now
@@ -563,7 +560,9 @@ export default function PrintReportClient() {
   const langParamRaw = (searchParams.get("lang") || "").toLowerCase();
   const langParam = langParamRaw === "ar" ? "ar" : langParamRaw === "en" ? "en" : null;
 
-  const [reportLang, setReportLang] = useState<"en" | "ar">(langParam || (localeLanguage === "ar" ? "ar" : "en"));
+  const [reportLang, setReportLang] = useState<"en" | "ar">(
+    langParam || (localeLanguage === "ar" ? "ar" : "en")
+  );
   const isArabic = reportLang === "ar";
 
   const [loading, setLoading] = useState(true);
@@ -688,11 +687,11 @@ export default function PrintReportClient() {
   const weaknesses = ordered.filter((c) => c.tier === "Weakness");
 
   return (
-    <div dir={isArabic ? "rtl" : "ltr"}>
+    <div dir={isArabic ? "rtl" : "ltr"} lang={isArabic ? "ar" : "en"} className={isArabic ? "rtl" : "ltr"}>
       {/* Screen-only print button (some browsers block auto-print) */}
       <button
         onClick={() => window.print()}
-        className="printbtn fixed top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded shadow-lg print:hidden"
+        className={`printbtn fixed top-4 ${isArabic ? "left-4" : "right-4"} z-50 bg-blue-600 text-white px-4 py-2 rounded shadow-lg print:hidden`}
       >
         {isArabic ? "طباعة" : "Print"}
       </button>
@@ -707,11 +706,11 @@ export default function PrintReportClient() {
           <div className="cover-info-grid">
             <div className="cover-info-card">
               <div className="cover-info-label">{isArabic ? "معرف المحاولة" : "Attempt ID"}</div>
-              <div className="cover-info-value">{attemptId ? attemptId.slice(0, 8) : "—"}</div>
+              <div className="cover-info-value num">{attemptId ? attemptId.slice(0, 8) : "—"}</div>
             </div>
             <div className="cover-info-card">
               <div className="cover-info-label">{isArabic ? "التاريخ" : "Date"}</div>
-              <div className="cover-info-value">
+              <div className="cover-info-value num">
                 {(() => {
                   try {
                     return new Date().toLocaleDateString(isArabic ? "ar-AE" : "en-AU");
@@ -726,7 +725,7 @@ export default function PrintReportClient() {
           <div className="cover-score-section">
             <Donut value={total} color="#22c55e" />
             <p className="cover-score-label">{isArabic ? "النتيجة الإجمالية" : "Overall Score"}</p>
-            <p className="cover-score-percentage">{clampPct(total)}%</p>
+            <p className="cover-score-percentage num">{clampPct(total)}%</p>
             <p className="cover-note">{isArabic ? "ملخص سريع لأدائك في 7 كفاءات أساسية." : "A fast snapshot of your 7 core competencies."}</p>
             <p className="cover-note-small">
               {isArabic
@@ -763,8 +762,8 @@ export default function PrintReportClient() {
                     <div className="competency-summary-bar-track">
                       <div className="competency-summary-bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
                     </div>
-                    <span className="competency-summary-percentage">{pct}%</span>
-                    <span className="competency-summary-score">
+                    <span className="competency-summary-percentage num">{pct}%</span>
+                    <span className="competency-summary-score num">
                       {c.score}/{c.maxScore}
                     </span>
                   </div>
@@ -789,7 +788,7 @@ export default function PrintReportClient() {
                     const meta = COMPETENCY_META[key];
                     return (
                       <li key={c.competencyId}>
-                        • {(meta ? (isArabic ? meta.labelAr : meta.labelEn) : key) + ` (${clampPct(c.percentage)}%)`}
+                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
                       </li>
                     );
                   })
@@ -808,7 +807,7 @@ export default function PrintReportClient() {
                     const meta = COMPETENCY_META[key];
                     return (
                       <li key={c.competencyId}>
-                        • {(meta ? (isArabic ? meta.labelAr : meta.labelEn) : key) + ` (${clampPct(c.percentage)}%)`}
+                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
                       </li>
                     );
                   })
@@ -827,7 +826,7 @@ export default function PrintReportClient() {
                     const meta = COMPETENCY_META[key];
                     return (
                       <li key={c.competencyId}>
-                        • {(meta ? (isArabic ? meta.labelAr : meta.labelEn) : key) + ` (${clampPct(c.percentage)}%)`}
+                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
                       </li>
                     );
                   })
@@ -846,7 +845,7 @@ export default function PrintReportClient() {
                     const meta = COMPETENCY_META[key];
                     return (
                       <li key={c.competencyId}>
-                        • {(meta ? (isArabic ? meta.labelAr : meta.labelEn) : key) + ` (${clampPct(c.percentage)}%)`}
+                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
                       </li>
                     );
                   })
@@ -916,7 +915,6 @@ export default function PrintReportClient() {
               <li>{isArabic ? "✅ خطة عمل 90 يوم — خطوات أسبوعية قابلة للتطبيق" : "✅ 90-day action plan — weekly, executable steps"}</li>
             </ul>
 
-            {/* keep "#" safe (no jump) until you have the real link */}
             <a href="#" onClick={(e) => e.preventDefault()} className="upsell-cta">
               {isArabic ? "اطلب النسخة المتقدمة الآن" : "Get the Advanced Edition"}
             </a>
@@ -930,7 +928,6 @@ export default function PrintReportClient() {
          PRINT CSS + CAIRO FONT-FACE (LOCAL)
       ================= */}
       <style jsx global>{`
-        /* ✅ Register Cairo from /public/fonts (works for browser + Puppeteer) */
         @font-face {
           font-family: "Cairo";
           src: url("/fonts/Cairo-Regular.ttf") format("truetype");
@@ -964,7 +961,6 @@ export default function PrintReportClient() {
           font-family: "Cairo", sans-serif;
           color: #111827;
           line-height: 1.6;
-          unicode-bidi: isolate;
         }
 
         .report-container {
@@ -975,22 +971,16 @@ export default function PrintReportClient() {
 
         .page {
           width: 210mm;
-
-          /* ✅ IMPORTANT: allow content to extend (prevents cutting / missing sections) */
           min-height: 297mm;
-
           padding: 20mm;
           box-sizing: border-box;
-
           break-after: page;
           page-break-after: always;
-
           background: white;
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
           align-items: stretch;
-
           overflow: visible;
         }
 
@@ -999,45 +989,45 @@ export default function PrintReportClient() {
           page-break-after: auto;
         }
 
-        /* === RTL FIXES === */
-        [dir="rtl"] {
+        /* =================================================
+           ✅ RTL FOUNDATION + MIXED TEXT/NUMBER FIXES
+        ================================================= */
+        .rtl {
           direction: rtl;
           text-align: right;
+          unicode-bidi: plaintext;
         }
 
-        [dir="rtl"] .cover-info-grid {
-          direction: rtl;
-        }
-
-        [dir="rtl"] .cover-info-label,
-        [dir="rtl"] .cover-info-value {
-          text-align: right;
-        }
-
-        [dir="rtl"] .competency-summary-header {
-          flex-direction: row-reverse;
-        }
-
-        [dir="rtl"] .competency-summary-label {
-          text-align: right;
-        }
-
-        [dir="rtl"] .competency-summary-percentage,
-        [dir="rtl"] .competency-summary-score {
+        .rtl .num,
+        .rtl .ltr {
+          direction: ltr;
+          unicode-bidi: isolate;
           text-align: left;
+          display: inline-block;
         }
 
-        [dir="rtl"] .swot-list,
-        [dir="rtl"] .recommendation-list,
-        [dir="rtl"] .upsell-features {
+        /* Flip row layout where needed in RTL */
+     	/* Make the SUMMARY cards truly RTL (fixes Page 2 & 3) */
+	.rtl .competency-summary-card {
+  	text-align: right;
+	}
+
+	.rtl .competency-summary-header {
+  	direction: rtl;        /* key: makes the flex "start" come from the right */
+  	flex-direction: row;   /* keep normal order; rtl direction handles placement */
+	}
+
+	.rtl .competency-summary-progress {
+  	direction: rtl;        /* keeps the whole progress row behaving RTL */
+	}
+
+
+        /* Lists padding in RTL */
+        .rtl .swot-list,
+        .rtl .recommendation-list,
+        .rtl .upsell-features {
           padding-right: 25px;
           padding-left: 0;
-        }
-
-        [dir="rtl"] .swot-list li,
-        [dir="rtl"] .recommendation-list li,
-        [dir="rtl"] .upsell-features li {
-          text-align: right;
         }
 
         /* ✅ Prevent ugly splits across pages */
@@ -1399,7 +1389,6 @@ export default function PrintReportClient() {
           text-align: center;
         }
 
-        /* Hide print button when printing */
         @media print {
           .printbtn {
             display: none !important;
