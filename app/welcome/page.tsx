@@ -1,0 +1,63 @@
+"use client";
+
+import Link from "next/link";
+
+export default function WelcomePage() {
+  // ✅ UI-only bilingual copy (Arabic first, English second)
+  const ar = true; // ← OPTIONAL: if you have a language state, replace this with your real language check
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-950 via-blue-800 to-blue-600 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur border border-white/15 shadow-2xl overflow-hidden">
+        <div className="p-6 text-center">
+          <div className="text-sm text-white/80 mb-2">
+            {ar ? "By Dr. Kifah Fayad – Levelup Business Consulting" : "By Dr. Kifah Fayad – Levelup Business Consulting"}
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-snug">
+            {ar ? "التشخيص الشامل لمهارات البيع والإقناع" : "Selling Skills MRI™"}
+          </h1>
+
+          <div className="mt-2 text-white/90 text-base">
+            {ar ? "Selling Skills MRI™" : "Sales MRI for Outdoor Sales Professionals"}
+          </div>
+
+          <div className="mt-5 grid grid-cols-3 gap-3 text-right">
+            <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
+              <div className="text-xl mb-1">📊</div>
+              <div className="text-sm font-bold">{ar ? "تحليل متكامل" : "Full Analysis"}</div>
+              <div className="text-xs text-white/80 mt-1">{ar ? "٧ مجالات أداء" : "7 core areas"}</div>
+            </div>
+            <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
+              <div className="text-xl mb-1">🧠</div>
+              <div className="text-sm font-bold">{ar ? "تقييم سلوكي" : "Behavioral"}</div>
+              <div className="text-xs text-white/80 mt-1">{ar ? "مواقف واقعية" : "Real scenarios"}</div>
+            </div>
+            <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
+              <div className="text-xl mb-1">⏱️</div>
+              <div className="text-sm font-bold">{ar ? "مؤقّت" : "Timed"}</div>
+              <div className="text-xs text-white/80 mt-1">{ar ? "20 دقيقة" : "20 minutes"}</div>
+            </div>
+          </div>
+
+          <p className="mt-5 text-white/90 text-sm leading-relaxed">
+            {ar
+              ? "هذا تقييم سلوكي—ليس اختبار معلومات. سيمنحك قراءة دقيقة لنقاط القوة، وسلوكك تحت الضغط، ومؤشر أداء ميداني واقعي."
+              : "This is behavioral—not a knowledge test. You’ll get a clear read on strengths, stress behavior, and real field performance."}
+          </p>
+
+          <Link
+            href="/instructions"
+            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold h-12 transition shadow-lg"
+          >
+            {ar ? "ابدأ التقييم الآن 🚀" : "Start the assessment 🚀"}
+          </Link>
+
+          <div className="mt-3 text-xs text-white/80">
+            {ar ? "🔒 خصوصيتك محفوظة • 📄 تقرير فوري بعد الانتهاء" : "🔒 Private & secure • 📄 Instant report after completion"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
