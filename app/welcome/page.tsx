@@ -35,7 +35,7 @@ export default function WelcomePage() {
             <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
               <div className="text-xl mb-1">📊</div>
               <div className="text-sm font-bold">{ar ? "تحليل متكامل" : "Full Analysis"}</div>
-              <div className="text-xs text-white/80 mt-1">{ar ? "٧ مجالات أداء" : "7 core areas"}</div>
+              <div className="text-xs text-white/80 mt-1">{ar ? 7 كفاءات بيع للمندوبين ء" : "7 core areas"}</div>
             </div>
 
             <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
