@@ -144,7 +144,7 @@ export default function LoginPage() {
           <div className="text-center space-y-2">
             <h1 className="text-xl font-extrabold text-white drop-shadow">
               {ar
-                ? "اكتشف إمكاناتك الحقيقية في البيئات البيعية"
+                ? "اكتشف إمكاناتك الحقيقية في الميدان"
                 : "Discover Your True Field Sales Potential"}
             </h1>
             <p className="text-xs font-semibold text-white/90 leading-relaxed">
