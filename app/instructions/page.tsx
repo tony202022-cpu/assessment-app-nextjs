@@ -52,7 +52,7 @@ export default function InstructionsPage() {
 <div className="space-y-2 text-base sm:text-lg text-white/90 leading-snug">
   {ar ? (
     <>
-      <p className="font-semibold">• ستشاهد مواقف وسيناريوهات عملية تتعلق بالمبيعات وخدمة العملاء.</p>
+      <p className="font-semibold">• ستشاهد مواقف وسيناريوهات عملية تتعلق بالمبيعات الميدانية للمندوبين .</p>
       <p className="font-semibold">• اختر الإجابة التي تعكس تصرفك الفعلي في العمل.</p>
       <p className="font-semibold">• لا توجد إجابات صحيحة أو خاطئة.</p>
       <p className="font-semibold">• أجب بسرعة وبشكل صادق يعكس قناعاتك وردود أفعالك.</p>
