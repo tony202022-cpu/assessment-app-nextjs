@@ -21,8 +21,11 @@ export default function WelcomePage() {
               : "By Dr. Kifah Fayad – Levelup Business Consulting"}
           </div>
 
+          {/* UPDATED ARABIC HEADLINE */}
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-snug">
-            {ar ? "التشخيص الشامل لمهارات البيع والإقناع" : "Selling Skills SCAN™"}
+            {ar
+              ? "تشخيص لكفاءات ومهارات مندوبي المبيعات"
+              : "Selling Skills SCAN for Outdoor Sales Professionals™"}
           </h1>
 
           <div className="mt-2 text-white/90 text-base">
@@ -32,25 +35,40 @@ export default function WelcomePage() {
           </div>
 
           <div className={`mt-5 grid grid-cols-3 gap-3 ${ar ? "text-right" : "text-left"}`}>
+            
+            {/* BOX 1 — UPDATED ARABIC TEXT */}
             <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
               <div className="text-xl mb-1">📊</div>
-              <div className="text-sm font-bold">{ar ? "تحليل متكامل" : "Full Analysis"}</div>
+              <div className="text-sm font-bold">
+                {ar ? "تحليل" : "Full Analysis"}
+              </div>
               <div className="text-xs text-white/80 mt-1">
                 {ar ? "٧ كفاءات بيع للمندوبين" : "7 core areas"}
               </div>
             </div>
 
+            {/* BOX 2 — INCREASED ARABIC FONT SIZE */}
             <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
               <div className="text-xl mb-1">🧠</div>
-              <div className="text-sm font-bold">{ar ? "تقييم سلوكي" : "Behavioral"}</div>
-              <div className="text-xs text-white/80 mt-1">{ar ? "مواقف واقعية" : "Real scenarios"}</div>
+              <div className="text-sm font-bold">
+                {ar ? "تقييم سلوكي" : "Behavioral"}
+              </div>
+              <div className={`${ar ? "text-sm" : "text-xs"} text-white/80 mt-1`}>
+                {ar ? "مواقف واقعية" : "Real scenarios"}
+              </div>
             </div>
 
+            {/* BOX 3 — INCREASED ARABIC FONT SIZE */}
             <div className="rounded-xl bg-white/10 border border-white/10 p-3 text-white/95">
               <div className="text-xl mb-1">⏱️</div>
-              <div className="text-sm font-bold">{ar ? "مؤقّت" : "Timed"}</div>
-              <div className="text-xs text-white/80 mt-1">{ar ? "20 دقيقة" : "20 minutes"}</div>
+              <div className="text-sm font-bold">
+                {ar ? "مؤقّت" : "Timed"}
+              </div>
+              <div className={`${ar ? "text-sm" : "text-xs"} text-white/80 mt-1`}>
+                {ar ? "20 دقيقة" : "20 minutes"}
+              </div>
             </div>
+
           </div>
 
           <p className="mt-5 text-white/90 text-sm leading-relaxed">
