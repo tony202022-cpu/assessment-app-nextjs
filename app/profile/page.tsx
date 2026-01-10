@@ -1,8 +1,7 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSession } from "@/contexts/SessionContext";
@@ -11,26 +10,41 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+export const dynamic = "force-dynamic";
+
 export default function ProfilePage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const next = params.get("next") || "/quiz";
-
   const { language } = useLocale();
   const { user, isLoading } = useSession();
   const isArabic = language === "ar";
+
+  const [hydrated, setHydrated] = useState(false);
+  const [nextPath, setNextPath] = useState<string>("/quiz");
 
   const [fullName, setFullName] = useState("");
   const [company, setCompany] = useState("");
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Hydration guard + read ?next= safely (no useSearchParams)
+  useEffect(() => {
+    setHydrated(true);
+
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const n = sp.get("next");
+      if (n && typeof n === "string") setNextPath(n);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   // Must be logged in
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && hydrated && !user) {
       router.replace("/login");
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, hydrated, user, router]);
 
   // Load existing profile (if any)
   useEffect(() => {
@@ -63,6 +77,7 @@ export default function ProfilePage() {
     }
 
     setSaving(true);
+
     const { error } = await supabase.from("profiles").upsert(
       {
         id: user.id,
@@ -81,10 +96,11 @@ export default function ProfilePage() {
     }
 
     toast.success(isArabic ? "تم الحفظ ✅" : "Saved ✅");
-    router.replace(next);
+    router.replace(nextPath);
   };
 
-  if (isLoading || loadingProfile) return null;
+  if (!hydrated || isLoading || loadingProfile) return null;
+  if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col" dir={isArabic ? "rtl" : "ltr"}>
@@ -111,6 +127,7 @@ export default function ProfilePage() {
                 disabled={saving}
                 className="bg-white/90"
               />
+
               <Input
                 placeholder={isArabic ? "الشركة (اختياري)" : "Company (optional)"}
                 value={company}
@@ -125,11 +142,19 @@ export default function ProfilePage() {
                 disabled={saving}
                 className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold"
               >
-                {saving ? (isArabic ? "جاري الحفظ..." : "Saving...") : isArabic ? "حفظ والمتابعة ✅" : "Save & Continue ✅"}
+                {saving
+                  ? isArabic
+                    ? "جاري الحفظ..."
+                    : "Saving..."
+                  : isArabic
+                  ? "حفظ والمتابعة ✅"
+                  : "Save & Continue ✅"}
               </Button>
 
               <div className="text-xs text-white/70 text-center">
-                {isArabic ? "🔒 لن نشارك بياناتك مع أي طرف." : "🔒 We don’t share your data with third parties."}
+                {isArabic
+                  ? "🔒 لن نشارك بياناتك مع أي طرف."
+                  : "🔒 We don’t share your data with third parties."}
               </div>
             </div>
           </div>
