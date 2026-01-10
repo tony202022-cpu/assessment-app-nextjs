@@ -407,8 +407,6 @@ export default function ResultsClient() {
    	 : "Your full report is generated automatically via our secure service."}
 	</p>
 	</div>
-
-
               <Button
                 onClick={handleDownloadPDF}
                 className="gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
