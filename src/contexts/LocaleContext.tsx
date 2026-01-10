@@ -1,9 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-type Language = 'en' | 'ar';
-type Direction = 'ltr' | 'rtl';
+type Language = "en" | "ar";
+type Direction = "ltr" | "rtl";
 
 interface LocaleContextType {
   language: Language;
@@ -13,28 +13,31 @@ interface LocaleContextType {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
+// Read language immediately on first render (prevents "English flash")
+const getInitialLanguage = (): Language => {
+  if (typeof window === "undefined") return "en";
+  const stored = localStorage.getItem("language");
+  if (stored === "ar" || stored === "en") return stored;
+  return "en";
+};
+
 export const LocaleProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Language>('en');
-  const [direction, setDirection] = useState<Direction>('ltr');
+  const initialLang = getInitialLanguage();
 
-  useEffect(() => {
-    // Initialize language from localStorage or default to 'en'
-    const storedLang = localStorage.getItem('language') as Language;
-    if (storedLang) {
-      setLanguageState(storedLang);
-      setDirection(storedLang === 'ar' ? 'rtl' : 'ltr');
-    }
-  }, []);
+  const [language, setLanguageState] = useState<Language>(initialLang);
+  const [direction, setDirection] = useState<Direction>(
+    initialLang === "ar" ? "rtl" : "ltr"
+  );
 
+  // Sync <html dir> with selected language
   useEffect(() => {
-    // Set the dir attribute on the html element
     document.documentElement.dir = direction;
   }, [direction]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    setDirection(lang === 'ar' ? 'rtl' : 'ltr');
-    localStorage.setItem('language', lang);
+    setDirection(lang === "ar" ? "rtl" : "ltr");
+    localStorage.setItem("language", lang);
   };
 
   return (
@@ -46,8 +49,8 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
 
 export const useLocale = () => {
   const context = useContext(LocaleContext);
-  if (context === undefined) {
-    throw new Error('useLocale must be used within a LocaleProvider');
+  if (!context) {
+    throw new Error("useLocale must be used within a LocaleProvider");
   }
   return context;
 };

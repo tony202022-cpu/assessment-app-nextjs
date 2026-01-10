@@ -52,11 +52,13 @@ export default function QuizPage() {
 
   // Auth guard + fetch questions
   useEffect(() => {
-    if (!isSessionLoading && !user) {
-      toast.info(getTranslation("loginRequired", language));
-      router.push("/login");
-      return;
-    }
+   if (isSessionLoading) return;
+
+if (!user) {
+  toast.info(getTranslation("loginRequired", language));
+  router.replace("/login");
+  return;
+}
 
     const fetchQuestions = async () => {
       setLoading(true);
