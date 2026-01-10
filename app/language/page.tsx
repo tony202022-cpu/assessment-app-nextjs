@@ -9,7 +9,7 @@ export default function LanguagePage() {
 
   const choose = (lang: "en" | "ar") => {
     setLanguage(lang);
-    localStorage.setItem("lang", lang);
+    localStorage.setItem("language", lang);
     router.push("/welcome");
   };
 
@@ -22,9 +22,6 @@ export default function LanguagePage() {
 
       {/* Main card */}
       <div className="relative z-10 bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-3xl p-10 max-w-md w-full text-center animate-fadeIn">
-
-        {/* Hero icon */}
-        <div className="text-5xl mb-4 drop-shadow-lg">🌐</div>
 
         <h1 className="text-3xl font-extrabold text-white mb-4 tracking-wide drop-shadow-lg">
           Choose Your Language
@@ -40,19 +37,17 @@ export default function LanguagePage() {
           {/* English */}
           <button
             onClick={() => choose("en")}
-            className="w-full flex items-center justify-center gap-4 bg-white text-blue-900 font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.04] hover:bg-blue-50 transition-all duration-200"
+            className="w-full flex items-center justify-center gap-3 bg-white text-blue-900 font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.04] hover:bg-blue-50 transition-all duration-200 text-lg"
           >
-            <span className="text-3xl">🇬🇧</span>
-            <span className="text-lg">English</span>
+            English
           </button>
 
           {/* Arabic */}
           <button
             onClick={() => choose("ar")}
-            className="w-full flex items-center justify-center gap-4 bg-white text-blue-900 font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.04] hover:bg-blue-50 transition-all duration-200"
+            className="w-full flex items-center justify-center gap-3 bg-white text-blue-900 font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.04] hover:bg-blue-50 transition-all duration-200 text-lg"
           >
-            <span className="text-3xl">🇸🇦</span>
-            <span className="text-lg">العربية</span>
+            العربية
           </button>
         </div>
 

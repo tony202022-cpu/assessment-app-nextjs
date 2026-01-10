@@ -213,18 +213,17 @@ export default function ResultsClient() {
     [orderedResults]
   );
 
-  /** ===== ✅ FINAL: Generate PDF via Public Service (WORKING) ===== */
- const handleDownloadPDF = () => {
-  if (!attemptId) return;
+  /** ===== PDF ===== */
+  const handleDownloadPDF = () => {
+    if (!attemptId) return;
 
-  const url =
-    `https://dyad-pdf-service.vercel.app/api/generate-pdf` +
-    `?attemptId=${encodeURIComponent(attemptId)}` +
-    `&lang=${encodeURIComponent(language)}`;
+    const url =
+      `https://dyad-pdf-service.vercel.app/api/generate-pdf` +
+      `?attemptId=${encodeURIComponent(attemptId)}` +
+      `&lang=${encodeURIComponent(language)}`;
 
-  window.open(url, "_blank", "noopener,noreferrer");
-};
-
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   /** ===== Render states ===== */
   if (loading || isSessionLoading) {
@@ -259,27 +258,28 @@ export default function ResultsClient() {
     );
   }
 
-  /** ===== UI (same structure) ===== */
+  /** ===== UI (same structure, centered header) ===== */
   return (
     <div className="min-h-screen flex flex-col" dir={language === "ar" ? "rtl" : "ltr"}>
       <Header />
 
       <main className="flex-grow bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 space-y-6">
+          
           {/* Header */}
           <div className="bg-white rounded-xl shadow p-6">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  {language === "ar" ? "تقرير أدائك" : "Your Performance Report"}
-                </h1>
-                <p className="text-gray-600">
-                  {language === "ar"
-                    ? "تحليل كفاءات المبيعات الميدانية"
-                    : "Field sales competency analysis"}
-                </p>
-              </div>
+            <div className="flex flex-col items-center text-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {language === "ar" ? "تقرير أدائك" : "Your Performance Report"}
+              </h1>
+              <p className="text-gray-600">
+                {language === "ar"
+                  ? "تحليل كفاءات المبيعات الميدانية"
+                  : "Field sales competency analysis"}
+              </p>
+            </div>
 
+            <div className="flex justify-center mt-4">
               <Button
                 onClick={handleDownloadPDF}
                 className="gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
@@ -402,11 +402,12 @@ export default function ResultsClient() {
                   {language === "ar" ? "تقرير PDF كامل" : "Complete PDF Report"}
                 </h3>
                 <p className="text-gray-600">
-                  {language === "ar"
-                    ? "يتم إنشاء التقرير الكامل تلقائياً عبر خدمتنا الآمنة."
-                    : "Your full report is generated automatically via our secure service."}
-                </p>
-              </div>
+ 	 {language === "ar"
+   	 ? "يتم إنشاء التقرير الكامل تلقائياً عبر خدمتنا الآمنة."
+   	 : "Your full report is generated automatically via our secure service."}
+	</p>
+	</div>
+
 
               <Button
                 onClick={handleDownloadPDF}

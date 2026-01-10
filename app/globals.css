@@ -32,9 +32,11 @@
     --radius: 0.75rem;
   }
 
-  body {
-    @apply bg-background text-foreground;
-  }
+ body {
+  @apply text-foreground;
+  background: transparent;
+}
+
 }
 
 /* =========================================
