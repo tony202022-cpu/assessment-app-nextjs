@@ -55,7 +55,7 @@ export default function InstructionsPage() {
       <p className="font-semibold">• ستشاهد مواقف وسيناريوهات عملية تتعلق بالمبيعات وخدمة العملاء.</p>
       <p className="font-semibold">• اختر الإجابة التي تعكس تصرفك الفعلي في العمل.</p>
       <p className="font-semibold">• لا توجد إجابات صحيحة أو خاطئة.</p>
-      <p className="font-semibold">• أجب بسرعة وبشكل صادق.</p>
+      <p className="font-semibold">• أجب بسرعة وبشكل صادق يعكس قناعاتك وردود أفعالك.</p>
       <p className="font-semibold">• تأكد من وجود اتصال إنترنت مستقر.</p>
 
       {/* NEW ARABIC INSTRUCTION */}
