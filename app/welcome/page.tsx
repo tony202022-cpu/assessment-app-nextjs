@@ -25,7 +25,7 @@ export default function WelcomePage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-snug">
             {ar
               ? "تشخيص لكفاءات ومهارات مندوبي المبيعات"
-              : "Selling Skills SCAN for Outdoor Sales Professionals™"}
+              : "Selling Skills SCAN™"}
           </h1>
 
           <div className="mt-2 text-white/90 text-base">
