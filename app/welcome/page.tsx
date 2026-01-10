@@ -73,7 +73,7 @@ export default function WelcomePage() {
 
           <p className="mt-5 text-white/90 text-sm leading-relaxed">
             {ar
-              ? "هذا تقييم سلوكي، ليس اختبار معلومات. سيمنحك قراءة دقيقة لنقاط القوة والضعف وسلوكك تحت الضغط، ومؤشر أداء ميداني واقعي."
+              ? "هذا تقييم سلوك وردات فعل وليس اختبار معلومات. سيمنحك قراءة دقيقة لنقاط القوة والضعف وسلوكك تحت الضغط، ومؤشر أداء ميداني واقعي."
               : "This test measures your behavior and instant reaction, NOT your knowledge. You’ll get a clear read on strengths, weaknesses, stress behavior, and real field performance."}
           </p>
 
