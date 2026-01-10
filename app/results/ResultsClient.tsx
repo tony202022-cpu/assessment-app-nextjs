@@ -396,7 +396,7 @@ export default function ResultsClient() {
 
           {/* Download CTA */}
           <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+           <div className="flex flex-col items-center justify-center text-center gap-4">
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {language === "ar" ? "تقرير PDF كامل" : "Complete PDF Report"}
