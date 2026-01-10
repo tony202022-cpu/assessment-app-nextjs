@@ -31,8 +31,10 @@ const COMPETENCY_META: Record<
   mental_toughness: {
     labelEn: "Mental Toughness",
     labelAr: "الصلابة الذهنية",
-    diagnosticEn: "Your ability to stay focused, resilient, and emotionally stable during field challenges.",
-    diagnosticAr: "قدرتك على البقاء مركزاً ومرناً ومستقراً عاطفياً أثناء تحديات العمل الميداني.",
+    diagnosticEn:
+      "Your ability to stay focused, resilient, and emotionally stable during field challenges.",
+    diagnosticAr:
+      "قدرتك على البقاء مركزاً ومرناً ومستقراً عاطفياً أثناء تحديات العمل الميداني.",
   },
   opening_conversations: {
     labelEn: "Opening Conversations",
@@ -189,7 +191,11 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
         "Take on tougher streets or time slots where your composure gives you an advantage.",
         "Track emotional patterns to identify your peak hours and route yourself strategically.",
       ],
-      ar: ["قد بالقدوة من خلال مرونتك وشارك روتينك لرفع طاقة الفريق.", "تولَّ شوارع أو فترات زمنية أصعب حيث يمنحك هدوؤك ميزة.", "تتبع الأنماط العاطفية لتحديد ساعات الذروة وتوجيه نفسك استراتيجياً."],
+      ar: [
+        "قد بالقدوة من خلال مرونتك وشارك روتينك لرفع طاقة الفريق.",
+        "تولَّ شوارع أو فترات زمنية أصعب حيث يمنحك هدوؤك ميزة.",
+        "تتبع الأنماط العاطفية لتحديد ساعات الذروة وتوجيه نفسك استراتيجياً.",
+      ],
     },
   },
 
@@ -375,12 +381,12 @@ const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
       en: [
         "Customize offers using insights from their needs and pain points.",
         "Include social proof: '90% of reps like you saw results in 2 weeks.'",
-        "Use storytelling: 'One client was stuck like you—then they tried this...'",
+        "Use storytelling: 'One client was stuck like you—then they tried this...' ",
       ],
       ar: [
         "خصّص عروضك باستخدام الرؤى من احتياجاتهم ونقاط ألمهم.",
         "أدرج دليلاً اجتماعياً: '90% من الممثلين مثلك رأوا نتائج خلال أسبوعين.'",
-        "استخدم السرد القصصي: 'كان عميل عالقاً مثلك—ثم جرّب هذا...'",
+        "استخدم السرد القصصي: 'كان عميل عالقاً مثلك—ثم جرّب هذا...' ",
       ],
     },
     Strength: {
@@ -561,13 +567,16 @@ export default function PrintReportClient() {
   const langParam = langParamRaw === "ar" ? "ar" : langParamRaw === "en" ? "en" : null;
 
   const [reportLang, setReportLang] = useState<"en" | "ar">(
-    langParam || (localeLanguage === "ar" ? "ar" : "en")
+    langParam || (localeLanguage === "ar" ? "ar" : "en"),
   );
   const isArabic = reportLang === "ar";
 
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState<CompetencyResult[]>([]);
   const [total, setTotal] = useState(0);
+
+  // store meta for cover (name, email, company, etc.)
+  const [userMeta, setUserMeta] = useState<any | null>(null);
 
   // A) Fetch results (SERVER ACTION – no RLS/session issues)
   useEffect(() => {
@@ -599,6 +608,7 @@ export default function PrintReportClient() {
 
         setResults(normalized);
         setTotal(Number(data?.total_percentage) || 0);
+        setUserMeta(data || null);
         setLoading(false);
       } catch (e) {
         console.error("getQuizAttempt error:", e);
@@ -616,10 +626,21 @@ export default function PrintReportClient() {
     const map = new Map<string, CompetencyResult>();
     results.forEach((r) => map.set(r.competencyId, r));
 
-    const orderedCore = COMPETENCY_ORDER.map((id) => map.get(id)).filter(Boolean) as CompetencyResult[];
-    const extras = results.filter((r) => !(COMPETENCY_ORDER as readonly string[]).includes(r.competencyId));
+    const orderedCore = COMPETENCY_ORDER.map((id) =>
+      map.get(id),
+    ).filter(Boolean) as CompetencyResult[];
+    const extras = results.filter(
+      (r) => !(COMPETENCY_ORDER as readonly string[]).includes(r.competencyId),
+    );
     return [...orderedCore, ...extras];
   }, [results]);
+
+  // D) Split competencies for page layout
+  const firstFive = useMemo(() => ordered.slice(0, 5), [ordered]);
+  const lastTwo = useMemo(() => ordered.slice(5, 7), [ordered]);
+
+  const firstFourForRecs = useMemo(() => ordered.slice(0, 4), [ordered]);
+  const lastThreeForRecs = useMemo(() => ordered.slice(4, 7), [ordered]);
 
   // C) Auto-print ONLY for humans (not Puppeteer)
   useEffect(() => {
@@ -653,9 +674,9 @@ export default function PrintReportClient() {
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
-        if (!cancelled) document.body.dataset.pdfReady = "1";
+        if (!cancelled) (document.body as any).dataset.pdfReady = "1";
       } catch {
-        if (!cancelled) document.body.dataset.pdfReady = "1";
+        if (!cancelled) (document.body as any).dataset.pdfReady = "1";
       }
     })();
 
@@ -687,11 +708,17 @@ export default function PrintReportClient() {
   const weaknesses = ordered.filter((c) => c.tier === "Weakness");
 
   return (
-    <div dir={isArabic ? "rtl" : "ltr"} lang={isArabic ? "ar" : "en"} className={isArabic ? "rtl" : "ltr"}>
+    <div
+      dir={isArabic ? "rtl" : "ltr"}
+      lang={isArabic ? "ar" : "en"}
+      className={isArabic ? "rtl" : "ltr"}
+    >
       {/* Screen-only print button (some browsers block auto-print) */}
       <button
         onClick={() => window.print()}
-        className={`printbtn fixed top-4 ${isArabic ? "left-4" : "right-4"} z-50 bg-blue-600 text-white px-4 py-2 rounded shadow-lg print:hidden`}
+        className={`printbtn fixed top-4 ${
+          isArabic ? "left-4" : "right-4"
+        } z-50 bg-blue-600 text-white px-4 py-2 rounded shadow-lg print:hidden`}
       >
         {isArabic ? "طباعة" : "Print"}
       </button>
@@ -699,34 +726,82 @@ export default function PrintReportClient() {
       <div className="report-container">
         {/* ===== PAGE 1: COVER ===== */}
         <div className="page cover-page">
-          <div className="logo-circle">D</div>
-          <h1 className="cover-title">{isArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}</h1>
-          <h2 className="cover-subtitle">{isArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}</h2>
+          <img src="/new levelup logo 3.png" className="cover-logo" />
 
-          <div className="cover-info-grid">
-            <div className="cover-info-card">
-              <div className="cover-info-label">{isArabic ? "معرف المحاولة" : "Attempt ID"}</div>
-              <div className="cover-info-value num">{attemptId ? attemptId.slice(0, 8) : "—"}</div>
+          <h1 className="cover-title">
+            {isArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}
+          </h1>
+
+          <h2 className="cover-subtitle">
+            {isArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}
+          </h2>
+
+          {/* USER INFO */}
+          <div className="cover-user-info">
+            <div className="cover-user-line">
+              <span className="cover-user-label">{isArabic ? "الاسم" : "Name"}</span>
+              <span className="cover-user-value">
+                {userMeta?.full_name || userMeta?.name || "—"}
+              </span>
             </div>
-            <div className="cover-info-card">
-              <div className="cover-info-label">{isArabic ? "التاريخ" : "Date"}</div>
-              <div className="cover-info-value num">
+
+            {userMeta?.company && (
+              <div className="cover-user-line">
+                <span className="cover-user-label">{isArabic ? "الشركة" : "Company"}</span>
+                <span className="cover-user-value">{userMeta.company}</span>
+              </div>
+            )}
+
+            <div className="cover-user-line">
+              <span className="cover-user-label">
+                {isArabic ? "البريد الإلكتروني" : "Email"}
+              </span>
+              <span className="cover-user-value">
+                {userMeta?.email || userMeta?.user_email || "—"}
+              </span>
+            </div>
+
+            <div className="cover-user-line">
+              <span className="cover-user-label">
+                {isArabic ? "معرف المحاولة" : "Attempt ID"}
+              </span>
+              <span className="cover-user-value num">
+                {attemptId ? attemptId.slice(0, 8) : "—"}
+              </span>
+            </div>
+
+            <div className="cover-user-line">
+              <span className="cover-user-label">{isArabic ? "التاريخ" : "Date"}</span>
+              <span className="cover-user-value num">
                 {(() => {
                   try {
-                    return new Date().toLocaleDateString(isArabic ? "ar-AE" : "en-AU");
+                    return new Date().toLocaleDateString(
+                      isArabic ? "ar-AE" : "en-AU",
+                    );
                   } catch {
                     return new Date().toLocaleDateString();
                   }
                 })()}
-              </div>
+              </span>
             </div>
           </div>
 
+          {/* SCORE */}
           <div className="cover-score-section">
             <Donut value={total} color="#22c55e" />
-            <p className="cover-score-label">{isArabic ? "النتيجة الإجمالية" : "Overall Score"}</p>
+
+            <p className="cover-score-label">
+              {isArabic ? "النتيجة الإجمالية" : "Overall Score"}
+            </p>
+
             <p className="cover-score-percentage num">{clampPct(total)}%</p>
-            <p className="cover-note">{isArabic ? "ملخص سريع لأدائك في 7 كفاءات أساسية." : "A fast snapshot of your 7 core competencies."}</p>
+
+            <p className="cover-note">
+              {isArabic
+                ? "ملخص سريع لأدائك في 7 كفاءات أساسية."
+                : "A fast snapshot of your 7 core competencies."}
+            </p>
+
             <p className="cover-note-small">
               {isArabic
                 ? "هذا التقرير يعكس نمطك السلوكي في الميدان — وليس معرفة نظرية."
@@ -735,13 +810,19 @@ export default function PrintReportClient() {
           </div>
         </div>
 
-        {/* ===== PAGE 2: SUMMARY ===== */}
+        {/* ===== PAGE 2: SUMMARY (FIRST 5) ===== */}
         <div className="page summary-page">
-          <h2 className="section-title">{isArabic ? "ملخص الأداء" : "Performance Summary"}</h2>
-          <p className="section-subtitle">{isArabic ? "النتائج مرتبة حسب الكفاءات الأساسية." : "Results ordered by the core competencies."}</p>
+          <h2 className="section-title">
+            {isArabic ? "ملخص الأداء" : "Performance Summary"}
+          </h2>
+          <p className="section-subtitle">
+            {isArabic
+              ? "النتائج مرتبة حسب الكفاءات الأساسية."
+              : "Results ordered by the core competencies."}
+          </p>
 
           <div className="competency-summary-grid">
-            {ordered.map((c) => {
+            {firstFive.map((c) => {
               const key = normalizeCompetencyId(c.competencyId);
               const meta = COMPETENCY_META[key];
               const label = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
@@ -753,16 +834,24 @@ export default function PrintReportClient() {
                 <div key={c.competencyId} className="competency-summary-card">
                   <div className="competency-summary-header">
                     <h3 className="competency-summary-label">{label}</h3>
-                    <span className="competency-summary-tier" style={{ color }}>
+                    <span
+                      className="competency-summary-tier"
+                      style={{ color }}
+                    >
                       {tierLabel(c.tier, isArabic)}
                     </span>
                   </div>
                   <p className="competency-summary-diagnostic">{diag}</p>
                   <div className="competency-summary-progress">
                     <div className="competency-summary-bar-track">
-                      <div className="competency-summary-bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      <div
+                        className="competency-summary-bar-fill"
+                        style={{ width: `${pct}%`, backgroundColor: color }}
+                      />
                     </div>
-                    <span className="competency-summary-percentage num">{pct}%</span>
+                    <span className="competency-summary-percentage num">
+                      {pct}%
+                    </span>
                     <span className="competency-summary-score num">
                       {c.score}/{c.maxScore}
                     </span>
@@ -773,93 +862,174 @@ export default function PrintReportClient() {
           </div>
         </div>
 
-        {/* ===== PAGE 3: SWOT ===== */}
-        <div className="page swot-page">
-          <h2 className="section-title">{isArabic ? "تحليل SWOT" : "SWOT Analysis"}</h2>
-          <p className="section-subtitle">{isArabic ? "نظرة سريعة على الصورة الاستراتيجية." : "A quick strategic overview."}</p>
+        {/* ===== PAGE 3: LAST 2 + SWOT ===== */}
+        <div className="page summary-page">
+          <h2 className="section-title">
+            {isArabic ? "ملخص الأداء" : "Performance Summary"}
+          </h2>
+          <p className="section-subtitle">
+            {isArabic
+              ? "استكمال النتائج مع نظرة SWOT استراتيجية."
+              : "Remaining results with a strategic SWOT view."}
+          </p>
 
-          <div className="swot-grid">
-            <div className="swot-card swot-strength">
-              <h3 className="swot-card-title">{isArabic ? "نقاط القوة" : "Strengths"}</h3>
-              <ul className="swot-list">
-                {strengths.length ? (
-                  strengths.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  })
-                ) : (
-                  <li>{isArabic ? "لا يوجد" : "None"}</li>
-                )}
-              </ul>
-            </div>
+          {/* Last 2 competencies */}
+          <div className="competency-summary-grid">
+            {lastTwo.map((c) => {
+              const key = normalizeCompetencyId(c.competencyId);
+              const meta = COMPETENCY_META[key];
+              const label = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
+              const diag = meta ? (isArabic ? meta.diagnosticAr : meta.diagnosticEn) : "";
+              const pct = clampPct(c.percentage);
+              const color = tierColor(c.tier);
 
-            <div className="swot-card swot-opportunity">
-              <h3 className="swot-card-title">{isArabic ? "الفرص" : "Opportunities"}</h3>
-              <ul className="swot-list">
-                {opportunities.length ? (
-                  opportunities.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  })
-                ) : (
-                  <li>{isArabic ? "لا يوجد" : "None"}</li>
-                )}
-              </ul>
-            </div>
+              return (
+                <div key={c.competencyId} className="competency-summary-card">
+                  <div className="competency-summary-header">
+                    <h3 className="competency-summary-label">{label}</h3>
+                    <span
+                      className="competency-summary-tier"
+                      style={{ color }}
+                    >
+                      {tierLabel(c.tier, isArabic)}
+                    </span>
+                  </div>
+                  <p className="competency-summary-diagnostic">{diag}</p>
+                  <div className="competency-summary-progress">
+                    <div className="competency-summary-bar-track">
+                      <div
+                        className="competency-summary-bar-fill"
+                        style={{ width: `${pct}%`, backgroundColor: color }}
+                      />
+                    </div>
+                    <span className="competency-summary-percentage num">
+                      {pct}%
+                    </span>
+                    <span className="competency-summary-score num">
+                      {c.score}/{c.maxScore}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-            <div className="swot-card swot-weakness">
-              <h3 className="swot-card-title">{isArabic ? "نقاط الضعف" : "Weaknesses"}</h3>
-              <ul className="swot-list">
-                {weaknesses.length ? (
-                  weaknesses.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  })
-                ) : (
-                  <li>{isArabic ? "لا يوجد" : "None"}</li>
-                )}
-              </ul>
-            </div>
+          {/* SWOT directly under the last 2 competencies */}
+          <div className="swot-section">
+            <h2 className="section-title swot-title-inline">
+              {isArabic ? "تحليل SWOT" : "SWOT Analysis"}
+            </h2>
+            <p className="section-subtitle">
+              {isArabic
+                ? "نظرة سريعة على الصورة الاستراتيجية."
+                : "A quick strategic overview."}
+            </p>
 
-            <div className="swot-card swot-threat">
-              <h3 className="swot-card-title">{isArabic ? "التهديدات" : "Threats"}</h3>
-              <ul className="swot-list">
-                {threats.length ? (
-                  threats.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  })
-                ) : (
-                  <li>{isArabic ? "لا يوجد" : "None"}</li>
-                )}
-              </ul>
+            <div className="swot-grid">
+              <div className="swot-card swot-strength">
+                <h3 className="swot-card-title">
+                  {isArabic ? "نقاط القوة" : "Strengths"}
+                </h3>
+                <ul className="swot-list">
+                  {strengths.length ? (
+                    strengths.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">
+                            ({clampPct(c.percentage)}%)
+                          </span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="swot-card swot-opportunity">
+                <h3 className="swot-card-title">
+                  {isArabic ? "الفرص" : "Opportunities"}
+                </h3>
+                <ul className="swot-list">
+                  {opportunities.length ? (
+                    opportunities.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">
+                            ({clampPct(c.percentage)}%)
+                          </span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="swot-card swot-weakness">
+                <h3 className="swot-card-title">
+                  {isArabic ? "نقاط الضعف" : "Weaknesses"}
+                </h3>
+                <ul className="swot-list">
+                  {weaknesses.length ? (
+                    weaknesses.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">
+                            ({clampPct(c.percentage)}%)
+                          </span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="swot-card swot-threat">
+                <h3 className="swot-card-title">
+                  {isArabic ? "التهديدات" : "Threats"}
+                </h3>
+                <ul className="swot-list">
+                  {threats.length ? (
+                    threats.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">
+                            ({clampPct(c.percentage)}%)
+                          </span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ===== PAGE 4: RECOMMENDATIONS ===== */}
+        {/* ===== PAGE 4: RECOMMENDATIONS (FIRST 4) ===== */}
         <div className="page recommendations-page">
-          <h2 className="section-title">{isArabic ? "التوصيات المخصصة (21)" : "Personalized Recommendations (21)"}</h2>
+          <h2 className="section-title">
+            {isArabic ? "التوصيات المخصصة (21)" : "Personalized Recommendations (21)"}
+          </h2>
           <p className="section-subtitle">
             {isArabic
               ? "ملاحظة: يتم عرض 3 توصيات لكل كفاءة وفق فئتك الحالية (قوة/فرصة/تهديد/ضعف) — المجموع 21 توصية."
@@ -867,7 +1037,7 @@ export default function PrintReportClient() {
           </p>
 
           <div className="recommendations-grid">
-            {ordered.map((c) => {
+            {firstFourForRecs.map((c) => {
               const key = normalizeCompetencyId(c.competencyId);
               const meta = COMPETENCY_META[key];
               const title = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
@@ -876,9 +1046,15 @@ export default function PrintReportClient() {
 
               return (
                 <div key={c.competencyId} className="recommendation-card">
-                  <h3 className="recommendation-card-title" style={{ color }}>
+                  <h3
+                    className="recommendation-card-title"
+                    style={{ color }}
+                  >
                     {title}
-                    <span className="recommendation-card-tier"> ({tierLabel(c.tier, isArabic)})</span>
+                    <span className="recommendation-card-tier">
+                      {" "}
+                      ({tierLabel(c.tier, isArabic)})
+                    </span>
                   </h3>
                   <ul className="recommendation-list">
                     {recs.length ? (
@@ -897,30 +1073,160 @@ export default function PrintReportClient() {
           </div>
         </div>
 
-        {/* ===== PAGE 5: UPSELL ===== */}
-        <div className="page upsell-page">
-          <h2 className="section-title">{isArabic ? "الخطوة التالية" : "Your Next Step"}</h2>
+        {/* ===== PAGE 5: RECOMMENDATIONS (LAST 3) + MRI UPSELL ===== */}
+        <div className="page recommendations-page">
+          <h2 className="section-title">
+            {isArabic
+              ? "التوصيات المخصصة (متابعة)"
+              : "Personalized Recommendations (continued)"}
+          </h2>
           <p className="section-subtitle">
-            {isArabic ? "هذا التقرير هو التشخيص. النسخة المتقدمة هي الخطة + المتابعة." : "This report is diagnosis. The advanced version is the plan + accountability."}
+            {isArabic
+              ? "استكمل توصياتك، ثم انتقل إلى خطوة النقلة النوعية في مبيعاتك."
+              : "Complete your recommendations, then step into your next level of sales performance."}
           </p>
 
-          <div className="upsell-box">
-            <h3 className="upsell-title">
-              {isArabic ? "MRI Outdoor Sales Assessment — النسخة المتقدمة" : "MRI Outdoor Sales Assessment — Advanced"}
-            </h3>
-            <ul className="upsell-features">
-              <li>{isArabic ? "✅ 75 سؤالاً عميقاً — يكشف السلوك الحقيقي" : "✅ 75 deep questions — reveals real field behavior"}</li>
-              <li>{isArabic ? "✅ 12 كفاءة — تشخيص أدق لنقاط القوة والخلل" : "✅ 12 competencies — sharper diagnosis of strengths & gaps"}</li>
-              <li>{isArabic ? "✅ 25 صفحة تقرير PDF — تحليل احترافي تفصيلي" : "✅ 25-page PDF report — professional detailed analysis"}</li>
-              <li>{isArabic ? "✅ خطة عمل 90 يوم — خطوات أسبوعية قابلة للتطبيق" : "✅ 90-day action plan — weekly, executable steps"}</li>
-            </ul>
+          <div className="recommendations-grid">
+            {lastThreeForRecs.map((c) => {
+              const key = normalizeCompetencyId(c.competencyId);
+              const meta = COMPETENCY_META[key];
+              const title = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
+              const recs = getRecommendations(key, c.tier, reportLang);
+              const color = tierColor(c.tier);
 
-            <a href="#" onClick={(e) => e.preventDefault()} className="upsell-cta">
-              {isArabic ? "اطلب النسخة المتقدمة الآن" : "Get the Advanced Edition"}
-            </a>
+              return (
+                <div key={c.competencyId} className="recommendation-card">
+                  <h3
+                    className="recommendation-card-title"
+                    style={{ color }}
+                  >
+                    {title}
+                    <span className="recommendation-card-tier">
+                      {" "}
+                      ({tierLabel(c.tier, isArabic)})
+                    </span>
+                  </h3>
+                  <ul className="recommendation-list">
+                    {recs.length ? (
+                      recs.map((r, i) => <li key={i}>• {r}</li>)
+                    ) : (
+                      <li>
+                        {isArabic
+                          ? "لا توجد توصيات لهذه الكفاءة (تحقق من competencyId في قاعدة البيانات)."
+                          : "No recs (check DB competencyId)."}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="report-footer">{isArabic ? "Dyad © 2026" : "Dyad © 2026"}</div>
+          {/* === MRI Upsell Section === */}
+          <div className="upsell-section">
+            <h2 className="upsell-main-title">
+              {isArabic
+                ? "لقد حصلت على التقرير المجاني… الآن حان وقت النقلة الحقيقية"
+                : "You Got the Free Report… Now Unlock the Real Transformation"}
+            </h2>
+
+            <p className="upsell-intro">
+              {isArabic
+                ? "لقد حصلت على المشهيات. الآن حان وقت الطبق الرئيسي والحلوى. إذا كان هذا التقرير قد فتح عينيك… فالـ MRI سيغير مسارك بالكامل."
+                : "You’ve had the appetizer. Now it’s time for the main course and the dessert. If this free report opened your eyes… the MRI will change your entire trajectory."}
+            </p>
+
+            <div className="upsell-box">
+              <h3 className="upsell-title">
+                {isArabic
+                  ? "Outdoor Selling Skills MRI — التشخيص الأعمق والأدق"
+                  : "Outdoor Selling Skills MRI — The Deepest, Sharpest Diagnostic Ever Built"}
+              </h3>
+
+              <p className="upsell-subtext">
+                {isArabic
+                  ? "ليس كورس. ليس ويبينار. ليس كلام تحفيزي. هذا هو التشخيص الحقيقي الذي يحولك إلى محترف مبيعات خارجي من الفئة الأولى."
+                  : "Not a course. Not a webinar. Not motivation. This is the scientific diagnostic that turns you into a top‑tier outdoor sales performer."}
+              </p>
+
+              <ul className="upsell-features">
+                <li>
+                  {isArabic
+                    ? "🧠 يقيس 12 كفاءة أساسية — (ضع أسماء الكفاءات هنا)"
+                    : "🧠 Measures 12 Core Competencies — (insert competency names here)"}
+                </li>
+                <li>
+                  {isArabic
+                    ? "📊 75 سؤالاً دقيقاً يكشف سلوكك الحقيقي في الميدان"
+                    : "📊 75 precision‑engineered questions revealing your real field behavior"}
+                </li>
+                <li>
+                  {isArabic
+                    ? "📘 تقرير احترافي من 25 صفحة — تحليل عميق لكل نقطة قوة وضعف"
+                    : "📘 A 25‑page professional report — deep analysis of every strength and gap"}
+                </li>
+                <li>
+                  {isArabic
+                    ? "📅 خطة عمل يومية لمدة 90 يوماً — خطوة بخطوة لمضاعفة مبيعاتك"
+                    : "📅 A 90‑day day‑by‑day action plan — the exact steps to double your sales"}
+                </li>
+              </ul>
+
+              <h4 className="upsell-bonus-title">
+                {isArabic
+                  ? "وتحصل أيضاً على 5 هدايا لا تُقدّر بثمن"
+                  : "Plus 5 Bonuses That Outdoor Reps Would Kill For"}
+              </h4>
+
+              <ul className="upsell-bonuses">
+                <li>
+                  {isArabic
+                    ? "1. أفضل 50 إجابة لأصعب 50 اعتراض"
+                    : "1. The 50 Best Answers to the 50 Hardest Objections"}
+                </li>
+                <li>
+                  {isArabic
+                    ? "2. كيف تعلمت البيع من لعب كرة القدم"
+                    : "2. How I Learned to Sell From Playing Soccer"}
+                </li>
+                <li>
+                  {isArabic
+                    ? "3. كيف تحفّز نفسك تحت الضغط"
+                    : "3. How to Motivate Yourself Under Pressure"}
+                </li>
+                <li>
+                  {isArabic
+                    ? "4. كيف تأخذ مواعيد مع كبار الشخصيات"
+                    : "4. How to Book Appointments With VIPs"}
+                </li>
+                <li>
+                  {isArabic
+                    ? "5. أفضل ممارسات إدارة الوقت لمندوبي المبيعات الخارجيين"
+                    : "5. Time‑Management Mastery for Outdoor Sales"}
+                </li>
+              </ul>
+
+              <p className="upsell-closer">
+                {isArabic
+                  ? "لا مزيد من الدورات. لا مزيد من الويبينارات. كل ما تحتاجه لمضاعفة مبيعاتك — مع د. كيفاح فياض."
+                  : "No more courses. No more webinars. Everything you need to double your sales — with Dr. Kifah Fayad."}
+              </p>
+
+              <a
+                href="#"
+                className="upsell-cta"
+                onClick={(e) => e.preventDefault()}
+              >
+                {isArabic
+                  ? "ابدأ رحلتك الآن — واجعل البيع لعبة تستمتع بها"
+                  : "Start Now — Turn Selling Into a Game You Enjoy"}
+              </a>
+            </div>
+
+            <div className="report-footer">
+              {isArabic ? "Dyad © 2026" : "Dyad © 2026"}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -976,7 +1282,7 @@ export default function PrintReportClient() {
           box-sizing: border-box;
           break-after: page;
           page-break-after: always;
-          background: white;
+          background: linear-gradient(180deg, #f9fafb, #e5e7eb);
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
@@ -1006,21 +1312,19 @@ export default function PrintReportClient() {
           display: inline-block;
         }
 
-        /* Flip row layout where needed in RTL */
-     	/* Make the SUMMARY cards truly RTL (fixes Page 2 & 3) */
-	.rtl .competency-summary-card {
-  	text-align: right;
-	}
+        /* Make the SUMMARY cards truly RTL (fixes Page 2 & 3) */
+        .rtl .competency-summary-card {
+          text-align: right;
+        }
 
-	.rtl .competency-summary-header {
-  	direction: rtl;        /* key: makes the flex "start" come from the right */
-  	flex-direction: row;   /* keep normal order; rtl direction handles placement */
-	}
+        .rtl .competency-summary-header {
+          direction: rtl;
+          flex-direction: row;
+        }
 
-	.rtl .competency-summary-progress {
-  	direction: rtl;        /* keeps the whole progress row behaving RTL */
-	}
-
+        .rtl .competency-summary-progress {
+          direction: rtl;
+        }
 
         /* Lists padding in RTL */
         .rtl .swot-list,
@@ -1030,80 +1334,61 @@ export default function PrintReportClient() {
           padding-left: 0;
         }
 
-        /* ✅ Prevent ugly splits across pages */
-        .competency-summary-card,
-        .recommendation-card,
-        .swot-card,
-        .upsell-box {
-          break-inside: avoid;
-          page-break-inside: avoid;
-        }
-
         /* Cover Page */
         .cover-page {
-          background: linear-gradient(135deg, #4f46e5, #7c3aed);
-          color: white;
-          justify-content: center;
+          display: flex;
+          flex-direction: column;
           align-items: center;
           text-align: center;
+          padding-top: 30mm;
+          background: linear-gradient(135deg, #ffffff, #eef2ff);
         }
 
-        .logo-circle {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          background: white;
-          color: #4f46e5;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          font-size: 36px;
-          font-weight: bold;
-          margin-bottom: 20px;
+        .cover-logo {
+          width: 180px;
+          margin-bottom: 25px;
+          object-fit: contain;
         }
 
         .cover-title {
-          font-size: 36px;
-          margin-bottom: 10px;
+          font-size: 34px;
+          margin-bottom: 8px;
           font-weight: 700;
+          color: #111827;
         }
 
         .cover-subtitle {
-          font-size: 22px;
-          margin-bottom: 30px;
-          opacity: 0.9;
+          font-size: 20px;
+          margin-bottom: 25px;
+          opacity: 0.85;
           font-weight: 400;
         }
 
-        .cover-info-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
+        .cover-user-info {
           width: 100%;
-          max-width: 300px;
-          margin-bottom: 40px;
+          max-width: 350px;
+          margin-bottom: 35px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
         }
 
-        .cover-info-card {
-          background: rgba(255, 255, 255, 0.15);
-          border-radius: 10px;
-          padding: 15px;
-          text-align: center;
+        .cover-user-line {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
         }
 
-        .cover-info-label {
-          font-size: 12px;
-          opacity: 0.8;
-          margin-bottom: 5px;
+        .cover-user-label {
+          opacity: 0.7;
         }
 
-        .cover-info-value {
-          font-size: 16px;
+        .cover-user-value {
           font-weight: 600;
         }
 
         .cover-score-section {
-          margin-top: 30px;
+          margin-top: 10px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -1111,27 +1396,27 @@ export default function PrintReportClient() {
 
         .cover-score-label {
           font-size: 18px;
-          margin-top: 15px;
+          margin-top: 12px;
           opacity: 0.9;
         }
 
         .cover-score-percentage {
-          font-size: 48px;
+          font-size: 46px;
           font-weight: 700;
           margin-top: 5px;
         }
 
         .cover-note {
           font-size: 14px;
-          margin-top: 20px;
-          max-width: 400px;
+          margin-top: 18px;
+          max-width: 420px;
           opacity: 0.8;
         }
 
         .cover-note-small {
           font-size: 12px;
-          margin-top: 10px;
-          max-width: 400px;
+          margin-top: 8px;
+          max-width: 420px;
           opacity: 0.7;
         }
 
@@ -1153,6 +1438,15 @@ export default function PrintReportClient() {
           margin-bottom: 30px;
         }
 
+        .swot-section {
+          margin-top: 25px;
+        }
+
+        .swot-title-inline {
+          border-bottom: none;
+          margin-bottom: 4px;
+        }
+
         /* Summary Page */
         .summary-page {
           justify-content: flex-start;
@@ -1169,6 +1463,8 @@ export default function PrintReportClient() {
           border-radius: 12px;
           padding: 20px;
           background: #f9fafb;
+          break-inside: avoid;
+          page-break-inside: avoid;
         }
 
         .competency-summary-header {
@@ -1229,11 +1525,7 @@ export default function PrintReportClient() {
           text-align: right;
         }
 
-        /* SWOT Page */
-        .swot-page {
-          justify-content: flex-start;
-        }
-
+        /* SWOT Page section */
         .swot-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -1245,6 +1537,8 @@ export default function PrintReportClient() {
           border-radius: 12px;
           border: 1px solid #e5e7eb;
           background: #f9fafb;
+          break-inside: avoid;
+          page-break-inside: avoid;
         }
 
         .swot-strength {
@@ -1301,6 +1595,8 @@ export default function PrintReportClient() {
           border-radius: 12px;
           padding: 20px;
           background: #f9fafb;
+          break-inside: avoid;
+          page-break-inside: avoid;
         }
 
         .recommendation-card-title {
@@ -1328,50 +1624,88 @@ export default function PrintReportClient() {
           line-height: 1.4;
         }
 
-        /* Upsell Page */
-        .upsell-page {
-          justify-content: center;
-          align-items: center;
+        /* Upsell Section */
+        .upsell-section {
+          margin-top: 30px;
           text-align: center;
+          padding: 10px 0;
+        }
+
+        .upsell-main-title {
+          font-size: 26px;
+          font-weight: 700;
+          color: #1f2937;
+          margin-bottom: 10px;
+        }
+
+        .upsell-intro {
+          font-size: 15px;
+          color: #4b5563;
+          max-width: 480px;
+          margin: 0 auto 25px auto;
+          line-height: 1.6;
         }
 
         .upsell-box {
           background: linear-gradient(135deg, #f97316, #dc2626);
           color: white;
-          padding: 40px;
+          padding: 35px;
           border-radius: 16px;
-          width: 100%;
-          max-width: 500px;
-          margin-top: 30px;
+          max-width: 520px;
+          margin: 0 auto;
+          text-align: left;
+          break-inside: avoid;
+          page-break-inside: avoid;
         }
 
         .upsell-title {
-          font-size: 24px;
+          font-size: 22px;
           font-weight: 700;
+          margin-bottom: 12px;
+        }
+
+        .upsell-subtext {
+          font-size: 15px;
+          opacity: 0.9;
           margin-bottom: 20px;
         }
 
-        .upsell-features {
+        .upsell-features,
+        .upsell-bonuses {
           list-style: none;
-          margin: 0 auto 30px auto;
           padding: 0;
-          max-width: 350px;
-          text-align: left;
+          margin: 0 0 20px 0;
         }
 
-        .upsell-features li {
-          font-size: 16px;
+        .upsell-features li,
+        .upsell-bonuses li {
+          font-size: 15px;
           margin-bottom: 10px;
           line-height: 1.5;
         }
 
+        .upsell-bonus-title {
+          font-size: 18px;
+          font-weight: 700;
+          margin: 20px 0 10px 0;
+        }
+
+        .upsell-closer {
+          font-size: 15px;
+          margin-top: 20px;
+          opacity: 0.9;
+          line-height: 1.5;
+        }
+
         .upsell-cta {
-          display: inline-block;
+          display: block;
+          margin: 25px auto 0 auto;
           background: white;
           color: #dc2626;
           font-weight: 700;
-          padding: 12px 25px;
+          padding: 14px 25px;
           border-radius: 10px;
+          text-align: center;
           text-decoration: none;
           font-size: 16px;
           transition: background-color 0.2s ease;
