@@ -45,7 +45,7 @@ export default function InstructionsPage() {
 
           {/* Title */}
           <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-white drop-shadow-lg">
-            {ar ? "تعليمات التقييم" : "Assessment Instructions"}
+            {ar ? "تعليمات هامة قبل التقييم" : "Assessment Instructions"}
           </h1>
 
 {/* Instructions List */}
