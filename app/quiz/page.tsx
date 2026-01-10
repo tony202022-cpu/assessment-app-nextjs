@@ -106,7 +106,7 @@ export default function QuizPage() {
 
   useEffect(() => {
     if (timeRemaining === 0 && timerStarted && !loading) {
-      handleFinish(true);
+      handleFinish();
     }
   }, [timeRemaining]);
 
