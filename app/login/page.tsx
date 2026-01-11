@@ -147,11 +147,12 @@ export default function LoginPage() {
                 ? "اكتشف إمكاناتك الحقيقية في الميدان"
                 : "Discover Your True Field Sales Potential"}
             </h1>
-            <p className="text-xs font-semibold text-white/90 leading-relaxed">
-              {ar
-                ? "تقييم سلوكي مدته 20  دقيقة يكشف لك نقاط قوتك ونقاط ضعفك ومناطق نموك وفق معايير عالمية ثابتة
-                : "A 20-minute behavioral assessment that reveals your strengths and growth areas — no technical knowledge, no pressure."}
-            </p>
+<p className="text-xs font-semibold text-white/90 leading-relaxed">
+  {ar
+    ? "تقييم سلوكي مدته 20 دقيقة يكشف لك نقاط قوتك ونقاط ضعفك ومناطق نموك وفق معايير عالمية ثابتة"
+    : "A 20-minute behavioral assessment that reveals your strengths and growth areas — no technical knowledge, no pressure."}
+</p>
+
           </div>
 
           {/* Card */}
