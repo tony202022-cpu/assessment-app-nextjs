@@ -14,7 +14,9 @@ async function getSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   if (!url || !serviceKey) {
-    throw new Error("Missing Supabase env vars: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    throw new Error(
+      "Missing Supabase env vars: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
+    );
   }
 
   return createClient(url, serviceKey, {
@@ -22,7 +24,8 @@ async function getSupabaseClient() {
   });
 }
 
-const clampPct = (n: number) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+const clampPct = (n: number) =>
+  Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
 
 const tierFromPct = (pct: number): Tier => {
   const p = clampPct(pct);
@@ -47,14 +50,45 @@ export async function submitQuiz(
   }));
 
   // Your max totals per competency (same as your existing config)
-  const competencyConfig: Record<string, { name: string; nameAr: string; maxScore: number }> = {
-    mental_toughness: { name: "Mental Toughness", nameAr: "الصلابة الذهنية", maxScore: 25 },
-    opening_conversations: { name: "Opening Conversations", nameAr: "فتح المحادثات", maxScore: 20 },
-    identifying_real_needs: { name: "Identifying Real Needs", nameAr: "تحديد الاحتياجات الحقيقية", maxScore: 20 },
-    destroying_objections: { name: "Handling Objections", nameAr: "التعامل مع الاعتراضات", maxScore: 25 },
-    creating_irresistible_offers: { name: "Creating Irresistible Offers", nameAr: "إنشاء عروض لا تُقاوَم", maxScore: 20 },
-    mastering_closing: { name: "Mastering Closing", nameAr: "إتقان الإغلاق", maxScore: 25 },
-    follow_up_discipline: { name: "Follow-Up Discipline", nameAr: "انضباط المتابعة", maxScore: 15 },
+  const competencyConfig: Record<
+    string,
+    { name: string; nameAr: string; maxScore: number }
+  > = {
+    mental_toughness: {
+      name: "Mental Toughness",
+      nameAr: "الصلابة الذهنية",
+      maxScore: 25,
+    },
+    opening_conversations: {
+      name: "Opening Conversations",
+      nameAr: "فتح المحادثات",
+      maxScore: 20,
+    },
+    identifying_real_needs: {
+      name: "Identifying Real Needs",
+      nameAr: "تحديد الاحتياجات الحقيقية",
+      maxScore: 20,
+    },
+    destroying_objections: {
+      name: "Handling Objections",
+      nameAr: "التعامل مع الاعتراضات",
+      maxScore: 25,
+    },
+    creating_irresistible_offers: {
+      name: "Creating Irresistible Offers",
+      nameAr: "إنشاء عروض لا تُقاوَم",
+      maxScore: 20,
+    },
+    mastering_closing: {
+      name: "Mastering Closing",
+      nameAr: "إتقان الإغلاق",
+      maxScore: 25,
+    },
+    follow_up_discipline: {
+      name: "Follow-Up Discipline",
+      nameAr: "انضباط المتابعة",
+      maxScore: 15,
+    },
   };
 
   // Aggregate scores by competency
@@ -62,7 +96,8 @@ export async function submitQuiz(
   for (const a of safeAnswers) {
     const competencyId = String(a.competencyId || "").trim();
     if (!competencyId) continue;
-    if (!competencyScores[competencyId]) competencyScores[competencyId] = { total: 0, count: 0 };
+    if (!competencyScores[competencyId])
+      competencyScores[competencyId] = { total: 0, count: 0 };
     competencyScores[competencyId].total += a.selectedScore;
     competencyScores[competencyId].count += 1;
   }
@@ -90,7 +125,10 @@ export async function submitQuiz(
     .filter(Boolean);
 
   // Total percentage based on total max of the 7 competencies
-  const totalMax = Object.values(competencyConfig).reduce((s, c) => s + c.maxScore, 0); // 150
+  const totalMax = Object.values(competencyConfig).reduce(
+    (s, c) => s + c.maxScore,
+    0
+  ); // 150
   const totalRawScore = safeAnswers.reduce((sum, a) => sum + a.selectedScore, 0);
   const total_percentage = totalMax > 0 ? clampPct((totalRawScore / totalMax) * 100) : 0;
 
@@ -136,5 +174,47 @@ export async function getQuizAttempt(attemptId: string) {
     throw new Error(`No quiz_attempt found for attemptId: "${id}"`);
   }
 
-  return data;
+  // =========================================================
+  // ✅ ENRICH: profiles.full_name + profiles.company + auth email
+  // (No schema change, uses your existing Service Role client)
+  // =========================================================
+  let full_name: string | null = null;
+  let company: string | null = null;
+  let email: string | null = null;
+
+  try {
+    if (data?.user_id) {
+      // 1) profiles table
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, company")
+        .eq("id", data.user_id)
+        .maybeSingle();
+
+      full_name = profile?.full_name ?? null;
+      company = profile?.company ?? null;
+
+      // 2) auth email (service role => admin is allowed)
+      const { data: adminUser, error: adminErr } =
+        await supabase.auth.admin.getUserById(data.user_id);
+
+      if (!adminErr) {
+        email = adminUser?.user?.email ?? null;
+      } else {
+        // Don't fail report if admin lookup fails
+        console.warn("Supabase admin getUserById error:", adminErr);
+      }
+    }
+  } catch (e) {
+    // do nothing - report must still render even if enrichment fails
+    console.warn("getQuizAttempt enrichment error:", e);
+  }
+
+  // Return original attempt data + enriched user meta
+  return {
+    ...data,
+    full_name,
+    company,
+    email,
+  };
 }
