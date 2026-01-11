@@ -152,10 +152,18 @@ export default function QuizPage() {
       const { attemptId } = await submitQuiz(finalAnswers, user.id, language);
       router.push(`/results?attemptId=${attemptId}&lang=${language}`);
     } catch (e: any) {
-      console.error(e);
-      toast.error(isArabic ? "فشل حفظ المحاولة" : "Failed to save attempt");
-      setIsTransitioning(false);
-    }
+  console.error("submitQuiz failed:", e);
+
+  toast.error(
+    (language === "ar"
+      ? "فشل حفظ المحاولة: "
+      : "Failed to save attempt: ") +
+      (e?.message || "Unknown error")
+  );
+
+  setIsTransitioning(false);
+}
+
   };
 
   // DO NOT TOUCH — option select logic
