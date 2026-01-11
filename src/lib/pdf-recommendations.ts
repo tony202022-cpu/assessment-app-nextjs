@@ -1,5 +1,15 @@
 // lib/pdf-recommendations.ts
-export const RECOMMENDATIONS: Record<string, Record<string, { en: string[]; ar: string[] }>> = {
+export type Tier = "Strength" | "Opportunity" | "Threat" | "Weakness";
+
+type RecommendationBlock = { en: string[]; ar: string[] };
+type RecommendationTiers = {
+  Strength: RecommendationBlock;
+  Opportunity: RecommendationBlock;
+  Threat: RecommendationBlock;
+  Weakness: RecommendationBlock;
+};
+
+export const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
   // Paste your FULL 84 recommendations here (exactly as in ResultsPage.tsx)
   // 84 Golden Recommendations - FULL SET
   mental_toughness: {
@@ -354,19 +364,12 @@ export const RECOMMENDATIONS: Record<string, Record<string, { en: string[]; ar: 
   }
 };
 
-type Tier = 'Strength' | 'Opportunity' | 'Threat' | 'Weakness';
-type Language = 'en' | 'ar';
-
 export function getRecommendations(
   competencyId: string,
   tier: Tier,
-  language: Language
+  lang: "en" | "ar"
 ): string[] {
-  const competency = RECOMMENDATIONS[competencyId];
-  if (!competency) return [];
-
-  const tierRecs = competency[tier];
-  if (!tierRecs) return [];
-
-  return language === 'ar' ? tierRecs.ar : tierRecs.en;
+  const rec = RECOMMENDATIONS[String(competencyId || "").trim()]?.[tier];
+  if (!rec) return [];
+  return lang === "ar" ? rec.ar : rec.en;
 }

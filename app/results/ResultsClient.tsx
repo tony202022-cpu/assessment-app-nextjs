@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/header";
@@ -46,7 +47,7 @@ const COMPETENCY_META: Record<
     diagnosticAr: "مهارتك في كشف الدوافع الحقيقة ومحفزات الشراء لدى العميل.",
   },
   destroying_objections: {
-    labelEn: "Destroying Objections",
+    labelEn: "Handling Objections",
     labelAr: "التعامل مع الاعتراضات",
     diagnosticEn: "How well you neutralize resistance and guide prospects back to value.",
     diagnosticAr: "مدى قدرتك على تحييد المقاومة وتوجيه العميل نحو القيمة.",
@@ -81,11 +82,48 @@ const COMPETENCY_ORDER = [
   "follow_up_discipline",
 ] as const;
 
+/** ===== Helpers ===== */
+const clampPct = (n: any) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+
+const normalizeCompetencyId = (id: string) => {
+  const clean = String(id || "").trim();
+  const key = clean.toLowerCase().replace(/\s+/g, "_").replace(/-/g, "_");
+
+  const map: Record<string, string> = {
+    mental_toughness: "mental_toughness",
+    opening_conversations: "opening_conversations",
+    identifying_real_needs: "identifying_real_needs",
+    destroying_objections: "destroying_objections",
+    creating_irresistible_offers: "creating_irresistible_offers",
+    mastering_closing: "mastering_closing",
+    follow_up_discipline: "follow_up_discipline",
+
+    "mental toughness": "mental_toughness",
+    "opening conversations": "opening_conversations",
+    "identifying real needs": "identifying_real_needs",
+    "handling objections": "destroying_objections",
+    "destroying objections": "destroying_objections",
+    "creating irresistible offers": "creating_irresistible_offers",
+    "mastering closing": "mastering_closing",
+    "follow-up discipline": "follow_up_discipline",
+
+    "الصلابة الذهنية": "mental_toughness",
+    "فتح المحادثات": "opening_conversations",
+    "تحديد الاحتياجات الحقيقية": "identifying_real_needs",
+    "التعامل مع الاعتراضات": "destroying_objections",
+    "إنشاء عروض لا تُقاوَم": "creating_irresistible_offers",
+    "إتقان الإغلاق": "mastering_closing",
+    "انضباط المتابعة": "follow_up_discipline",
+  };
+
+  return map[clean] || map[key] || key;
+};
+
 /** ===== UI Components (same as yours) ===== */
 const DonutChart = ({ percentage, color }: { percentage: number; color: string }) => {
   const radius = 58;
   const circumference = 2 * Math.PI * radius;
-  const clamped = Math.max(0, Math.min(100, Math.round(percentage)));
+  const clamped = clampPct(percentage);
   const offset = circumference - (clamped / 100) * circumference;
 
   return (
@@ -127,10 +165,10 @@ const CompetencyBars = ({ results, language }: { results: CompetencyResult[]; la
           <div key={c.competencyId}>
             <div className="flex items-center justify-between mb-1">
               <p className="text-sm font-semibold text-gray-700">{label || c.competencyId}</p>
-              <p className="text-sm font-bold text-gray-900">{Math.round(c.percentage)}%</p>
+              <p className="text-sm font-bold text-gray-900">{clampPct(c.percentage)}%</p>
             </div>
             <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-              <div className="h-3 bg-blue-600 rounded-full" style={{ width: `${c.percentage}%` }} />
+              <div className="h-3 bg-blue-600 rounded-full" style={{ width: `${clampPct(c.percentage)}%` }} />
             </div>
           </div>
         );
@@ -143,17 +181,38 @@ export default function ResultsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const attemptId = searchParams.get("attemptId");
-  const { language } = useLocale();
+
+  const { language: localeLanguage } = useLocale();
   const { user, isLoading: isSessionLoading } = useSession();
+
+  // prefer ?lang=, fallback to locale
+  const langParamRaw = (searchParams.get("lang") || "").toLowerCase();
+  const language = langParamRaw === "ar" ? "ar" : langParamRaw === "en" ? "en" : localeLanguage;
 
   const [competencyResults, setCompetencyResults] = useState<CompetencyResult[]>([]);
   const [totalPercentage, setTotalPercentage] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
+  /** ===== No guests (auth gate) ===== */
+  useEffect(() => {
+    if (isSessionLoading) return;
+
+    if (!user) {
+      toast.info(getTranslation("loginRequired", language));
+      router.replace("/login");
+      return;
+    }
+  }, [user, isSessionLoading, router, language]);
+
   /** ===== Fetch results ===== */
   useEffect(() => {
     const fetchResults = async () => {
-      if (!attemptId) return;
+      if (!attemptId) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
 
       const { data, error } = await supabase
         .from("quiz_attempts")
@@ -169,13 +228,20 @@ export default function ResultsClient() {
       }
 
       const parsed = (data.competency_results || []) as CompetencyResult[];
-      setCompetencyResults(parsed);
-      setTotalPercentage(typeof data.total_percentage === "number" ? data.total_percentage : null);
+      const normalized = parsed.map((r) => ({
+        ...r,
+        competencyId: normalizeCompetencyId((r as any).competencyId),
+        percentage: clampPct((r as any).percentage),
+      }));
+
+      setCompetencyResults(normalized);
+      setTotalPercentage(typeof data.total_percentage === "number" ? clampPct(data.total_percentage) : null);
       setLoading(false);
     };
 
-    fetchResults();
-  }, [attemptId, language]);
+    // only fetch when session is ready and user exists (no guests)
+    if (!isSessionLoading && user) fetchResults();
+  }, [attemptId, language, isSessionLoading, user]);
 
   /** ===== Ordering + computed total ===== */
   const orderedResults = useMemo(() => {
@@ -188,37 +254,31 @@ export default function ResultsClient() {
   }, [competencyResults]);
 
   const computedTotal = useMemo(() => {
-    if (typeof totalPercentage === "number" && !Number.isNaN(totalPercentage)) return totalPercentage;
+    if (typeof totalPercentage === "number" && !Number.isNaN(totalPercentage)) return clampPct(totalPercentage);
     if (!orderedResults.length) return 0;
     const avg =
       orderedResults.reduce((s, c) => s + (Number(c.percentage) || 0), 0) / orderedResults.length;
-    return Math.round(avg);
+    return clampPct(avg);
   }, [orderedResults, totalPercentage]);
 
   /** ===== SWOT buckets ===== */
-  const strengths = useMemo(
-    () => orderedResults.filter((c) => c.tier === "Strength"),
-    [orderedResults]
-  );
-  const opportunities = useMemo(
-    () => orderedResults.filter((c) => c.tier === "Opportunity"),
-    [orderedResults]
-  );
-  const threats = useMemo(
-    () => orderedResults.filter((c) => c.tier === "Threat"),
-    [orderedResults]
-  );
-  const weaknesses = useMemo(
-    () => orderedResults.filter((c) => c.tier === "Weakness"),
-    [orderedResults]
-  );
+  const strengths = useMemo(() => orderedResults.filter((c) => c.tier === "Strength"), [orderedResults]);
+  const opportunities = useMemo(() => orderedResults.filter((c) => c.tier === "Opportunity"), [orderedResults]);
+  const threats = useMemo(() => orderedResults.filter((c) => c.tier === "Threat"), [orderedResults]);
+  const weaknesses = useMemo(() => orderedResults.filter((c) => c.tier === "Weakness"), [orderedResults]);
 
-  /** ===== PDF ===== */
+  /** ===== PDF (use env var base) ===== */
   const handleDownloadPDF = () => {
     if (!attemptId) return;
 
+    const base = process.env.NEXT_PUBLIC_PDF_SERVICE_URL;
+    if (!base) {
+      toast.error(language === "ar" ? "PDF service URL غير مضبوط" : "PDF service URL is missing");
+      return;
+    }
+
     const url =
-      `https://dyad-pdf-service.vercel.app/api/generate-pdf` +
+      `${base.replace(/\/$/, "")}/api/generate-pdf` +
       `?attemptId=${encodeURIComponent(attemptId)}` +
       `&lang=${encodeURIComponent(language)}`;
 
@@ -241,15 +301,13 @@ export default function ResultsClient() {
     );
   }
 
-  if (!orderedResults.length) {
+  if (!attemptId) {
     return (
       <div className="min-h-screen flex flex-col" dir={language === "ar" ? "rtl" : "ltr"}>
         <Header />
         <main className="flex-grow flex items-center justify-center p-4">
           <div className="text-center">
-            <p className="text-xl mb-4">
-              {language === "ar" ? "لم يتم العثور على نتائج" : "No results found"}
-            </p>
+            <p className="text-xl mb-4">{language === "ar" ? "لا يوجد Attempt ID" : "Missing Attempt ID"}</p>
             <Button onClick={() => router.push("/")}>{getTranslation("backToHome", language)}</Button>
           </div>
         </main>
@@ -258,14 +316,28 @@ export default function ResultsClient() {
     );
   }
 
-  /** ===== UI (same structure, centered header) ===== */
+  if (!orderedResults.length) {
+    return (
+      <div className="min-h-screen flex flex-col" dir={language === "ar" ? "rtl" : "ltr"}>
+        <Header />
+        <main className="flex-grow flex items-center justify-center p-4">
+          <div className="text-center">
+            <p className="text-xl mb-4">{language === "ar" ? "لم يتم العثور على نتائج" : "No results found"}</p>
+            <Button onClick={() => router.push("/")}>{getTranslation("backToHome", language)}</Button>
+          </div>
+        </main>
+        <MadeWithDyad />
+      </div>
+    );
+  }
+
+  /** ===== UI ===== */
   return (
     <div className="min-h-screen flex flex-col" dir={language === "ar" ? "rtl" : "ltr"}>
       <Header />
 
       <main className="flex-grow bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 space-y-6">
-          
           {/* Header */}
           <div className="bg-white rounded-xl shadow p-6">
             <div className="flex flex-col items-center text-center gap-2">
@@ -273,9 +345,7 @@ export default function ResultsClient() {
                 {language === "ar" ? "تقرير أدائك" : "Your Performance Report"}
               </h1>
               <p className="text-gray-600">
-                {language === "ar"
-                  ? "تحليل كفاءات المبيعات الميدانية"
-                  : "Field sales competency analysis"}
+                {language === "ar" ? "تحليل كفاءات المبيعات الميدانية" : "Field sales competency analysis"}
               </p>
             </div>
 
@@ -322,15 +392,13 @@ export default function ResultsClient() {
           {/* SWOT Analysis */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="font-extrabold text-green-700 mb-2">
-                {language === "ar" ? "نقاط القوة" : "Strengths"}
-              </h3>
+              <h3 className="font-extrabold text-green-700 mb-2">{language === "ar" ? "نقاط القوة" : "Strengths"}</h3>
               {strengths.length ? (
                 strengths.map((c) => {
                   const meta = COMPETENCY_META[c.competencyId];
                   return (
                     <p key={c.competencyId} className="text-green-900">
-                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${Math.round(c.percentage)}%)`}
+                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${clampPct(c.percentage)}%)`}
                     </p>
                   );
                 })
@@ -340,15 +408,13 @@ export default function ResultsClient() {
             </div>
 
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-extrabold text-blue-700 mb-2">
-                {language === "ar" ? "الفرص" : "Opportunities"}
-              </h3>
+              <h3 className="font-extrabold text-blue-700 mb-2">{language === "ar" ? "الفرص" : "Opportunities"}</h3>
               {opportunities.length ? (
                 opportunities.map((c) => {
                   const meta = COMPETENCY_META[c.competencyId];
                   return (
                     <p key={c.competencyId} className="text-blue-900">
-                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${Math.round(c.percentage)}%)`}
+                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${clampPct(c.percentage)}%)`}
                     </p>
                   );
                 })
@@ -358,15 +424,13 @@ export default function ResultsClient() {
             </div>
 
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <h3 className="font-extrabold text-orange-700 mb-2">
-                {language === "ar" ? "التهديدات" : "Threats"}
-              </h3>
+              <h3 className="font-extrabold text-orange-700 mb-2">{language === "ar" ? "التهديدات" : "Threats"}</h3>
               {threats.length ? (
                 threats.map((c) => {
                   const meta = COMPETENCY_META[c.competencyId];
                   return (
                     <p key={c.competencyId} className="text-orange-900">
-                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${Math.round(c.percentage)}%)`}
+                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${clampPct(c.percentage)}%)`}
                     </p>
                   );
                 })
@@ -376,15 +440,13 @@ export default function ResultsClient() {
             </div>
 
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <h3 className="font-extrabold text-red-700 mb-2">
-                {language === "ar" ? "نقاط الضعف" : "Weaknesses"}
-              </h3>
+              <h3 className="font-extrabold text-red-700 mb-2">{language === "ar" ? "نقاط الضعف" : "Weaknesses"}</h3>
               {weaknesses.length ? (
                 weaknesses.map((c) => {
                   const meta = COMPETENCY_META[c.competencyId];
                   return (
                     <p key={c.competencyId} className="text-red-900">
-                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${Math.round(c.percentage)}%)`}
+                      • {(language === "ar" ? meta?.labelAr : meta?.labelEn) + ` (${clampPct(c.percentage)}%)`}
                     </p>
                   );
                 })
@@ -396,17 +458,18 @@ export default function ResultsClient() {
 
           {/* Download CTA */}
           <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
-           <div className="flex flex-col items-center justify-center text-center gap-4">
+            <div className="flex flex-col items-center justify-center text-center gap-4">
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {language === "ar" ? "تقرير PDF كامل" : "Complete PDF Report"}
                 </h3>
                 <p className="text-gray-600">
- 	 {language === "ar"
-   	 ? "يتم إنشاء التقرير الكامل تلقائياً عبر خدمتنا الآمنة."
-   	 : "Your full report is generated automatically via our secure service."}
-	</p>
-	</div>
+                  {language === "ar"
+                    ? "يتم إنشاء التقرير الكامل تلقائياً عبر خدمتنا الآمنة."
+                    : "Your full report is generated automatically via our secure service."}
+                </p>
+              </div>
+
               <Button
                 onClick={handleDownloadPDF}
                 className="gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"

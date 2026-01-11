@@ -1,3 +1,4 @@
+// app/print-report/PrintReportClient.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -91,7 +92,7 @@ const COMPETENCY_ORDER = [
 const tierColor = (tier: Tier) => {
   if (tier === "Strength") return "#16a34a";
   if (tier === "Opportunity") return "#2563eb";
-  if (tier === "Threat") return "#A97142"; // your deep bronze
+  if (tier === "Threat") return "#A97142"; // deep bronze
   return "#ef4444";
 };
 
@@ -103,10 +104,12 @@ const tierLabel = (tier: Tier, isArabic: boolean) => {
   return "ضعف";
 };
 
-const clampPct = (n: number) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+const clampPct = (n: any) => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
 
 const normalizeCompetencyId = (id: string) => {
-  const clean = (id || "").trim();
+  const clean = String(id || "").trim();
+  const key = clean.toLowerCase().replace(/\s+/g, "_").replace(/-/g, "_");
+
   const map: Record<string, string> = {
     mental_toughness: "mental_toughness",
     opening_conversations: "opening_conversations",
@@ -116,13 +119,13 @@ const normalizeCompetencyId = (id: string) => {
     mastering_closing: "mastering_closing",
     follow_up_discipline: "follow_up_discipline",
 
-    "Mental Toughness": "mental_toughness",
-    "Opening Conversations": "opening_conversations",
-    "Identifying Real Needs": "identifying_real_needs",
-    "Handling Objections": "destroying_objections",
-    "Creating Irresistible Offers": "creating_irresistible_offers",
-    "Mastering Closing": "mastering_closing",
-    "Follow-Up Discipline": "follow_up_discipline",
+    "mental toughness": "mental_toughness",
+    "opening conversations": "opening_conversations",
+    "identifying real needs": "identifying_real_needs",
+    "handling objections": "destroying_objections",
+    "creating irresistible offers": "creating_irresistible_offers",
+    "mastering closing": "mastering_closing",
+    "follow-up discipline": "follow_up_discipline",
 
     "الصلابة الذهنية": "mental_toughness",
     "فتح المحادثات": "opening_conversations",
@@ -132,7 +135,8 @@ const normalizeCompetencyId = (id: string) => {
     "إتقان الإغلاق": "mastering_closing",
     "انضباط المتابعة": "follow_up_discipline",
   };
-  return map[clean] || clean;
+
+  return map[clean] || map[key] || key;
 };
 
 function formatReportDate(dateValue: any, isArabic: boolean) {
@@ -192,7 +196,7 @@ export default function PrintReportClient() {
   const langParam = langParamRaw === "ar" ? "ar" : langParamRaw === "en" ? "en" : null;
 
   const [reportLang, setReportLang] = useState<"en" | "ar">(
-    langParam || (localeLanguage === "ar" ? "ar" : "en"),
+    langParam || (localeLanguage === "ar" ? "ar" : "en")
   );
 
   const isArabic = reportLang === "ar";
@@ -201,7 +205,7 @@ export default function PrintReportClient() {
   const [results, setResults] = useState<CompetencyResult[]>([]);
   const [total, setTotal] = useState(0);
 
-  // will contain: attempt fields + profile + email from server action
+  // attempt + identity fields from server action
   const [userMeta, setUserMeta] = useState<any | null>(null);
 
   /* ============================
@@ -231,14 +235,24 @@ export default function PrintReportClient() {
         const normalized = parsed.map((r) => ({
           ...r,
           competencyId: normalizeCompetencyId((r as any).competencyId),
+          percentage: clampPct((r as any).percentage),
         }));
 
         setResults(normalized);
-        setTotal(Number(data?.total_percentage) || 0);
 
-        // IMPORTANT: data now includes { profile: { full_name, company }, email }
+        // Prefer DB total, fallback to average if missing
+        const dbTotal = Number(data?.total_percentage);
+        const safeTotal =
+          Number.isFinite(dbTotal) && dbTotal >= 0
+            ? clampPct(dbTotal)
+            : clampPct(
+                normalized.reduce((s, r) => s + (Number(r.percentage) || 0), 0) /
+                  Math.max(1, normalized.length)
+              );
+
+        setTotal(safeTotal);
+
         setUserMeta(data || null);
-
         setLoading(false);
       } catch (e) {
         console.error("getQuizAttempt error:", e);
@@ -268,7 +282,6 @@ export default function PrintReportClient() {
   ============================ */
   const firstFive = useMemo(() => ordered.slice(0, 5), [ordered]);
   const lastTwo = useMemo(() => ordered.slice(5, 7), [ordered]);
-
   const firstFourForRecs = useMemo(() => ordered.slice(0, 4), [ordered]);
   const lastThreeForRecs = useMemo(() => ordered.slice(4, 7), [ordered]);
 
@@ -345,21 +358,21 @@ export default function PrintReportClient() {
   const threats = ordered.filter((c) => c.tier === "Threat");
   const weaknesses = ordered.filter((c) => c.tier === "Weakness");
 
-  // USER FIELDS (fixed)
+  // ✅ identity fields (new server action returns these directly)
   const fullName =
-    userMeta?.profile?.full_name ||
     userMeta?.full_name ||
+    userMeta?.profile?.full_name ||
     userMeta?.name ||
     "—";
 
   const company =
-    userMeta?.profile?.company ||
     userMeta?.company ||
+    userMeta?.profile?.company ||
     "";
 
   const email =
-    userMeta?.email ||
     userMeta?.user_email ||
+    userMeta?.email ||
     "—";
 
   const createdAt = userMeta?.created_at || null;
@@ -380,7 +393,7 @@ export default function PrintReportClient() {
       <div className="report-container">
         {/* ===== PAGE 1: COVER ===== */}
         <div className="page cover-page">
-          <img src="/new levelup logo 3.png" className="cover-logo" />
+          <img src="/new levelup logo 3.png" className="cover-logo" alt="Logo" />
 
           <h1 className="cover-title">{isArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}</h1>
           <h2 className="cover-subtitle">{isArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}</h2>
@@ -473,7 +486,9 @@ export default function PrintReportClient() {
                     </div>
 
                     <span className="competency-summary-percentage num">{pct}%</span>
-                    <span className="competency-summary-score num">{c.score}/{c.maxScore}</span>
+                    <span className="competency-summary-score num">
+                      {c.score}/{c.maxScore}
+                    </span>
                   </div>
                 </div>
               );
@@ -514,7 +529,9 @@ export default function PrintReportClient() {
                     </div>
 
                     <span className="competency-summary-percentage num">{pct}%</span>
-                    <span className="competency-summary-score num">{c.score}/{c.maxScore}</span>
+                    <span className="competency-summary-score num">
+                      {c.score}/{c.maxScore}
+                    </span>
                   </div>
                 </div>
               );
@@ -529,60 +546,80 @@ export default function PrintReportClient() {
               <div className="swot-card swot-strength">
                 <h3 className="swot-card-title">{isArabic ? "نقاط القوة" : "Strengths"}</h3>
                 <ul className="swot-list">
-                  {strengths.length ? strengths.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  }) : <li>{isArabic ? "لا يوجد" : "None"}</li>}
+                  {strengths.length ? (
+                    strengths.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">({clampPct(c.percentage)}%)</span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
                 </ul>
               </div>
 
               <div className="swot-card swot-opportunity">
                 <h3 className="swot-card-title">{isArabic ? "الفرص" : "Opportunities"}</h3>
                 <ul className="swot-list">
-                  {opportunities.length ? opportunities.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  }) : <li>{isArabic ? "لا يوجد" : "None"}</li>}
+                  {opportunities.length ? (
+                    opportunities.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">({clampPct(c.percentage)}%)</span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
                 </ul>
               </div>
 
               <div className="swot-card swot-weakness">
                 <h3 className="swot-card-title">{isArabic ? "نقاط الضعف" : "Weaknesses"}</h3>
                 <ul className="swot-list">
-                  {weaknesses.length ? weaknesses.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  }) : <li>{isArabic ? "لا يوجد" : "None"}</li>}
+                  {weaknesses.length ? (
+                    weaknesses.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">({clampPct(c.percentage)}%)</span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
                 </ul>
               </div>
 
               <div className="swot-card swot-threat">
                 <h3 className="swot-card-title">{isArabic ? "التهديدات" : "Threats"}</h3>
                 <ul className="swot-list">
-                  {threats.length ? threats.map((c) => {
-                    const key = normalizeCompetencyId(c.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    return (
-                      <li key={c.competencyId}>
-                        • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key} <span className="num">({clampPct(c.percentage)}%)</span>
-                      </li>
-                    );
-                  }) : <li>{isArabic ? "لا يوجد" : "None"}</li>}
+                  {threats.length ? (
+                    threats.map((c) => {
+                      const key = normalizeCompetencyId(c.competencyId);
+                      const meta = COMPETENCY_META[key];
+                      return (
+                        <li key={c.competencyId}>
+                          • {meta ? (isArabic ? meta.labelAr : meta.labelEn) : key}{" "}
+                          <span className="num">({clampPct(c.percentage)}%)</span>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li>{isArabic ? "لا يوجد" : "None"}</li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -602,7 +639,7 @@ export default function PrintReportClient() {
               const meta = COMPETENCY_META[key];
               const title = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
 
-              const recs = getRecommendations(key, c.tier, reportLang);
+              const recs = (getRecommendations(key, c.tier, reportLang) || []) as string[];
               const color = tierColor(c.tier);
 
               return (
@@ -613,8 +650,14 @@ export default function PrintReportClient() {
                   </h3>
 
                   <ul className="recommendation-list">
-                    {recs.length ? recs.map((r, i) => <li key={i}>• {r}</li>) : (
-                      <li>{isArabic ? "لا توجد توصيات لهذه الكفاءة (تحقق من competencyId في قاعدة البيانات)." : "No recs (check DB competencyId)."}</li>
+                    {recs.length ? (
+                      recs.map((r, i) => <li key={i}>• {r}</li>)
+                    ) : (
+                      <li>
+                        {isArabic
+                          ? "لا توجد توصيات لهذه الكفاءة (تحقق من competencyId)."
+                          : "No recommendations (check competencyId)."}
+                      </li>
                     )}
                   </ul>
                 </div>
@@ -638,7 +681,7 @@ export default function PrintReportClient() {
               const meta = COMPETENCY_META[key];
               const title = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
 
-              const recs = getRecommendations(key, c.tier, reportLang);
+              const recs = (getRecommendations(key, c.tier, reportLang) || []) as string[];
               const color = tierColor(c.tier);
 
               return (
@@ -649,8 +692,14 @@ export default function PrintReportClient() {
                   </h3>
 
                   <ul className="recommendation-list">
-                    {recs.length ? recs.map((r, i) => <li key={i}>• {r}</li>) : (
-                      <li>{isArabic ? "لا توجد توصيات لهذه الكفاءة (تحقق من competencyId في قاعدة البيانات)." : "No recs (check DB competencyId)."}</li>
+                    {recs.length ? (
+                      recs.map((r, i) => <li key={i}>• {r}</li>)
+                    ) : (
+                      <li>
+                        {isArabic
+                          ? "لا توجد توصيات لهذه الكفاءة (تحقق من competencyId)."
+                          : "No recommendations (check competencyId)."}
+                      </li>
                     )}
                   </ul>
                 </div>
@@ -661,7 +710,9 @@ export default function PrintReportClient() {
           {/* === MRI Upsell Section (unchanged) === */}
           <div className="upsell-section">
             <h2 className="upsell-main-title">
-              {isArabic ? "لقد حصلت على التقرير المجاني… الآن حان وقت النقلة الحقيقية" : "You Got the Free Report… Now Unlock the Real Transformation"}
+              {isArabic
+                ? "لقد حصلت على التقرير المجاني… الآن حان وقت النقلة الحقيقية"
+                : "You Got the Free Report… Now Unlock the Real Transformation"}
             </h2>
 
             <p className="upsell-intro">
@@ -717,7 +768,7 @@ export default function PrintReportClient() {
       </div>
 
       {/* =========================================================
-          CSS (UNCHANGED from your version — keep your print look)
+          CSS (KEEP YOUR PRINT LOOK)
          ========================================================= */}
       <style jsx global>{`
         body { margin: 0; padding: 0; background: #ffffff; font-family: "Inter", sans-serif; }
