@@ -1,6 +1,7 @@
 // lib/actions.ts
 "use server";
 
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 /* =========================================================
@@ -13,7 +14,6 @@ export type AnswerPayload = {
   questionId: string;
   competencyId: string;
   selectedScore: number; // expected 1..4
-  // any other fields are fine; we’ll store them as-is
   [key: string]: any;
 };
 
@@ -27,7 +27,7 @@ type CompetencyResult = {
 };
 
 /* =========================================================
-   CONFIG / CONSTANTS
+   CONSTANTS
 ========================================================= */
 const COMPETENCY_ORDER = [
   "mental_toughness",
@@ -49,14 +49,23 @@ const COMPETENCY_NAME_EN: Record<string, string> = {
   follow_up_discipline: "Follow-Up Discipline",
 };
 
+/* =========================================================
+   ENV + ADMIN CLIENT
+========================================================= */
 function getSupabaseAdmin() {
-  const url = process.env.SUPABASE_URL;
+  // Accept either naming style to avoid local/Vercel mismatch pain.
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!url) throw new Error("Missing SUPABASE_URL");
-  if (!key) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+  const missing: string[] = [];
+  if (!url) missing.push("SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL)");
+  if (!key) missing.push("SUPABASE_SERVICE_ROLE_KEY");
 
-  return createClient(url, key, { auth: { persistSession: false } });
+  if (missing.length) {
+    throw new Error(`Missing env vars: ${missing.join(", ")}`);
+  }
+
+  return createClient(url!, key!, { auth: { persistSession: false } });
 }
 
 /* =========================================================
@@ -121,20 +130,15 @@ export async function buildPdfUrl({
   const base = process.env.NEXT_PUBLIC_PDF_SERVICE_URL;
   if (!base) throw new Error("Missing NEXT_PUBLIC_PDF_SERVICE_URL");
 
-  const url =
+  return (
     `${base.replace(/\/$/, "")}/api/generate-pdf` +
     `?attemptId=${encodeURIComponent(attemptId)}` +
-    `&lang=${encodeURIComponent(lang)}`;
-
-  return url;
+    `&lang=${encodeURIComponent(lang)}`
+  );
 }
 
 /* =========================================================
-   2) SUBMIT QUIZ (NO GUESTS — you pass userId from session)
-   Computes:
-   - score, total_questions
-   - total_percentage (overall)
-   - competency_results (7 competencies)
+   2) SUBMIT QUIZ (NO GUESTS)
 ========================================================= */
 export async function submitQuiz(
   finalAnswers: AnswerPayload[],
@@ -148,7 +152,6 @@ export async function submitQuiz(
 
   const supabase = getSupabaseAdmin();
 
-  // Normalize answers + compute totals
   const answers = finalAnswers.map((a) => ({
     ...a,
     competencyId: normalizeCompetencyId(a.competencyId),
@@ -158,16 +161,17 @@ export async function submitQuiz(
   const totalQuestions = answers.length;
   const totalScore = answers.reduce((s, a) => s + (Number(a.selectedScore) || 0), 0);
 
-  // Assuming each question max score = 4
   const overallMax = totalQuestions * 4;
   const totalPercentage = overallMax > 0 ? clampPct((totalScore / overallMax) * 100) : 0;
 
-  // Competency results
   const byComp = new Map<string, { score: number; count: number }>();
   for (const a of answers) {
     const cid = normalizeCompetencyId(a.competencyId);
     const prev = byComp.get(cid) || { score: 0, count: 0 };
-    byComp.set(cid, { score: prev.score + (Number(a.selectedScore) || 0), count: prev.count + 1 });
+    byComp.set(cid, {
+      score: prev.score + (Number(a.selectedScore) || 0),
+      count: prev.count + 1,
+    });
   }
 
   const competency_results: CompetencyResult[] = COMPETENCY_ORDER.map((cid) => {
@@ -206,14 +210,12 @@ export async function submitQuiz(
 }
 
 /* =========================================================
-   3) GET QUIZ ATTEMPT (for PrintReportClient)
-   Returns attempt + profile(full_name/company) + email
+   3) GET QUIZ ATTEMPT
 ========================================================= */
 export async function getQuizAttempt(attemptId: string) {
   if (!attemptId) throw new Error("Missing attemptId");
   const supabase = getSupabaseAdmin();
 
-  // 1) attempt
   const { data: attempt, error: aErr } = await supabase
     .from("quiz_attempts")
     .select("id, user_id, competency_results, total_percentage, language, created_at")
@@ -224,21 +226,18 @@ export async function getQuizAttempt(attemptId: string) {
     throw new Error(`Attempt not found: ${aErr?.message || "Unknown error"}`);
   }
 
-  // 2) profile (name/company)
-  let profile: any = null;
   const userId = (attempt as any).user_id;
 
+  let profile: any = null;
   if (userId) {
     const { data: prof, error: pErr } = await supabase
       .from("profiles")
       .select("full_name, company")
       .eq("id", userId)
       .single();
-
     if (!pErr && prof) profile = prof;
   }
 
-  // 3) email (auth.users via admin)
   let email: string | null = null;
   try {
     const { data: u } = await supabase.auth.admin.getUserById(userId);
@@ -247,9 +246,5 @@ export async function getQuizAttempt(attemptId: string) {
     email = null;
   }
 
-  return {
-    ...(attempt as any),
-    profile,
-    email,
-  };
+  return { ...(attempt as any), profile, email };
 }
