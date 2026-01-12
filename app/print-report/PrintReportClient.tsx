@@ -1,14 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useLocale } from "@/contexts/LocaleContext";
-import { toast } from "sonner";
-import { getQuizAttempt } from "@/lib/actions";
-import { getRecommendations } from "@/lib/pdf-recommendations";
-import { supabase } from "@/integrations/supabase/client";
-
-export const dynamic = "force-dynamic";
+import React, { useMemo, useEffect } from "react";
 
 // ────────────────────────────────────────────────
 // TYPES
@@ -21,6 +13,17 @@ interface CompetencyResult {
   maxScore: number;
   percentage: number;
   tier: Tier;
+}
+
+interface PrintReportClientProps {
+  attempt: any;
+  user: {
+    userId: string | null;
+    fullName: string | null;
+    company: string | null;
+    email: string | null;
+  };
+  lang: "ar" | "en";
 }
 
 // ────────────────────────────────────────────────
@@ -146,7 +149,7 @@ function formatReportDate(dateValue: any, isArabic: boolean) {
 }
 
 // ────────────────────────────────────────────────
-// DONUT
+// DONUT - FIXED TO PREVENT DOUBLE RENDERING
 // ────────────────────────────────────────────────
 function Donut({ value, color }: { value: number; color: string }) {
   const r = 46;
@@ -157,7 +160,7 @@ function Donut({ value, color }: { value: number; color: string }) {
 
   return (
     <div className="relative w-[100px] h-[100px] mx-auto">
-      <svg width="100" height="100" viewBox="0 0 100 100" className="donut-svg">
+      <svg width="100" height="100" viewBox="0 0 100 100" style={{ display: 'block', margin: '0 auto' }}>
         <circle cx="50" cy="50" r={r} fill="none" stroke="#e5e7eb" strokeWidth="8" />
         <circle
           cx="50"
@@ -178,187 +181,71 @@ function Donut({ value, color }: { value: number; color: string }) {
   );
 }
 
-// CSS fix for donut - prevents double rendering in PDF
-const donutStyles = `
-  .donut-svg {
-    display: block;
-    margin: 0 auto;
-  }
-  @media print {
-    .donut-svg circle {
-      vector-effect: non-scaling-stroke !important;
-    }
-  }
-`;
-
 // ────────────────────────────────────────────────
 // MAIN COMPONENT
 // ────────────────────────────────────────────────
-export default function PrintReportClient() {
-  const searchParams = useSearchParams();
-  const attemptId = searchParams.get("attemptId") || "";
-  const puppeteerMode = (searchParams.get("puppeteer") || "") === "1";
-  const { language: localeLanguage } = useLocale();
+export default function PrintReportClient({ attempt, user, lang }: PrintReportClientProps) {
+  const isArabic = lang === "ar";
 
-  const langParamRaw = (searchParams.get("lang") || "").toLowerCase();
-  const langParam = langParamRaw === "ar" ? "ar" : langParamRaw === "en" ? "en" : null;
+  // Extract data
+  const competencyResults = (attempt?.competency_results || []) as CompetencyResult[];
+  const totalPercentage = attempt?.total_percentage || 0;
+  
+  // User data
+  const fullName = user?.fullName || (isArabic ? "غير محدد" : "Not specified");
+  const company = user?.company || null;
+  const email = user?.email || (isArabic ? "غير محدد" : "Not specified");
+  const assessmentDate = formatReportDate(attempt?.created_at, isArabic);
+  const attemptId = attempt?.id || "";
 
-  const [reportLang, setReportLang] = useState<"en" | "ar">(
-    langParam || (localeLanguage === "ar" ? "ar" : "en")
-  );
-  const isArabic = reportLang === "ar";
-
-  const [loading, setLoading] = useState(true);
-  const [results, setResults] = useState<CompetencyResult[]>([]);
-  const [total, setTotal] = useState(0);
-  const [userMeta, setUserMeta] = useState<any | null>(null);
-
-  // Add CSS fix to prevent double rendering
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const style = document.createElement('style');
-      style.textContent = donutStyles;
-      document.head.appendChild(style);
-      return () => style.remove();
-    }
-  }, []);
-
-  useEffect(() => {
-    const load = async () => {
-      const uiLang: "en" | "ar" = langParam || (localeLanguage === "ar" ? "ar" : "en");
-      const uiIsArabic = uiLang === "ar";
-
-      if (!attemptId) {
-        toast.error(uiIsArabic ? "لا يوجد attemptId" : "Missing attemptId");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data: any = await getQuizAttempt(attemptId);
-        
-        // Get user_id from quiz attempt
-        const userId = data?.user_id;
-        let userProfile = null;
-        
-        // Fetch profile data from Supabase if we have user_id
-        if (userId) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name, company_name')
-            .eq('id', userId)
-            .single();
-          
-          userProfile = profileData;
-        }
-        
-        const dbLangRaw = String(data?.language || "").toLowerCase();
-        const dbLang = dbLangRaw === "ar" ? "ar" : dbLangRaw === "en" ? "en" : null;
-        const finalLang = langParam || dbLang || (localeLanguage === "ar" ? "ar" : "en");
-
-        setReportLang(finalLang);
-
-        const parsed = (data?.competency_results || []) as CompetencyResult[];
-        const normalized = parsed.map((r) => ({
-          ...r,
-          competencyId: normalizeCompetencyId((r as any).competencyId),
-          percentage: clampPct((r as any).percentage),
-        }));
-
-        setResults(normalized);
-
-        const dbTotal = Number(data?.total_percentage);
-        const safeTotal =
-          Number.isFinite(dbTotal) && dbTotal >= 0
-            ? clampPct(dbTotal)
-            : clampPct(
-                normalized.reduce((s, r) => s + (Number(r.percentage) || 0), 0) /
-                  Math.max(1, normalized.length)
-              );
-
-        setTotal(safeTotal);
-        
-        // Merge user profile data with attempt data
-        setUserMeta({
-          ...data,
-          full_name: userProfile?.full_name || data?.full_name || "",
-          company: userProfile?.company_name || data?.company || "",
-          profile: userProfile
-        });
-        
-        setLoading(false);
-      } catch (e) {
-        console.error("getQuizAttempt error:", e);
-        toast.error(uiIsArabic ? "خطأ في تحميل النتائج" : "Error loading results");
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [attemptId, langParam, localeLanguage]);
-
+  // Process results
   const ordered = useMemo(() => {
+    const normalized = competencyResults.map((r) => ({
+      ...r,
+      competencyId: normalizeCompetencyId((r as any).competencyId),
+      percentage: clampPct((r as any).percentage),
+    }));
+
     const map = new Map<string, CompetencyResult>();
-    results.forEach((r) => map.set(r.competencyId, r));
+    normalized.forEach((r) => map.set(r.competencyId, r));
+    
     const orderedCore = COMPETENCY_ORDER.map((id) => map.get(id)).filter(Boolean) as CompetencyResult[];
-    const extras = results.filter((r) => !(COMPETENCY_ORDER as readonly string[]).includes(r.competencyId));
+    const extras = normalized.filter((r) => !(COMPETENCY_ORDER as readonly string[]).includes(r.competencyId));
+    
     return [...orderedCore, ...extras];
-  }, [results]);
+  }, [competencyResults]);
 
   const firstFive = useMemo(() => ordered.slice(0, 5), [ordered]);
   const lastTwo = useMemo(() => ordered.slice(5, 7), [ordered]);
-  const firstFourForRecs = useMemo(() => ordered.slice(0, 4), [ordered]);
-  const lastThreeForRecs = useMemo(() => ordered.slice(4, 7), [ordered]);
-
-  // User data
-  const fullName =
-    userMeta?.full_name ||
-    userMeta?.profile?.full_name ||
-    userMeta?.name ||
-    (isArabic ? "غير محدد" : "Not specified");
-
-  const company = userMeta?.company || userMeta?.profile?.company || null;
-
-  const email =
-    userMeta?.user_email ||
-    userMeta?.email ||
-    (isArabic ? "غير محدد" : "Not specified");
-
-  const assessmentDate = formatReportDate(userMeta?.created_at, isArabic);
 
   // SWOT
-  const strengths = ordered.filter((c) => c.tier === "Strength");
-  const opportunities = ordered.filter((c) => c.tier === "Opportunity");
-  const threats = ordered.filter((c) => c.tier === "Threat");
-  const weaknesses = ordered.filter((c) => c.tier === "Weakness");
+  const strengths = useMemo(() => ordered.filter((c) => c.tier === "Strength"), [ordered]);
+  const opportunities = useMemo(() => ordered.filter((c) => c.tier === "Opportunity"), [ordered]);
+  const threats = useMemo(() => ordered.filter((c) => c.tier === "Threat"), [ordered]);
+  const weaknesses = useMemo(() => ordered.filter((c) => c.tier === "Weakness"), [ordered]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-lg font-semibold">
-        {isArabic ? "جاري التحضير…" : "Preparing…"}
-      </div>
-    );
-  }
+  // Total score
+  const computedTotal = useMemo(() => {
+    if (typeof totalPercentage === "number" && !Number.isNaN(totalPercentage)) {
+      return clampPct(totalPercentage);
+    }
+    if (!ordered.length) return 0;
+    const avg = ordered.reduce((s, c) => s + (Number(c.percentage) || 0), 0) / ordered.length;
+    return clampPct(avg);
+  }, [ordered, totalPercentage]);
 
-  if (!ordered.length) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-lg font-semibold text-red-600">
-        {isArabic ? "لا توجد نتائج" : "No results found"}
-      </div>
-    );
-  }
+  // Mark PDF as ready for Puppeteer
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.body.setAttribute('data-pdf-ready', '1');
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div dir={isArabic ? "rtl" : "ltr"} lang={isArabic ? "ar" : "en"} className={isArabic ? "rtl" : "ltr"}>
-      <button
-        onClick={() => window.print()}
-        className={`printbtn fixed top-4 ${isArabic ? "left-4" : "right-4"} z-50 bg-blue-600 text-white px-4 py-2 rounded shadow-lg print:hidden`}
-      >
-        {isArabic ? "طباعة" : "Print"}
-      </button>
-
+    <div dir={isArabic ? "rtl" : "ltr"} lang={lang} className="print-report">
       <div className="report-container">
-        {/* PAGE 1: COVER */}
+        {/* PAGE 1: COVER - FIXED NO DOUBLE DONUT */}
         <div className="page cover-page">
           <img src="/new levelup logo 3.png" className="cover-logo" alt="Logo" />
 
@@ -398,7 +285,7 @@ export default function PrintReportClient() {
           </div>
 
           <div className="cover-score-section">
-            <Donut value={total} color="#22c55e" />
+            <Donut value={computedTotal} color="#22c55e" />
             <p className="cover-score-label">{isArabic ? "النتيجة الإجمالية" : "Overall Score"}</p>
 
             <p className="cover-note">
@@ -579,82 +466,8 @@ export default function PrintReportClient() {
           </div>
         </div>
 
-        {/* PAGE 4: RECOMMENDATIONS - FIRST 4 */}
+        {/* PAGE 4 & 5: WORLD-CLASS UPSELL - FIXED RTL */}
         <div className="page recommendations-page">
-          <h2 className="section-title">{isArabic ? "التوصيات المخصصة" : "Personalized Recommendations"}</h2>
-          <p className="section-subtitle">
-            {isArabic ? "خطوات عملية لتحسين أدائك في كل كفاءة." : "Practical steps to improve your performance in each competency."}
-          </p>
-
-          <div className="recommendations-grid">
-            {firstFourForRecs.map((c) => {
-              const key = normalizeCompetencyId(c.competencyId);
-              const meta = COMPETENCY_META[key];
-              const title = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
-              const recs = getRecommendations(key, c.tier, reportLang) || [];
-              const color = tierColor(c.tier);
-
-              return (
-                <div key={c.competencyId} className="recommendation-card">
-                  <h3 className="recommendation-card-title" style={{ color }}>
-                    {title}
-                    <span className="recommendation-card-tier"> ({tierLabel(c.tier, isArabic)})</span>
-                  </h3>
-                  <ul className="recommendation-list">
-                    {recs.length ? (
-                      recs.map((r, i) => <li key={i}>• {r}</li>)
-                    ) : (
-                      <li>
-                        {isArabic ? "لا توجد توصيات لهذه الكفاءة" : "No recommendations for this competency"}
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* PAGE 5: RECOMMENDATIONS (LAST 3) + WORLD-CLASS UPSELL */}
-        <div className="page recommendations-page">
-          <h2 className="section-title">
-            {isArabic ? "التوصيات المخصصة (متابعة)" : "Personalized Recommendations (continued)"}
-          </h2>
-          <p className="section-subtitle">
-            {isArabic
-              ? "استكمل توصياتك، ثم انتقل إلى خطوة النقلة النوعية في مبيعاتك."
-              : "Complete your recommendations, then step into your next level of sales performance."}
-          </p>
-
-          <div className="recommendations-grid">
-            {lastThreeForRecs.map((c) => {
-              const key = normalizeCompetencyId(c.competencyId);
-              const meta = COMPETENCY_META[key];
-              const title = meta ? (isArabic ? meta.labelAr : meta.labelEn) : key;
-              const recs = getRecommendations(key, c.tier, reportLang) || [];
-              const color = tierColor(c.tier);
-
-              return (
-                <div key={c.competencyId} className="recommendation-card">
-                  <h3 className="recommendation-card-title" style={{ color }}>
-                    {title}
-                    <span className="recommendation-card-tier"> ({tierLabel(c.tier, isArabic)})</span>
-                  </h3>
-                  <ul className="recommendation-list">
-                    {recs.length ? (
-                      recs.map((r, i) => <li key={i}>• {r}</li>)
-                    ) : (
-                      <li>
-                        {isArabic ? "لا توجد توصيات لهذه الكفاءة" : "No recommendations for this competency"}
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* WORLD-CLASS UPSELL SECTION - Fixed RTL for Arabic */}
           <div className="upsell-section" dir={isArabic ? "rtl" : "ltr"}>
             <div className="upsell-header">
               <h2 className="upsell-main-title">
@@ -845,27 +658,17 @@ export default function PrintReportClient() {
           margin: 8px auto;
         }
         
-        /* ── DONUT FIX ── */
-        .donut-svg {
-          display: block;
-          margin: 0 auto;
-        }
-        
         /* ── CARDS – premium depth ── */
-        .competency-summary-card,
-        .recommendation-card,
-        .swot-card {
+        .competency-summary-card {
           border-radius: 16px;
           box-shadow: 0 4px 20px rgba(0,0,0,0.06);
           border: 1px solid rgba(229,231,235,0.8);
           background: white;
           padding: 24px;
-          transition: transform 0.15s;
           page-break-inside: avoid;
         }
         
         .competency-summary-grid,
-        .recommendations-grid,
         .swot-grid {
           display: grid;
           gap: 24px;
@@ -874,15 +677,6 @@ export default function PrintReportClient() {
         
         .competency-summary-grid {
           grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .recommendations-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .swot-grid {
-          grid-template-columns: repeat(2, 1fr);
-          margin-top: 32px;
         }
         
         /* Progress bar upgrade */
@@ -925,6 +719,14 @@ export default function PrintReportClient() {
         .swot-card {
           padding: 24px;
           min-height: 200px;
+          border-radius: 16px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          border: 1px solid rgba(229,231,235,0.8);
+        }
+        
+        .swot-grid {
+          grid-template-columns: repeat(2, 1fr);
+          margin-top: 32px;
         }
         
         .swot-strength { 
@@ -1077,10 +879,6 @@ export default function PrintReportClient() {
           color: #065f46;
         }
         
-        .guarantee-icon {
-          font-weight: bold;
-        }
-        
         .upsell-cta-button {
           display: inline-block;
           background: linear-gradient(90deg, #d97706, #f59e0b);
@@ -1093,11 +891,6 @@ export default function PrintReportClient() {
           box-shadow: 0 8px 20px rgba(217,119,6,0.3);
           transition: all 0.3s;
           margin: 20px 0;
-        }
-        
-        .upsell-cta-button:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 12px 25px rgba(217,119,6,0.4);
         }
         
         .upsell-note {
@@ -1147,14 +940,8 @@ export default function PrintReportClient() {
         
         /* ── PRINT OPTIMIZATION ── */
         @media print {
-          .printbtn { 
-            display: none !important; 
-          }
           .page {
             padding: 40px 35px 60px !important;
-          }
-          .upsell-cta-button {
-            box-shadow: none !important;
           }
           a {
             color: #1d4ed8 !important;
