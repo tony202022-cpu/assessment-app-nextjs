@@ -1,4 +1,5 @@
 // lib/pdf-recommendations.ts
+
 export type Tier = "Strength" | "Opportunity" | "Threat" | "Weakness";
 
 type RecommendationBlock = { en: string[]; ar: string[] };
@@ -9,359 +10,401 @@ type RecommendationTiers = {
   Weakness: RecommendationBlock;
 };
 
+/** Normalize competency ids so recommendations always match (EN/AR, spaces, hyphens, etc.) */
+function normalizeCompetencyId(id: string): string {
+  const clean = String(id || "").trim();
+  const key = clean.toLowerCase().replace(/\s+/g, "_").replace(/-/g, "_");
+
+  const map: Record<string, string> = {
+    mental_toughness: "mental_toughness",
+    opening_conversations: "opening_conversations",
+    identifying_real_needs: "identifying_real_needs",
+    destroying_objections: "destroying_objections",
+    creating_irresistible_offers: "creating_irresistible_offers",
+    mastering_closing: "mastering_closing",
+    follow_up_discipline: "follow_up_discipline",
+
+    // common label variations
+    "mental toughness": "mental_toughness",
+    "opening conversations": "opening_conversations",
+    "identifying real needs": "identifying_real_needs",
+    "handling objections": "destroying_objections", // map legacy name → correct key
+    "destroying objections": "destroying_objections",
+    "creating irresistible offers": "creating_irresistible_offers",
+    "mastering closing": "mastering_closing",
+    "follow-up discipline": "follow_up_discipline",
+    "follow up discipline": "follow_up_discipline",
+
+    // Arabic labels (if stored as Arabic in DB)
+    "الصلابة الذهنية": "mental_toughness",
+    "فتح المحادثات": "opening_conversations",
+    "تحديد الاحتياجات الحقيقية": "identifying_real_needs",
+    "التعامل مع الاعتراضات": "destroying_objections",
+    "إنشاء عروض لا تُقاوَم": "creating_irresistible_offers",
+    "إتقان الإغلاق": "mastering_closing",
+    "انضباط المتابعة": "follow_up_discipline",
+  };
+
+  return map[clean] || map[key] || key;
+}
+
 export const RECOMMENDATIONS: Record<string, RecommendationTiers> = {
-  // Paste your FULL 84 recommendations here (exactly as in ResultsPage.tsx)
-  // 84 Golden Recommendations - FULL SET
   mental_toughness: {
     Weakness: {
       en: [
-        "Reset quickly after tough interactions with a 30‑second breathing break to keep your energy steady.",
-        "Start your day with a quick mental warm‑up by visualizing the hardest part of your route and seeing yourself win it.",
-        "Celebrate small wins like initiating conversations or staying calm to rebuild confidence fast."
+        "Reset fast: take one 30-second breath break after any tough interaction.",
+        "Rehearse the hardest stop: visualize handling it calmly before you arrive.",
+        "Build confidence daily: track one micro-win and repeat it on purpose.",
       ],
       ar: [
-        "أعد ضبط نفسك بسرعة بعد التفاعلات الصعبة مع استراحة تنفس مدتها 30 ثانية للحفاظ على طاقتك ثابتة.",
-        "ابدأ يومك بإحماء ذهني سريع من خلال تصور أصعب جزء من طريقك ورؤية نفسك تفوز به.",
-        "احتفل بالانتصارات الصغيرة مثل بدء المحادثات أو الحفاظ على الهدوء لإعادة بناء الثقة بسرعة."
-      ]
+        "أعد ضبط حالتك فوراً: خذ 30 ثانية تنفّس بعد أي موقف صعب.",
+        "درّب أصعب محطة: تخيّل التعامل معها بثبات قبل أن تصل.",
+        "ابنِ الثقة يومياً: سجّل «انتصاراً صغيراً» واحداً وكرّره بوعي.",
+      ],
     },
     Threat: {
       en: [
-        "Use a short bounce‑back script to reset after tough moments and stay consistent.",
-        "Identify what drains you—heat, fatigue, tough prospects—and plan simple counter‑moves like hydration or shade breaks.",
-        "Focus on daily conversation targets instead of closes to reduce pressure and boost performance."
+        "Use a bounce-back line to recover quickly and keep your rhythm.",
+        "Spot your biggest drain (heat, fatigue, rejection) and counter it with one move.",
+        "Lower pressure: set daily conversation targets, not closing targets.",
       ],
       ar: [
-        "استخدم نص ارتداد قصير لإعادة الضبط بعد اللحظات الصعبة والبقاء ثابتاً.",
-        "حدد ما يستنزفك - الحرارة، التعب، العملاء الصعبين - وخطط لتحركات مضادة بسيطة مثل الترطيب أو فترات الراحة في الظل.",
-        "ركز على أهداف المحادثة اليومية بدلاً من الإغلاقات لتقليل الضغط وتعزيز الأداء."
-      ]
+        "استخدم «جملة ارتداد» لتستعيد توازنك بسرعة وتحافظ على الإيقاع.",
+        "حدّد أكبر مصدر استنزاف (حرارة/تعب/رفض) ثم واجهه بخطوة واحدة.",
+        "خفّف الضغط: استهدف عدد محادثات يومي… لا عدد إغلاقات.",
+      ],
     },
     Opportunity: {
       en: [
-        "Review moments where you hesitated or got thrown off and turn them into learning loops.",
-        "Use a pre‑route ritual like music or affirmations to prime your mindset before the first door.",
-        "Ask yourself mid‑day, 'What would the best version of me do right now?' to elevate your behavior instantly."
+        "Review one hesitation moment daily and turn it into a simple adjustment.",
+        "Prime your mindset before the route with one short ritual you can repeat.",
+        "Ask midday: “What would my best version do now?”—then do it once.",
       ],
       ar: [
-        "راجع اللحظات التي ترددت فيها أو انحرفت وحولها إلى حلقات تعلم.",
-        "استخدم طقوس ما قبل الطريق مثل الموسيقى أو التأكيدات لتهيئة عقليتك قبل الباب الأول.",
-        "اسأل نفسك في منتصف اليوم: 'ماذا سيفعل أفضل إصدار مني الآن؟' لرفع سلوكك فوراً."
-      ]
+        "راجع لحظة تردد واحدة يومياً… وحوّلها إلى تعديل بسيط مباشر.",
+        "هيّئ عقلك قبل الجولة بطقس قصير واحد يمكنك تكراره.",
+        "اسأل منتصف اليوم: «ماذا سيفعل أفضل إصدار مني الآن؟» ثم نفّذ خطوة واحدة.",
+      ],
     },
     Strength: {
       en: [
-        "Lead by example with your resilience and share your routines to lift the team's energy.",
-        "Take on tougher streets or time slots where your composure gives you an advantage.",
-        "Track emotional patterns to identify your peak hours and route yourself strategically."
+        "Model composure visibly and share one routine that keeps you steady.",
+        "Choose tougher streets/time slots where your calm becomes an advantage.",
+        "Route strategically: align key visits with your peak-energy hours.",
       ],
       ar: [
-        "قد بالقدوة من خلال مرونتك وشارك روتينك لرفع طاقة الفريق.",
-        "تحمل شوارع أو فترات زمنية أصعب حيث يمنحك هدوءك ميزة.",
-        "تتبع الأنماط العاطفية لتحديد ساعات الذروة الخاصة بك وتوجيه نفسك استراتيجياً."
-      ]
-    }
+        "قدّم الثبات كقدوة… وشارك عادة واحدة تحافظ على توازنك.",
+        "اختر شوارع/أوقاتاً أصعب حيث يصبح هدوؤك ميزة تنافسية.",
+        "خطّط مسارك بذكاء: ضع الزيارات الأهم في ساعات ذروتك.",
+      ],
+    },
   },
+
   opening_conversations: {
     Weakness: {
       en: [
-        "Practice a friendly 3‑second opener daily in the mirror until it feels natural.",
-        "Start with low‑pressure situations (e.g., shopkeepers) to build conversational momentum.",
-        "Use a simple phrase like 'Hi, I’m with [Company]—do you have 30 seconds?' to reduce friction."
+        "Practice one 3-second opener until it sounds natural—then stick to it.",
+        "Warm up on low-pressure contacts to build momentum before the main route.",
+        "Ask permission first: “Do you have 30 seconds?” to reduce resistance.",
       ],
       ar: [
-        "تدرب يومياً على جملة افتتاحية ودودة مدتها 3 ثوانٍ أمام المرآة حتى تصبح طبيعية.",
-        "ابدأ بوضعيات منخفضة الضغط (مثل أصحاب المحلات) لبناء زخم في المحادثة.",
-        "استخدم عبارة بسيطة مثل 'مرحباً، أنا من [الشركة]—هل لديك 30 ثانية؟' لتقليل الاحتكاك."
-      ]
+        "تمرّن على افتتاحية من 3 ثوانٍ حتى تصبح طبيعية… ثم التزم بها.",
+        "ابدأ بتواصل منخفض الضغط لتبني الزخم قبل الجولة الأساسية.",
+        "اطلب الإذن أولاً: «هل لديك 30 ثانية؟» لتقليل المقاومة.",
+      ],
     },
     Threat: {
       en: [
-        "Record your first 10 seconds of conversation and refine your tone for warmth and clarity.",
-        "Prepare 3 open-ended questions to pivot smoothly from hello to value.",
-        "Warm up with 2 easy doors before your main route to build rhythm."
+        "Record your first 10 seconds and adjust tone for warmth and clarity.",
+        "Prepare three smooth pivots to move from hello to value in one breath.",
+        "Start with two easy doors to lock your rhythm before tougher visits.",
       ],
       ar: [
-        "سجل أول 10 ثوانٍ من محادثتك وحسّن نبرة صوتك لتكون دافئة وواضحة.",
-        "جهّز 3 أسئلة مفتوحة للتحول بسلاسة من التحية إلى القيمة.",
-        "ابدأ ببابين سهلين قبل جولتك الرئيسية لبناء الإيقاع."
-      ]
+        "سجّل أول 10 ثوانٍ… ثم عدّل النبرة لتصبح أدفأ وأوضح.",
+        "جهّز 3 انتقالات بسيطة لتنتقل من التحية إلى القيمة بسلاسة.",
+        "ابدأ بزيارتين سهلتين لتثبيت الإيقاع قبل الأصعب.",
+      ],
     },
     Opportunity: {
       en: [
-        "Experiment with curiosity-based openers like 'What’s the most interesting thing you’ve seen today?'",
-        "Track which openers get the highest engagement and double down on them.",
-        "Pair your opener with confident body language—smile, eye contact, open posture."
+        "Test curiosity openers and keep only what earns real engagement.",
+        "Track which opener performs best and repeat it intentionally.",
+        "Pair your opener with confident body language: smile, eye contact, open posture.",
       ],
       ar: [
-        "جرّب جمل افتتاحية تعتمد على الفضول مثل 'ما أكثر شيء مثير للاهتمام رأيته اليوم؟'",
-        "تتبع الجمل الافتتاحية التي تحصل على أعلى تفاعل وركّز عليها.",
-        "اجمع بين جملتك الافتتاحية ولغة جسد واثقة—ابتسم، تواصل بصري، وضعية منفتحة."
-      ]
+        "اختبر افتتاحيات الفضول… واحتفظ بما يحقق تفاعلاً حقيقياً.",
+        "تتبّع الافتتاحية الأعلى أداءً… وكرّرها بوعي.",
+        "ادمج الافتتاحية مع لغة جسد واثقة: ابتسامة، تواصل بصري، وضعية منفتحة.",
+      ],
     },
     Strength: {
       en: [
-        "Mentor others on your signature opening technique that builds instant rapport.",
-        "Use your natural ease to test advanced hooks like storytelling or humor.",
-        "Document your top 3 openers and share them as team best practices."
+        "Coach one teammate on your signature opener that builds instant rapport.",
+        "Experiment with advanced hooks (story/humor) while staying authentic.",
+        "Document your top three openers and turn them into team standards.",
       ],
       ar: [
-        "درّب الآخرين على أسلوبك المميز في الافتتاح الذي يبني تواصل فوري.",
-        "استخدم سهولتك الطبيعية لاختبار تقنيات متقدمة مثل السرد القصصي أو الفكاهة.",
-        "وثّق أفضل 3 جمل افتتاحية لديك وشاركها كأفضل الممارسات للفريق."
-      ]
-    }
+        "درّب زميلاً واحداً على افتتاحيتك التي تبني الألفة بسرعة.",
+        "جرّب خطافات متقدمة (قصة/لمسة خفيفة) مع الحفاظ على العفوية.",
+        "وثّق أفضل 3 افتتاحيات لديك… وحوّلها إلى معيار للفريق.",
+      ],
+    },
   },
+
   identifying_real_needs: {
     Weakness: {
       en: [
-        "Ask 'What matters most to you about this?' after every feature mention.",
-        "Listen for emotional words (frustrated, excited, worried) and explore them.",
-        "Pause 2 seconds after their answer before responding—creates space for depth."
+        "Ask “What matters most about this?” right after any feature mention.",
+        "Listen for emotion words and follow with one deeper question.",
+        "Pause two seconds after they answer—let the real reason surface.",
       ],
       ar: [
-        "اسأل 'ما الأهم لك في هذا؟' بعد كل مرة يُذكر فيها ميزة.",
-        "اسمع الكلمات العاطفية (محبط، متحمس، قلق) واستكشفها.",
-        "توقف ثانيتين بعد إجابتهم قبل الرد—يخلق مساحة للعمق."
-      ]
+        "اسأل: «ما الأهم لك في هذا؟» مباشرة بعد ذكر أي ميزة.",
+        "التقط الكلمات العاطفية… ثم اسأل سؤالاً أعمق واحداً.",
+        "توقّف ثانيتين بعد الإجابة… ودع السبب الحقيقي يظهر.",
+      ],
     },
     Threat: {
       en: [
-        "Replace 'Do you need this?' with 'What would solving this do for you?'",
-        "Take notes during conversations to spot recurring pain points.",
-        "Practice active listening by summarizing their need in your own words."
+        "Replace “Do you need this?” with “What would solving this change for you?”",
+        "Capture repeated pain points and build a simple pattern list.",
+        "Summarize their need in your words before offering any solution.",
       ],
       ar: [
-        "استبدل 'هل تحتاج هذا؟' بـ 'ماذا سيفعل حلّ هذه المشكلة من أجلك؟'",
-        "دوّن ملاحظات أثناء المحادثات لتحديد نقاط الألم المتكررة.",
-        "تدرب على الإصغاء الفعّال بتلخيص احتياجهم بكلماتك الخاصة."
-      ]
+        "استبدل «هل تحتاج هذا؟» بـ «ماذا سيغيّر حلّ هذا بالنسبة لك؟»",
+        "دوّن الأوجاع المتكررة… وابنِ قائمة أنماط بسيطة.",
+        "لخّص احتياجهم بكلماتك قبل أن تعرض أي حل.",
+      ],
     },
     Opportunity: {
       en: [
-        "Dig deeper with 'Why is that important?' to uncover root motivations.",
-        "Connect their stated need to an unspoken emotional driver (security, pride, freedom).",
-        "Use silence strategically—let them fill the gap with more revealing details."
+        "Go one level deeper with: “Why is that important?” to reach the real driver.",
+        "Link stated needs to hidden motives (security/pride/freedom) without overtalking.",
+        "Use silence intentionally—let them fill the gap with what truly matters.",
       ],
       ar: [
-        "احفر أعمق بسؤال 'لماذا هذا مهم؟' لكشف الدوافع الجذرية.",
-        "اربط احتياجهم الصريح بدافع عاطفي غير معلن (الأمان، الفخر، الحرية).",
-        "استخدم الصمت كاستراتيجية—دعهم يملأون الفراغ بتفاصيل أكثر إفصاحاً."
-      ]
+        "انزل مستوى أعمق بسؤال: «لماذا هذا مهم؟» لتصل للدافع الحقيقي.",
+        "اربط الاحتياج بدافع خفي (أمان/فخر/حرية) دون إطالة.",
+        "استخدم الصمت بذكاء… ودعهم يكمّلون بما يهم فعلاً.",
+      ],
     },
     Strength: {
       en: [
-        "Teach your team the '3 Whys' technique to uncover true needs fast.",
-        "Create a needs-discovery playbook based on your best conversations.",
-        "Use your insight to craft personalized value statements on the spot."
+        "Teach the “3 Whys” habit without turning it into an interrogation.",
+        "Build a simple discovery checklist based on your best conversations.",
+        "Create one personalized value line on the spot using their exact words.",
       ],
       ar: [
-        "درّب فريقك على تقنية 'الأسئلة الثلاثة لماذا' لكشف الاحتياجات الحقيقية بسرعة.",
-        "أنشئ دليلاً لاكتشاف الاحتياجات مبنياً على أفضل محادثاتك.",
-        "استخدم بصيرتك لصياغة عبارات قيمة مخصصة فوراً."
-      ]
-    }
+        "علّم عادة «3 لماذا» دون أن تبدو استجواباً.",
+        "ابنِ قائمة اكتشاف مختصرة من أفضل محادثاتك.",
+        "اصنع «جملة قيمة» شخصية فوراً باستخدام كلمات العميل نفسها.",
+      ],
+    },
   },
+
   destroying_objections: {
     Weakness: {
       en: [
-        "Reframe 'I don’t have time' as 'I get that—when would be better?' to keep dialogue open.",
-        "Practice empathetic responses like 'Many feel that way—what’s your biggest concern?'",
-        "Prepare 3 go-to replies for common objections (price, timing, trust)."
+        "Reframe “I don’t have time” into: “When would be better?”—and stay calm.",
+        "Mirror their concern briefly, then ask: “What’s your biggest worry?”",
+        "Prepare three short replies for price, timing, and trust—keep them tight.",
       ],
       ar: [
-        "أعد صياغة 'ليس لدي وقت' إلى 'أتفهم ذلك—متى سيكون وقتاً أفضل؟' للحفاظ على الحوار.",
-        "تدرب على ردود تعاطفية مثل 'الكثيرون يشعرون هكذا—ما أكبر مخاوفك؟'",
-        "جهّز 3 ردود جاهزة للاعتراضات الشائعة (السعر، التوقيت، الثقة)."
-      ]
+        "أعد صياغة «ليس لدي وقت» إلى: «متى يكون الوقت أفضل؟» وبهدوء.",
+        "اعكس قلقه باختصار… ثم اسأل: «ما أكبر مخاوفك؟»",
+        "جهّز 3 ردود مختصرة للسعر والتوقيت والثقة… وقلها بثبات.",
+      ],
     },
     Threat: {
       en: [
-        "Treat objections as buying signals—respond with curiosity, not defense.",
-        "Use the 'Feel, Felt, Found' method: 'I understand you feel X. Others felt that too, and found Y.'",
-        "Pause before answering—shows respect and prevents rushed rebuttals."
+        "Treat objections as signals and respond with curiosity, not defense.",
+        "Use a simple feel-felt-found line—human, not robotic.",
+        "Pause before answering to show respect and avoid rushed rebuttals.",
       ],
       ar: [
-        "تعامل مع الاعتراضات كإشارات شراء—استجب بفضول، لا بدفاع.",
-        "استخدم طريقة 'تشعر، شعر، وجد': 'أتفهم أنك تشعر بكذا. آخرون شعروا بذلك أيضاً، ووجدوا كذا.'",
-        "توقف قبل الإجابة—يظهر الاحترام ويمنع الردود المتعجلة."
-      ]
+        "اعتبر الاعتراض «إشارة»… ورد بفضول لا بدفاع.",
+        "استخدم أسلوب «تشعر/شعر/وجد» ببساطة وبنبرة إنسانية.",
+        "توقّف لحظة قبل الرد… لتُظهر احتراماً وتمنع الاندفاع.",
+      ],
     },
     Opportunity: {
       en: [
-        "Anticipate objections early by addressing them in your initial pitch.",
-        "Turn price objections into value conversations: 'What would this outcome be worth to you?'",
-        "Collect objection patterns and build a team FAQ to sharpen responses."
+        "Pre-frame common objections early so they feel handled before they appear.",
+        "Turn price pushback into value: “What would this outcome be worth?”",
+        "Collect objection patterns and build a mini-FAQ for sharper answers.",
       ],
       ar: [
-        "توقع الاعتراضات مبكراً بمعالجتها في عرضك الأولي.",
-        "حوّل اعتراضات السعر إلى حوار عن القيمة: 'ما الذي تستحقه هذه النتيجة بالنسبة لك؟'",
-        "اجمع أنماط الاعتراضات وأنشئ أسئلة شائعة للفريق لتحسين الردود."
-      ]
+        "مهّد للاعتراضات الشائعة مبكراً… لتبدو مُعالجة قبل أن تُقال.",
+        "حوّل اعتراض السعر إلى قيمة: «ما الذي تستحقه النتيجة بالنسبة لك؟»",
+        "اجمع أنماط الاعتراضات… وابنِ «أسئلة شائعة» مصغرة لردود أدق.",
+      ],
     },
     Strength: {
       en: [
-        "Lead objection-handling workshops using your most challenging wins.",
-        "Create a 'objection-to-opportunity' playbook for new reps.",
-        "Use your calm under pressure to model how top performers reframe resistance."
+        "Model calm objection handling so others copy your tone, not just your words.",
+        "Build an objection→opportunity cheat sheet for new reps.",
+        "Reframe resistance quickly and guide the conversation back to value.",
       ],
       ar: [
-        "قدّم ورش عمل حول التعامل مع الاعتراضات مستخدماً نجاحاتك الأكثر تحدياً.",
-        "أنشئ دليلاً لتحويل الاعتراضات إلى فرص للممثلين الجدد.",
-        "استخدم هدوءك تحت الضغط كقدوة لكيف يعيد المحترفون صياغة المقاومة."
-      ]
-    }
+        "كن قدوة في هدوء التعامل مع الاعتراض… ليتعلموا النبرة لا الكلمات فقط.",
+        "اصنع «ورقة مختصرة» لتحويل الاعتراض إلى فرصة للمندوبين الجدد.",
+        "أعد صياغة المقاومة سريعاً… وأعد الحوار إلى القيمة.",
+      ],
+    },
   },
+
   creating_irresistible_offers: {
     Weakness: {
       en: [
-        "Start every offer with a personalized benefit: 'This saves you X hours/week.'",
-        "Use simple language—avoid jargon. Say 'saves money' not 'cost optimization.'",
-        "Anchor your offer with a clear before/after contrast."
+        "Start with a personalized outcome (time saved, stress reduced, money protected).",
+        "Use plain language and remove jargon so the value lands instantly.",
+        "Anchor the offer with a one-sentence before/after contrast.",
       ],
       ar: [
-        "ابدأ كل عرضك بميزة شخصية: 'هذا يوفر لك X ساعات أسبوعياً.'",
-        "استخدم لغة بسيطة—تجنب المصطلحات. قل 'يوفر المال' لا 'تحسين التكلفة.'",
-        "ارتكز عرضك على تباين واضح بين 'قبل' و'بعد'."
-      ]
+        "ابدأ بنتيجة شخصية (وقت/ضغط/مال)… لتصل القيمة فوراً.",
+        "استخدم لغة بسيطة واترك المصطلحات… لتصبح الفكرة واضحة مباشرة.",
+        "ثبّت العرض بجملة «قبل/بعد» واحدة واضحة.",
+      ],
     },
     Threat: {
       en: [
-        "Bundle features into outcomes: 'Get faster closes + happier clients' vs. listing tools.",
-        "Add urgency with time-bound bonuses: 'Free onboarding if you start by Friday.'",
-        "Test two versions of your offer—one benefit-focused, one feature-focused."
+        "Translate features into outcomes instead of listing specs.",
+        "Add gentle urgency with a natural deadline (end of week/month).",
+        "Test two angles (benefit-first vs proof-first) and keep the winner.",
       ],
       ar: [
-        "اجمع الميزات في نتائج: 'إغلاقات أسرع + عملاء أكثر سعادة' بدلاً من سرد الأدوات.",
-        "أضف إلحاحاً بمكافآت محدودة زمنياً: 'تشغيل مجاني إذا بدأت قبل الجمعة.'",
-        "جرّب نسختين من عرضك—واحدة تركّز على الفوائد، والأخرى على الميزات."
-      ]
+        "حوّل الميزات إلى نتائج… بدل سرد المواصفات.",
+        "أضف إلحاحاً هادئاً بموعد طبيعي (نهاية الأسبوع/الشهر).",
+        "اختبر زاويتين (فائدة أولاً vs دليل أولاً)… واحتفظ بالأقوى.",
+      ],
     },
     Opportunity: {
       en: [
-        "Customize offers using insights from their stated needs and pain points.",
-        "Include social proof: '90% of reps like you saw results in 2 weeks.'",
-        "Use storytelling: 'One client was stuck like you—then they tried this...'"
+        "Use their exact words in the offer to make it feel tailor-made.",
+        "Add light proof (one metric or outcome) without overpromising.",
+        "Open with a short hook: “A client like you was stuck… then this changed.”",
       ],
       ar: [
-        "خصّص عروضك باستخدام الرؤى من احتياجاتهم وأوجاعهم المعلنة.",
-        "أدرج دليلاً اجتماعياً: '90% من الممثلين مثلك رأوا نتائج خلال أسبوعين.'",
-        "استخدم السرد القصصي: 'كان عميل عالقاً مثلك—ثم جرّب هذا...'"
-      ]
+        "استخدم كلمات العميل نفسها داخل العرض… ليبدو مفصّلاً عليه.",
+        "أضف دليلاً خفيفاً (رقم/نتيجة) دون مبالغة.",
+        "ابدأ بخطاف قصة قصيرة: «عميل كان مثلك… ثم تغيّر هذا».",
+      ],
     },
     Strength: {
       en: [
-        "Package your best offers as templates for the team to replicate.",
-        "A/B test advanced tactics like scarcity or exclusivity to refine your edge.",
-        "Coach others on weaving emotional and logical triggers into one compelling offer."
+        "Turn your best offer into a repeatable template the team can copy.",
+        "Use scarcity/exclusivity carefully to sharpen the edge without hype.",
+        "Blend emotion and logic into one clean offer line—then stop talking.",
       ],
       ar: [
-        "عبّئ أفضل عروضك كقوالب للفريق ليقلدها.",
-        "جرّب تكتيكات متقدمة مثل الندرة أو الحصرية لتحسين ميزتك.",
-        "درّب الآخرين على دمج المحفزات العاطفية والمنطقية في عرض جذاب واحد."
-      ]
-    }
+        "حوّل أفضل عروضك إلى قالب متكرر يمكن للفريق نسخه.",
+        "استخدم الندرة/الحصرية بحذر لتحسين القوة دون مبالغة.",
+        "ادمج العاطفة والمنطق في جملة عرض واحدة… ثم توقّف عن الإطالة.",
+      ],
+    },
   },
+
   mastering_closing: {
     Weakness: {
       en: [
-        "Use assumptive closes: 'Shall we start with Option A or B?' instead of 'Are you ready?'",
-        "Practice closing phrases daily until they feel natural, not pushy.",
-        "Ask for the sale directly but gently: 'Does this make sense to move forward?'"
+        "Use an alternative close: “Option A or B?” instead of “Are you ready?”",
+        "Rehearse one closing line daily until it feels natural and confident.",
+        "Ask for the next step gently: “Does it make sense to move forward?”",
       ],
       ar: [
-        "استخدم الإغلاقات الافتراضية: 'هل نبدأ بالخيار أ أم ب؟' بدلاً من 'هل أنت مستعد؟'",
-        "تدرب على عبارات الإغلاق يومياً حتى تصبح طبيعية، لا متعجرفة.",
-        "اطلب البيع مباشرة ولكن بلطف: 'هل يبدو هذا منطقياً للمضي قدماً؟'"
-      ]
+        "استخدم إغلاق الاختيار: «الخيار أ أم ب؟» بدل «هل أنت مستعد؟»",
+        "تمرّن يومياً على جملة إغلاق واحدة حتى تصبح طبيعية وواثقة.",
+        "اطلب الخطوة التالية بلطف: «هل يبدو منطقياً أن نتابع؟»",
+      ],
     },
     Threat: {
       en: [
-        "Time your close after they express positive emotion or agreement.",
-        "Use trial closes: 'How does this sound so far?' to gauge readiness.",
-        "Stay silent after asking—let them say 'yes' first."
+        "Close right after agreement or positive emotion—then stop talking.",
+        "Use a trial close to check readiness: “How does this sound so far?”",
+        "Hold silence after the close and let them answer first.",
       ],
       ar: [
-        "اختر توقيت إغلاقك بعد أن يعبّروا عن مشاعر إيجابية أو اتفاق.",
-        "استخدم إغلاقات تجريبية: 'كيف يبدو هذا حتى الآن؟' لتقييم جاهزيتهم.",
-        "ابقَ صامتاً بعد السؤال—دعهم يقولون 'نعم' أولاً."
-      ]
+        "أغلق بعد لحظة موافقة أو شعور إيجابي… ثم توقّف عن الكلام.",
+        "استخدم إغلاقاً تجريبياً: «كيف يبدو هذا حتى الآن؟»",
+        "اصمت بعد الإغلاق… ودع العميل يجيب أولاً.",
+      ],
     },
     Opportunity: {
       en: [
-        "Create urgency with natural deadlines: 'This pricing locks in at month-end.'",
-        "Bundle next steps: 'If we agree today, I’ll handle setup by tomorrow.'",
-        "Use alternative choice closes: 'Email or WhatsApp for the contract?'"
+        "Create urgency with a natural deadline—without pressure or drama.",
+        "Bundle next steps: “If we agree today, I’ll set it up by tomorrow.”",
+        "Offer a simple channel choice: “Email or WhatsApp for the details?”",
       ],
       ar: [
-        "أنشئ إلحاحاً بمواعيد طبيعية: 'هذا السعر يُغلق بنهاية الشهر.'",
-        "اجمع الخطوات التالية: 'إذا اتفقنا اليوم، سأتعامل مع الإعداد بحلول الغد.'",
-        "استخدم إغلاقات الاختيار البديل: 'بريد إلكتروني أم واتساب للعقد؟'"
-      ]
+        "اصنع إلحاحاً بموعد طبيعي… دون ضغط أو مبالغة.",
+        "اجمع الخطوات التالية: «إذا اتفقنا اليوم، أجهزه لك غداً».",
+        "قدّم خيار قناة بسيط: «إيميل أم واتساب للتفاصيل؟»",
+      ],
     },
     Strength: {
       en: [
-        "Teach your signature closing rhythm to new team members.",
-        "Track your close rate by tactic to double down on what works.",
-        "Use your confidence to create 'momentum closes'—natural next-step asks."
+        "Teach your closing rhythm so others copy your flow, not just your words.",
+        "Track which closing tactic wins most and double down on it.",
+        "Convert momentum into action with a clear next-step ask every time.",
       ],
       ar: [
-        "درّب أعضاء الفريق الجدد على إيقاع الإغلاق المميز لديك.",
-        "تتبع معدل إغلاقك حسب التكتيك لتعزيز ما ينجح.",
-        "استخدم ثقتك لخلق 'إغلاقات زخم'—طلبات طبيعية للخطوة التالية."
-      ]
-    }
+        "علّم إيقاع الإغلاق… ليقلدوا التدفق لا الكلمات فقط.",
+        "تتبّع أسلوب الإغلاق الأكثر نجاحاً… وركّز عليه.",
+        "حوّل الزخم إلى خطوة واضحة بطلب «الخطوة التالية» دائماً.",
+      ],
+    },
   },
+
   follow_up_discipline: {
     Weakness: {
       en: [
-        "Set a 10-minute daily block to send all follow-ups at once.",
-        "Use templates: 'Checking in—did you have any questions about X?'",
-        "Schedule follow-ups in your calendar immediately after the conversation."
+        "Block 10 minutes daily and send follow-ups in one focused sprint.",
+        "Use one simple template and keep it warm—never robotic.",
+        "Schedule the follow-up before you leave the conversation.",
       ],
       ar: [
-        "حدّد كتلة 10 دقائق يومياً لإرسال جميع المتابعات دفعة واحدة.",
-        "استخدم قوالب: 'أتواصل لمتابعة—هل لديك أي أسئلة حول X؟'",
-        "جدول المتابعات في تقويمك فور انتهاء المحادثة."
-      ]
+        "خصص 10 دقائق يومياً… وأرسل المتابعات دفعة واحدة بتركيز.",
+        "استخدم قالباً بسيطاً واجعله دافئاً… لا آلياً.",
+        "جدول المتابعة قبل أن تغادر المحادثة مباشرة.",
+      ],
     },
     Threat: {
       en: [
-        "Batch follow-ups by time of day—morning for emails, evening for calls.",
-        "Add value in every follow-up: a tip, resource, or relevant insight.",
-        "Track response rates to identify your best follow-up timing."
+        "Batch follow-ups by time of day and protect the routine.",
+        "Add one small value item in every follow-up (tip, link, insight).",
+        "Track response timing to learn when prospects reply most.",
       ],
       ar: [
-        "جمّع المتابعات حسب وقت اليوم—الصباح للرسائل، المساء للمكالمات.",
-        "أضف قيمة في كل متابعة: نصيحة، مورد، أو رؤية ذات صلة.",
-        "تتبع معدلات الرد لتحديد أفضل توقيت لمتابعتك."
-      ]
+        "جمّع المتابعات حسب الوقت… واحمِ الروتين من الانقطاع.",
+        "أضف قيمة صغيرة في كل متابعة (نصيحة/رابط/فكرة).",
+        "تتبّع توقيت الرد… لتعرف متى يستجيب العملاء أكثر.",
+      ],
     },
     Opportunity: {
       en: [
-        "Personalize follow-ups with a reference to your last conversation.",
-        "Use automation (e.g., reminders) but keep messages human and warm.",
-        "Test different follow-up frequencies—some prospects need 3 touches, others 5."
+        "Personalize the follow-up with one reference from the last conversation.",
+        "Use reminders quietly while keeping the message warm and personal.",
+        "Test cadence (3 touches vs 5) and keep what performs best.",
       ],
       ar: [
-        "خصّص المتابعات بالإشارة إلى محادثتكم السابقة.",
-        "استخدم الأتمتة (مثل التذكيرات) ولكن اجعل الرسائل بشرية ودافئة.",
-        "جرّب تكرارات متابعة مختلفة—بعض العملاء يحتاجون 3 لمسات، آخرون 5."
-      ]
+        "خصّص المتابعة بإشارة واحدة من آخر محادثة.",
+        "استخدم التذكيرات بهدوء… مع رسالة شخصية ودافئة.",
+        "اختبر وتيرة المتابعة (3 لمسات vs 5)… واحتفظ بالأفضل.",
+      ],
     },
     Strength: {
       en: [
-        "Share your follow-up system as a team standard.",
-        "Create a 'follow-up playbook' with templates for every scenario.",
-        "Use your consistency to build a reputation for reliability that closes deals."
+        "Turn your follow-up system into a team standard others can copy.",
+        "Build a mini follow-up playbook with templates for key scenarios.",
+        "Use consistency to build trust—then let trust finish the deal.",
       ],
       ar: [
-        "شارك نظام متابعتك كمعيار للفريق.",
-        "أنشئ 'دليل متابعة' بقوالب لكل سيناريو.",
-        "استخدم انتظامك لبناء سمعة بالموثوقية تُغلق الصفقات."
-      ]
-    }
-  }
+        "حوّل نظام المتابعة إلى معيار للفريق يمكن نسخه بسهولة.",
+        "اصنع دليلاً مصغراً للمتابعة بقوالب لأهم السيناريوهات.",
+        "استخدم الانتظام لبناء الثقة… ثم دع الثقة تُكمل الصفقة.",
+      ],
+    },
+  },
 };
 
 export function getRecommendations(
@@ -369,7 +412,13 @@ export function getRecommendations(
   tier: Tier,
   lang: "en" | "ar"
 ): string[] {
-  const rec = RECOMMENDATIONS[String(competencyId || "").trim()]?.[tier];
+  const key = normalizeCompetencyId(competencyId);
+
+  const rec = RECOMMENDATIONS[key]?.[tier];
   if (!rec) return [];
-  return lang === "ar" ? rec.ar : rec.en;
+
+  const list = lang === "ar" ? rec.ar : rec.en;
+
+  // Safety: never return undefined items
+  return Array.isArray(list) ? list.filter(Boolean) : [];
 }

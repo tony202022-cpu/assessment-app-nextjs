@@ -1,0 +1,443 @@
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap");
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.pdf-root {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #111827;
+  font-family: "Cairo", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ===============================
+   PAGE STRUCTURE
+================================ */
+.report {
+  width: 210mm;
+  margin: 0 auto;
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 18mm;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #f9fafb, #e5e7eb);
+  page-break-after: always;
+}
+
+.page-last {
+  page-break-after: auto !important;
+}
+
+/* ===============================
+   RTL / LTR CONTROL (CRITICAL)
+================================ */
+.pdf-root[dir="ltr"] {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  text-align: left;
+}
+
+.pdf-root[dir="ltr"] * {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  text-align: left;
+}
+
+/* ✅ RTL base */
+.pdf-root[dir="rtl"] {
+  direction: rtl !important;
+  unicode-bidi: isolate !important;
+  text-align: right;
+}
+
+/* ✅ Force RTL for all content EXCEPT .num and .ltr (fixes Arabic titles rendering LTR) */
+.pdf-root[dir="rtl"] *:not(.num):not(.ltr) {
+  direction: rtl !important;
+  unicode-bidi: plaintext !important;
+  text-align: right !important;
+}
+
+/* ✅ Keep ONLY numbers/emails/ids as LTR inside Arabic */
+.pdf-root[dir="rtl"] .num,
+.pdf-root[dir="rtl"] .ltr {
+  direction: ltr !important;
+  unicode-bidi: isolate !important;
+  text-align: left !important;
+  display: inline-block;
+}
+
+/* ===============================
+   TITLES
+================================ */
+.section-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #4f46e5;
+  text-align: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e0e7ff;
+}
+
+/* ===============================
+   COVER PAGE
+================================ */
+.cover-page {
+  align-items: center;
+  text-align: center;
+  padding-top: 26mm;
+  background: linear-gradient(135deg, #ffffff, #eef2ff);
+}
+
+.cover-logo {
+  width: 170px;
+  margin-bottom: 16px;
+  object-fit: contain;
+}
+
+.cover-title {
+  font-size: 32px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.cover-subtitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  opacity: 0.85;
+}
+
+.cover-user-info {
+  max-width: 460px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cover-user-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  gap: 10px;
+}
+
+.pdf-root[dir="rtl"] .cover-user-line {
+  flex-direction: row-reverse;
+}
+
+.cover-user-label {
+  opacity: 0.7;
+}
+
+.cover-user-value {
+  font-weight: 900;
+}
+
+/* Cover bottom: keep image centered + safe spacing */
+.cover-bottom {
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.cover-visual {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  justify-content: center;
+}
+
+.cover-visual-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+/* ===============================
+   SCORE CIRCLE
+================================ */
+.cover-score-section {
+  margin-top: 10px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.score-circle {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+.score-value {
+  font-size: 34px;
+  font-weight: 900;
+}
+
+/* ===============================
+   SUMMARY GRID (PAGE 2)
+================================ */
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* ===============================
+   CARDS
+================================ */
+.card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 10px;
+}
+
+.pdf-root[dir="rtl"] .card-head {
+  flex-direction: row-reverse;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.pill {
+  border: 2px solid;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+}
+
+.diag {
+  font-size: 12px;
+  color: #4b5563;
+  margin-bottom: 10px;
+  line-height: 1.55;
+}
+
+/* ===============================
+   PROGRESS BAR
+================================ */
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-track {
+  flex: 1;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+/* ===============================
+   RECOMMENDATIONS (STACKED LONG BOXES)
+================================ */
+.recs-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rec-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.rec-long .rec-list {
+  margin-top: 6px;
+}
+
+.rec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.pdf-root[dir="rtl"] .rec-head {
+  flex-direction: row-reverse;
+}
+
+.rec-title {
+  font-size: 13px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.rec-list {
+  list-style: disc;
+  padding-inline-start: 18px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.rec-list li {
+  margin-bottom: 4px;
+}
+
+/* ===============================
+   SWOT + UPSELL (MORE SPACE)
+================================ */
+.swot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.swot-card {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.swot-title {
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+  margin: 0 0 10px 0;
+}
+
+.swot-list {
+  list-style: disc;
+  padding-inline-start: 20px;
+  margin: 0;
+  line-height: 1.65;
+}
+
+.swot-strength {
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.06);
+}
+.swot-opportunity {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.06);
+}
+.swot-weakness {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
+}
+.swot-threat {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: rgba(217, 119, 6, 0.06);
+}
+
+.swot-to-upsell-spacer {
+  height: 14px;
+}
+
+/* Upsell calmer premium */
+.upsell-box {
+  background: linear-gradient(135deg, #1e3a8a, #4f46e5);
+  color: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.upsell-intro {
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.upsell-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.upsell-ul {
+  margin: 8px 0 0 0;
+  padding-inline-start: 18px;
+  line-height: 1.6;
+}
+
+.upsell-cta {
+  display: block;
+  margin-top: 12px;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-weight: 900;
+  padding: 11px;
+  border-radius: 14px;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* ===============================
+   FOOTER
+================================ */
+.footer {
+  margin-top: auto;
+  padding-top: 14px;
+  font-size: 11px;
+  color: #6b7280;
+  text-align: center;
+}

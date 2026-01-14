@@ -43,7 +43,7 @@ const COMPETENCY_NAME_EN: Record<string, string> = {
   mental_toughness: "Mental Toughness",
   opening_conversations: "Opening Conversations",
   identifying_real_needs: "Identifying Real Needs",
-  destroying_objections: "Handling Objections",
+  destroying_objections: "Destroying Objections",
   creating_irresistible_offers: "Creating Irresistible Offers",
   mastering_closing: "Mastering Closing",
   follow_up_discipline: "Follow-Up Discipline",
@@ -128,10 +128,12 @@ export async function buildPdfUrl({
   lang: Language;
 }) {
   const base = process.env.NEXT_PUBLIC_PDF_SERVICE_URL;
-  if (!base) throw new Error("Missing NEXT_PUBLIC_PDF_SERVICE_URL");
+
+  // If not set, use same-origin (works on Vercel + local)
+  const prefix = base && base.trim().length ? base.replace(/\/$/, "") : "";
 
   return (
-    `${base.replace(/\/$/, "")}/api/generate-pdf` +
+    `${prefix}/api/generate-pdf` +
     `?attemptId=${encodeURIComponent(attemptId)}` +
     `&lang=${encodeURIComponent(lang)}`
   );
@@ -161,7 +163,7 @@ export async function submitQuiz(
   const totalQuestions = answers.length;
   const totalScore = answers.reduce((s, a) => s + (Number(a.selectedScore) || 0), 0);
 
-  const overallMax = totalQuestions * 4;
+  const overallMax = totalQuestions * 5;
   const totalPercentage = overallMax > 0 ? clampPct((totalScore / overallMax) * 100) : 0;
 
   const byComp = new Map<string, { score: number; count: number }>();
@@ -176,7 +178,7 @@ export async function submitQuiz(
 
   const competency_results: CompetencyResult[] = COMPETENCY_ORDER.map((cid) => {
     const row = byComp.get(cid) || { score: 0, count: 0 };
-    const maxScore = row.count * 4;
+    const maxScore = row.count * 5;
     const pct = maxScore > 0 ? clampPct((row.score / maxScore) * 100) : 0;
     return {
       competencyId: cid,

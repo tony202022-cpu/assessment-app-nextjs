@@ -267,23 +267,19 @@ export default function ResultsClient() {
   const threats = useMemo(() => orderedResults.filter((c) => c.tier === "Threat"), [orderedResults]);
   const weaknesses = useMemo(() => orderedResults.filter((c) => c.tier === "Weakness"), [orderedResults]);
 
-  /** ===== PDF (use env var base) ===== */
-  const handleDownloadPDF = () => {
-    if (!attemptId) return;
+  /** ===== PDF (prefer configured base; fallback to same-origin) ===== */
+const handleDownloadPDF = () => {
+  if (!attemptId) return;
 
-    const base = process.env.NEXT_PUBLIC_PDF_SERVICE_URL;
-    if (!base) {
-      toast.error(language === "ar" ? "PDF service URL غير مضبوط" : "PDF service URL is missing");
-      return;
-    }
+  const url =
+    `/api/generate-pdf` +
+    `?attemptId=${encodeURIComponent(attemptId)}` +
+    `&lang=${encodeURIComponent(language)}`;
 
-    const url =
-      `${base.replace(/\/$/, "")}/api/generate-pdf` +
-      `?attemptId=${encodeURIComponent(attemptId)}` +
-      `&lang=${encodeURIComponent(language)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+};
 
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+
 
   /** ===== Render states ===== */
   if (loading || isSessionLoading) {
