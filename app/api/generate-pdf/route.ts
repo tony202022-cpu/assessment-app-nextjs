@@ -47,13 +47,15 @@ export async function GET(req: Request) {
 
     if (isServerless) {
       // ✅ Vercel / Serverless
-      const chromium = await import("@sparticuz/chromium-min");
-      const puppeteerCore = await import("puppeteer-core");
+     const chromiumModule = await import("@sparticuz/chromium-min");
+const chromium = chromiumModule.default;
+const puppeteerCore = await import("puppeteer-core");
 
-      puppeteer = puppeteerCore;
-      executablePath = await chromium.executablePath();
-      launchArgs = chromium.args;
-      headless = chromium.headless;
+puppeteer = puppeteerCore;
+executablePath = await chromium.executablePath();
+launchArgs = chromium.args;
+headless = chromium.headless;
+
     } else {
       // ✅ Local dev (Windows / Mac)
       const puppeteerFull = await import("puppeteer");
