@@ -71,7 +71,9 @@ export async function GET(req: NextRequest) {
     await page.close();
     await browser.close();
 
-    return new Response(pdfBuffer, {
+    const body = new Uint8Array(pdfBuffer);
+return new Response(body, {
+
       status: 200,
       headers: {
         "content-type": "application/pdf",
