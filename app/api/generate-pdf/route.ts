@@ -45,23 +45,24 @@ export async function GET(req: Request) {
     let launchArgs: string[] = [];
     let headless: any = "new";
 
-    if (isServerless) {
-      // ✅ Vercel / Serverless
-     const chromiumModule = await import("@sparticuz/chromium-min");
-const chromium = chromiumModule.default;
-const puppeteerCore = await import("puppeteer-core");
+if (isServerless) {
+  const chromiumModule = await import("@sparticuz/chromium-min");
+  const chromium: any = chromiumModule.default; // ✅ avoid TS typing issues
+  const puppeteerCore: any = await import("puppeteer-core");
 
-puppeteer = puppeteerCore;
-executablePath = await chromium.executablePath();
-launchArgs = chromium.args;
-headless = chromium.headless;
-
-    } else {
-      // ✅ Local dev (Windows / Mac)
-      const puppeteerFull = await import("puppeteer");
-      puppeteer = puppeteerFull;
-      executablePath = puppeteerFull.executablePath();
-    }
+  puppeteer = puppeteerCore;
+  executablePath = await chromium.executablePath();
+  launchArgs = chromium.args;
+  headless = true; // ✅ no TS error, works on Vercel
+  defaultViewport = chromium.defaultViewport;
+} else {
+  const puppeteerFull: any = await import("puppeteer");
+  puppeteer = puppeteerFull;
+  executablePath = puppeteerFull.executablePath();
+  launchArgs = [];
+  headless = "new";
+  defaultViewport = undefined;
+}
 
     browser = await puppeteer.launch({
       args: launchArgs,
