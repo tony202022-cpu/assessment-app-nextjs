@@ -42,39 +42,52 @@
 }
 
 /* ===============================
-   RTL / LTR CONTROL (CRITICAL)
+   ✅ RTL / LTR CONTROL - COMPLETELY REWRITTEN
 ================================ */
+
+/* Base LTR for English */
 .pdf-root[dir="ltr"] {
-  direction: ltr !important;
-  unicode-bidi: isolate !important;
+  direction: ltr;
   text-align: left;
 }
 
 .pdf-root[dir="ltr"] * {
-  direction: ltr !important;
-  unicode-bidi: isolate !important;
+  direction: ltr;
   text-align: left;
 }
 
-/* ✅ RTL base */
+/* ✅ Base RTL for Arabic */
 .pdf-root[dir="rtl"] {
-  direction: rtl !important;
-  unicode-bidi: isolate !important;
+  direction: rtl;
   text-align: right;
 }
 
-/* ✅ Force RTL for all content EXCEPT .num and .ltr (fixes Arabic titles rendering LTR) */
-.pdf-root[dir="rtl"] *:not(.num):not(.ltr) {
-  direction: rtl !important;
-  unicode-bidi: plaintext !important;
-  text-align: right !important;
+/* ✅ DEFAULT: All content in Arabic is RTL */
+.pdf-root[dir="rtl"] * {
+  direction: rtl;
+  text-align: right;
 }
 
-/* ✅ Keep ONLY numbers/emails/ids as LTR inside Arabic */
+/* ✅ CRITICAL FIX: Force RTL for Arabic text content */
+.pdf-root[dir="rtl"] .rtl-text {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: embed;
+}
+
+/* ✅ CRITICAL FIX: Force RTL for Arabic values (names, companies, dates) */
+.pdf-root[dir="rtl"] .rtl-value {
+  direction: rtl !important;
+  text-align: right !important;
+  unicode-bidi: plaintext;
+  display: inline-block;
+}
+
+/* ✅ Keep numbers and emails as LTR inside Arabic */
 .pdf-root[dir="rtl"] .num,
 .pdf-root[dir="rtl"] .ltr {
   direction: ltr !important;
-  unicode-bidi: isolate !important;
+  unicode-bidi: embed;
   text-align: left !important;
   display: inline-block;
 }
@@ -112,6 +125,7 @@
   font-size: 32px;
   font-weight: 900;
   margin-bottom: 6px;
+  text-align: center;
 }
 
 .cover-subtitle {
@@ -119,6 +133,7 @@
   font-weight: 600;
   margin-bottom: 14px;
   opacity: 0.85;
+  text-align: center;
 }
 
 .cover-user-info {
@@ -140,8 +155,10 @@
   gap: 10px;
 }
 
+/* ✅ FIXED: RTL flex direction for Arabic */
 .pdf-root[dir="rtl"] .cover-user-line {
-  flex-direction: row-reverse;
+  flex-direction: row;
+  text-align: right;
 }
 
 .cover-user-label {
@@ -152,7 +169,7 @@
   font-weight: 900;
 }
 
-/* Cover bottom: keep image centered + safe spacing */
+/* ✅ FIXED: Cover visual - proper centering without horizontal cut */
 .cover-bottom {
   width: 100%;
   margin-top: 12px;
@@ -166,15 +183,17 @@
 
 .cover-visual {
   width: 100%;
-  max-width: 560px;
+  max-width: 520px;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .cover-visual-img {
   width: 100%;
-  height: 160px;
-  object-fit: cover;
+  height: auto;
+  max-height: 150px;
+  object-fit: contain;
   border-radius: 16px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
@@ -204,6 +223,10 @@
 .score-value {
   font-size: 34px;
   font-weight: 900;
+}
+
+.cover-score-label {
+  text-align: center;
 }
 
 /* ===============================
@@ -236,14 +259,16 @@
   gap: 10px;
 }
 
+/* ✅ FIXED: RTL card header alignment */
 .pdf-root[dir="rtl"] .card-head {
-  flex-direction: row-reverse;
+  flex-direction: row;
 }
 
 .card-title {
   font-size: 15px;
   font-weight: 900;
   margin: 0;
+  flex: 1;
 }
 
 .pill {
@@ -254,6 +279,7 @@
   font-weight: 900;
   background: rgba(255, 255, 255, 0.88);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .diag {
@@ -285,26 +311,68 @@
   border-radius: 999px;
 }
 
+.pct {
+  font-size: 13px;
+  font-weight: 900;
+  min-width: 42px;
+  text-align: right;
+}
+
 /* ===============================
-   RECOMMENDATIONS (STACKED LONG BOXES)
+   SWOT MINI SUMMARY (in overall card)
+================================ */
+.swot-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-top: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.swot-mini-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.pdf-root[dir="rtl"] .swot-mini-row {
+  flex-direction: row-reverse;
+}
+
+.swot-mini-label {
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.swot-mini-value {
+  font-weight: 900;
+  font-size: 13px;
+}
+
+/* ===============================
+   RECOMMENDATIONS
 ================================ */
 .recs-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .rec-card {
   background: rgba(255, 255, 255, 0.92);
   border-radius: 14px;
   border: 1px solid #e5e7eb;
-  padding: 10px 12px;
+  padding: 9px 11px;
   break-inside: avoid;
   page-break-inside: avoid;
 }
 
 .rec-long .rec-list {
-  margin-top: 6px;
+  margin-top: 5px;
 }
 
 .rec-head {
@@ -312,32 +380,41 @@
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  margin-bottom: 5px;
 }
 
+/* ✅ FIXED: RTL recommendation header */
 .pdf-root[dir="rtl"] .rec-head {
-  flex-direction: row-reverse;
+  flex-direction: row;
 }
 
 .rec-title {
   font-size: 13px;
   font-weight: 900;
   margin: 0;
+  flex: 1;
 }
 
 .rec-list {
   list-style: disc;
   padding-inline-start: 18px;
   margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 11.5px;
+  line-height: 1.45;
 }
 
 .rec-list li {
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+}
+
+.muted {
+  font-size: 11.5px;
+  color: #6b7280;
+  font-style: italic;
 }
 
 /* ===============================
-   SWOT + UPSELL (MORE SPACE)
+   SWOT + UPSELL
 ================================ */
 .swot-grid {
   display: grid;
@@ -368,6 +445,7 @@
   padding-inline-start: 20px;
   margin: 0;
   line-height: 1.65;
+  font-size: 13px;
 }
 
 .swot-strength {
@@ -391,7 +469,26 @@
   height: 14px;
 }
 
-/* Upsell calmer premium */
+.upsell-wrap {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.upsell-title-big {
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.upsell-intro {
+  margin-top: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .upsell-box {
   background: linear-gradient(135deg, #1e3a8a, #4f46e5);
   color: #fff;
@@ -402,9 +499,18 @@
   page-break-inside: avoid;
 }
 
-.upsell-intro {
-  margin-top: 8px;
-  margin-bottom: 10px;
+.upsell-box h3 {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.upsell-box p {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+  text-align: center;
 }
 
 .upsell-cols {
@@ -417,6 +523,7 @@
   margin: 8px 0 0 0;
   padding-inline-start: 18px;
   line-height: 1.6;
+  font-size: 13px;
 }
 
 .upsell-cta {
@@ -429,6 +536,7 @@
   border-radius: 14px;
   text-align: center;
   text-decoration: none;
+  font-size: 14px;
 }
 
 /* ===============================

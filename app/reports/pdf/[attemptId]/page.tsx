@@ -156,9 +156,9 @@ function formatReportDate(dateValue: any, isArabic: boolean) {
   }
 }
 
-/** ✅ Presentation only: returns FINAL list from lib */
+/** ✅ Presentation only: returns FINAL list from lib - CHANGED TO 3 BULLETS */
 function getTierRecs(competencyKey: string, tier: Tier, lang: "ar" | "en") {
-  return getRecommendations(competencyKey, tier, lang) || [];
+  return getRecommendations(competencyKey, tier, lang)?.slice(0, 3) || [];
 }
 
 export default async function PdfReport({
@@ -275,24 +275,24 @@ export default async function PdfReport({
         <section className="page cover-page">
           <img src="/new levelup logo 3.png" className="cover-logo" alt="Logo" />
 
-          <h1 className="cover-title" dir={textDir}>
+          <h1 className="cover-title">
             {finalIsArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}
           </h1>
 
-          <h2 className="cover-subtitle" dir={textDir}>
+          <h2 className="cover-subtitle">
             {finalIsArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}
           </h2>
 
           <div className="cover-user-info">
             <div className="cover-user-line">
               <span className="cover-user-label">{finalIsArabic ? "الاسم" : "Name"}</span>
-              <span className="cover-user-value">{displayName}</span>
+              <span className="cover-user-value rtl-value">{displayName}</span>
             </div>
 
             {displayCompany ? (
               <div className="cover-user-line">
                 <span className="cover-user-label">{finalIsArabic ? "الشركة" : "Company"}</span>
-                <span className="cover-user-value">{displayCompany}</span>
+                <span className="cover-user-value rtl-value">{displayCompany}</span>
               </div>
             ) : null}
 
@@ -303,7 +303,7 @@ export default async function PdfReport({
 
             <div className="cover-user-line">
               <span className="cover-user-label">{finalIsArabic ? "تاريخ التقييم" : "Assessment Date"}</span>
-              <span className="cover-user-value">{reportDate}</span>
+              <span className="cover-user-value rtl-value">{reportDate}</span>
             </div>
 
             <div className="cover-user-line">
@@ -323,12 +323,12 @@ export default async function PdfReport({
               <span className="score-value num">{clampPct(totalPercentage)}%</span>
             </div>
 
-            <p className="cover-score-label" dir={textDir}>
+            <p className="cover-score-label">
               {finalIsArabic ? "النتيجة الإجمالية" : "Overall Score"}
             </p>
           </div>
 
-          {/* Cover visual centered, equidistant, not cut */}
+          {/* ✅ FIXED: Cover visual centered with proper aspect ratio */}
           <div className="cover-bottom">
             <div className="cover-visual">
               <img src="/sales-visual.jpg" alt="Field sales" className="cover-visual-img" />
@@ -337,9 +337,9 @@ export default async function PdfReport({
           </div>
         </section>
 
-        {/* PAGE 2: PERFORMANCE SUMMARY (grid 2 columns, all same size) */}
+        {/* PAGE 2: PERFORMANCE SUMMARY */}
         <section className="page">
-          <h2 className="section-title" dir={textDir}>
+          <h2 className="section-title">
             {finalIsArabic ? "ملخص الأداء" : "Performance Summary"}
           </h2>
 
@@ -355,7 +355,8 @@ export default async function PdfReport({
               return (
                 <div key={c.competencyId} className="card">
                   <div className="card-head">
-                    <h3 className="card-title" dir={textDir}>
+                    {/* ✅ FIXED: Competency title now RTL in Arabic */}
+                    <h3 className="card-title rtl-text">
                       {title}
                     </h3>
                     <span className="pill" style={{ borderColor: color, color }}>
@@ -363,7 +364,7 @@ export default async function PdfReport({
                     </span>
                   </div>
 
-                  <p className="diag" dir={textDir}>
+                  <p className="diag rtl-text">
                     {diag}
                   </p>
 
@@ -372,18 +373,15 @@ export default async function PdfReport({
                       <div className="bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
                     </div>
                     <span className="pct num">{pct}%</span>
-
-                    {/* ✅ Presentation fix: REMOVE confusing raw score fractions */}
-                    {/* (No scoring/data changes, only not showing it) */}
                   </div>
                 </div>
               );
             })}
 
-            {/* Overall card as the 8th box (same size) */}
+            {/* Overall card with SWOT summary */}
             <div className="card">
               <div className="card-head">
-                <h3 className="card-title" dir={textDir}>
+                <h3 className="card-title rtl-text">
                   {finalIsArabic ? "ملخص الأداء الإجمالي" : "Overall Performance Summary"}
                 </h3>
                 <span className="pill" style={{ borderColor: circleColors.border, color: circleColors.border }}>
@@ -391,30 +389,48 @@ export default async function PdfReport({
                 </span>
               </div>
 
-              <div className="bar-row">
-                <div className="bar-track">
-                  <div
-                    className="bar-fill"
-                    style={{ width: `${clampPct(totalPercentage)}%`, backgroundColor: circleColors.border }}
-                  />
-                </div>
-                <span className="pct num">{clampPct(totalPercentage)}%</span>
-              </div>
-
-              <p className="diag" dir={textDir} style={{ marginTop: 8 }}>
+              <p className="diag rtl-text" style={{ marginTop: 4, marginBottom: 10 }}>
                 {finalIsArabic
                   ? "هذه النسبة تلخّص الأداء العام بناءً على نتائج الكفاءات."
                   : "This percentage summarizes your overall performance across competencies."}
               </p>
+
+              {/* SWOT Mini Summary */}
+              <div className="swot-mini">
+                <div className="swot-mini-row">
+                  <span className="swot-mini-label" style={{ color: "#16a34a" }}>
+                    {finalIsArabic ? "قوة" : "Strengths"}:
+                  </span>
+                  <span className="swot-mini-value num">{strengths.length}</span>
+                </div>
+                <div className="swot-mini-row">
+                  <span className="swot-mini-label" style={{ color: "#2563eb" }}>
+                    {finalIsArabic ? "فرصة" : "Opportunities"}:
+                  </span>
+                  <span className="swot-mini-value num">{opportunities.length}</span>
+                </div>
+                <div className="swot-mini-row">
+                  <span className="swot-mini-label" style={{ color: "#d97706" }}>
+                    {finalIsArabic ? "تهديد" : "Threats"}:
+                  </span>
+                  <span className="swot-mini-value num">{threats.length}</span>
+                </div>
+                <div className="swot-mini-row">
+                  <span className="swot-mini-label" style={{ color: "#dc2626" }}>
+                    {finalIsArabic ? "ضعف" : "Weaknesses"}:
+                  </span>
+                  <span className="swot-mini-value num">{weaknesses.length}</span>
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="footer">Dyad © 2026</div>
         </section>
 
-        {/* PAGE 3: RECOMMENDATIONS (stacked long boxes, not squeezed) */}
+        {/* PAGE 3: RECOMMENDATIONS - ✅ FIXED: Now shows 3 bullets and fits on one page */}
         <section className="page">
-          <h2 className="section-title" dir={textDir}>
+          <h2 className="section-title">
             {finalIsArabic ? "التوصيات العملية" : "Action Recommendations"}
           </h2>
 
@@ -425,13 +441,14 @@ export default async function PdfReport({
               const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
               const color = tierColor(c.tier);
 
-              // ✅ keep it spacious: 2 bullets only, teaser-level
-              const recs = getTierRecs(key, c.tier, finalLang).slice(0, 2);
+              // ✅ CHANGED: Now showing 3 bullets instead of 2
+              const recs = getTierRecs(key, c.tier, finalLang);
 
               return (
                 <div key={c.competencyId} className="rec-card rec-long">
                   <div className="rec-head">
-                    <h3 className="rec-title" style={{ color }} dir={textDir}>
+                    {/* ✅ FIXED: Recommendation title now RTL in Arabic */}
+                    <h3 className="rec-title rtl-text" style={{ color }}>
                       {title}
                     </h3>
                     <span className="pill" style={{ borderColor: color, color }}>
@@ -440,13 +457,13 @@ export default async function PdfReport({
                   </div>
 
                   {recs.length ? (
-                    <ul className="rec-list" dir={textDir}>
+                    <ul className="rec-list rtl-text">
                       {recs.map((t, idx) => (
                         <li key={idx}>{t}</li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="muted" dir={textDir}>
+                    <p className="muted rtl-text">
                       {finalIsArabic
                         ? "لا توجد توصيات متاحة لهذه الكفاءة حاليًا."
                         : "No recommendations available for this competency yet."}
@@ -460,22 +477,22 @@ export default async function PdfReport({
           <div className="footer">Dyad © 2026</div>
         </section>
 
-        {/* LAST PAGE: SWOT + UPSELL (more space + padding) */}
+        {/* LAST PAGE: SWOT + UPSELL */}
         <section className="page page-last">
-          <h2 className="section-title" dir={textDir}>
+          <h2 className="section-title">
             {finalIsArabic ? "SWOT + الخطوة التالية" : "SWOT + Next Step"}
           </h2>
 
-          <h3 className="section-title" style={{ fontSize: 18, marginTop: 0 }} dir={textDir}>
+          <h3 className="section-title" style={{ fontSize: 18, marginTop: 0 }}>
             {finalIsArabic ? "تحليل SWOT" : "SWOT Analysis"}
           </h3>
 
           <div className="swot-grid">
             <div className="swot-card swot-strength">
-              <h4 className="swot-title" dir={textDir}>
+              <h4 className="swot-title rtl-text">
                 {finalIsArabic ? "نقاط القوة" : "Strengths"}
               </h4>
-              <ul className="swot-list" dir={textDir}>
+              <ul className="swot-list rtl-text">
                 {(strengths.length ? strengths : []).map((r) => {
                   const key = normalizeCompetencyId(r.competencyId);
                   const meta = COMPETENCY_META[key];
@@ -493,10 +510,10 @@ export default async function PdfReport({
             </div>
 
             <div className="swot-card swot-opportunity">
-              <h4 className="swot-title" dir={textDir}>
+              <h4 className="swot-title rtl-text">
                 {finalIsArabic ? "فرص التطوير" : "Opportunities"}
               </h4>
-              <ul className="swot-list" dir={textDir}>
+              <ul className="swot-list rtl-text">
                 {(opportunities.length ? opportunities : []).map((r) => {
                   const key = normalizeCompetencyId(r.competencyId);
                   const meta = COMPETENCY_META[key];
@@ -514,10 +531,10 @@ export default async function PdfReport({
             </div>
 
             <div className="swot-card swot-weakness">
-              <h4 className="swot-title" dir={textDir}>
+              <h4 className="swot-title rtl-text">
                 {finalIsArabic ? "نقاط الضعف" : "Weaknesses"}
               </h4>
-              <ul className="swot-list" dir={textDir}>
+              <ul className="swot-list rtl-text">
                 {(weaknesses.length ? weaknesses : []).map((r) => {
                   const key = normalizeCompetencyId(r.competencyId);
                   const meta = COMPETENCY_META[key];
@@ -533,10 +550,10 @@ export default async function PdfReport({
             </div>
 
             <div className="swot-card swot-threat">
-              <h4 className="swot-title" dir={textDir}>
+              <h4 className="swot-title rtl-text">
                 {finalIsArabic ? "مخاطر محتملة" : "Threats"}
               </h4>
-              <ul className="swot-list" dir={textDir}>
+              <ul className="swot-list rtl-text">
                 {(threats.length ? threats : []).map((r) => {
                   const key = normalizeCompetencyId(r.competencyId);
                   const meta = COMPETENCY_META[key];
@@ -553,31 +570,31 @@ export default async function PdfReport({
           <div className="swot-to-upsell-spacer" />
 
           <div className="upsell-wrap">
-            <h3 className="upsell-title-big" dir={textDir}>
+            <h3 className="upsell-title-big rtl-text">
               {finalIsArabic ? "جاهز للمرحلة المتقدمة؟" : "Ready for the Advanced Level?"}
             </h3>
 
-            <p className="upsell-intro" dir={textDir}>
+            <p className="upsell-intro rtl-text">
               {finalIsArabic
                 ? "هذا التقرير يعطيك صورة قوية… لكن التغيير الحقيقي يبدأ عندما تحوّل النتائج إلى خطة تنفيذ أسبوعية بأدوات وإشراف."
                 : "This report gives you a strong snapshot… but real change starts when you convert results into a weekly execution plan with tools and guidance."}
             </p>
 
-            <div className="upsell-box" dir={textDir}>
-              <h3>{finalIsArabic ? "برنامج Sales MRI المتقدم" : "Sales MRI Advanced Program"}</h3>
-              <p>
+            <div className="upsell-box">
+              <h3 className="rtl-text">{finalIsArabic ? "برنامج Sales MRI المتقدم" : "Sales MRI Advanced Program"}</h3>
+              <p className="rtl-text">
                 {finalIsArabic
                   ? "برنامج عملي لتحويل 7 كفاءات إلى سلوك يومي… مع أدوات ميدانية، تمارين، وتتّبع أداء."
                   : "A practical program that turns 7 competencies into daily behavior… with field tools, drills, and performance tracking."}
               </p>
 
               <div className="upsell-cols">
-                <ul className="upsell-ul" dir={textDir}>
+                <ul className="upsell-ul rtl-text">
                   <li>{finalIsArabic ? "✅ خطة تطبيق 30 يومًا" : "✅ 30-day execution plan"}</li>
                   <li>{finalIsArabic ? "✅ أدوات ميدانية جاهزة" : "✅ Ready field tools"}</li>
                   <li>{finalIsArabic ? "✅ تحويل الضعف إلى قوة" : "✅ Turn weakness into strength"}</li>
                 </ul>
-                <ul className="upsell-ul" dir={textDir}>
+                <ul className="upsell-ul rtl-text">
                   <li>{finalIsArabic ? "✅ مخرجات قابلة للقياس" : "✅ Measurable outputs"}</li>
                   <li>{finalIsArabic ? "✅ متابعة وتوجيه" : "✅ Follow-up guidance"}</li>
                   <li>{finalIsArabic ? "✅ أسلوب احترافي في الإغلاق" : "✅ Pro closing behavior"}</li>
