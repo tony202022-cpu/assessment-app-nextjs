@@ -51,7 +51,7 @@ export async function GET(req: Request) {
 
     if (isServerless) {
       // ✅ Vercel / Serverless path (chromium provided by @sparticuz/chromium)
-      const chromiumMod: any = await import("@sparticuz/chromium");
+      const chromiumMod: any = await import("@sparticuz/chromium-min");
       const puppeteerCore: any = await import("puppeteer-core");
 
       const chromium = chromiumMod.default;
