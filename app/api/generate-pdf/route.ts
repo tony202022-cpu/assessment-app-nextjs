@@ -19,6 +19,8 @@ export async function GET(req: Request) {
   const attemptId = (searchParams.get("attemptId") || "").toString().trim();
   const lang = (searchParams.get("lang") || "en").toString().trim();
   const debug = isTruthy(searchParams.get("debug") || "");
+if (debug) console.log("PDF_MARKER:", "chromium-min-build-1");
+
 
   if (!attemptId) {
     return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
