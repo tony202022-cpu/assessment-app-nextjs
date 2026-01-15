@@ -60,8 +60,7 @@ if (isServerless) {
   executablePath = puppeteerFull.executablePath();
   launchArgs = [];
   headless = "new";
-  defaultViewport = undefined;
-}
+  
 
     browser = await puppeteer.launch({
       args: launchArgs,
