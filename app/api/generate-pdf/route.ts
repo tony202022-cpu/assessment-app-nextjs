@@ -41,7 +41,6 @@ export async function GET(req: NextRequest) {
         defaultViewport: chromium.defaultViewport,
         executablePath,
         headless: chromium.headless,
-        ignoreHTTPSErrors: true,
       });
     } else {
       const puppeteer = (await import("puppeteer")).default;
