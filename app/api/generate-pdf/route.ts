@@ -30,21 +30,23 @@ export async function GET(req: NextRequest) {
     if (isVercel()) {
       const puppeteer = (await import("puppeteer-core")).default;
 
-      // ✅ IMPORTANT: grab default export if present (fixes TS + ESM shape)
       const chromiumModule: any = await import("@sparticuz/chromium-min");
       const chromium: any = chromiumModule.default ?? chromiumModule;
 
       const executablePath = await chromium.executablePath();
 
+      // Keep options minimal + compatible; cast only here to avoid TS drift.
       browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
         executablePath,
         headless: chromium.headless,
-      });
+      } as any);
     } else {
       const puppeteer = (await import("puppeteer")).default;
-      browser = await puppeteer.launch({ headless: "new" });
+
+      // ✅ Use boolean headless for maximum compatibility with older typings
+      browser = await puppeteer.launch({ headless: true } as any);
     }
 
     const page = await browser.newPage();
@@ -78,7 +80,9 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err: any) {
-    const message = typeof err?.message === "string" ? err.message : "Unknown error";
+    const message =
+      typeof err?.message === "string" ? err.message : "Unknown error";
+
     return new Response(
       JSON.stringify({ error: "PDF_GENERATION_FAILED", message }),
       { status: 500, headers: { "content-type": "application/json" } }
