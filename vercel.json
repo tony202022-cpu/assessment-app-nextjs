@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "app/api/generate-pdf/route.ts": {
+      "includeFiles": [
+        "node_modules/**/@sparticuz/chromium/bin/**",
+        "node_modules/**/@sparticuz/chromium/**/*.br",
+        "node_modules/.pnpm/**/@sparticuz+chromium@*/node_modules/@sparticuz/chromium/bin/**",
+        "node_modules/.pnpm/**/@sparticuz+chromium@*/node_modules/@sparticuz/chromium/**/*.br"
+      ]
+    }
+  }
+}
