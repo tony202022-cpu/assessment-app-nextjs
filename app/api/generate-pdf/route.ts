@@ -1,4 +1,7 @@
 // app/api/generate-pdf/route.ts
+
+import path from "path";
+import { createRequire } from "module";
 import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
