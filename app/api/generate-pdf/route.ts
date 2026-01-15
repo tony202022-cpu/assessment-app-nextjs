@@ -54,8 +54,7 @@ if (isServerless) {
   executablePath = await chromium.executablePath();
   launchArgs = chromium.args;
   headless = true; // ✅ no TS error, works on Vercel
-  defaultViewport = chromium.defaultViewport;
-} else {
+  } else {
   const puppeteerFull: any = await import("puppeteer");
   puppeteer = puppeteerFull;
   executablePath = puppeteerFull.executablePath();
