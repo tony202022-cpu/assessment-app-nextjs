@@ -256,8 +256,7 @@ export default function ResultsClient() {
   const computedTotal = useMemo(() => {
     if (typeof totalPercentage === "number" && !Number.isNaN(totalPercentage)) return clampPct(totalPercentage);
     if (!orderedResults.length) return 0;
-    const avg =
-      orderedResults.reduce((s, c) => s + (Number(c.percentage) || 0), 0) / orderedResults.length;
+    const avg = orderedResults.reduce((s, c) => s + (Number(c.percentage) || 0), 0) / orderedResults.length;
     return clampPct(avg);
   }, [orderedResults, totalPercentage]);
 
@@ -267,19 +266,20 @@ export default function ResultsClient() {
   const threats = useMemo(() => orderedResults.filter((c) => c.tier === "Threat"), [orderedResults]);
   const weaknesses = useMemo(() => orderedResults.filter((c) => c.tier === "Weakness"), [orderedResults]);
 
-  /** ===== PDF (prefer configured base; fallback to same-origin) ===== */
-const handleDownloadPDF = () => {
-  if (!attemptId) return;
+  /** ===== PDF URL (client-safe) ===== */
+  const handleDownloadPDF = () => {
+    if (!attemptId) return;
 
-  const url =
-    `/api/generate-pdf` +
-    `?attemptId=${encodeURIComponent(attemptId)}` +
-    `&lang=${encodeURIComponent(language)}`;
+    const base = (process.env.NEXT_PUBLIC_PDF_SERVICE_URL || "").trim();
+    const prefix = base ? base.replace(/\/$/, "") : ""; // if empty => same-origin
 
-  window.open(url, "_blank", "noopener,noreferrer");
-};
+    const url =
+      `${prefix}/api/generate-pdf` +
+      `?attemptId=${encodeURIComponent(attemptId)}` +
+      `&lang=${encodeURIComponent(language === "ar" ? "ar" : "en")}`;
 
-
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   /** ===== Render states ===== */
   if (loading || isSessionLoading) {
@@ -476,7 +476,7 @@ const handleDownloadPDF = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth="2"
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
                 {language === "ar" ? "تحميل التقرير الكامل" : "Download Full Report"}

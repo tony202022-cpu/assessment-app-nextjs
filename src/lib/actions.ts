@@ -118,7 +118,8 @@ function tierFromPercentage(pct: number): Tier {
 }
 
 /* =========================================================
-   1) BUILD PDF URL
+   1) BUILD PDF URL  (SERVER)
+   NOTE: This file is "use server" so exports must be async.
 ========================================================= */
 export async function buildPdfUrl({
   attemptId,
@@ -145,7 +146,7 @@ export async function buildPdfUrl({
 export async function submitQuiz(
   finalAnswers: AnswerPayload[],
   userId: string,
-  language: Language,
+  language: Language
 ): Promise<{ attemptId: string }> {
   if (!userId) throw new Error("Missing userId");
   if (!Array.isArray(finalAnswers) || finalAnswers.length === 0) {
