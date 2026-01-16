@@ -40,26 +40,16 @@ export async function GET(req: NextRequest) {
       const puppeteerCore = await import("puppeteer-core");
       const chromium = await import("@sparticuz/chromium");
 
-      // Get chromium executable
+      // Get chromium executable - no arguments needed
       const executablePath = await chromium.default.executablePath();
 
       debugInfo.executablePath = executablePath;
-      debugInfo.chromiumVersion = chromium.default.headless;
 
       browser = await puppeteerCore.default.launch({
-        args: [
-          ...chromium.default.args,
-          "--disable-gpu",
-          "--disable-dev-shm-usage",
-          "--disable-software-rasterizer",
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--single-process",
-        ],
+        args: chromium.default.args,
         defaultViewport: chromium.default.defaultViewport,
         executablePath,
         headless: chromium.default.headless,
-        ignoreHTTPSErrors: true,
       });
     } else {
       // ✅ Local: Use full puppeteer
@@ -88,8 +78,8 @@ export async function GET(req: NextRequest) {
     // Wait for content to be ready
     await page.waitForSelector('[data-pdf-ready="1"]', { timeout: 10000 });
 
-    // Small delay for fonts/images
-    await page.waitForTimeout(1000);
+    // Small delay for fonts/images to load
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     if (debug) {
       const title = await page.title();
