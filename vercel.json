@@ -1,7 +1,9 @@
 {
   "functions": {
     "app/api/generate-pdf/route.ts": {
-      "includeFiles": "node_modules/.pnpm/**/@sparticuz+chromium-min@*/node_modules/@sparticuz/chromium-min/**"
+      "maxDuration": 60,
+      "memory": 3008
     }
-  }
+  },
+  "regions": ["iad1"]
 }
