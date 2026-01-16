@@ -36,20 +36,16 @@ export async function GET(req: NextRequest) {
 
   try {
     if (isVercel()) {
-      // ✅ Vercel/Production: Use puppeteer-core + chromium
+      // ✅ Vercel/Production: Use chrome-aws-lambda (stable and proven)
+      const chromium = await import("chrome-aws-lambda");
       const puppeteerCore = await import("puppeteer-core");
-      const chromium = await import("@sparticuz/chromium");
 
-      // Chromium 131+ requires a URL parameter
-      const executablePath = await chromium.default.executablePath(
-        "https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar"
-      );
+      const executablePath = await chromium.default.executablePath;
 
       debugInfo.executablePath = executablePath;
 
       browser = await puppeteerCore.default.launch({
         args: chromium.default.args,
-        defaultViewport: chromium.default.defaultViewport,
         executablePath,
         headless: chromium.default.headless,
       });
