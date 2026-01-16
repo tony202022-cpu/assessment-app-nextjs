@@ -40,8 +40,10 @@ export async function GET(req: NextRequest) {
       const puppeteerCore = await import("puppeteer-core");
       const chromium = await import("@sparticuz/chromium");
 
-      // Get chromium executable - no arguments needed
-      const executablePath = await chromium.default.executablePath();
+      // Chromium 131+ requires a URL parameter
+      const executablePath = await chromium.default.executablePath(
+        "https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar"
+      );
 
       debugInfo.executablePath = executablePath;
 
