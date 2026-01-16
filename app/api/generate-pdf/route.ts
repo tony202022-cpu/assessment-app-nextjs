@@ -24,26 +24,22 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Your existing stable report route (do NOT change)
   const reportUrl = `${origin}/reports/pdf/${encodeURIComponent(
     attemptId
   )}?lang=${encodeURIComponent(lang)}`;
 
-  let browser: any = null;
-  let page: any = null;
-
-  // Debug snapshot we can return if something fails (ONLY when debug=1)
   const dbg: any = {
     vercel: isVercel(),
     origin,
     reportUrl,
     attemptId,
     lang,
-    nodeEnv: process.env.NODE_ENV,
-    hasVercelEnv: !!process.env.VERCEL,
-    region: process.env.VERCEL_REGION,
     now: new Date().toISOString(),
+    region: process.env.VERCEL_REGION,
   };
+
+  let browser: any = null;
+  let page: any = null;
 
   try {
     if (isVercel()) {
@@ -52,20 +48,18 @@ export async function GET(req: NextRequest) {
       const chromiumModule: any = await import("@sparticuz/chromium-min");
       const chromium: any = chromiumModule.default ?? chromiumModule;
 
-      // Resolve actual package root (works on pnpm + Vercel)
       const require = createRequire(import.meta.url);
       const chromiumPkgRoot = path.dirname(
         require.resolve("@sparticuz/chromium-min/package.json")
       );
-
       const brotliDir = path.join(chromiumPkgRoot, "bin");
 
       dbg.chromiumPkgRoot = chromiumPkgRoot;
       dbg.brotliDir = brotliDir;
       dbg.brotliDirExists = fs.existsSync(brotliDir);
 
-      // IMPORTANT: pass brotli dir explicitly to chromium-min
       const executablePath = await chromium.executablePath(brotliDir);
+
       dbg.executablePath = executablePath;
       dbg.executablePathExists = executablePath
         ? fs.existsSync(executablePath)
@@ -79,8 +73,6 @@ export async function GET(req: NextRequest) {
       } as any);
     } else {
       const puppeteer = (await import("puppeteer")).default;
-
-      // Use boolean headless for maximum TS compatibility
       browser = await puppeteer.launch({ headless: true } as any);
     }
 
@@ -88,51 +80,18 @@ export async function GET(req: NextRequest) {
     await page.setCacheEnabled(false);
     await page.emulateMediaType("screen");
 
-    // Helpful in debug to confirm the page actually loads
-    page.on("console", (msg: any) => {
-      // Keep a small tail of logs
-      dbg.pageConsole = dbg.pageConsole || [];
-      if (dbg.pageConsole.length < 50) {
-        dbg.pageConsole.push({
-          type: msg.type?.() ?? "log",
-          text: msg.text?.() ?? "",
-        });
-      }
-    });
-
-    // Navigate to your HTML report page
     await page.goto(reportUrl, {
       waitUntil: ["domcontentloaded", "networkidle0"],
       timeout: 120_000,
     });
 
-    // Tiny buffer for fonts/layout/client rendering
     await page.waitForTimeout(500);
 
-    // If debug=1, don’t generate PDF; return diagnostics that prove page loaded
     if (debug) {
       const title = await page.title().catch(() => "");
-      const htmlLength = await page
-        .content()
-        .then((h: string) => h.length)
-        .catch(() => 0);
-
+      const html = await page.content().catch(() => "");
       dbg.pageTitle = title;
-      dbg.htmlLength = htmlLength;
-
-      // Attempt to detect common “error page” signals
-      dbg.containsNextErrorOverlay = false;
-      try {
-        const bodyText = await page.evaluate(() => document.body?.innerText || "");
-        dbg.bodyTextSample = bodyText.slice(0, 800);
-        dbg.containsNextErrorOverlay =
-          bodyText.includes("Application error") ||
-          bodyText.includes("This page could not be found") ||
-          bodyText.includes("Error:") ||
-          bodyText.includes("500");
-      } catch {
-        // ignore
-      }
+      dbg.htmlLength = html.length;
 
       await page.close();
       await browser.close();
@@ -143,7 +102,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Generate PDF
     const pdfBuffer: Buffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -155,5 +113,44 @@ export async function GET(req: NextRequest) {
     await page.close();
     await browser.close();
 
-    // Response in Next expects web-friendly bytes in some TS setups
-    co
+    const body = new Uint8Array(pdfBuffer);
+
+    return new Response(body, {
+      status: 200,
+      headers: {
+        "content-type": "application/pdf",
+        "content-disposition": `inline; filename="report_${attemptId}_${lang}.pdf"`,
+        "cache-control": "no-store, max-age=0",
+      },
+    });
+  } catch (err: any) {
+    try {
+      if (page) await page.close();
+    } catch {}
+    try {
+      if (browser) await browser.close();
+    } catch {}
+
+    const message =
+      typeof err?.message === "string" ? err.message : "Unknown error";
+
+    const details = {
+      name: err?.name,
+      message,
+      stack: typeof err?.stack === "string" ? err.stack : undefined,
+      cause: err?.cause,
+    };
+
+    if (debug) {
+      return new Response(
+        JSON.stringify({ error: "PDF_GENERATION_FAILED", details, debug: dbg }, null, 2),
+        { status: 500, headers: { "content-type": "application/json" } }
+      );
+    }
+
+    return new Response(JSON.stringify({ error: "PDF_GENERATION_FAILED", message }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
+  }
+}
