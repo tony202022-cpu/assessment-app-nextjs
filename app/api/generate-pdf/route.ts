@@ -49,10 +49,14 @@ export async function GET(req: NextRequest) {
       const chromium: any = chromiumModule.default ?? chromiumModule;
 
       const require = createRequire(import.meta.url);
-      const chromiumPkgRoot = path.dirname(
-        require.resolve("@sparticuz/chromium-min/package.json")
-      );
-      const brotliDir = path.join(chromiumPkgRoot, "bin");
+// Resolve the actual module entry (this exists in the serverless bundle)
+const chromiumEntry = require.resolve("@sparticuz/chromium-min");
+
+// Entry is usually .../chromium-min/build/(cjs|esm)/index.js
+// So package root is two levels up from build/*
+const chromiumPkgRoot = path.resolve(path.dirname(chromiumEntry), "..", "..");
+const brotliDir = path.join(chromiumPkgRoot, "bin");
+
 
       dbg.chromiumPkgRoot = chromiumPkgRoot;
       dbg.brotliDir = brotliDir;
