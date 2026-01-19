@@ -27,19 +27,29 @@
   margin: 0 auto;
 }
 
+/* Use BOTH break systems - stable in Chromium/Puppeteer */
 .page {
   width: 210mm;
   min-height: 297mm;
   padding: 18mm;
   display: flex;
   flex-direction: column;
+
+  /* your background choice */
   background: linear-gradient(180deg, #f9fafb, #e5e7eb);
+
+  /* force a page break AFTER every page */
   page-break-after: always;
+  break-after: page;
 }
 
-.page-last {
+/* HARD OVERRIDE for the last page (prevents extra blank page) */
+.page.page-last {
   page-break-after: auto !important;
+  break-after: auto !important;
 }
+
+
 
 /* ===============================
    ✅ RTL / LTR CONTROL - COMPLETELY REWRITTEN
@@ -195,9 +205,13 @@
   max-height: 150px;
   object-fit: contain;
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+
+  /* ✅ remove the “rectangle/background” look */
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
+
 
 /* ===============================
    SCORE CIRCLE

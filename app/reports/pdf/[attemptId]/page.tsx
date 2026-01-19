@@ -265,351 +265,380 @@ export default async function PdfReport({
   const weaknesses = results.filter((r) => r.tier === "Weakness");
 
   const circleColors = overallCircleColors(totalPercentage);
-
   const textDir = finalIsArabic ? "rtl" : "ltr";
 
   return (
-    <div className="pdf-root" dir={textDir} lang={finalLang} data-pdf-ready="1" suppressHydrationWarning>
-      <div className="report">
-        {/* PAGE 1: COVER */}
-        <section className="page cover-page">
-          <img src="/new levelup logo 3.png" className="cover-logo" alt="Logo" />
+    <>
+      {/* ✅ PDF stylesheet (MUST be before pdf-root) */}
+      <link rel="stylesheet" href="/pdf/pdf.css" />
 
-          <h1 className="cover-title">
-            {finalIsArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}
-          </h1>
+      {/* ✅ Preload ONLY the fonts you actually have (per your folder screenshot) */}
+      <link
+        rel="preload"
+        href="/fonts/Cairo-Regular.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preload"
+        href="/fonts/Cairo-Bold.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
 
-          <h2 className="cover-subtitle">
-            {finalIsArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}
-          </h2>
+      <div className="pdf-root" dir={textDir} lang={finalLang} data-pdf-ready="0" suppressHydrationWarning>
+        {/* ✅ Puppeteer readiness markers (BODY + ROOT), wait for fonts, then settle layout */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function () {
+  try {
+    document.body.setAttribute('data-pdf-ready','0');
+    var root = document.querySelector('.pdf-root');
+    if (root) root.setAttribute('data-pdf-ready','0');
 
-          <div className="cover-user-info">
-            <div className="cover-user-line">
-              <span className="cover-user-label">{finalIsArabic ? "الاسم" : "Name"}</span>
-              <span className="cover-user-value rtl-value">{displayName}</span>
-            </div>
+    var done = function () {
+      document.body.setAttribute('data-pdf-ready','1');
+      if (root) root.setAttribute('data-pdf-ready','1');
+    };
 
-            {displayCompany ? (
+    var settle = function () {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(done);
+      });
+    };
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(settle).catch(settle);
+    } else {
+      settle();
+    }
+  } catch (e) {
+    try { document.body.setAttribute('data-pdf-ready','1'); } catch {}
+    try {
+      var r = document.querySelector('.pdf-root');
+      if (r) r.setAttribute('data-pdf-ready','1');
+    } catch {}
+  }
+})();`,
+          }}
+        />
+
+        <div className="report">
+          {/* PAGE 1: COVER */}
+          <section className="page cover-page">
+            <img src="/new levelup logo 3.png" className="cover-logo" alt="Logo" />
+
+            <h1 className="cover-title">
+              {finalIsArabic ? "تقييم المبيعات الميدانية" : "Field Sales Assessment"}
+            </h1>
+
+            <h2 className="cover-subtitle">
+              {finalIsArabic ? "تحليل كفاءات ميدانية" : "Field Competency Analysis"}
+            </h2>
+
+            <div className="cover-user-info">
               <div className="cover-user-line">
-                <span className="cover-user-label">{finalIsArabic ? "الشركة" : "Company"}</span>
-                <span className="cover-user-value rtl-value">{displayCompany}</span>
+                <span className="cover-user-label">{finalIsArabic ? "الاسم" : "Name"}</span>
+                <span className={`cover-user-value ${finalIsArabic ? "rtl-value" : "ltr"}`}>{displayName}</span>
               </div>
-            ) : null}
 
-            <div className="cover-user-line">
-              <span className="cover-user-label">{finalIsArabic ? "البريد الإلكتروني" : "Email"}</span>
-              <span className="cover-user-value ltr">{displayEmail}</span>
+              {displayCompany ? (
+                <div className="cover-user-line">
+                  <span className="cover-user-label">{finalIsArabic ? "الشركة" : "Company"}</span>
+                  <span className="cover-user-value rtl-value">{displayCompany}</span>
+                </div>
+              ) : null}
+
+              <div className="cover-user-line">
+                <span className="cover-user-label">{finalIsArabic ? "البريد الإلكتروني" : "Email"}</span>
+                <span className="cover-user-value ltr">{displayEmail}</span>
+              </div>
+
+              <div className="cover-user-line">
+                <span className="cover-user-label">{finalIsArabic ? "تاريخ التقييم" : "Assessment Date"}</span>
+                <span className="cover-user-value rtl-value">{reportDate}</span>
+              </div>
+
+              <div className="cover-user-line">
+                <span className="cover-user-label">{finalIsArabic ? "معرف المحاولة" : "Attempt ID"}</span>
+                <span className="cover-user-value ltr">{attemptId ? attemptId.slice(0, 8) : "—"}</span>
+              </div>
             </div>
 
-            <div className="cover-user-line">
-              <span className="cover-user-label">{finalIsArabic ? "تاريخ التقييم" : "Assessment Date"}</span>
-              <span className="cover-user-value rtl-value">{reportDate}</span>
+            <div className="cover-score-section">
+              <div
+                className="score-circle"
+                style={{
+                  border: `3px solid ${circleColors.border}`,
+                  background: `radial-gradient(circle, ${circleColors.inner} 0%, ${circleColors.outer} 70%)`,
+                }}
+              >
+                <span className="score-value num">{clampPct(totalPercentage)}%</span>
+              </div>
+
+              <p className="cover-score-label">{finalIsArabic ? "النتيجة الإجمالية" : "Overall Score"}</p>
             </div>
 
-            <div className="cover-user-line">
-              <span className="cover-user-label">{finalIsArabic ? "معرف المحاولة" : "Attempt ID"}</span>
-              <span className="cover-user-value ltr">{attemptId ? attemptId.slice(0, 8) : "—"}</span>
+            <div className="cover-bottom">
+              <div className="cover-visual">
+                <img src="/sales-visual.jpg" alt="Field sales" className="cover-visual-img" />
+              </div>
+              <div className="footer">Dyad © 2026</div>
             </div>
-          </div>
+          </section>
 
-          <div className="cover-score-section">
-            <div
-              className="score-circle"
-              style={{
-                border: `3px solid ${circleColors.border}`,
-                background: `radial-gradient(circle, ${circleColors.inner} 0%, ${circleColors.outer} 70%)`,
-              }}
-            >
-              <span className="score-value num">{clampPct(totalPercentage)}%</span>
-            </div>
+          {/* PAGE 2: PERFORMANCE SUMMARY */}
+          <section className="page">
+            <h2 className="section-title">{finalIsArabic ? "ملخص الأداء" : "Performance Summary"}</h2>
 
-            <p className="cover-score-label">
-              {finalIsArabic ? "النتيجة الإجمالية" : "Overall Score"}
-            </p>
-          </div>
+            <div className="summary-grid">
+              {results.slice(0, 7).map((c) => {
+                const key = normalizeCompetencyId(c.competencyId);
+                const meta = COMPETENCY_META[key];
+                const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
+                const diag = meta ? (finalIsArabic ? meta.diagnosticAr : meta.diagnosticEn) : "";
+                const pct = clampPct(c.percentage);
+                const color = tierColor(c.tier);
 
-          {/* ✅ FIXED: Cover visual centered with proper aspect ratio */}
-          <div className="cover-bottom">
-            <div className="cover-visual">
-              <img src="/sales-visual.jpg" alt="Field sales" className="cover-visual-img" />
-            </div>
-            <div className="footer">Dyad © 2026</div>
-          </div>
-        </section>
-
-        {/* PAGE 2: PERFORMANCE SUMMARY */}
-        <section className="page">
-          <h2 className="section-title">
-            {finalIsArabic ? "ملخص الأداء" : "Performance Summary"}
-          </h2>
-
-          <div className="summary-grid">
-            {results.slice(0, 7).map((c) => {
-              const key = normalizeCompetencyId(c.competencyId);
-              const meta = COMPETENCY_META[key];
-              const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-              const diag = meta ? (finalIsArabic ? meta.diagnosticAr : meta.diagnosticEn) : "";
-              const pct = clampPct(c.percentage);
-              const color = tierColor(c.tier);
-
-              return (
-                <div key={c.competencyId} className="card">
-                  <div className="card-head">
-                    {/* ✅ FIXED: Competency title now RTL in Arabic */}
-                    <h3 className="card-title rtl-text">
-                      {title}
-                    </h3>
-                    <span className="pill" style={{ borderColor: color, color }}>
-                      {tierLabel(c.tier, finalIsArabic)}
-                    </span>
-                  </div>
-
-                  <p className="diag rtl-text">
-                    {diag}
-                  </p>
-
-                  <div className="bar-row">
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
+                return (
+                  <div key={c.competencyId} className="card">
+                    <div className="card-head">
+                      <h3 className="card-title rtl-text">{title}</h3>
+                      <span className="pill" style={{ borderColor: color, color }}>
+                        {tierLabel(c.tier, finalIsArabic)}
+                      </span>
                     </div>
-                    <span className="pct num">{pct}%</span>
+
+                    <p className="diag rtl-text">{diag}</p>
+
+                    <div className="bar-row">
+                      <div className="bar-track">
+                        <div className="bar-fill" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                      <span className="pct num">{pct}%</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            {/* Overall card with SWOT summary */}
-            <div className="card">
-              <div className="card-head">
-                <h3 className="card-title rtl-text">
-                  {finalIsArabic ? "ملخص الأداء الإجمالي" : "Overall Performance Summary"}
-                </h3>
-                <span className="pill" style={{ borderColor: circleColors.border, color: circleColors.border }}>
-                  <span className="num">{clampPct(totalPercentage)}%</span>
-                </span>
-              </div>
-
-              <p className="diag rtl-text" style={{ marginTop: 4, marginBottom: 10 }}>
-                {finalIsArabic
-                  ? "هذه النسبة تلخّص الأداء العام بناءً على نتائج الكفاءات."
-                  : "This percentage summarizes your overall performance across competencies."}
-              </p>
-
-              {/* SWOT Mini Summary */}
-              <div className="swot-mini">
-                <div className="swot-mini-row">
-                  <span className="swot-mini-label" style={{ color: "#16a34a" }}>
-                    {finalIsArabic ? "قوة" : "Strengths"}:
+              <div className="card">
+                <div className="card-head">
+                  <h3 className="card-title rtl-text">
+                    {finalIsArabic ? "ملخص الأداء الإجمالي" : "Overall Performance Summary"}
+                  </h3>
+                  <span className="pill" style={{ borderColor: circleColors.border, color: circleColors.border }}>
+                    <span className="num">{clampPct(totalPercentage)}%</span>
                   </span>
-                  <span className="swot-mini-value num">{strengths.length}</span>
                 </div>
-                <div className="swot-mini-row">
-                  <span className="swot-mini-label" style={{ color: "#2563eb" }}>
-                    {finalIsArabic ? "فرصة" : "Opportunities"}:
-                  </span>
-                  <span className="swot-mini-value num">{opportunities.length}</span>
-                </div>
-                <div className="swot-mini-row">
-                  <span className="swot-mini-label" style={{ color: "#d97706" }}>
-                    {finalIsArabic ? "تهديد" : "Threats"}:
-                  </span>
-                  <span className="swot-mini-value num">{threats.length}</span>
-                </div>
-                <div className="swot-mini-row">
-                  <span className="swot-mini-label" style={{ color: "#dc2626" }}>
-                    {finalIsArabic ? "ضعف" : "Weaknesses"}:
-                  </span>
-                  <span className="swot-mini-value num">{weaknesses.length}</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="footer">Dyad © 2026</div>
-        </section>
+                <p className="diag rtl-text" style={{ marginTop: 4, marginBottom: 10 }}>
+                  {finalIsArabic
+                    ? "هذه النسبة تلخّص الأداء العام بناءً على نتائج الكفاءات."
+                    : "This percentage summarizes your overall performance across competencies."}
+                </p>
 
-        {/* PAGE 3: RECOMMENDATIONS - ✅ FIXED: Now shows 3 bullets and fits on one page */}
-        <section className="page">
-          <h2 className="section-title">
-            {finalIsArabic ? "التوصيات العملية" : "Action Recommendations"}
-          </h2>
-
-          <div className="recs-stack">
-            {results.slice(0, 7).map((c) => {
-              const key = normalizeCompetencyId(c.competencyId);
-              const meta = COMPETENCY_META[key];
-              const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-              const color = tierColor(c.tier);
-
-              // ✅ CHANGED: Now showing 3 bullets instead of 2
-              const recs = getTierRecs(key, c.tier, finalLang);
-
-              return (
-                <div key={c.competencyId} className="rec-card rec-long">
-                  <div className="rec-head">
-                    {/* ✅ FIXED: Recommendation title now RTL in Arabic */}
-                    <h3 className="rec-title rtl-text" style={{ color }}>
-                      {title}
-                    </h3>
-                    <span className="pill" style={{ borderColor: color, color }}>
-                      {tierLabel(c.tier, finalIsArabic)}
+                <div className="swot-mini">
+                  <div className="swot-mini-row">
+                    <span className="swot-mini-label" style={{ color: "#16a34a" }}>
+                      {finalIsArabic ? "قوة" : "Strengths"}:
                     </span>
+                    <span className="swot-mini-value num">{strengths.length}</span>
                   </div>
-
-                  {recs.length ? (
-                    <ul className="rec-list rtl-text">
-                      {recs.map((t, idx) => (
-                        <li key={idx}>{t}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="muted rtl-text">
-                      {finalIsArabic
-                        ? "لا توجد توصيات متاحة لهذه الكفاءة حاليًا."
-                        : "No recommendations available for this competency yet."}
-                    </p>
-                  )}
+                  <div className="swot-mini-row">
+                    <span className="swot-mini-label" style={{ color: "#2563eb" }}>
+                      {finalIsArabic ? "فرصة" : "Opportunities"}:
+                    </span>
+                    <span className="swot-mini-value num">{opportunities.length}</span>
+                  </div>
+                  <div className="swot-mini-row">
+                    <span className="swot-mini-label" style={{ color: "#d97706" }}>
+                      {finalIsArabic ? "تهديد" : "Threats"}:
+                    </span>
+                    <span className="swot-mini-value num">{threats.length}</span>
+                  </div>
+                  <div className="swot-mini-row">
+                    <span className="swot-mini-label" style={{ color: "#dc2626" }}>
+                      {finalIsArabic ? "ضعف" : "Weaknesses"}:
+                    </span>
+                    <span className="swot-mini-value num">{weaknesses.length}</span>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-
-          <div className="footer">Dyad © 2026</div>
-        </section>
-
-        {/* LAST PAGE: SWOT + UPSELL */}
-        <section className="page page-last">
-          <h2 className="section-title">
-            {finalIsArabic ? "SWOT + الخطوة التالية" : "SWOT + Next Step"}
-          </h2>
-
-          <h3 className="section-title" style={{ fontSize: 18, marginTop: 0 }}>
-            {finalIsArabic ? "تحليل SWOT" : "SWOT Analysis"}
-          </h3>
-
-          <div className="swot-grid">
-            <div className="swot-card swot-strength">
-              <h4 className="swot-title rtl-text">
-                {finalIsArabic ? "نقاط القوة" : "Strengths"}
-              </h4>
-              <ul className="swot-list rtl-text">
-                {(strengths.length ? strengths : []).map((r) => {
-                  const key = normalizeCompetencyId(r.competencyId);
-                  const meta = COMPETENCY_META[key];
-                  const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                  return <li key={r.competencyId}>{title}</li>;
-                })}
-                {!strengths.length ? (
-                  <li>
-                    {finalIsArabic
-                      ? "لا توجد نقاط قوة مصنّفة في هذه المحاولة."
-                      : "No strengths classified in this attempt."}
-                  </li>
-                ) : null}
-              </ul>
+              </div>
             </div>
 
-            <div className="swot-card swot-opportunity">
-              <h4 className="swot-title rtl-text">
-                {finalIsArabic ? "فرص التطوير" : "Opportunities"}
-              </h4>
-              <ul className="swot-list rtl-text">
-                {(opportunities.length ? opportunities : []).map((r) => {
-                  const key = normalizeCompetencyId(r.competencyId);
-                  const meta = COMPETENCY_META[key];
-                  const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                  return <li key={r.competencyId}>{title}</li>;
-                })}
-                {!opportunities.length ? (
-                  <li>
-                    {finalIsArabic
-                      ? "لا توجد فرص تطوير واضحة في هذه المحاولة."
-                      : "No clear opportunities in this attempt."}
-                  </li>
-                ) : null}
-              </ul>
+            <div className="footer">Dyad © 2026</div>
+          </section>
+
+          {/* PAGE 3: RECOMMENDATIONS */}
+          <section className="page">
+            <h2 className="section-title">{finalIsArabic ? "التوصيات العملية" : "Action Recommendations"}</h2>
+
+            <div className="recs-stack">
+              {results.slice(0, 7).map((c) => {
+                const key = normalizeCompetencyId(c.competencyId);
+                const meta = COMPETENCY_META[key];
+                const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
+                const color = tierColor(c.tier);
+                const recs = getTierRecs(key, c.tier, finalLang);
+
+                return (
+                  <div key={c.competencyId} className="rec-card rec-long">
+                    <div className="rec-head">
+                      <h3 className="rec-title rtl-text" style={{ color }}>
+                        {title}
+                      </h3>
+                      <span className="pill" style={{ borderColor: color, color }}>
+                        {tierLabel(c.tier, finalIsArabic)}
+                      </span>
+                    </div>
+
+                    {recs.length ? (
+                      <ul className="rec-list rtl-text">
+                        {recs.map((t, idx) => (
+                          <li key={idx}>{t}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="muted rtl-text">
+                        {finalIsArabic
+                          ? "لا توجد توصيات متاحة لهذه الكفاءة حاليًا."
+                          : "No recommendations available for this competency yet."}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="swot-card swot-weakness">
-              <h4 className="swot-title rtl-text">
-                {finalIsArabic ? "نقاط الضعف" : "Weaknesses"}
-              </h4>
-              <ul className="swot-list rtl-text">
-                {(weaknesses.length ? weaknesses : []).map((r) => {
-                  const key = normalizeCompetencyId(r.competencyId);
-                  const meta = COMPETENCY_META[key];
-                  const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                  return <li key={r.competencyId}>{title}</li>;
-                })}
-                {!weaknesses.length ? (
-                  <li>
-                    {finalIsArabic ? "لا توجد نقاط ضعف مصنّفة في هذه المحاولة." : "No weaknesses classified in this attempt."}
-                  </li>
-                ) : null}
-              </ul>
-            </div>
+            <div className="footer">Dyad © 2026</div>
+          </section>
 
-            <div className="swot-card swot-threat">
-              <h4 className="swot-title rtl-text">
-                {finalIsArabic ? "مخاطر محتملة" : "Threats"}
-              </h4>
-              <ul className="swot-list rtl-text">
-                {(threats.length ? threats : []).map((r) => {
-                  const key = normalizeCompetencyId(r.competencyId);
-                  const meta = COMPETENCY_META[key];
-                  const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                  return <li key={r.competencyId}>{title}</li>;
-                })}
-                {!threats.length ? (
-                  <li>{finalIsArabic ? "لا توجد مخاطر مصنّفة في هذه المحاولة." : "No threats classified in this attempt."}</li>
-                ) : null}
-              </ul>
-            </div>
-          </div>
+          {/* LAST PAGE: SWOT + UPSELL */}
+          <section className="page page-last">
+            <h2 className="section-title">{finalIsArabic ? "SWOT + الخطوة التالية" : "SWOT + Next Step"}</h2>
 
-          <div className="swot-to-upsell-spacer" />
-
-          <div className="upsell-wrap">
-            <h3 className="upsell-title-big rtl-text">
-              {finalIsArabic ? "جاهز للمرحلة المتقدمة؟" : "Ready for the Advanced Level?"}
+            <h3 className="section-title" style={{ fontSize: 18, marginTop: 0 }}>
+              {finalIsArabic ? "تحليل SWOT" : "SWOT Analysis"}
             </h3>
 
-            <p className="upsell-intro rtl-text">
-              {finalIsArabic
-                ? "هذا التقرير يعطيك صورة قوية… لكن التغيير الحقيقي يبدأ عندما تحوّل النتائج إلى خطة تنفيذ أسبوعية بأدوات وإشراف."
-                : "This report gives you a strong snapshot… but real change starts when you convert results into a weekly execution plan with tools and guidance."}
-            </p>
-
-            <div className="upsell-box">
-              <h3 className="rtl-text">{finalIsArabic ? "برنامج Sales MRI المتقدم" : "Sales MRI Advanced Program"}</h3>
-              <p className="rtl-text">
-                {finalIsArabic
-                  ? "برنامج عملي لتحويل 7 كفاءات إلى سلوك يومي… مع أدوات ميدانية، تمارين، وتتّبع أداء."
-                  : "A practical program that turns 7 competencies into daily behavior… with field tools, drills, and performance tracking."}
-              </p>
-
-              <div className="upsell-cols">
-                <ul className="upsell-ul rtl-text">
-                  <li>{finalIsArabic ? "✅ خطة تطبيق 30 يومًا" : "✅ 30-day execution plan"}</li>
-                  <li>{finalIsArabic ? "✅ أدوات ميدانية جاهزة" : "✅ Ready field tools"}</li>
-                  <li>{finalIsArabic ? "✅ تحويل الضعف إلى قوة" : "✅ Turn weakness into strength"}</li>
-                </ul>
-                <ul className="upsell-ul rtl-text">
-                  <li>{finalIsArabic ? "✅ مخرجات قابلة للقياس" : "✅ Measurable outputs"}</li>
-                  <li>{finalIsArabic ? "✅ متابعة وتوجيه" : "✅ Follow-up guidance"}</li>
-                  <li>{finalIsArabic ? "✅ أسلوب احترافي في الإغلاق" : "✅ Pro closing behavior"}</li>
+            <div className="swot-grid">
+              <div className="swot-card swot-strength">
+                <h4 className="swot-title rtl-text">{finalIsArabic ? "نقاط القوة" : "Strengths"}</h4>
+                <ul className="swot-list rtl-text">
+                  {(strengths.length ? strengths : []).map((r) => {
+                    const key = normalizeCompetencyId(r.competencyId);
+                    const meta = COMPETENCY_META[key];
+                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
+                    return <li key={r.competencyId}>{title}</li>;
+                  })}
+                  {!strengths.length ? (
+                    <li>
+                      {finalIsArabic
+                        ? "لا توجد نقاط قوة مصنّفة في هذه المحاولة."
+                        : "No strengths classified in this attempt."}
+                    </li>
+                  ) : null}
                 </ul>
               </div>
 
-              <a className="upsell-cta" href={finalIsArabic ? "/ar/sales-mri" : "/en/sales-mri"}>
-                {finalIsArabic ? "ابدأ المرحلة المتقدمة الآن" : "Start the Advanced Program Now"}
-              </a>
-            </div>
-          </div>
+              <div className="swot-card swot-opportunity">
+                <h4 className="swot-title rtl-text">{finalIsArabic ? "فرص التطوير" : "Opportunities"}</h4>
+                <ul className="swot-list rtl-text">
+                  {(opportunities.length ? opportunities : []).map((r) => {
+                    const key = normalizeCompetencyId(r.competencyId);
+                    const meta = COMPETENCY_META[key];
+                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
+                    return <li key={r.competencyId}>{title}</li>;
+                  })}
+                  {!opportunities.length ? (
+                    <li>
+                      {finalIsArabic
+                        ? "لا توجد فرص تطوير واضحة في هذه المحاولة."
+                        : "No clear opportunities in this attempt."}
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
 
-          <div className="footer">Dyad © 2026</div>
-        </section>
+              <div className="swot-card swot-weakness">
+                <h4 className="swot-title rtl-text">{finalIsArabic ? "نقاط الضعف" : "Weaknesses"}</h4>
+                <ul className="swot-list rtl-text">
+                  {(weaknesses.length ? weaknesses : []).map((r) => {
+                    const key = normalizeCompetencyId(r.competencyId);
+                    const meta = COMPETENCY_META[key];
+                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
+                    return <li key={r.competencyId}>{title}</li>;
+                  })}
+                  {!weaknesses.length ? (
+                    <li>{finalIsArabic ? "لا توجد نقاط ضعف مصنّفة في هذه المحاولة." : "No weaknesses classified in this attempt."}</li>
+                  ) : null}
+                </ul>
+              </div>
+
+              <div className="swot-card swot-threat">
+                <h4 className="swot-title rtl-text">{finalIsArabic ? "مخاطر محتملة" : "Threats"}</h4>
+                <ul className="swot-list rtl-text">
+                  {(threats.length ? threats : []).map((r) => {
+                    const key = normalizeCompetencyId(r.competencyId);
+                    const meta = COMPETENCY_META[key];
+                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
+                    return <li key={r.competencyId}>{title}</li>;
+                  })}
+                  {!threats.length ? (
+                    <li>{finalIsArabic ? "لا توجد مخاطر مصنّفة في هذه المحاولة." : "No threats classified in this attempt."}</li>
+                  ) : null}
+                </ul>
+              </div>
+            </div>
+
+            <div className="swot-to-upsell-spacer" />
+
+            <div className="upsell-wrap">
+              <h3 className="upsell-title-big rtl-text">
+                {finalIsArabic ? "جاهز للمرحلة المتقدمة؟" : "Ready for the Advanced Level?"}
+              </h3>
+
+              <p className="upsell-intro rtl-text">
+                {finalIsArabic
+                  ? "هذا التقرير يعطيك صورة قوية… لكن التغيير الحقيقي يبدأ عندما تحوّل النتائج إلى خطة تنفيذ أسبوعية بأدوات وإشراف."
+                  : "This report gives you a strong snapshot… but real change starts when you convert results into a weekly execution plan with tools and guidance."}
+              </p>
+
+              <div className="upsell-box">
+                <h3 className="rtl-text">{finalIsArabic ? "برنامج Sales MRI المتقدم" : "Sales MRI Advanced Program"}</h3>
+                <p className="rtl-text">
+                  {finalIsArabic
+                    ? "برنامج عملي لتحويل 7 كفاءات إلى سلوك يومي… مع أدوات ميدانية، تمارين، وتتّبع أداء."
+                    : "A practical program that turns 7 competencies into daily behavior… with field tools, drills, and performance tracking."}
+                </p>
+
+                <div className="upsell-cols">
+                  <ul className="upsell-ul rtl-text">
+                    <li>{finalIsArabic ? "خطة تطبيق 30 يومًا" : "30-day execution plan"}</li>
+                    <li>{finalIsArabic ? "أدوات ميدانية جاهزة" : "Ready field tools"}</li>
+                    <li>{finalIsArabic ? "تحويل الضعف إلى قوة" : "Turn weakness into strength"}</li>
+                  </ul>
+
+                  <ul className="upsell-ul rtl-text">
+                    <li>{finalIsArabic ? "مخرجات قابلة للقياس" : "Measurable outputs"}</li>
+                    <li>{finalIsArabic ? "متابعة وتوجيه" : "Follow-up guidance"}</li>
+                    <li>{finalIsArabic ? "أسلوب احترافي في الإغلاق" : "Professional closing behavior"}</li>
+                  </ul>
+                </div>
+
+                <a className="upsell-cta" href={finalIsArabic ? "/ar/sales-mri" : "/en/sales-mri"}>
+                  {finalIsArabic ? "ابدأ المرحلة المتقدمة الآن" : "Start the Advanced Program Now"}
+                </a>
+              </div>
+            </div>
+
+            <div className="footer">Dyad © 2026</div>
+          </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
