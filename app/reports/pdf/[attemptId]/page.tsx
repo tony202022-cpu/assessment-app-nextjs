@@ -615,19 +615,38 @@ export default async function PdfReport({
                     : "A practical program that turns 7 competencies into daily behavior… with field tools, drills, and performance tracking."}
                 </p>
 
-                <div className="upsell-cols">
-                  <ul className="upsell-ul rtl-text">
-                    <li>{finalIsArabic ? "خطة تطبيق 30 يومًا" : "30-day execution plan"}</li>
-                    <li>{finalIsArabic ? "أدوات ميدانية جاهزة" : "Ready field tools"}</li>
-                    <li>{finalIsArabic ? "تحويل الضعف إلى قوة" : "Turn weakness into strength"}</li>
-                  </ul>
+<div className="upsell-cols">
+  <ul className="upsell-ul rtl-text">
+    <li>
+      <span className="upsell-check">✓</span>
+      <span className="upsell-text">{finalIsArabic ? "خطة تطبيق 30 يومًا" : "30-day execution plan"}</span>
+    </li>
+    <li>
+      <span className="upsell-check">✓</span>
+      <span className="upsell-text">{finalIsArabic ? "أدوات ميدانية جاهزة" : "Ready field tools"}</span>
+    </li>
+    <li>
+      <span className="upsell-check">✓</span>
+      <span className="upsell-text">{finalIsArabic ? "تحويل الضعف إلى قوة" : "Turn weakness into strength"}</span>
+    </li>
+  </ul>
 
-                  <ul className="upsell-ul rtl-text">
-                    <li>{finalIsArabic ? "مخرجات قابلة للقياس" : "Measurable outputs"}</li>
-                    <li>{finalIsArabic ? "متابعة وتوجيه" : "Follow-up guidance"}</li>
-                    <li>{finalIsArabic ? "أسلوب احترافي في الإغلاق" : "Professional closing behavior"}</li>
-                  </ul>
-                </div>
+  <ul className="upsell-ul rtl-text">
+    <li>
+      <span className="upsell-check">✓</span>
+      <span className="upsell-text">{finalIsArabic ? "مخرجات قابلة للقياس" : "Measurable outputs"}</span>
+    </li>
+    <li>
+      <span className="upsell-check">✓</span>
+      <span className="upsell-text">{finalIsArabic ? "متابعة وتوجيه" : "Follow-up guidance"}</span>
+    </li>
+    <li>
+      <span className="upsell-check">✓</span>
+      <span className="upsell-text">{finalIsArabic ? "أسلوب احترافي في الإغلاق" : "Professional closing behavior"}</span>
+    </li>
+  </ul>
+</div>
+
 
                 <a className="upsell-cta" href={finalIsArabic ? "/ar/sales-mri" : "/en/sales-mri"}>
                   {finalIsArabic ? "ابدأ المرحلة المتقدمة الآن" : "Start the Advanced Program Now"}

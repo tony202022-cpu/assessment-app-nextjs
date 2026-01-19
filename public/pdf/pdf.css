@@ -6,6 +6,7 @@
    ✅ Puppeteer extra blank pages (RTL/LTR)
    ✅ Deterministic Cairo font loading
    ✅ Stable A4 pagination on Vercel Chromium
+   ✅ PDF-safe upsell checkmarks (.upsell-check)
 ========================================================= */
 
 /* ===============================
@@ -67,6 +68,10 @@ RULES:
 - ONLY `.page` controls pagination
 - NEVER use margins on `.page`
 - Last page MUST disable break
+
+IMPORTANT:
+- Use modern break properties ONLY (Chromium PDF is sensitive to mixing)
+- Avoid overflow hidden on the page container (can cause ghost pages in RTL)
 */
 
 .page {
@@ -79,20 +84,29 @@ RULES:
 
   background: linear-gradient(180deg, #f9fafb, #e5e7eb);
 
-  /* The ONLY place where page breaks happen */
+  /* ✅ Single source of truth for pagination */
   break-after: page;
-  page-break-after: always;
 
-  /* Prevent Chromium fragment ghosts */
-  overflow: hidden;
+  /* ✅ Stability: avoid page container overflow forcing layout fragmentation */
+  overflow: visible;
   position: relative;
 }
 
-/* ABSOLUTELY REQUIRED — prevents extra blank page */
+/* ✅ ABSOLUTELY REQUIRED — prevents extra blank page */
 .page-last,
 .page:last-of-type {
   break-after: auto !important;
-  page-break-after: auto !important;
+}
+
+/* ✅ Print-mode safety (Puppeteer uses print rendering) */
+@media print {
+  .page {
+    break-after: page;
+  }
+  .page-last,
+  .page:last-of-type {
+    break-after: auto !important;
+  }
 }
 
 /* ===============================
@@ -296,6 +310,39 @@ th {
   color: #4b5563;
   margin-bottom: 10px;
   line-height: 1.55;
+}
+
+/* ===============================
+   UPSELL CHECK LIST (PUPPETEER SAFE)
+   (Requires page.tsx to render:
+    <span className="upsell-check">✓</span>
+    <span className="upsell-text">...</span>)
+================================ */
+.upsell-ul {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.upsell-ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 6px 0;
+}
+
+.upsell-check {
+  font-weight: 900;
+  line-height: 1.2;
+  flex-shrink: 0;
+  color: #22c55e;
+  font-size: 14px;
+}
+
+.upsell-text {
+  flex: 1;
 }
 
 /* ===============================
