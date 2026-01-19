@@ -618,46 +618,106 @@ export default async function PdfReport({
 <div className="upsell-cols">
   <ul className="upsell-ul rtl-text">
     <li>
-      <span className="upsell-check">✓</span>
-      <span className="upsell-text">{finalIsArabic ? "خطة تطبيق 30 يومًا" : "30-day execution plan"}</span>
+      <span className="upsell-check" aria-hidden="true">
+        <svg className="upsell-check-svg" viewBox="0 0 24 24">
+          <path
+            d="M20.285 6.709a1 1 0 0 1 0 1.414l-9.2 9.2a1 1 0 0 1-1.414 0l-4.2-4.2a1 1 0 1 1 1.414-1.414l3.493 3.493 8.493-8.493a1 1 0 0 1 1.414 0z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+      <span className="upsell-text">
+        {finalIsArabic ? "خطة تطبيق 30 يومًا" : "30-day execution plan"}
+      </span>
     </li>
+
     <li>
-      <span className="upsell-check">✓</span>
-      <span className="upsell-text">{finalIsArabic ? "أدوات ميدانية جاهزة" : "Ready field tools"}</span>
+      <span className="upsell-check" aria-hidden="true">
+        <svg className="upsell-check-svg" viewBox="0 0 24 24">
+          <path
+            d="M20.285 6.709a1 1 0 0 1 0 1.414l-9.2 9.2a1 1 0 0 1-1.414 0l-4.2-4.2a1 1 0 1 1 1.414-1.414l3.493 3.493 8.493-8.493a1 1 0 0 1 1.414 0z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+      <span className="upsell-text">
+        {finalIsArabic ? "أدوات ميدانية جاهزة" : "Ready field tools"}
+      </span>
     </li>
+
     <li>
-      <span className="upsell-check">✓</span>
-      <span className="upsell-text">{finalIsArabic ? "تحويل الضعف إلى قوة" : "Turn weakness into strength"}</span>
+      <span className="upsell-check" aria-hidden="true">
+        <svg className="upsell-check-svg" viewBox="0 0 24 24">
+          <path
+            d="M20.285 6.709a1 1 0 0 1 0 1.414l-9.2 9.2a1 1 0 0 1-1.414 0l-4.2-4.2a1 1 0 1 1 1.414-1.414l3.493 3.493 8.493-8.493a1 1 0 0 1 1.414 0z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+      <span className="upsell-text">
+        {finalIsArabic ? "تحويل الضعف إلى قوة" : "Turn weakness into strength"}
+      </span>
     </li>
   </ul>
 
   <ul className="upsell-ul rtl-text">
     <li>
-      <span className="upsell-check">✓</span>
-      <span className="upsell-text">{finalIsArabic ? "مخرجات قابلة للقياس" : "Measurable outputs"}</span>
+      <span className="upsell-check" aria-hidden="true">
+        <svg className="upsell-check-svg" viewBox="0 0 24 24">
+          <path
+            d="M20.285 6.709a1 1 0 0 1 0 1.414l-9.2 9.2a1 1 0 0 1-1.414 0l-4.2-4.2a1 1 0 1 1 1.414-1.414l3.493 3.493 8.493-8.493a1 1 0 0 1 1.414 0z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+      <span className="upsell-text">
+        {finalIsArabic ? "مخرجات قابلة للقياس" : "Measurable outputs"}
+      </span>
     </li>
+
     <li>
-      <span className="upsell-check">✓</span>
-      <span className="upsell-text">{finalIsArabic ? "متابعة وتوجيه" : "Follow-up guidance"}</span>
+      <span className="upsell-check" aria-hidden="true">
+        <svg className="upsell-check-svg" viewBox="0 0 24 24">
+          <path
+            d="M20.285 6.709a1 1 0 0 1 0 1.414l-9.2 9.2a1 1 0 0 1-1.414 0l-4.2-4.2a1 1 0 1 1 1.414-1.414l3.493 3.493 8.493-8.493a1 1 0 0 1 1.414 0z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+      <span className="upsell-text">
+        {finalIsArabic ? "متابعة وتوجيه" : "Follow-up guidance"}
+      </span>
     </li>
+
     <li>
-      <span className="upsell-check">✓</span>
-      <span className="upsell-text">{finalIsArabic ? "أسلوب احترافي في الإغلاق" : "Professional closing behavior"}</span>
+      <span className="upsell-check" aria-hidden="true">
+        <svg className="upsell-check-svg" viewBox="0 0 24 24">
+          <path
+            d="M20.285 6.709a1 1 0 0 1 0 1.414l-9.2 9.2a1 1 0 0 1-1.414 0l-4.2-4.2a1 1 0 1 1 1.414-1.414l3.493 3.493 8.493-8.493a1 1 0 0 1 1.414 0z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+      <span className="upsell-text">
+        {finalIsArabic ? "أسلوب احترافي في الإغلاق" : "Professional closing behavior"}
+      </span>
     </li>
   </ul>
 </div>
 
+<a
+  className="upsell-cta"
+  href={finalIsArabic ? "/ar/sales-mri" : "/en/sales-mri"}
+>
+  {finalIsArabic ? "ابدأ المرحلة المتقدمة الآن" : "Start the Advanced Program Now"}
+</a>
+</div>
+</div>
 
-                <a className="upsell-cta" href={finalIsArabic ? "/ar/sales-mri" : "/en/sales-mri"}>
-                  {finalIsArabic ? "ابدأ المرحلة المتقدمة الآن" : "Start the Advanced Program Now"}
-                </a>
-              </div>
-            </div>
-
-            <div className="footer">Dyad © 2026</div>
-          </section>
-        </div>
-      </div>
-    </>
-  );
+<div className="footer">Dyad © 2026</div>
+</section>
+</div>
+</div>
+</>
+);
 }
