@@ -1,5 +1,7 @@
 // app/api/generate-pdf/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { PDFData, generatePDFHTML } from "@/src/lib/pdfTemplate";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,11 +11,10 @@ const isVercel = () => {
 };
 
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = req.nextUrl;
+  const { searchParams } = req.nextUrl;
 
   const attemptId = searchParams.get("attemptId")?.trim();
   const lang = (searchParams.get("lang")?.trim() || "en") as "en" | "ar";
-  const debug = searchParams.get("debug") === "1";
 
   if (!attemptId) {
     return NextResponse.json(
@@ -22,135 +23,111 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const reportUrl = `${origin}/reports/pdf/${encodeURIComponent(attemptId)}?lang=${encodeURIComponent(lang)}`;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  const debugInfo: any = {
-    environment: isVercel() ? "vercel" : "local",
-    reportUrl,
-    attemptId,
-    lang,
-    timestamp: new Date().toISOString(),
-  };
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error("Missing Supabase env vars for PDF generation.");
+    return NextResponse.json(
+      { error: "Server configuration error: Supabase environment variables are not set." },
+      { status: 500 }
+    );
+  }
 
-  let browser: any = null;
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false },
+  });
 
   try {
-    if (isVercel()) {
-      // ✅ Vercel/Production: Use chrome-aws-lambda (stable and proven)
-      const chromium = await import("chrome-aws-lambda");
-      const puppeteerCore = await import("puppeteer-core");
+    const { data: attempt, error: attemptErr } = await supabase
+      .from("quiz_attempts")
+      .select("id, user_id, competency_results, total_percentage, language, created_at")
+      .eq("id", attemptId)
+      .single();
 
-      const executablePath = await chromium.default.executablePath;
-
-      debugInfo.executablePath = executablePath;
-
-      browser = await puppeteerCore.default.launch({
-        args: chromium.default.args,
-        executablePath,
-        headless: chromium.default.headless,
-      });
-    } else {
-      // ✅ Local: Use full puppeteer
-      const puppeteer = await import("puppeteer");
-      browser = await puppeteer.default.launch({
-        headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-      });
+    if (attemptErr || !attempt) {
+      console.error("Attempt fetch error:", attemptErr);
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    const page = await browser.newPage();
+    const userId = (attempt as any).user_id as string | null;
+    let profile: any = null;
+    if (userId) {
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("full_name, company")
+        .eq("id", userId)
+        .maybeSingle();
+      profile = p || null;
+    }
 
-    // Set viewport for consistent rendering
-    await page.setViewport({
-      width: 1200,
-      height: 1600,
-      deviceScaleFactor: 2,
-    });
+    const fullName = profile?.full_name || (lang === "ar" ? "غير محدد" : "Not specified");
 
-    // Navigate to the HTML report
-    await page.goto(reportUrl, {
-      waitUntil: ["domcontentloaded", "networkidle0"],
-      timeout: 60000,
-    });
+    const pdfData: PDFData = {
+      name: fullName,
+      language: lang,
+      totalPercentage: attempt.total_percentage || 0,
+      competencyResults: attempt.competency_results || [],
+    };
 
-    // Wait for content to be ready
-    await page.waitForSelector('[data-pdf-ready="1"]', { timeout: 10000 });
+    const htmlContent = generatePDFHTML(pdfData);
 
-    // Small delay for fonts/images to load
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    let browser: any = null;
 
-    if (debug) {
-      const title = await page.title();
-      const content = await page.content();
-      debugInfo.pageTitle = title;
-      debugInfo.contentLength = content.length;
+    try {
+      if (isVercel()) {
+        const chromium = await import("chrome-aws-lambda");
+        const puppeteerCore = await import("puppeteer-core");
+
+        browser = await puppeteerCore.default.launch({
+          args: chromium.default.args,
+          executablePath: await chromium.default.executablePath,
+          headless: chromium.default.headless,
+        });
+      } else {
+        const puppeteer = await import("puppeteer");
+        browser = await puppeteer.default.launch({
+          headless: true,
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        });
+      }
+
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+
+      const pdfBuffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: {
+          top: "0",
+          right: "0",
+          bottom: "0",
+          left: "0",
+        },
+      });
 
       await browser.close();
 
-      return NextResponse.json(
-        { success: true, debug: debugInfo },
-        { status: 200 }
-      );
-    }
-
-    // Generate PDF
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-      displayHeaderFooter: false,
-      margin: {
-        top: "0mm",
-        right: "0mm",
-        bottom: "0mm",
-        left: "0mm",
-      },
-    });
-
-    await browser.close();
-
-    // Return PDF
-    return new NextResponse(pdfBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="report_${attemptId}_${lang}.pdf"`,
-        "Cache-Control": "no-store, max-age=0",
-      },
-    });
-  } catch (error: any) {
-    // Cleanup
-    if (browser) {
-      try {
-        await browser.close();
-      } catch {}
-    }
-
-    const errorMessage = error?.message || "Unknown error";
-    const errorDetails = {
-      message: errorMessage,
-      stack: error?.stack,
-      name: error?.name,
-    };
-
-    console.error("PDF Generation Error:", errorDetails);
-
-    if (debug) {
-      return NextResponse.json(
-        {
-          error: "PDF generation failed",
-          details: errorDetails,
-          debug: debugInfo,
+      return new NextResponse(pdfBuffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="report_${attemptId}_${lang}.pdf"`,
+          "Cache-Control": "no-store, max-age=0",
         },
+      });
+    } catch (puppeteerError: any) {
+      console.error("Puppeteer error:", puppeteerError);
+      if (browser) await browser.close();
+      return NextResponse.json(
+        { error: "PDF generation failed", message: puppeteerError.message },
         { status: 500 }
       );
     }
-
+  } catch (error: any) {
+    console.error("PDF generation route error:", error);
     return NextResponse.json(
-      {
-        error: "PDF generation failed",
-        message: errorMessage,
-      },
+      { error: "Internal server error", message: error.message },
       { status: 500 }
     );
   }

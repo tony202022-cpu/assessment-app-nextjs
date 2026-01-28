@@ -22,12 +22,10 @@ export default async function PrintReportPage({
     );
   }
 
-  // GET ENVIRONMENT VARIABLES - FIXED
+  // GET ENVIRONMENT VARIABLES
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  
-  // For service role (only if available)
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey; // Fallback to anon key if service role not set
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error("Missing Supabase env vars:", {
