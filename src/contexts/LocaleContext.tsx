@@ -29,10 +29,8 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
     initialLang === "ar" ? "rtl" : "ltr"
   );
 
-  // Sync <html dir> with selected language
-  useEffect(() => {
-    document.documentElement.dir = direction;
-  }, [direction]);
+  // The <html> tag's dir attribute will now be controlled by the RootLayout component.
+  // No need to directly manipulate document.documentElement.dir here.
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
