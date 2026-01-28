@@ -311,10 +311,13 @@ th {
   margin-bottom: 10px;
   line-height: 1.55;
 }
-/* ===============================
-   UPSELL CHECK LIST (SVG — FINAL)
-================================ */
 
+/* ===============================
+   UPSELL CHECK LIST (PUPPETEER SAFE)
+   (Requires page.tsx to render:
+    <span className="upsell-check">✓</span>
+    <span className="upsell-text">...</span>)
+================================ */
 .upsell-ul {
   list-style: none;
   margin: 8px 0 0 0;
@@ -331,17 +334,11 @@ th {
 }
 
 .upsell-check {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
-  color: #22c55e; /* green */
-  margin-top: 2px; /* vertical alignment with text */
-}
-
-.upsell-check-svg {
-  width: 14px;
-  height: 14px;
-  display: block;
+  font-weight: 900;
+  line-height: 1.2;
+  flex-shrink: 0;
+  color: #22c55e;
+  font-size: 14px;
 }
 
 .upsell-text {
