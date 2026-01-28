@@ -66,7 +66,8 @@ export default function QuizPage() {
       const { data, error } = await supabase
         .from("questions")
         .select("*")
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true })
+        .limit(30); // Limit to 30 questions
 
       if (error) {
         console.error("Questions fetch error:", error);
