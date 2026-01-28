@@ -1,7 +1,7 @@
 // app/api/generate-pdf/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { PDFData, generatePDFHTML } from "@/src/lib/pdfTemplate";
+import { PDFData, generatePDFHTML } from "@/lib/pdfTemplate"; // Corrected import path
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
