@@ -46,63 +46,28 @@
 ================================ */
 
 /* Base LTR for English */
-.pdf-root[dir="ltr"] {
+.pdf-root {
   direction: ltr;
   text-align: left;
 }
 
-.pdf-root[dir="ltr"] * {
-  direction: ltr;
-  text-align: left;
-}
-
-/* ✅ Base RTL for Arabic */
+/* Arabic mode */
 .pdf-root[dir="rtl"] {
   direction: rtl;
   text-align: right;
 }
 
-/* ✅ DEFAULT: All content in Arabic is RTL */
-.pdf-root[dir="rtl"] * {
-  direction: rtl;
-  text-align: right;
-}
-
-/* ✅ CRITICAL FIX: Force RTL for Arabic text content */
-.pdf-root[dir="rtl"] .rtl-text {
-  direction: rtl !important;
-  text-align: right !important;
-  unicode-bidi: embed;
-}
-
-/* ✅ CRITICAL FIX: Force RTL for Arabic values (names, companies, dates) */
-.pdf-root[dir="rtl"] .rtl-value {
-  direction: rtl !important;
-  text-align: right !important;
-  unicode-bidi: plaintext;
-  display: inline-block;
-}
-
-/* ✅ Keep numbers and emails as LTR inside Arabic */
-.pdf-root[dir="rtl"] .num,
-.pdf-root[dir="rtl"] .ltr {
+/* Force LTR for numbers and emails */
+.ltr,
+.num {
   direction: ltr !important;
-  unicode-bidi: embed;
+  unicode-bidi: bidi-override;
   text-align: left !important;
   display: inline-block;
 }
 
-/* ===============================
-   TITLES
-================================ */
-.section-title {
-  font-size: 26px;
-  font-weight: 900;
-  color: #4f46e5;
-  text-align: center;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid #e0e7ff;
+.rtl-value {
+  unicode-bidi: plaintext;
 }
 
 /* ===============================
@@ -111,65 +76,75 @@
 .cover-page {
   align-items: center;
   text-align: center;
-  padding-top: 26mm;
-  background: linear-gradient(135deg, #ffffff, #eef2ff);
+  padding-top: 22mm;
+  padding-bottom: 16mm;
+  background:
+    radial-gradient(900px 500px at 20% 15%, rgba(99, 102, 241, 0.18) 0%, rgba(99, 102, 241, 0) 60%),
+    radial-gradient(700px 420px at 85% 35%, rgba(16, 185, 129, 0.14) 0%, rgba(16, 185, 129, 0) 55%),
+    linear-gradient(135deg, #ffffff 0%, #eef2ff 55%, #f8fafc 100%);
 }
 
 .cover-logo {
-  width: 170px;
-  margin-bottom: 16px;
+  width: 190px;
+  margin-bottom: 14px;
   object-fit: contain;
 }
 
 .cover-title {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 900;
   margin-bottom: 6px;
+  letter-spacing: -0.2px;
   text-align: center;
 }
 
 .cover-subtitle {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   margin-bottom: 14px;
-  opacity: 0.85;
+  opacity: 0.86;
   text-align: center;
 }
 
 .cover-user-info {
-  max-width: 460px;
+  max-width: 520px;
   width: 100%;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  border-radius: 16px;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(6px);
 }
 
 .cover-user-line {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   font-size: 13px;
-  gap: 10px;
+  gap: 12px;
+  padding: 2px 0;
 }
 
-/* ✅ FIXED: RTL flex direction for Arabic */
+/* RTL flex direction for Arabic */
 .pdf-root[dir="rtl"] .cover-user-line {
   flex-direction: row;
   text-align: right;
 }
 
 .cover-user-label {
-  opacity: 0.7;
+  opacity: 0.72;
+  min-width: 130px;
 }
 
 .cover-user-value {
   font-weight: 900;
 }
 
-/* ✅ FIXED: Cover visual - proper centering without horizontal cut */
+/* Cover visual */
 .cover-bottom {
   width: 100%;
   margin-top: 12px;
@@ -192,9 +167,9 @@
 .cover-visual-img {
   width: 100%;
   height: auto;
-  max-height: 150px;
+  max-height: 165px;
   object-fit: contain;
-  border-radius: 16px;
+  border-radius: 18px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
 }
@@ -203,30 +178,44 @@
    SCORE CIRCLE
 ================================ */
 .cover-score-section {
-  margin-top: 10px;
+  margin-top: 14px;
   align-items: center;
   display: flex;
   flex-direction: column;
 }
 
 .score-circle {
-  width: 118px;
-  height: 118px;
-  border-radius: 50%;
+  width: 132px;
+  height: 132px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.18);
 }
 
 .score-value {
-  font-size: 34px;
+  font-size: 38px;
   font-weight: 900;
+  letter-spacing: -0.3px;
 }
 
 .cover-score-label {
   text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+/* ===============================
+   SECTION TITLE
+================================ */
+.section-title {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0 0 10px 0;
 }
 
 /* ===============================
@@ -234,309 +223,154 @@
 ================================ */
 .summary-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: stretch;
-}
-
-/* ===============================
-   CARDS
-================================ */
-.card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 12px;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
-/* ✅ FIXED: RTL card header alignment */
-.pdf-root[dir="rtl"] .card-head {
-  flex-direction: row;
+.card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
 .card-title {
-  font-size: 15px;
   font-weight: 900;
-  margin: 0;
-  flex: 1;
+  font-size: 13px;
 }
 
-.pill {
-  border: 2px solid;
+.badge {
+  font-size: 12px;
+  font-weight: 900;
+  padding: 4px 10px;
   border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 900;
-  background: rgba(255, 255, 255, 0.88);
-  white-space: nowrap;
-  flex-shrink: 0;
+  background: #e0f2fe;
+  color: #075985;
+  border: 1px solid rgba(7, 89, 133, 0.18);
 }
 
-.diag {
+.card-desc {
   font-size: 12px;
-  color: #4b5563;
+  opacity: 0.85;
   margin-bottom: 10px;
-  line-height: 1.55;
 }
 
-/* ===============================
-   PROGRESS BAR
-================================ */
-.bar-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bar-track {
-  flex: 1;
+.progress-track {
   height: 10px;
   background: #e5e7eb;
   border-radius: 999px;
   overflow: hidden;
 }
 
-.bar-fill {
+.progress-fill {
   height: 100%;
   border-radius: 999px;
 }
 
-.pct {
+/* ===============================
+   ACTION RECOMMENDATIONS (PAGE 3)
+================================ */
+.reco-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reco-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+}
+
+.reco-title {
   font-size: 13px;
   font-weight: 900;
-  min-width: 42px;
-  text-align: right;
+  margin-bottom: 6px;
 }
 
-/* ===============================
-   SWOT MINI SUMMARY (in overall card)
-================================ */
-.swot-mini {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 10px;
-  margin-top: 6px;
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
-}
-
-.swot-mini-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-}
-
-.pdf-root[dir="rtl"] .swot-mini-row {
-  flex-direction: row-reverse;
-}
-
-.swot-mini-label {
-  font-weight: 700;
+.reco-items {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
   opacity: 0.9;
 }
 
-.swot-mini-value {
-  font-weight: 900;
-  font-size: 13px;
+.pdf-root[dir="rtl"] .reco-items {
+  padding-left: 0;
+  padding-right: 18px;
 }
 
 /* ===============================
-   RECOMMENDATIONS
-================================ */
-.recs-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rec-card {
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  padding: 9px 11px;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.rec-long .rec-list {
-  margin-top: 5px;
-}
-
-.rec-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 5px;
-}
-
-/* ✅ FIXED: RTL recommendation header */
-.pdf-root[dir="rtl"] .rec-head {
-  flex-direction: row;
-}
-
-.rec-title {
-  font-size: 13px;
-  font-weight: 900;
-  margin: 0;
-  flex: 1;
-}
-
-.rec-list {
-  list-style: disc;
-  padding-inline-start: 18px;
-  margin: 0;
-  font-size: 11.5px;
-  line-height: 1.45;
-}
-
-.rec-list li {
-  margin-bottom: 3px;
-}
-
-.muted {
-  font-size: 11.5px;
-  color: #6b7280;
-  font-style: italic;
-}
-
-/* ===============================
-   SWOT + UPSELL
+   SWOT + NEXT STEP (PAGE 4)
 ================================ */
 .swot-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .swot-card {
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
-  break-inside: avoid;
-  page-break-inside: avoid;
 }
 
 .swot-title {
-  font-size: 14px;
   font-weight: 900;
-  text-align: center;
-  margin: 0 0 10px 0;
+  margin-bottom: 6px;
 }
 
-.swot-list {
-  list-style: disc;
-  padding-inline-start: 20px;
-  margin: 0;
-  line-height: 1.65;
-  font-size: 13px;
+.cta {
+  margin-top: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(16, 185, 129, 0.10));
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  border-radius: 16px;
+  padding: 14px;
 }
 
-.swot-strength {
-  border-color: rgba(22, 163, 74, 0.35);
-  background: rgba(22, 163, 74, 0.06);
-}
-.swot-opportunity {
-  border-color: rgba(37, 99, 235, 0.35);
-  background: rgba(37, 99, 235, 0.06);
-}
-.swot-weakness {
-  border-color: rgba(220, 38, 38, 0.35);
-  background: rgba(220, 38, 38, 0.06);
-}
-.swot-threat {
-  border-color: rgba(217, 119, 6, 0.35);
-  background: rgba(217, 119, 6, 0.06);
-}
-
-.swot-to-upsell-spacer {
-  height: 14px;
-}
-
-.upsell-wrap {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.upsell-title-big {
-  font-size: 20px;
+.cta-title {
+  font-size: 16px;
   font-weight: 900;
-  margin-bottom: 8px;
-  text-align: center;
+  margin-bottom: 6px;
 }
 
-.upsell-intro {
-  margin-top: 8px;
+.cta-desc {
+  font-size: 12px;
+  opacity: 0.9;
   margin-bottom: 10px;
-  font-size: 14px;
-  line-height: 1.5;
-  text-align: center;
 }
 
-.upsell-box {
-  background: linear-gradient(135deg, #1e3a8a, #4f46e5);
-  color: #fff;
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.upsell-box h3 {
-  font-size: 18px;
-  font-weight: 900;
-  margin: 0 0 8px 0;
-  text-align: center;
-}
-
-.upsell-box p {
-  font-size: 13px;
-  line-height: 1.6;
-  margin: 0 0 12px 0;
-  text-align: center;
-}
-
-.upsell-cols {
+.cta-bullets {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 6px 10px;
+  font-size: 12px;
+  margin-bottom: 10px;
 }
 
-.upsell-ul {
-  margin: 8px 0 0 0;
-  padding-inline-start: 18px;
-  line-height: 1.6;
-  font-size: 13px;
-}
-
-.upsell-cta {
-  display: block;
-  margin-top: 12px;
-  background: #ffffff;
-  color: #1e3a8a;
+.cta-button {
+  display: inline-block;
+  background: #111827;
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 999px;
   font-weight: 900;
-  padding: 11px;
-  border-radius: 14px;
-  text-align: center;
+  font-size: 12px;
   text-decoration: none;
-  font-size: 14px;
 }
 
 /* ===============================
