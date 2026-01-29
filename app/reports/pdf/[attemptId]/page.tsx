@@ -1,4 +1,5 @@
 // app/reports/pdf/[attemptId]/page.tsx
+import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { getRecommendations } from "@/lib/pdf-recommendations";
 
@@ -156,6 +157,17 @@ function formatReportDate(dateValue: any, isArabic: boolean) {
   }
 }
 
+function isPdfRender() {
+  const h = headers();
+  const ua = h.get("user-agent") || "";
+  return (
+    ua.includes("Headless") ||
+    ua.includes("Chrome") ||
+    h.get("x-pdf-render") === "1"
+  );
+}
+
+
 /** ✅ Presentation only: returns FINAL list from lib - CHANGED TO 3 BULLETS */
 function getTierRecs(competencyKey: string, tier: Tier, lang: "ar" | "en") {
   return getRecommendations(competencyKey, tier, lang)?.slice(0, 3) || [];
@@ -165,9 +177,10 @@ export default async function PdfReport({
   params,
   searchParams,
 }: {
-  params: { attemptId: string };
-  searchParams: { lang?: string };
+  params: { attemptId?: string };
+  searchParams?: { lang?: string };
 }) {
+
   const attemptId = String(params.attemptId || "").trim();
   const langRaw = String(searchParams?.lang || "").toLowerCase();
 
@@ -269,7 +282,15 @@ export default async function PdfReport({
   const textDir = finalIsArabic ? "rtl" : "ltr";
 
   return (
-    <div className="pdf-root" dir={textDir} lang={finalLang} data-pdf-ready="1" suppressHydrationWarning>
+ <div
+  className="pdf-root"
+  dir={textDir}
+  lang={finalLang}
+  data-pdf-ready="1"
+  data-render="pdf"
+  suppressHydrationWarning
+>
+
       <div className="report">
         {/* PAGE 1: COVER */}
         <section className="page cover-page">

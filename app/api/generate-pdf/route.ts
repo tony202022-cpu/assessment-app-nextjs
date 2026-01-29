@@ -1,20 +1,25 @@
 // app/api/generate-pdf/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { PDFData, generatePDFHTML } from "@/lib/pdfTemplate"; // Corrected import path
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const isVercel = () => {
-  return !!process.env.VERCEL || !!process.env.VERCEL_ENV;
-};
-
+/**
+ * This route MUST NOT run puppeteer.
+ * It only proxies to dyad-pdf-service which does the real PDF rendering.
+ *
+ * Required env var (recommended):
+ *   PDF_SERVICE_URL=http://127.0.0.1:3001   (local)
+ *   PDF_SERVICE_URL=https://<your-dyad-pdf-service>.vercel.app (production)
+ *
+ * Example:
+ *   /api/generate-pdf?attemptId=...&lang=ar
+ */
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
 
   const attemptId = searchParams.get("attemptId")?.trim();
-  const lang = (searchParams.get("lang")?.trim() || "en") as "en" | "ar";
+  const lang = (searchParams.get("lang")?.trim() || "ar") as "en" | "ar";
 
   if (!attemptId) {
     return NextResponse.json(
@@ -23,111 +28,74 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // IMPORTANT:
+  // - Local: http://127.0.0.1:3001
+  // - Prod : https://dyad-pdf-service-....vercel.app
+  const PDF_SERVICE_URL =
+    process.env.PDF_SERVICE_URL?.trim() || "http://127.0.0.1:3001";
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.error("Missing Supabase env vars for PDF generation.");
-    return NextResponse.json(
-      { error: "Server configuration error: Supabase environment variables are not set." },
-      { status: 500 }
-    );
-  }
-
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false },
-  });
+  const serviceUrl =
+    `${PDF_SERVICE_URL}/api/generate-pdf?attemptId=${encodeURIComponent(
+      attemptId
+    )}&lang=${encodeURIComponent(lang)}`;
 
   try {
-    const { data: attempt, error: attemptErr } = await supabase
-      .from("quiz_attempts")
-      .select("id, user_id, competency_results, total_percentage, language, created_at")
-      .eq("id", attemptId)
-      .single();
+    const r = await fetch(serviceUrl, {
+      // prevent Next cache
+      cache: "no-store",
+      headers: {
+        // helps avoid intermediary caches
+        "Cache-Control": "no-store",
+      },
+    });
 
-    if (attemptErr || !attempt) {
-      console.error("Attempt fetch error:", attemptErr);
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
-    }
+    const contentType = r.headers.get("content-type") || "";
 
-    const userId = (attempt as any).user_id as string | null;
-    let profile: any = null;
-    if (userId) {
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("full_name, company")
-        .eq("id", userId)
-        .maybeSingle();
-      profile = p || null;
-    }
+    // If dyad-pdf-service failed, return its error (JSON/text) clearly
+    if (!r.ok) {
+      let details: any = null;
 
-    const fullName = profile?.full_name || (lang === "ar" ? "غير محدد" : "Not specified");
-
-    const pdfData: PDFData = {
-      name: fullName,
-      language: lang,
-      totalPercentage: attempt.total_percentage || 0,
-      competencyResults: attempt.competency_results || [],
-    };
-
-    const htmlContent = generatePDFHTML(pdfData);
-
-    let browser: any = null;
-
-    try {
-      if (isVercel()) {
-        const chromium = await import("chrome-aws-lambda");
-        const puppeteerCore = await import("puppeteer-core");
-
-        browser = await puppeteerCore.default.launch({
-          args: chromium.default.args,
-          executablePath: await chromium.default.executablePath,
-          headless: chromium.default.headless,
-        });
-      } else {
-        const puppeteer = await import("puppeteer");
-        browser = await puppeteer.default.launch({
-          headless: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        });
+      try {
+        details = contentType.includes("application/json")
+          ? await r.json()
+          : await r.text();
+      } catch {
+        details = "Failed to read error body from PDF service.";
       }
 
-      const page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-
-      const pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        margin: {
-          top: "0",
-          right: "0",
-          bottom: "0",
-          left: "0",
-        },
-      });
-
-      await browser.close();
-
-      return new NextResponse(pdfBuffer, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="report_${attemptId}_${lang}.pdf"`,
-          "Cache-Control": "no-store, max-age=0",
-        },
-      });
-    } catch (puppeteerError: any) {
-      console.error("Puppeteer error:", puppeteerError);
-      if (browser) await browser.close();
       return NextResponse.json(
-        { error: "PDF generation failed", message: puppeteerError.message },
+        {
+          error: "PDF service error",
+          status: r.status,
+          serviceUrl,
+          details,
+        },
         { status: 500 }
       );
     }
-  } catch (error: any) {
-    console.error("PDF generation route error:", error);
+
+    // Stream PDF back
+    const pdfBuffer = await r.arrayBuffer();
+
+    return new NextResponse(pdfBuffer, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="report_${attemptId}_${lang}.pdf"`,
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
+  } catch (err: any) {
     return NextResponse.json(
-      { error: "Internal server error", message: error.message },
+      {
+        error: "Failed to reach PDF service",
+        message: err?.message || String(err),
+        hint:
+          "Make sure dyad-pdf-service is running locally on 127.0.0.1:3001 OR set PDF_SERVICE_URL to the deployed Vercel URL.",
+      },
       { status: 500 }
     );
   }
