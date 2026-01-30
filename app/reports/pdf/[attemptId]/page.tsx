@@ -230,6 +230,15 @@ function getOverallScoreRecs(totalPercentage: number, lang: "ar" | "en") {
   }
 }
 
+function PdfShell({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body data-pdf-ready="1">{children}</body>
+    </html>
+  );
+}
+
+
 export default async function PdfReport({
   params,
   searchParams,
@@ -241,20 +250,29 @@ export default async function PdfReport({
   const attemptId = String(params.attemptId || "").trim();
   const langRaw = String(searchParams?.lang || "").toLowerCase();
 
-  if (!attemptId) {
-    return <div style={{ padding: 40, fontFamily: "system-ui" }}>Missing attemptId</div>;
-  }
+if (!attemptId) {
+  return (
+    <PdfShell>
+      <div style={{ padding: 40, fontFamily: "system-ui" }}>
+        Missing attemptId
+      </div>
+    </PdfShell>
+  );
+}
+
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceKey) {
-    return (
+if (!supabaseUrl || !serviceKey) {
+  return (
+    <PdfShell>
       <div style={{ padding: 40, fontFamily: "system-ui" }}>
-        Missing env vars: SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) / SUPABASE_SERVICE_ROLE_KEY
+        Missing env vars
       </div>
-    );
-  }
+    </PdfShell>
+  );
+}
 
   const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
@@ -264,9 +282,16 @@ export default async function PdfReport({
     .eq("id", attemptId)
     .single();
 
-  if (error || !data) {
-    return <div style={{ padding: 40, fontFamily: "system-ui" }}>Report not found</div>;
-  }
+if (error || !data) {
+  return (
+    <PdfShell>
+      <div style={{ padding: 40, fontFamily: "system-ui" }}>
+        Report not found
+      </div>
+    </PdfShell>
+  );
+}
+
 
   const dbLang = String((data as any).language || "").toLowerCase();
   const urlLang = langRaw === "en" ? "en" : langRaw === "ar" ? "ar" : null;
@@ -341,18 +366,20 @@ export default async function PdfReport({
   const COVER_SUBTITLE_AR = "تحليل كفاءات ميدانية";
 
   const coverTitle = finalIsArabic ? COVER_TITLE_AR : COVER_TITLE_EN;
-  const coverSubtitle = finalIsArabic ? COVER_SUBTITLE_AR : COVER_SUBTITLE_EN;
+const coverSubtitle = finalIsArabic ? COVER_SUBTITLE_AR : COVER_SUBTITLE_EN;
 
-  return (
+return (
+  <PdfShell>
     <div
       className="pdf-root"
       dir={textDir}
       lang={finalLang}
-      data-pdf-ready="1"
       data-render="pdf"
       suppressHydrationWarning
     >
       <div className="report">
+        {/* existing content continues unchanged */}
+
         {/* PAGE 1: COVER */}
         <section className="page cover-page">
           <div className="cover-bg" aria-hidden="true">
