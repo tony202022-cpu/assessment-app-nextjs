@@ -31,7 +31,7 @@ export async function GET(
   const browser = isVercel
     ? await puppeteerCore.launch({
         args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
+      defaultViewport: null,
         executablePath: await chromium.executablePath(),
         headless: chromium.headless,
       })
