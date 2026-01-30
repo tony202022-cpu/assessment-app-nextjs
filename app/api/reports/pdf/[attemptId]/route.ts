@@ -33,7 +33,8 @@ export async function GET(
         args: chromium.args,
       defaultViewport: null,
         executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
+        headless: true,
+
       })
     : await puppeteer.launch({
         headless: true,
