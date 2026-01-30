@@ -1,8 +1,11 @@
 // app/api/generate-pdf/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 
 /**
  * This route MUST NOT run puppeteer.
