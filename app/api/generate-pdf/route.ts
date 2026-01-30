@@ -49,6 +49,5 @@ export async function GET(req: NextRequest) {
       attemptId
     )}&lang=${encodeURIComponent(lang)}`;
 
-  // Redirect so the browser downloads from Cloud Run directly
   return NextResponse.redirect(target, 302);
 }
