@@ -1,5 +1,9 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import ResultsClient from "./ResultsClient";
+
+const ResultsClient = dynamic(() => import("./ResultsClient"), { ssr: false });
 
 export default function Page() {
   return (

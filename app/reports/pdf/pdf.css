@@ -10,7 +10,7 @@
 @font-face {
   font-family: "Cairo";
   src: url("/fonts/Cairo-Bold.woff2") format("woff2"),
-       url("/fonts/Cairo-Bold.ttf") format("truetype");
+       url("/fonts/Cairo-Bold.ttf") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -21,381 +21,553 @@
   margin: 0;
 }
 
-* {
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+  background: #f9fafb;
 }
 
 .pdf-root {
-  margin: 0;
-  padding: 0;
-  background: #ffffff;
+  font-family: "Cairo", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: #111827;
-  font-family: "Cairo", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
 }
 
-/* ===============================
-   PAGE STRUCTURE
-================================ */
-.report {
-  width: 210mm;
-  margin: 0 auto;
-}
+.report { width: 100%; }
 
 .page {
   width: 210mm;
   min-height: 297mm;
   padding: 18mm;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #f9fafb, #e5e7eb);
   page-break-after: always;
+  background: #f9fafb;
 }
 
-.page-last {
+/* Prevent trailing blank page */
+.page:last-child,
+.page.page-last {
   page-break-after: auto !important;
+  break-after: auto !important;
 }
 
-/* ===============================
-   ✅ RTL / LTR CONTROL - COMPLETELY REWRITTEN
-================================ */
+/* Text helpers */
+.ltr { direction: ltr; text-align: left; }
+.rtl-text { direction: rtl; text-align: right; }
+.rtl-value { direction: rtl; unicode-bidi: plaintext; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: rgba(17,24,39,0.65); }
 
-/* Base LTR for English */
-.pdf-root {
-  direction: ltr;
-  text-align: left;
-}
-
-/* Arabic mode */
-.pdf-root[dir="rtl"] {
-  direction: rtl;
-  text-align: right;
-}
-
-/* Force LTR for numbers and emails */
-.ltr,
-.num {
-  direction: ltr !important;
-  unicode-bidi: bidi-override;
-  text-align: left !important;
-  display: inline-block;
-}
-
-.rtl-value {
-  unicode-bidi: plaintext;
-}
-
-/* ===============================
-   COVER PAGE
-================================ */
+/* ===== COVER ===== */
 .cover-page {
-  align-items: center;
-  text-align: center;
-  padding-top: 22mm;
-  padding-bottom: 16mm;
-  background:
-    radial-gradient(900px 500px at 20% 15%, rgba(99, 102, 241, 0.18) 0%, rgba(99, 102, 241, 0) 60%),
-    radial-gradient(700px 420px at 85% 35%, rgba(16, 185, 129, 0.14) 0%, rgba(16, 185, 129, 0) 55%),
-    linear-gradient(135deg, #ffffff 0%, #eef2ff 55%, #f8fafc 100%);
+  background: linear-gradient(180deg, rgba(224,242,254,0.80), rgba(255,255,255,0.96) 45%, rgba(241,245,249,0.96));
 }
 
 .cover-logo {
   width: 190px;
   margin-bottom: 14px;
   object-fit: contain;
+  display: block;
 }
 
 .cover-title {
-  font-size: 34px;
+  margin: 0;
+  font-size: 28px;
   font-weight: 900;
-  margin-bottom: 6px;
-  letter-spacing: -0.2px;
-  text-align: center;
+  letter-spacing: 0.2px;
 }
 
 .cover-subtitle {
-  font-size: 17px;
+  margin: 6px 0 14px 0;
+  font-size: 14px;
   font-weight: 700;
-  margin-bottom: 14px;
-  opacity: 0.86;
-  text-align: center;
+  color: rgba(17,24,39,0.70);
 }
 
 .cover-user-info {
-  max-width: 520px;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(229, 231, 235, 0.9);
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(15,23,42,0.10);
   border-radius: 16px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(6px);
+  padding: 12px;
+  box-shadow: 0 10px 22px rgba(15,23,42,0.06);
 }
 
 .cover-user-line {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  font-size: 13px;
   gap: 12px;
-  padding: 2px 0;
+  padding: 7px 0;
+  border-bottom: 1px dashed rgba(15,23,42,0.12);
 }
 
-/* RTL flex direction for Arabic */
-.pdf-root[dir="rtl"] .cover-user-line {
-  flex-direction: row;
-  text-align: right;
-}
+.cover-user-line:last-child { border-bottom: none; }
 
 .cover-user-label {
-  opacity: 0.72;
-  min-width: 130px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(17,24,39,0.65);
 }
 
 .cover-user-value {
+  font-size: 12px;
   font-weight: 900;
 }
 
-/* Cover visual */
-.cover-bottom {
-  width: 100%;
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  break-inside: avoid;
-  page-break-inside: avoid;
+.cover-score-section { margin-top: 14px; }
+
+.score-circle {
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 6px auto;
 }
 
+.score-value {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.cover-score-label {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(17,24,39,0.70);
+}
+
+.cover-bottom { margin-top: 12px; }
+
 .cover-visual {
-  width: 100%;
-  max-width: 520px;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 .cover-visual-img {
   width: 100%;
+  max-width: 520px;
   height: auto;
   max-height: 165px;
   object-fit: contain;
   border-radius: 18px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  display: block;
 }
 
-/* ===============================
-   SCORE CIRCLE
-================================ */
-.cover-score-section {
-  margin-top: 14px;
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-}
-
-.score-circle {
-  width: 132px;
-  height: 132px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.18);
-}
-
-.score-value {
-  font-size: 38px;
-  font-weight: 900;
-  letter-spacing: -0.3px;
-}
-
-.cover-score-label {
-  text-align: center;
-  font-size: 12px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: #334155;
-}
-
-/* ===============================
-   SECTION TITLE
-================================ */
+/* ===== SECTION TITLES ===== */
 .section-title {
-  font-size: 18px;
-  font-weight: 900;
   margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 900;
 }
 
-/* ===============================
-   SUMMARY GRID (PAGE 2)
-================================ */
+/* ===== SUMMARY GRID / CARDS ===== */
 .summary-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255,255,255,0.92);
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 12px;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 22px rgba(15,23,42,0.06);
 }
 
-.card-header {
+.card-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   margin-bottom: 6px;
 }
 
 .card-title {
-  font-weight: 900;
+  margin: 0;
   font-size: 13px;
+  font-weight: 900;
 }
 
-.badge {
+.pill {
   font-size: 12px;
   font-weight: 900;
   padding: 4px 10px;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #075985;
+  background: rgba(224,242,254,0.70);
   border: 1px solid rgba(7, 89, 133, 0.18);
+  color: #075985;
+  white-space: nowrap;
 }
 
-.card-desc {
+.diag {
+  margin: 0 0 10px 0;
   font-size: 12px;
-  opacity: 0.85;
-  margin-bottom: 10px;
+  font-weight: 700;
+  color: rgba(17,24,39,0.70);
 }
 
-.progress-track {
+/* Progress bar */
+.bar-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.pct {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(17,24,39,0.85);
+}
+
+.bar-track {
   height: 10px;
-  background: #e5e7eb;
   border-radius: 999px;
+  background: rgba(15,23,42,0.08);
   overflow: hidden;
 }
 
-.progress-fill {
+.bar-fill {
   height: 100%;
   border-radius: 999px;
 }
 
-/* ===============================
-   ACTION RECOMMENDATIONS (PAGE 3)
-================================ */
-.reco-list {
-  display: flex;
-  flex-direction: column;
+/* ===== RECOMMENDATIONS ===== */
+.recs-stack {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 10px;
+  margin-top: 10px;
 }
 
-.reco-card {
-  background: rgba(255, 255, 255, 0.92);
+.rec-card {
+  background: rgba(255,255,255,0.92);
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 12px;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 22px rgba(15,23,42,0.06);
 }
 
-.reco-title {
-  font-size: 13px;
-  font-weight: 900;
+.rec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
   margin-bottom: 6px;
 }
 
-.reco-items {
+.rec-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.rec-list {
   margin: 0;
   padding-left: 18px;
   font-size: 12px;
-  opacity: 0.9;
+  font-weight: 700;
+  color: rgba(17,24,39,0.78);
 }
 
-.pdf-root[dir="rtl"] .reco-items {
-  padding-left: 0;
-  padding-right: 18px;
-}
-
-/* ===============================
-   SWOT + NEXT STEP (PAGE 4)
-================================ */
+/* ===== SWOT ===== */
 .swot-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .swot-card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  background: rgba(255,255,255,0.86);
+  border: 1px solid rgba(15,23,42,0.10);
+  border-radius: 16px;
   padding: 12px;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 22px rgba(15,23,42,0.06);
 }
 
 .swot-title {
+  margin: 0 0 8px 0;
+  font-size: 13px;
   font-weight: 900;
-  margin-bottom: 6px;
 }
 
-.cta {
-  margin-top: 10px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(16, 185, 129, 0.10));
-  border: 1px solid rgba(99, 102, 241, 0.22);
-  border-radius: 16px;
-  padding: 14px;
-}
-
-.cta-title {
-  font-size: 16px;
-  font-weight: 900;
-  margin-bottom: 6px;
-}
-
-.cta-desc {
+.swot-list {
+  margin: 0;
+  padding-left: 18px;
   font-size: 12px;
-  opacity: 0.9;
-  margin-bottom: 10px;
+  font-weight: 700;
+  color: rgba(17,24,39,0.78);
 }
 
-.cta-bullets {
+/* Soft tints by quadrant */
+.swot-strength { border-color: rgba(15,118,110,0.22); background: rgba(240,253,250,0.72); }
+.swot-opportunity { border-color: rgba(2,132,199,0.22); background: rgba(239,246,255,0.72); }
+.swot-weakness { border-color: rgba(194,65,12,0.22); background: rgba(255,247,237,0.78); }
+.swot-threat { border-color: rgba(185,28,28,0.22); background: rgba(254,242,242,0.78); }
+
+.swot-to-upsell-spacer { height: 12px; }
+
+/* ===== UPSELL ===== */
+.upsell-wrap { margin-top: 6px; }
+
+.upsell-title-big {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.upsell-intro {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(17,24,39,0.72);
+}
+
+.upsell-box {
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 10px 22px rgba(15,23,42,0.06);
+}
+
+.upsell-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 10px;
-  font-size: 12px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-top: 10px;
 }
 
-.cta-button {
-  display: inline-block;
-  background: #111827;
-  color: #ffffff;
-  padding: 10px 14px;
-  border-radius: 999px;
+.upsell-ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(17,24,39,0.80);
+}
+
+.upsell-cta {
+  display: block;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  text-align: center;
   font-weight: 900;
   font-size: 12px;
-  text-decoration: none;
+  background: #0ea5e9;
+  color: white;
+  border: 1px solid rgba(2,132,199,0.35);
 }
 
-/* ===============================
-   FOOTER
-================================ */
+/* ===== FOOTER ===== */
 .footer {
-  margin-top: auto;
-  padding-top: 14px;
-  font-size: 11px;
-  color: #6b7280;
+  margin-top: 12px;
   text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(17,24,39,0.60);
+}
+
+/* ===== PRINT/PDF FRAGMENTATION CONTROL ===== */
+/* Prevent splitting the “real blocks” (cards), but don't lock entire sections */
+.card,
+.rec-card,
+.swot-card,
+.upsell-box,
+.cover-user-info {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+/* Reduce ugly list splits */
+p, li { orphans: 3; widows: 3; }
+/* ==========================================================
+   WORLD-CLASS PDF LAYER (premium + stable + print-safe)
+   Paste at the very bottom of pdf.css
+   ========================================================== */
+
+:root{
+  --ink: #0f172a;
+  --muted: rgba(15,23,42,0.70);
+  --line: rgba(15,23,42,0.10);
+  --card: rgba(255,255,255,0.92);
+  --shadow: 0 12px 26px rgba(15,23,42,0.08);
+  --radius: 16px;
+  --radius-sm: 12px;
+}
+
+/* Print color fidelity everywhere */
+html, body, .pdf-root, .report, .page{
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* Page: premium paper feel */
+.page{
+  background: #f8fafc !important;
+}
+
+/* Cover: richer but not loud */
+.cover-page{
+  background: radial-gradient(1200px 700px at 20% 0%,
+      rgba(14,165,233,0.18) 0%,
+      rgba(255,255,255,0.0) 50%),
+    radial-gradient(900px 600px at 90% 30%,
+      rgba(15,118,110,0.14) 0%,
+      rgba(255,255,255,0.0) 55%),
+    linear-gradient(180deg,
+      rgba(255,255,255,0.96),
+      rgba(248,250,252,0.96)) !important;
+}
+
+/* Typography: hierarchy */
+.cover-title{
+  font-size: 30px !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0.2px !important;
+}
+.cover-subtitle{
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  color: var(--muted) !important;
+  margin-bottom: 14px !important;
+}
+
+.section-title{
+  font-size: 20px !important;
+  line-height: 1.2 !important;
+  margin: 0 0 12px 0 !important;
+  letter-spacing: 0.15px !important;
+  color: var(--ink) !important;
+}
+
+/* Cards: premium and consistent */
+.card, .rec-card, .swot-card, .upsell-box, .cover-user-info{
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--line) !important;
+  background: var(--card) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+/* tighten card internals */
+.card{ padding: 12px 12px !important; }
+.rec-card{ padding: 12px 12px !important; }
+.swot-card{ padding: 12px 12px !important; }
+.cover-user-info{ padding: 12px !important; }
+
+/* Pills: more premium */
+.pill{
+  background: rgba(224,242,254,0.55) !important;
+  border: 1px solid rgba(2,132,199,0.22) !important;
+  color: #075985 !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+}
+
+/* Diagnostic text: readable */
+.diag{
+  color: var(--muted) !important;
+  font-weight: 650 !important;
+  line-height: 1.5 !important;
+}
+
+/* SUMMARY GRID: keep 2 columns even in RTL */
+.summary-grid{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* ====== WORLD-CLASS BARS (RTL-safe, never disappear) ====== */
+/* Force bar rendering left-to-right while keeping text RTL overall */
+.bar-row{
+  direction: ltr !important;
+  display: grid !important;
+  grid-template-columns: 52px 1fr !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+.pct{
+  font-weight: 900 !important;
+  color: rgba(15,23,42,0.86) !important;
+}
+
+.bar-track{
+  display: block !important;
+  width: 100% !important;
+  min-width: 140px !important; /* critical: prevents collapse */
+  height: 10px !important;
+  border-radius: 999px !important;
+  background: rgba(15,23,42,0.10) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.bar-fill{
+  display: block !important;
+  height: 100% !important;
+  min-width: 2px !important; /* tiny % still shows */
+  border-radius: 999px !important;
+}
+
+/* Add subtle gloss on bar fill (premium look, still print-safe) */
+.bar-fill::after{
+  content:"";
+  position:absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
+  pointer-events:none;
+}
+
+/* Recommendations: make list cleaner */
+.rec-list, .swot-list, .upsell-ul{
+  line-height: 1.55 !important;
+}
+
+/* Upsell CTA: premium button */
+.upsell-cta{
+  border-radius: 14px !important;
+  padding: 11px 14px !important;
+  font-size: 12px !important;
+  box-shadow: 0 14px 28px rgba(2,132,199,0.18) !important;
+}
+
+/* Footer: lighter */
+.footer{
+  color: rgba(15,23,42,0.55) !important;
+  margin-top: 14px !important;
+}
+
+/* ====== PRINT STABILITY ====== */
+/* Prevent splitting key blocks, but avoid locking entire grids */
+.card, .rec-card, .swot-card, .upsell-box, .cover-user-info{
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+/* Allow the grid children themselves to break naturally */
+.summary-grid > *, .swot-grid > *{
+  break-inside: auto !important;
+  page-break-inside: auto !important;
+}
+
+/* Prevent trailing blank page */
+.page:last-child, .page.page-last{
+  page-break-after: auto !important;
+  break-after: auto !important;
+}
+
+/* Reduce ugly text fragmentation */
+p, li{
+  orphans: 3;
+  widows: 3;
 }
