@@ -13,27 +13,28 @@ interface LocaleContextType {
 
 const LocaleContext = createContext<LocaleContextType | undefined>(undefined);
 
-// Read language immediately on first render (prevents "English flash")
-const getInitialLanguage = (): Language => {
-  if (typeof window === "undefined") return "en";
-  const stored = localStorage.getItem("language");
-  if (stored === "ar" || stored === "en") return stored;
-  return "en";
-};
-
 export const LocaleProvider = ({ children }: { children: ReactNode }) => {
-  const initialLang = getInitialLanguage();
+  // Initialize with a stable value that matches the server's default
+  const [language, setLanguageState] = useState<Language>("en");
+  const [direction, setDirection] = useState<Direction>("ltr");
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  const [language, setLanguageState] = useState<Language>(initialLang);
-  const [direction, setDirection] = useState<Direction>(
-    initialLang === "ar" ? "rtl" : "ltr"
-  );
-
-  // Update document.documentElement.lang and dir after hydration
+  // Handle initial language load from localStorage after hydration
   useEffect(() => {
+    const stored = localStorage.getItem("language");
+    if (stored === "ar" || stored === "en") {
+      setLanguageState(stored as Language);
+      setDirection(stored === "ar" ? "rtl" : "ltr");
+    }
+    setIsHydrated(true);
+  }, []);
+
+  // Update document attributes when language/direction changes
+  useEffect(() => {
+    if (!isHydrated) return;
     document.documentElement.lang = language;
     document.documentElement.dir = direction;
-  }, [language, direction]);
+  }, [language, direction, isHydrated]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
