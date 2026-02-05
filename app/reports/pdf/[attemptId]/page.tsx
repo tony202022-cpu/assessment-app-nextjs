@@ -3,7 +3,6 @@ import { createClient } from "@supabase/supabase-js";
 import type React from "react";
 import { getRecommendations as getPdfRecommendations } from "@/lib/pdf-recommendations";
 
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -90,6 +89,9 @@ const COMPETENCY_ALIASES: Record<string, CompetencyKey> = {
   "انضباط المتابعة": "follow_up_discipline",
 };
 
+// Registration CTA (Page 4)
+const REGISTER_URL = "https://www.levelupbusinessconsulting.com/advanced-mri";
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -126,7 +128,6 @@ function formatDate(iso: any, lang: Lang): string {
     const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
     if (lang === "ar") {
-      // Manual RTL construction
       return `${day} ${monthsAr[month]} ${year}`;
     }
     return `${monthsEn[month]} ${day}, ${year}`;
@@ -188,9 +189,9 @@ function pickByLang(v: any, lang: Lang): any {
 
 function extractSwot(swotRaw: any, lang: Lang) {
   if (!swotRaw) return { strengths: [], opportunities: [], weaknesses: [], threats: [] };
-  
+
   const sw = pickByLang(swotRaw, lang) ?? swotRaw;
-  
+
   return {
     strengths: toStringArray(sw?.strengths ?? sw?.Strengths ?? sw?.قوة ?? sw?.نقاط_القوة ?? []),
     opportunities: toStringArray(sw?.opportunities ?? sw?.Opportunities ?? sw?.فرص ?? sw?.الفرص ?? []),
@@ -205,7 +206,6 @@ function extractSwot(swotRaw: any, lang: Lang) {
 function extractRecsFromRaw(rawRow: any, lang: Lang): string[] {
   if (!rawRow) return [];
 
-  // Try common shapes that could exist in your DB row
   const candidate =
     rawRow?.recommendations ??
     rawRow?.recs ??
@@ -219,10 +219,7 @@ function extractRecsFromRaw(rawRow: any, lang: Lang): string[] {
     rawRow?.data?.recs ??
     rawRow?.result?.recommendations;
 
-  // If it's an object with {en/ar}, pick language safely
   const picked = pickByLang(candidate, lang);
-
-  // Convert to clean string[]
   return toStringArray(picked);
 }
 
@@ -287,16 +284,21 @@ function computeFromRawResults(raw: any[]): CompetencyResult[] {
       recommendations: r?.recommendations ?? [],
     });
   }
-  const byKey = new Map(mapped.map(m => [m.key, m]));
+  const byKey = new Map(mapped.map((m) => [m.key, m]));
   return COMPETENCIES.map(({ key }) => byKey.get(key) ?? { key, percentage: 0, tier: "Threat" as Tier });
 }
 
 function computeOverallPct(results: CompetencyResult[], fromDb?: any): number {
   const db = Number(fromDb);
-  if (Number.isFinite(db) && db >= 0 && db <= 100) return clamp(db);
+
+  // Trust DB only if it's a meaningful score.
+  // If DB is 0 (or missing), compute from competencies instead.
+  if (Number.isFinite(db) && db > 0 && db <= 100) return clamp(db);
+
   const sum = results.reduce((acc, r) => acc + r.percentage, 0);
   return clamp(sum / Math.max(1, results.length));
 }
+
 
 function pickLang(dbLang: any, urlLang: any): Lang {
   const q = String(urlLang ?? "").toLowerCase();
@@ -319,12 +321,12 @@ function getSupabaseAdminClient() {
 async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
   const supabase = getSupabaseAdminClient();
   let { data: row } = await supabase.from("quiz_attempts").select("*").eq("id", attemptId).maybeSingle();
-  
+
   if (!row) {
     const { data: legacy } = await supabase.from("assessment_attempts").select("*").eq("id", attemptId).maybeSingle();
     row = legacy;
   }
-  
+
   if (row && row.user_id) {
     const { data: profile } = await supabase.from("profiles").select("*").eq("id", row.user_id).maybeSingle();
     if (profile) {
@@ -332,7 +334,6 @@ async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
       row.user_email = row.user_email || profile.user_email || profile.email;
       row.company = row.company || profile.company;
     }
-    // Fallback if email missing
     if (!row.user_email && !row.email) {
       const { data: authUser } = await supabase.auth.admin.getUserById(row.user_id);
       if (authUser?.user?.email) row.user_email = authUser.user.email;
@@ -369,9 +370,8 @@ function getTranslations(lang: Lang) {
     threats: lang === "ar" ? "التهديدات" : "Threats",
     noItems: lang === "ar" ? "لا توجد عناصر حالياً" : "No items currently",
     nextStep: lang === "ar" ? "خطوتك التالية" : "Your Next Step",
-    nextStepDesc: lang === "ar" 
-      ? "احصل على خطة تطوير مخصصة (جلسة + خريطة تنفيذ 30 يوماً)"
-      : "Get a personalized plan (diagnostic + 30-day roadmap)",
+    nextStepDesc:
+      lang === "ar" ? "احصل على خطة تطوير مخصصة (جلسة + خريطة تنفيذ 30 يوماً)" : "Get a personalized plan (diagnostic + 30-day roadmap)",
     bookSession: lang === "ar" ? "احجز جلسة" : "Book Session",
     page: lang === "ar" ? "الصفحة" : "Page",
     of: lang === "ar" ? "من" : "of",
@@ -394,10 +394,22 @@ function ScoreRing({ percentage, color, size = 120 }: { percentage: number; colo
     <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
         <circle cx={center} cy={center} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} />
-        <circle cx={center} cy={center} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} />
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+        />
       </svg>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span suppressHydrationWarning={true} style={{ fontSize: 30, fontWeight: 900, color: "#0f172a" }}>{percentage}%</span>
+        <span suppressHydrationWarning={true} style={{ fontSize: 30, fontWeight: 900, color: "#0f172a" }}>
+          {percentage}%
+        </span>
       </div>
     </div>
   );
@@ -427,14 +439,41 @@ export default async function Page({
   if (!fullName || fullName === "—") {
     if (email !== "—") {
       const match = email.match(/^([^@]+)/);
-      if (match) fullName = match[1].replace(/[._-]/g, ' ').replace(/\d+/g, '').trim();
+      if (match) fullName = match[1].replace(/[._-]/g, " ").replace(/\d+/g, "").trim();
     }
   }
   fullName = fullName || "—";
   const company = row.company || "—";
   const reportDate = formatDate(row.created_at, lang);
 
-  const rawResults = Array.isArray(row.competency_results) ? row.competency_results : [];
+  // ✅ FIX: competency_results may be an array, JSON string, or wrapped object
+  const rawResults = (() => {
+    const cr: any = (row as any)?.competency_results;
+
+    if (Array.isArray(cr)) return cr;
+
+    if (typeof cr === "string") {
+      try {
+        const parsed = JSON.parse(cr);
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && Array.isArray(parsed.results)) return parsed.results;
+        if (parsed && Array.isArray(parsed.items)) return parsed.items;
+        if (parsed && Array.isArray(parsed.competencies)) return parsed.competencies;
+        return [];
+      } catch {
+        return [];
+      }
+    }
+
+    if (cr && typeof cr === "object") {
+      if (Array.isArray(cr.results)) return cr.results;
+      if (Array.isArray(cr.items)) return cr.items;
+      if (Array.isArray(cr.competencies)) return cr.competencies;
+    }
+
+    return [];
+  })();
+
   const results = computeFromRawResults(rawResults);
   const overallPct = computeOverallPct(results, row.total_percentage);
   const overallTier = tierFromPct(overallPct);
@@ -442,20 +481,29 @@ export default async function Page({
 
   let swot = extractSwot(row.swot_analysis, lang);
   if (!swot.strengths.length && !swot.opportunities.length && !swot.weaknesses.length && !swot.threats.length) {
-    swot.strengths = results.filter(r => r.tier === "Strength").map(r => lang === "ar" ? COMPETENCIES.find(c=>c.key===r.key)!.labelAr : COMPETENCIES.find(c=>c.key===r.key)!.labelEn);
-    swot.opportunities = results.filter(r => r.tier === "Opportunity").map(r => lang === "ar" ? COMPETENCIES.find(c=>c.key===r.key)!.labelAr : COMPETENCIES.find(c=>c.key===r.key)!.labelEn);
-    swot.weaknesses = results.filter(r => r.tier === "Weakness").map(r => lang === "ar" ? COMPETENCIES.find(c=>c.key===r.key)!.labelAr : COMPETENCIES.find(c=>c.key===r.key)!.labelEn);
-    swot.threats = results.filter(r => r.tier === "Threat").map(r => lang === "ar" ? COMPETENCIES.find(c=>c.key===r.key)!.labelAr : COMPETENCIES.find(c=>c.key===r.key)!.labelEn);
+    swot.strengths = results
+      .filter((r) => r.tier === "Strength")
+      .map((r) => (lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)!.labelAr : COMPETENCIES.find((c) => c.key === r.key)!.labelEn));
+    swot.opportunities = results
+      .filter((r) => r.tier === "Opportunity")
+      .map((r) => (lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)!.labelAr : COMPETENCIES.find((c) => c.key === r.key)!.labelEn));
+    swot.weaknesses = results
+      .filter((r) => r.tier === "Weakness")
+      .map((r) => (lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)!.labelAr : COMPETENCIES.find((c) => c.key === r.key)!.labelEn));
+    swot.threats = results
+      .filter((r) => r.tier === "Threat")
+      .map((r) => (lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)!.labelAr : COMPETENCIES.find((c) => c.key === r.key)!.labelEn));
   }
 
   const logoSrc = "/brand/logo.png";
+  const isArabic = lang === "ar";
 
   return (
-<div className="pdf-root" dir={dir} lang={lang} suppressHydrationWarning={true}>
-  <style
-    suppressHydrationWarning
-    dangerouslySetInnerHTML={{
-      __html: `
+    <div className="pdf-root" dir={dir} lang={lang} suppressHydrationWarning={true}>
+      <style
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: `
         @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap");
 
         :root {
@@ -474,7 +522,6 @@ export default async function Page({
 
         @page { size: A4; margin: 0; }
 
-        /* FIX: 5th PAGE / OVERFLOW */
         @media print {
           html, body { background: #fff !important; margin: 0 !important; }
           .pdf-root { padding: 0 !important; }
@@ -484,7 +531,6 @@ export default async function Page({
 
         .pdf-root { padding: 10px 0 20px; }
 
-        /* Reduced page height slightly to avoid accidental overflow */
         .page {
           width: var(--pageW); height: 296mm;
           background: #fff; margin: 0 auto 10px; padding: var(--pad);
@@ -493,7 +539,6 @@ export default async function Page({
           page-break-after: always;
         }
 
-        /* --- BASE STYLES --- */
         .topline { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
         .brand { display: flex; align-items: center; gap: 8px; }
 
@@ -519,7 +564,6 @@ export default async function Page({
           border-top: 1px solid var(--border);
         }
 
-        /* --- COVER SPECIFIC (Page 1) --- */
         .coverPage .coverTopline { justify-content: center; }
         .coverPage .coverBrand { flex-direction: column; align-items: center; text-align: center; gap: 10px; }
 
@@ -575,7 +619,6 @@ export default async function Page({
         .scoreLabel { font-size: 14px; font-weight: 900; color: var(--muted); }
         .scoreHint { font-size: 12px; font-weight: 800; color: var(--muted); }
 
-        /* --- GRIDS --- */
         .summaryGrid, .cardsGrid, .swotGrid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -598,7 +641,6 @@ export default async function Page({
           font-size: 11px;
         }
 
-        /* ===== IMPORTANT: pill labels bigger ===== */
         .metricTier, .recTierDot, .swotPill {
           font-weight: 900;
           font-size: 11px;
@@ -618,7 +660,6 @@ export default async function Page({
           color: var(--muted);
         }
 
-        /* ===== Lists ===== */
         .recList, .swotList {
           margin: 0;
           padding-inline-start: 18px;
@@ -628,7 +669,6 @@ export default async function Page({
         }
         .recList li, .swotList li { margin-bottom: 3px; list-style-type: disc; }
 
-        /* ===== Page 2 SWOT grid inserted under summary ===== */
         .swotGridInline {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -652,7 +692,6 @@ export default async function Page({
           font-size: 13px;
         }
 
-        /* ===== Page 3: Action Plan (make it feel full + premium) ===== */
         .cardsGrid{ gap: 10px; margin-top: 10px; }
 
         .recCard{
@@ -668,6 +707,9 @@ export default async function Page({
           margin-bottom: 8px;
           font-size: 13px;
           font-weight: 900;
+          padding-bottom: 8px;
+          border-bottom: 1px solid rgba(226,232,240,0.9);
+          margin-bottom: 10px;
         }
 
         .recTierDot{
@@ -696,46 +738,334 @@ export default async function Page({
         }
         .recList li{ margin-bottom: 6px; }
 
-        /* ===== NEW: "Framed" cards (prevents floating text) ===== */
         .metric, .recCard, .swotBox, .swotBoxInline{
           box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
         }
 
-        .recHead{
-          padding-bottom: 8px;
-          border-bottom: 1px solid rgba(226,232,240,0.9);
-          margin-bottom: 10px;
+        /* ===================== PAGE 4 - ADVANCED MRI (NEW LAYOUT) ===================== */
+        .page-4 {
+          overflow: visible !important;
+          height: auto !important;
+          min-height: 296mm;
         }
-
-        /* ===== Sales page (Page 4) upsell base ===== */
-        .upsell {
-          margin-top: 12px;
-          border: 1px solid var(--border);
+        
+        .page-4-header {
+          margin-bottom: 14px;
+        }
+        
+        .warning-box {
+          background-color: rgba(220, 38, 38, 0.1);
+          border-left: 4px solid #dc2626;
+          padding: 10px 14px;
+          margin-bottom: 14px;
+          border-radius: 6px;
+        }
+        
+        .warning-text {
+          font-size: 14px;
+          font-weight: 900;
+          color: #dc2626;
+          text-align: center;
+        }
+        
+        .hero-title {
+          font-size: 20px;
+          font-weight: 950;
+          text-align: center;
+          color: var(--ink);
+          margin-bottom: 4px;
+        }
+        
+        .hero-subtitle {
+          font-size: 14px;
+          font-weight: 900;
+          text-align: center;
+          color: #0284c7;
+          margin-bottom: 12px;
+        }
+        
+        .hero-description {
+          font-size: 12.5px;
+          text-align: center;
+          color: var(--muted);
+          line-height: 1.5;
+          margin-bottom: 16px;
+          font-weight: 600;
+        }
+        
+        .cta-button-large {
+          display: block;
+          background: linear-gradient(135deg, #0284c7, #059669);
+          color: white;
+          font-weight: 950;
+          font-size: 14px;
+          text-align: center;
+          padding: 14px;
           border-radius: 12px;
-          padding: 12px;
+          text-decoration: none;
+          margin: 0 auto 12px;
+          width: 100%;
+          max-width: 300px;
+          box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+        
+        .availability-note {
+          font-size: 10px;
+          color: var(--muted);
+          text-align: center;
+          font-weight: 700;
+        }
+        
+        /* Comparison Section */
+        .comparison-title-main {
+          font-size: 16px;
+          font-weight: 900;
+          color: var(--ink);
+          text-align: center;
+          margin: 20px 0 10px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid var(--border);
+        }
+        
+        .comparison-subtitle {
+          font-size: 13px;
+          font-weight: 900;
+          color: var(--muted);
+          text-align: center;
+          margin-bottom: 16px;
+        }
+        
+        .comparison-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        
+        .comparison-card {
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 14px;
           background: #fff;
         }
-        .upsellRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-
-        .cta{
-          -webkit-appearance:none;
-          appearance:none;
-          padding: 10px 16px;
-          border-radius: 999px;
-          background: linear-gradient(135deg, #0284c7, #059669);
-          color: #fff;
-          font-weight: 900;
-          font-size: 11px;
-          border: 0;
-          white-space: nowrap;
+        
+        .comparison-card.free {
+          border-top: 4px solid #94a3b8;
         }
-
-        .upsellTitle { font-weight: 900; font-size: 13px; margin-bottom: 4px; }
-        .upsellBody { font-weight: 700; font-size: 12px; color: var(--muted); line-height: 1.5; }
+        
+        .comparison-card.advanced {
+          border-top: 4px solid #0284c7;
+          position: relative;
+        }
+        
+        .recommended-badge {
+          position: absolute;
+          top: -8px;
+          background: #0284c7;
+          color: white;
+          font-size: 9px;
+          font-weight: 900;
+          padding: 3px 10px;
+          border-radius: 12px;
+          text-transform: uppercase;
+        }
+        
+        .comparison-card-title {
+          font-size: 14px;
+          font-weight: 900;
+          text-align: center;
+          margin-bottom: 12px;
+          padding-bottom: 6px;
+          border-bottom: 1px dashed var(--border);
+        }
+        
+        .comparison-card-title.free {
+          color: #64748b;
+        }
+        
+        .comparison-card-title.advanced {
+          color: #0284c7;
+        }
+        
+        .comparison-features {
+          margin: 0;
+          padding-inline-start: 16px;
+          font-size: 11px;
+          line-height: 1.6;
+          list-style-type: disc;
+        }
+        
+        .comparison-features li {
+          margin-bottom: 6px;
+        }
+        
+        /* Competencies Section - 3 Columns */
+        .competencies-title-main {
+          font-size: 16px;
+          font-weight: 900;
+          color: var(--ink);
+          text-align: center;
+          margin: 20px 0 10px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid var(--border);
+        }
+        
+        .competencies-description {
+          font-size: 12px;
+          color: var(--muted);
+          text-align: center;
+          margin-bottom: 16px;
+          line-height: 1.5;
+        }
+        
+        .competencies-grid-3col {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin-bottom: 20px;
+        }
+        
+        .competency-item-3col {
+          padding: 8px 10px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: #fff;
+          font-size: 11px;
+          display: flex;
+          align-items: flex-start;
+          gap: 6px;
+          min-height: 50px;
+        }
+        
+        .competency-number-3col {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #0284c7;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          font-weight: 900;
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+        
+        .competency-name-3col {
+          font-weight: 700;
+          line-height: 1.3;
+          font-size: 10.5px;
+        }
+        
+        /* Bonuses Section */
+        .bonuses-title-main {
+          font-size: 16px;
+          font-weight: 900;
+          color: var(--ink);
+          text-align: center;
+          margin: 20px 0 10px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid var(--border);
+        }
+        
+        .bonuses-description {
+          font-size: 12px;
+          color: var(--muted);
+          text-align: center;
+          margin-bottom: 16px;
+          line-height: 1.5;
+        }
+        
+        .bonuses-container-main {
+          padding: 16px;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          background: linear-gradient(135deg, rgba(237, 137, 54, 0.08) 0%, rgba(221, 107, 32, 0.05) 100%);
+          margin-bottom: 20px;
+        }
+        
+        .bonus-item-main {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 12px;
+          padding-bottom: 12px;
+          border-bottom: 1px dashed rgba(0,0,0,0.1);
+        }
+        
+        .bonus-item-main:last-child {
+          border-bottom: none;
+          margin-bottom: 0;
+          padding-bottom: 0;
+        }
+        
+        .bonus-number-main {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #ed8936;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 900;
+          margin-inline-end: 12px;
+          flex-shrink: 0;
+        }
+        
+        .bonus-text-main {
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1.4;
+        }
+        
+        /* Final CTA */
+        .final-cta {
+          text-align: center;
+          margin-top: 20px;
+        }
+        
+        .final-cta-button {
+          display: inline-block;
+          background: linear-gradient(135deg, #0284c7, #059669);
+          color: white;
+          font-weight: 950;
+          font-size: 15px;
+          text-align: center;
+          padding: 15px 30px;
+          border-radius: 12px;
+          text-decoration: none;
+          box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+          transition: all 0.2s ease;
+        }
+        
+        .final-cta-note {
+          font-size: 11px;
+          color: var(--muted);
+          margin-top: 8px;
+          font-weight: 700;
+        }
+        
+        @media print {
+          .cta-button-large:hover,
+          .final-cta-button:hover {
+            transform: none;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+          }
+          
+          .page-4 {
+            height: 296mm !important;
+            overflow: visible !important;
+          }
+          
+          .competencies-grid-3col {
+            page-break-inside: avoid;
+          }
+        }
       `,
-    }}
-  />
-
+        }}
+      />
 
       {/* PAGE 1: COVER */}
       <section className="page coverPage">
@@ -761,20 +1091,27 @@ export default async function Page({
             <div className="infoCard">
               <div className="infoRow">
                 <span className="infoLabel">{t.name}</span>
-                {/* HYDRATION FIX */}
-                <span className="infoVal" suppressHydrationWarning>{fullName}</span>
+                <span className="infoVal" suppressHydrationWarning>
+                  {fullName}
+                </span>
               </div>
               <div className="infoRow">
                 <span className="infoLabel">{t.email}</span>
-                <span className="infoVal" suppressHydrationWarning>{email}</span>
+                <span className="infoVal" suppressHydrationWarning>
+                  {email}
+                </span>
               </div>
               <div className="infoRow">
                 <span className="infoLabel">{t.company}</span>
-                <span className="infoVal" suppressHydrationWarning>{company}</span>
+                <span className="infoVal" suppressHydrationWarning>
+                  {company}
+                </span>
               </div>
               <div className="infoRow">
                 <span className="infoLabel">{t.date}</span>
-                <span className="infoVal" suppressHydrationWarning>{reportDate}</span>
+                <span className="infoVal" suppressHydrationWarning>
+                  {reportDate}
+                </span>
               </div>
             </div>
 
@@ -794,42 +1131,23 @@ export default async function Page({
         </div>
       </section>
 
-    {/* PAGE 2: SUMMARY + SWOT MOVED HERE */}
-  <section className="page">
-    <div className="topline">
-      <div className="brand">
-        <div className="logoWrap"><img className="logoImg" src={logoSrc} alt="" /></div>
-        <div className="brandText">
-          <h1>{t.performanceSummary}</h1>
-          <p>{t.sevenCompetencies}</p>
-        </div>
-      </div>
-      <div className="badge">{overallPct}%</div>
-    </div>
-
-    {/* COMPACT LAYOUT */}
-    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10, flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 15, padding: "12px 16px", borderRadius: 10, border: "1px solid #e2e8f0", background: "#fff", borderInlineStart: `4px solid ${overallColor}` }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontWeight: 900, fontSize: 14 }}>{t.overallScore}</span>
-            <span style={{ fontWeight: 900, fontSize: 11, padding: "3px 9px", borderRadius: 6, background: tierBg(overallTier), color: tierColor(overallTier) }}>
-              {tierLabel(overallTier, lang)}
-            </span>
+      {/* PAGE 2: SUMMARY + SWOT */}
+      <section className="page">
+        <div className="topline">
+          <div className="brand">
+            <div className="logoWrap">
+              <img className="logoImg" src={logoSrc} alt="" />
+            </div>
+            <div className="brandText">
+              <h1>{t.performanceSummary}</h1>
+              <p>{t.sevenCompetencies}</p>
+            </div>
           </div>
-          <div style={{ height: 8, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
-            <div style={{ width: `${overallPct}%`, background: overallColor, height: "100%" }} />
-          </div>
+          <div className="badge">{overallPct}%</div>
         </div>
-        <div style={{ fontWeight: 900, fontSize: 13 }}>{overallPct}%</div>
-      </div>
 
-      {COMPETENCIES.map(({ key, labelEn, labelAr }) => {
-        const r = results.find((x) => x.key === key)!;
-        const color = tierColor(r.tier);
-        return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10, flex: 1 }}>
           <div
-            key={key}
             style={{
               display: "flex",
               alignItems: "center",
@@ -838,236 +1156,504 @@ export default async function Page({
               borderRadius: 10,
               border: "1px solid #e2e8f0",
               background: "#fff",
-              borderInlineStart: `4px solid ${color}`,
+              borderInlineStart: `4px solid ${overallColor}`,
             }}
           >
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ fontWeight: 900, fontSize: 14 }}>{lang === "ar" ? labelAr : labelEn}</span>
-                <span style={{ fontWeight: 900, fontSize: 11, padding: "3px 9px", borderRadius: 6, background: tierBg(r.tier), color }}>
-                  {tierLabel(r.tier, lang)}
+                <span style={{ fontWeight: 900, fontSize: 14 }}>{t.overallScore}</span>
+                <span style={{ fontWeight: 900, fontSize: 11, padding: "3px 9px", borderRadius: 6, background: tierBg(overallTier), color: tierColor(overallTier) }}>
+                  {tierLabel(overallTier, lang)}
                 </span>
               </div>
               <div style={{ height: 8, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
-                <div style={{ width: `${r.percentage}%`, background: color, height: "100%" }} />
+                <div style={{ width: `${overallPct}%`, background: overallColor, height: "100%" }} />
               </div>
             </div>
-            <div style={{ fontWeight: 900, fontSize: 13 }}>{r.percentage}%</div>
-          </div>
-        );
-      })}
-
-      {/* SWOT MOVED HERE (2x2 grid) */}
-      <div className="swotGridInline">
-        {/* Strengths */}
-        <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Strength")}` }}>
-          <div className="swotHeadInline">
-            <span className="swotTitleInline" style={{ color: tierColor("Strength") }}>{t.strengths}</span>
-            <span className="swotPill" style={{ background: tierBg("Strength"), color: tierColor("Strength") }}>{tierLabel("Strength", lang)}</span>
-          </div>
-          <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
-            {swot.strengths.length ? swot.strengths.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
-          </ul>
-        </div>
-
-        {/* Opportunities */}
-        <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Opportunity")}` }}>
-          <div className="swotHeadInline">
-            <span className="swotTitleInline" style={{ color: tierColor("Opportunity") }}>{t.opportunities}</span>
-            <span className="swotPill" style={{ background: tierBg("Opportunity"), color: tierColor("Opportunity") }}>{tierLabel("Opportunity", lang)}</span>
-          </div>
-          <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
-            {swot.opportunities.length ? swot.opportunities.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
-          </ul>
-        </div>
-
-        {/* Weaknesses */}
-        <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Weakness")}` }}>
-          <div className="swotHeadInline">
-            <span className="swotTitleInline" style={{ color: tierColor("Weakness") }}>{t.weaknesses}</span>
-            <span className="swotPill" style={{ background: tierBg("Weakness"), color: tierColor("Weakness") }}>{tierLabel("Weakness", lang)}</span>
-          </div>
-          <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
-            {swot.weaknesses.length ? swot.weaknesses.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
-          </ul>
-        </div>
-
-        {/* Threats */}
-        <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Threat")}` }}>
-          <div className="swotHeadInline">
-            <span className="swotTitleInline" style={{ color: tierColor("Threat") }}>{t.threats}</span>
-            <span className="swotPill" style={{ background: tierBg("Threat"), color: tierColor("Threat") }}>{tierLabel("Threat", lang)}</span>
-          </div>
-          <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
-            {swot.threats.length ? swot.threats.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div className="footer">
-      <span>{t.performanceSummary}</span>
-      <span>{t.page} 2 {t.of} 4</span>
-    </div>
-  </section>
-
-{/* PAGE 3: RECOMMENDATIONS (revamped display + safe mapping) */}
-<section className="page">
-  <div className="topline">
-    <div className="brand">
-      <div className="logoWrap">
-        <img className="logoImg" src={logoSrc} alt="" />
-      </div>
-      <div className="brandText">
-        <h1>{t.actionRecs}</h1>
-        <p>{t.dynamicRecs}</p>
-      </div>
-    </div>
-    <div className="badge">{t.plan30Day}</div>
-  </div>
-
-  <div className="cardsGrid">
-    {/* Overall card */}
-    <div
-      className="recCard"
-      style={{
-        borderInlineStart: `4px solid ${tierColor(overallTier)}`,
-        background:
-          overallTier === "Weakness"
-            ? "rgba(245, 158, 11, 0.06)"
-            : overallTier === "Threat"
-            ? "rgba(239, 68, 68, 0.06)"
-            : overallTier === "Strength"
-            ? "rgba(34, 197, 94, 0.06)"
-            : "rgba(14, 165, 233, 0.06)",
-      }}
-    >
-      <div className="recHead">
-        <span>{t.overallScore}</span>
-        <span
-          className="recTierDot"
-          style={{ background: tierBg(overallTier), color: tierColor(overallTier) }}
-        >
-          <span className="dot" style={{ background: tierColor(overallTier) }} />{" "}
-          {tierLabel(overallTier, lang)}
-        </span>
-      </div>
-
-      <ul className="recList">
-        {(overallTips(overallTier, lang).length
-          ? overallTips(overallTier, lang)
-          : [lang === "ar" ? "سيتم إضافة توصيات مخصصة قريباً." : "Personalized recommendations will appear here."]
-        )
-          .slice(0, 5)
-          .map((tip, i) => (
-            <li key={i}>{tip}</li>
-          ))}
-      </ul>
-    </div>
-
-    {COMPETENCIES.map(({ key, labelEn, labelAr }) => {
-      const r = results.find((x) => x.key === key)!;
-
-      const rawRow = rawResults.find(
-        (z: any) => normalizeCompetencyKey(z?.competencyId || z?.competency) === key
-      );
-      const rawTips = extractRecsFromRaw(rawRow, lang);
-
-      // ✅ Fix key mismatch between your competency keys and pdf-recommendations.ts keys
-      const pdfKey = key === "handling_objections" ? "destroying_objections" : key;
-
-      const tips =
-        rawTips.length > 0
-          ? rawTips
-          : getPdfRecommendations(pdfKey, r.tier as any, (lang === "ar" ? "ar" : "en") as any);
-
-      const safeTips =
-        tips.length > 0
-          ? tips
-          : [lang === "ar" ? "سيتم إضافة توصيات مخصصة قريباً." : "Personalized recommendations will appear here."];
-
-      const tierTint =
-        r.tier === "Weakness"
-          ? "rgba(245, 158, 11, 0.06)"
-          : r.tier === "Threat"
-          ? "rgba(239, 68, 68, 0.06)"
-          : r.tier === "Strength"
-          ? "rgba(34, 197, 94, 0.06)"
-          : "rgba(14, 165, 233, 0.06)";
-
-      return (
-        <div
-          key={key}
-          className="recCard"
-          style={{
-            borderInlineStart: `4px solid ${tierColor(r.tier)}`,
-            background: tierTint,
-          }}
-        >
-          <div className="recHead">
-            <span>{lang === "ar" ? labelAr : labelEn}</span>
-            <span className="recTierDot" style={{ background: tierBg(r.tier), color: tierColor(r.tier) }}>
-              <span className="dot" style={{ background: tierColor(r.tier) }} /> {tierLabel(r.tier, lang)}
-            </span>
+            <div style={{ fontWeight: 900, fontSize: 13 }}>{overallPct}%</div>
           </div>
 
-          <ul className="recList">
-            {safeTips.slice(0, 5).map((tip, i) => (
-              <li key={i}>{tip}</li>
-            ))}
-          </ul>
-        </div>
-      );
-    })}
-  </div>
+          {COMPETENCIES.map(({ key, labelEn, labelAr }) => {
+            const r = results.find((x) => x.key === key)!;
+            const color = tierColor(r.tier);
+            return (
+              <div
+                key={key}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 15,
+                  padding: "12px 16px",
+                  borderRadius: 10,
+                  border: "1px solid #e2e8f0",
+                  background: "#fff",
+                  borderInlineStart: `4px solid ${color}`,
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontWeight: 900, fontSize: 14 }}>{lang === "ar" ? labelAr : labelEn}</span>
+                    <span style={{ fontWeight: 900, fontSize: 11, padding: "3px 9px", borderRadius: 6, background: tierBg(r.tier), color }}>
+                      {tierLabel(r.tier, lang)}
+                    </span>
+                  </div>
+                  <div style={{ height: 8, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
+                    <div style={{ width: `${r.percentage}%`, background: color, height: "100%" }} />
+                  </div>
+                </div>
+                <div style={{ fontWeight: 900, fontSize: 13 }}>{r.percentage}%</div>
+              </div>
+            );
+          })}
 
-  <div className="footer">
-    <span>{t.actionRecs}</span>
-    <span>
-      {t.page} 3 {t.of} 4
-    </span>
-  </div>
-</section>
+          <div className="swotGridInline">
+            <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Strength")}` }}>
+              <div className="swotHeadInline">
+                <span className="swotTitleInline" style={{ color: tierColor("Strength") }}>
+                  {t.strengths}
+                </span>
+                <span className="swotPill" style={{ background: tierBg("Strength"), color: tierColor("Strength") }}>
+                  {tierLabel("Strength", lang)}
+                </span>
+              </div>
+              <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
+                {swot.strengths.length ? swot.strengths.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
+              </ul>
+            </div>
 
+            <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Opportunity")}` }}>
+              <div className="swotHeadInline">
+                <span className="swotTitleInline" style={{ color: tierColor("Opportunity") }}>
+                  {t.opportunities}
+                </span>
+                <span className="swotPill" style={{ background: tierBg("Opportunity"), color: tierColor("Opportunity") }}>
+                  {tierLabel("Opportunity", lang)}
+                </span>
+              </div>
+              <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
+                {swot.opportunities.length ? swot.opportunities.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
+              </ul>
+            </div>
 
+            <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Weakness")}` }}>
+              <div className="swotHeadInline">
+                <span className="swotTitleInline" style={{ color: tierColor("Weakness") }}>
+                  {t.weaknesses}
+                </span>
+                <span className="swotPill" style={{ background: tierBg("Weakness"), color: tierColor("Weakness") }}>
+                  {tierLabel("Weakness", lang)}
+                </span>
+              </div>
+              <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
+                {swot.weaknesses.length ? swot.weaknesses.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
+              </ul>
+            </div>
 
-
-  {/* PAGE 4: SALES PAGE ONLY (SWOT REMOVED) */}
-  <section className="page">
-    <div className="topline">
-      <div className="brand">
-        <div className="logoWrap"><img className="logoImg" src={logoSrc} alt="" /></div>
-        <div className="brandText">
-          <h1>{t.nextStep}</h1>
-          <p>{t.nextStepDesc}</p>
-        </div>
-      </div>
-      <div className="badge">{overallPct}%</div>
-    </div>
-
-    {/* Sales content: keep it simple + strong */}
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 14 }}>
-      <div style={{ border: "1px solid #e2e8f0", borderRadius: 14, padding: 16, background: "#fff" }}>
-        <div className="upsellTitle">{t.nextStep}</div>
-        <div className="upsellBody">{t.nextStepDesc}</div>
-      </div>
-
-      <div className="upsell">
-        <div className="upsellRow">
-          <div>
-            <div className="upsellTitle">{t.plan30Day}</div>
-            <div className="upsellBody">{t.dynamicRecs}</div>
+            <div className="swotBoxInline" style={{ borderInlineStart: `4px solid ${tierColor("Threat")}` }}>
+              <div className="swotHeadInline">
+                <span className="swotTitleInline" style={{ color: tierColor("Threat") }}>
+                  {t.threats}
+                </span>
+                <span className="swotPill" style={{ background: tierBg("Threat"), color: tierColor("Threat") }}>
+                  {tierLabel("Threat", lang)}
+                </span>
+              </div>
+              <ul className="swotList" style={{ fontWeight: 700, lineHeight: 1.6 }}>
+                {swot.threats.length ? swot.threats.map((s, i) => <li key={i}>{s}</li>) : <li>{t.noItems}</li>}
+              </ul>
+            </div>
           </div>
-          <button className="cta">{t.bookSession}</button>
         </div>
-      </div>
-    </div>
 
- <div className="footer">
-      <span>{t.nextStep}</span>
-      <span>{t.page} 4 {t.of} 4</span>
+        <div className="footer">
+          <span>{t.performanceSummary}</span>
+          <span>
+            {t.page} 2 {t.of} 4
+          </span>
+        </div>
+      </section>
+
+      {/* PAGE 3: RECOMMENDATIONS */}
+      <section className="page">
+        <div className="topline">
+          <div className="brand">
+            <div className="logoWrap">
+              <img className="logoImg" src={logoSrc} alt="" />
+            </div>
+            <div className="brandText">
+              <h1>{t.actionRecs}</h1>
+              <p>{t.dynamicRecs}</p>
+            </div>
+          </div>
+          <div className="badge">{t.plan30Day}</div>
+        </div>
+
+        <div className="cardsGrid">
+          <div
+            className="recCard"
+            style={{
+              borderInlineStart: `4px solid ${tierColor(overallTier)}`,
+              background:
+                overallTier === "Weakness"
+                  ? "rgba(245, 158, 11, 0.06)"
+                  : overallTier === "Threat"
+                  ? "rgba(239, 68, 68, 0.06)"
+                  : overallTier === "Strength"
+                  ? "rgba(34, 197, 94, 0.06)"
+                  : "rgba(14, 165, 233, 0.06)",
+            }}
+          >
+            <div className="recHead">
+              <span>{t.overallScore}</span>
+              <span className="recTierDot" style={{ background: tierBg(overallTier), color: tierColor(overallTier) }}>
+                <span className="dot" style={{ background: tierColor(overallTier) }} /> {tierLabel(overallTier, lang)}
+              </span>
+            </div>
+
+            <ul className="recList">
+              {(overallTips(overallTier, lang).length
+                ? overallTips(overallTier, lang)
+                : [lang === "ar" ? "سيتم إضافة توصيات مخصصة قريباً." : "Personalized recommendations will appear here."]
+              )
+                .slice(0, 5)
+                .map((tip, i) => (
+                  <li key={i}>{tip}</li>
+                ))}
+            </ul>
+          </div>
+
+          {COMPETENCIES.map(({ key, labelEn, labelAr }) => {
+            const r = results.find((x) => x.key === key)!;
+
+            const rawRow = rawResults.find((z: any) => normalizeCompetencyKey(z?.competencyId || z?.competency) === key);
+            const rawTips = extractRecsFromRaw(rawRow, lang);
+
+            const pdfKey = key === "handling_objections" ? "destroying_objections" : key;
+
+            const tips =
+              rawTips.length > 0 ? rawTips : getPdfRecommendations(pdfKey, r.tier as any, (lang === "ar" ? "ar" : "en") as any);
+
+            const safeTips =
+              tips.length > 0 ? tips : [lang === "ar" ? "سيتم إضافة توصيات مخصصة قريباً." : "Personalized recommendations will appear here."];
+
+            const tierTint =
+              r.tier === "Weakness"
+                ? "rgba(245, 158, 11, 0.06)"
+                : r.tier === "Threat"
+                ? "rgba(239, 68, 68, 0.06)"
+                : r.tier === "Strength"
+                ? "rgba(34, 197, 94, 0.06)"
+                : "rgba(14, 165, 233, 0.06)";
+
+            return (
+              <div key={key} className="recCard" style={{ borderInlineStart: `4px solid ${tierColor(r.tier)}`, background: tierTint }}>
+                <div className="recHead">
+                  <span>{lang === "ar" ? labelAr : labelEn}</span>
+                  <span className="recTierDot" style={{ background: tierBg(r.tier), color: tierColor(r.tier) }}>
+                    <span className="dot" style={{ background: tierColor(r.tier) }} /> {tierLabel(r.tier, lang)}
+                  </span>
+                </div>
+
+                <ul className="recList">
+                  {safeTips.slice(0, 5).map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="footer">
+          <span>{t.actionRecs}</span>
+          <span>
+            {t.page} 3 {t.of} 4
+          </span>
+        </div>
+      </section>
+
+      {/* PAGE 4: ADVANCED MRI - UPDATED WITH IMAGE CONTENT */}
+      <section className="page page-4">
+        <div className="topline">
+          <div className="brand">
+            <div className="logoWrap">
+              <img className="logoImg" src={logoSrc} alt="" />
+            </div>
+            <div className="brandText">
+              <h1>OutdoorSalesMRI</h1>
+              <p>{isArabic ? "التقييم المتقدم للمبيعات" : "Advanced Sales MRI"}</p>
+            </div>
+          </div>
+          <div className="badge">{isArabic ? "الخطوة التالية" : "Next Step"}</div>
+        </div>
+
+        <div className="page-4-header">
+          {/* WARNING SECTION */}
+          <div className="warning-box">
+            <div className="warning-text">
+              {isArabic ? "تحذير: هذا التشخيص سيكشف حمضك النووي الحقيقي في المبيعات" : "WARNING: THIS WILL REVEAL YOUR TRUE SALES DNA"}
+            </div>
+          </div>
+
+          {/* HERO TITLE */}
+          <h2 className="hero-title">
+            {isArabic ? "التقييم المجاني كان مجرد المقبلات" : "The Free Assessment Was Just The Appetizer"}
+          </h2>
+          <h3 className="hero-subtitle">
+            {isArabic ? "هذا هو فحص الدم الوظيفي لحياتك المهنية" : "This Is Your Career Blood Test"}
+          </h3>
+          
+          <p className="hero-description">
+            {isArabic 
+              ? "تقريرك المجاني كشف الأعراض. الآن حان وقت الفحص الكامل بالرنين المغناطيسي الذي يكشف بالضبط لماذا تفقد بعض الصفقات - وكيف تضاعف مبيعاتك في 90 يوم."
+              : "Your free report exposed the symptoms. Now it's time for the full MRI scan that reveals exactly why some deals slip through your fingers - and how to double your sales in 90 days."
+            }
+          </p>
+
+          {/* CTA BUTTON */}
+          <a href={REGISTER_URL} target="_blank" rel="noreferrer" className="cta-button-large">
+            {isArabic ? "احصل على التقييم المتقدم للمبيعات الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
+          </a>
+          
+          <p className="availability-note">
+            {isArabic 
+              ? "47 حجز متبقي فقط للتقييم المتقدم هذا الشهر. التقييم المجاني حددك كمرشح للنمو السريع."
+              : "Only 47 advanced MRI slots available this month. The free assessment identified you as a candidate for rapid growth."
+            }
+          </p>
+        </div>
+
+        {/* COMPARISON SECTION */}
+        <h3 className="comparison-title-main">
+          {isArabic ? "التقييم المجاني مقابل التقييم المتقدم:" : "Free Assessment vs. Advanced MRI:"}
+        </h3>
+        <h4 className="comparison-subtitle">
+          {isArabic ? "المعرفة مقابل التحول" : "Knowing vs. Transforming"}
+        </h4>
+        
+        <div className="comparison-container">
+          {/* FREE ASSESSMENT */}
+          <div className="comparison-card free">
+            <div className="comparison-card-title free">
+              {isArabic ? "التقييم المجاني" : "Free Assessment"}
+            </div>
+            <ul className="comparison-features">
+              <li>{isArabic ? "30 سؤال" : "30 Questions"}<br/><small>{isArabic ? "يقيس 7 كفاءات أساسية" : "Tests 7 core competencies"}</small></li>
+              <li>{isArabic ? "تقرير PDF أساسي" : "Basic PDF Report"}<br/><small>{isArabic ? "4 صفحات مع تحليل SWOT" : "4-page overview with SWOT analysis"}</small></li>
+              <li>{isArabic ? "التحليل السلوكي العميق" : "Deep Behavioral Analysis"}<br/><small>{isArabic ? "مفقود - رؤى سطحية فقط" : "Missing - only surface level insights"}</small></li>
+              <li>{isArabic ? "خطة عمل 90 يوماً" : "90-Day Action Plan"}<br/><small>{isArabic ? "لا توجد خطة تنفيذ يومية" : "No daily implementation roadmap"}</small></li>
+              <li>{isArabic ? "المتابعة الأسبوعية" : "Weekly Follow-up"}<br/><small>{isArabic ? "لا يوجد نظام للمساءلة" : "No accountability system"}</small></li>
+            </ul>
+          </div>
+
+          {/* ADVANCED MRI */}
+          <div className="comparison-card advanced">
+            <div className={`recommended-badge ${isArabic ? 'rtl' : 'ltr'}`}>
+              {isArabic ? "مُوصى به" : "RECOMMENDED"}
+            </div>
+            <div className="comparison-card-title advanced">
+              {isArabic ? "التقييم المتقدم للمبيعات" : "Advanced Sales MRI"}
+            </div>
+            <ul className="comparison-features">
+              <li>{isArabic ? "75 سؤال دقيق" : "75 Precision Questions"}<br/><small>{isArabic ? "يقيس 15 كفاءة متقدمة - لا غش ممكن" : "Tests 15 advanced competencies - no cheating possible"}</small></li>
+              <li>{isArabic ? "تقرير 25 صفحة" : "25-Page Magazine-Style Report"}<br/><small>{isArabic ? "تحليل محترف لكل قوة وضعف" : "Professional analysis of every strength and weakness"}</small></li>
+              <li>{isArabic ? "فحص سلوكي كامل" : "Full Behavioral MRI Scan"}<br/><small>{isArabic ? "يكشف النقاط العمياء والعقبات المخفية" : "Reveals blind spots and hidden obstacles"}</small></li>
+              <li>{isArabic ? "خطة تنفيذ يومية 90 يوماً" : "Daily 90-Day Implementation Plan"}<br/><small>{isArabic ? "بالضبط ماذا تفعل كل يوم لـ مضاعفة المبيعات" : "Exactly what to do each day to double sales"}</small></li>
+              <li>{isArabic ? "تتبع التقدم الأسبوعي" : "Weekly Progress Tracking"}<br/><small>{isArabic ? "نظام مساءلة يضمن التنفيذ" : "Accountability system to ensure you implement"}</small></li>
+            </ul>
+          </div>
+        </div>
+
+        {/* COMPETENCIES SECTION - 3 COLUMNS */}
+        <h3 className="competencies-title-main">
+          {isArabic ? "الكفاءات الـ15 التي يتم تحليلها في التقييم المتقدم" : "15 Competencies We Scan In Your Advanced Sales MRI"}
+        </h3>
+        <p className="competencies-description">
+          {isArabic 
+            ? "هذه ليست مفاهيم نظرية. هذه هي السلوكيات الدقيقة التي تحدد ما إذا كنت ستحقق أهدافك أو تعود إلى المنزل خالي الوفاض."
+            : "These aren't theoretical concepts. These are the exact behaviors that determine whether you hit your targets or go home empty-handed."
+          }
+        </p>
+        
+        <div className="competencies-grid-3col">
+          {/* COLUMN 1 */}
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">1</div>
+            <div className="competency-name-3col">
+              {isArabic ? "التنقيب عن العملاء الجدد" : "Prospecting & Finding New Clients"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">2</div>
+            <div className="competency-name-3col">
+              {isArabic ? "فتح المحادثات" : "Opening Conversations"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">3</div>
+            <div className="competency-name-3col">
+              {isArabic ? "تحديد الاحتياجات الحقيقية" : "Identifying Real Needs"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">4</div>
+            <div className="competency-name-3col">
+              {isArabic ? "المبيعات الاستشارية" : "Consultative Selling"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">5</div>
+            <div className="competency-name-3col">
+              {isArabic ? "التعامل مع الاعتراضات" : "Destroying Objections"}
+            </div>
+          </div>
+          
+          {/* COLUMN 2 */}
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">6</div>
+            <div className="competency-name-3col">
+              {isArabic ? "تصميم العروض الجذابة" : "Designing Irresistible Offers"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">7</div>
+            <div className="competency-name-3col">
+              {isArabic ? "الإغلاق بثقة" : "Closing with Confidence"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">8</div>
+            <div className="competency-name-3col">
+              {isArabic ? "انضباط المتابعة" : "Follow-up Discipline"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">9</div>
+            <div className="competency-name-3col">
+              {isArabic ? "إدارة الوقت والمنطقة" : "Time & Territory Management"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">10</div>
+            <div className="competency-name-3col">
+              {isArabic ? "الخبرة في المنتج" : "Product Expertise"}
+            </div>
+          </div>
+          
+          {/* COLUMN 3 */}
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">11</div>
+            <div className="competency-name-3col">
+              {isArabic ? "مهارات التفاوض" : "Negotiation Skills"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">12</div>
+            <div className="competency-name-3col">
+              {isArabic ? "عقلية التحفيز والموقف" : "Attitude & Motivation Mindset"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">13</div>
+            <div className="competency-name-3col">
+              {isArabic ? "التعامل مع المدير" : "Dealing with Your Boss"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">14</div>
+            <div className="competency-name-3col">
+              {isArabic ? "التعامل مع العملاء الصعبين" : "Handling Difficult Customers"}
+            </div>
+          </div>
+          <div className="competency-item-3col">
+            <div className="competency-number-3col">15</div>
+            <div className="competency-name-3col">
+              {isArabic ? "التعامل مع الزملاء الصعبين" : "Handling Difficult Colleagues"}
+            </div>
+          </div>
+        </div>
+
+        {/* BONUSES SECTION */}
+        <h3 className="bonuses-title-main">
+          {isArabic ? "الهدايا المجانية المرفقة مع التقييم المتقدم" : "5 Premium Bonuses Included With Your Advanced MRI"}
+        </h3>
+        <p className="bonuses-description">
+          {isArabic 
+            ? "قيمة هذه الهدايا وحدها تتجاوز 500 دولار. ستكون لك مجاناً عندما تحصل على التقييم المتقدم للمبيعات اليوم."
+            : "These bonuses alone are worth over $500. They're yours FREE when you get your Advanced Sales MRI today."
+          }
+        </p>
+        
+        <div className="bonuses-container-main">
+          <div className="bonus-item-main">
+            <div className="bonus-number-main">1</div>
+            <div className="bonus-text-main">
+              {isArabic 
+                ? "أفضل 47 إجابة لأصعب 47 اعتراض: دليل 47 صفحة مع ردود حرفية على الاعتراضات التي تجعل معظم مندوبي المبيعات يتعثرون. ليست نظرية - عبارات دقيقة تعمل في الأسواق الشرق أوسطية والغربية."
+                : "The $0 Best Answers to the $0 Hardest Objections: A 47-page playbook with word-for-word responses to objections that make most salespeople stumble. Not theory - exact phrases that work in the Middle Eastern and Western markets."
+              }
+            </div>
+          </div>
+          
+          <div className="bonus-item-main">
+            <div className="bonus-number-main">2</div>
+            <div className="bonus-text-main">
+              {isArabic 
+                ? "كيف تعلمت البيع من لعب كرة القدم: التحولات الذهنية غير التقليدية التي تفصل بين المتفوقين والمتوسطين. كيفية تحويل الغرائز التنافسية إلى نتائج مبيعات."
+                : "How I Learned to Sell From Playing Soccer: The unconventional mindset shifts that separate top performers from the average. How to turn competitive instincts into sales results."
+              }
+            </div>
+          </div>
+          
+          <div className="bonus-item-main">
+            <div className="bonus-number-main">3</div>
+            <div className="bonus-text-main">
+              {isArabic 
+                ? "كيف تحفز نفسك تحت الضغط: عندما تبدو الأهداف مستحيلة ويتراكم الرفض، يمنحك هذا الدليل الأدوات النفسية لإعادة الضبط والهجوم مرة أخرى."
+                : "How to Motivate Yourself Under Pressure: When targets seem impossible and rejection piles up, this guide gives you the psychological tools to reset and attack again."
+              }
+            </div>
+          </div>
+          
+          <div className="bonus-item-main">
+            <div className="bonus-number-main">4</div>
+            <div className="bonus-text-main">
+              {isArabic 
+                ? "كيف تحجز مواعيد مع الشخصيات المهمة: اختراق الحراس والحصول على لقاء وجهًا لوجه مع صانعي القرار الذين يمكنهم بالفعل قول 'نعم' للصفقات الكبيرة."
+                : "How to Block Appointments With VIPs: Breaking through gatekeepers and getting face-to-face with decision-makers who can actually say 'yes' to big deals."
+              }
+            </div>
+          </div>
+          
+          <div className="bonus-item-main">
+            <div className="bonus-number-main">5</div>
+            <div className="bonus-text-main">
+              {isArabic 
+                ? "إتقان إدارة الوقت للمبيعات الخارجية بالإضافة إلى: كيفية زيادة مبيعاتك 40٪ باستخدام الذكاء الاصطناعي مع د. كيث فايات. وصول حصري للدورة التدريبية القادمة عبر الإنترنت مع أولوية التسجيل."
+                : "Time-Management Mastery for Outdoor Sales Plus: How to Increase Your Sales 40% Using AI with Dr. Kith Fayat. Exclusive access to the upcoming online course with registration priority."
+              }
+            </div>
+          </div>
+        </div>
+
+        {/* FINAL CTA */}
+        <div className="final-cta">
+          <a href={REGISTER_URL} target="_blank" rel="noreferrer" className="final-cta-button">
+            {isArabic ? "الانتقال إلى التقييم المتقدم الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
+          </a>
+          <p className="final-cta-note">
+            {isArabic 
+              ? "سيتم توجيهك إلى صفحة التسجيل والدفع"
+              : "You will be redirected to the registration and payment page"
+            }
+          </p>
+        </div>
+
+        <div className="footer">
+          <span>{isArabic ? "التقييم المتقدم للمبيعات MRI" : "Advanced Sales MRI"}</span>
+          <span>{t.page} 4 {t.of} 4</span>
+        </div>
+      </section>
     </div>
-  </section>
-</div>
-);
+  );
 }
