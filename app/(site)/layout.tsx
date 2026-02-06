@@ -1,6 +1,7 @@
 import { LocaleProvider } from "@/contexts/LocaleContext";
 import { SessionContextProvider } from "@/contexts/SessionContext";
 import { Toaster } from "@/components/ui/sonner";
+import Footer from "@/components/footer";
 
 /**
  * 🔴 CRITICAL:
@@ -14,7 +15,12 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return (
     <LocaleProvider>
       <SessionContextProvider>
-        {children}
+        <div className="flex flex-col min-h-screen">
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
+        </div>
         <Toaster />
       </SessionContextProvider>
     </LocaleProvider>
