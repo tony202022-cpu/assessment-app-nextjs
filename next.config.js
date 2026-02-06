@@ -2,16 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // 🔴 CRITICAL: allow build to succeed despite TS type issues
+  output: process.env.CI ? "standalone" : undefined,
+
   typescript: {
     ignoreBuildErrors: true,
-  },
-
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push("chrome-aws-lambda");
-    }
-    return config;
   },
 };
 
