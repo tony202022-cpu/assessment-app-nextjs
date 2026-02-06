@@ -53,7 +53,9 @@ export default function DynamicQuizPage() {
         return;
       }
       setAssessment(config);
-      setTimeRemaining(config.time_limit_seconds || 1200);
+      // Use timer_minutes from CSV, fallback to 20
+      const seconds = (config.timer_minutes || 20) * 60;
+      setTimeRemaining(seconds);
 
       const { data, error } = await supabase
         .from("questions")

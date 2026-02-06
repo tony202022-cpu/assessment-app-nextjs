@@ -21,6 +21,25 @@ type CompetencyResult = {
   percentage: number;
 };
 
+// Global registry for competency metadata (The "Ingredients" list)
+const COMPETENCY_REGISTRY: Record<string, { en: string; ar: string }> = {
+  mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
+  opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
+  identifying_real_needs: { en: "Identifying Real Needs", ar: "تحديد الاحتياجات الحقيقية" },
+  handling_objections: { en: "Handling Objections", ar: "التعامل مع الاعتراضات" },
+  creating_irresistible_offers: { en: "Creating Irresistible Offers", ar: "إنشاء عروض لا تُقاوَم" },
+  mastering_closing: { en: "Mastering Closing", ar: "إتقان الإغلاق" },
+  follow_up_discipline: { en: "Follow-Up Discipline", ar: "انضباط المتابعة" },
+  consultative_selling: { en: "Consultative Selling", ar: "المبيعات الاستشارية" },
+  time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
+  product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
+  negotiation_skills: { en: "Negotiation Skills", ar: "مهارات التفاوض" },
+  attitude_motivation_mindset: { en: "Attitude & Motivation", ar: "عقلية التحفيز والموقف" },
+  dealing_with_boss: { en: "Dealing with Boss", ar: "التعامل مع المدير" },
+  handling_difficult_customers: { en: "Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
+  handling_difficult_colleagues: { en: "Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
+};
+
 function getSupabaseAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -34,30 +53,24 @@ function clampPct(n: any) {
 }
 
 function tierFromPercentage(pct: number): Tier {
-  if (pct >= 80) return "Strength";
-  if (pct >= 60) return "Opportunity";
-  if (pct >= 40) return "Threat";
-  return "Weakness";
+  if (pct >= 75) return "Strength";
+  if (pct >= 50) return "Opportunity";
+  if (pct >= 25) return "Weakness";
+  return "Threat";
 }
 
-/**
- * Fetches assessment configuration by slug
- */
-export async function getAssessmentConfig(slug: string) {
+export async function getAssessmentConfig(id: string) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("assessments")
     .select("*")
-    .eq("slug", slug)
+    .eq("id", id)
     .single();
   
   if (error || !data) return null;
   return data;
 }
 
-/**
- * Submits quiz results for a specific assessment
- */
 export async function submitQuiz(
   finalAnswers: AnswerPayload[],
   userId: string,
@@ -67,15 +80,6 @@ export async function submitQuiz(
   if (!userId || !assessmentId) throw new Error("Missing required IDs");
   
   const supabase = getSupabaseAdmin();
-
-  // Fetch assessment config to get competency names
-  const { data: assessment } = await supabase
-    .from("assessments")
-    .select("competencies")
-    .eq("id", assessmentId)
-    .single();
-
-  const compMap = (assessment?.competencies || {}) as Record<string, any>;
 
   const totalQuestions = finalAnswers.length;
   const totalScore = finalAnswers.reduce((s, a) => s + (Number(a.selectedScore) || 0), 0);
@@ -94,10 +98,10 @@ export async function submitQuiz(
   const competency_results: CompetencyResult[] = Array.from(byComp.entries()).map(([cid, row]) => {
     const maxScore = row.count * 5;
     const pct = maxScore > 0 ? clampPct((row.score / maxScore) * 100) : 0;
-    const meta = compMap[cid] || {};
+    const meta = COMPETENCY_REGISTRY[cid] || { en: cid, ar: cid };
     return {
       competencyId: cid,
-      name: language === "ar" ? meta.labelAr || cid : meta.labelEn || cid,
+      name: language === "ar" ? meta.ar : meta.en,
       score: row.score,
       maxScore,
       percentage: pct,
