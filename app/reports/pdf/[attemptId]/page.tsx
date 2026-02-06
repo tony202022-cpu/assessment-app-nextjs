@@ -150,47 +150,6 @@ function tierColor(tier: Tier): string {
   return colors[tier];
 }
 
-function tierBg(tier: Tier): string {
-  const bgs: Record<Tier, string> = {
-    Strength: "#ecfdf5",
-    Opportunity: "#f0f9ff",
-    Weakness: "#fffbeb",
-    Threat: "#fef2f2",
-  };
-  return bgs[tier];
-}
-
-function toStringArray(v: any): string[] {
-  if (!v) return [];
-  if (Array.isArray(v)) return v.map(x => String(x).trim()).filter(Boolean);
-  return String(v).split(/\r?\n|•|·|-/).map(s => s.trim()).filter(Boolean);
-}
-
-function pickByLang(v: any, lang: Lang): any {
-  if (!v || typeof v !== "object") return v;
-  return v[lang] ?? v.en ?? v.ar ?? v;
-}
-
-function extractSwot(swotRaw: any, lang: Lang) {
-  const sw = pickByLang(swotRaw, lang) ?? swotRaw;
-  return {
-    strengths: toStringArray(sw?.strengths ?? []),
-    opportunities: toStringArray(sw?.opportunities ?? []),
-    weaknesses: toStringArray(sw?.weaknesses ?? []),
-    threats: toStringArray(sw?.threats ?? []),
-  };
-}
-
-function overallTips(tier: Tier, lang: Lang): string[] {
-  const tips: Record<Tier, { en: string[]; ar: string[] }> = {
-    Strength: { en: ["Maintain consistency", "Systemize strengths", "Set high KPIs"], ar: ["حافظ على الاستمرارية", "نظّم نقاط القوة", "ضع مؤشرات أداء عالية"] },
-    Opportunity: { en: ["Improve weak links", "Weekly drills", "Tighten process"], ar: ["حسّن الروابط الضعيفة", "تدريبات أسبوعية", "أحكم العملية"] },
-    Weakness: { en: ["Use structure", "Focus on discovery", "30-day plan"], ar: ["استخدم الهيكلة", "ركز على الاكتشاف", "خطة 30 يوم"] },
-    Threat: { en: ["Simplify script", "Immediate coaching", "Reduce volume"], ar: ["بسّط النص", "تدريب فوري", "قلل الكمية"] },
-  };
-  return tips[tier][lang];
-}
-
 function getSupabaseAdminClient() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -220,20 +179,16 @@ function getTranslations(lang: Lang) {
     company: lang === "ar" ? "الشركة" : "Company",
     date: lang === "ar" ? "التاريخ" : "Date",
     overallScore: lang === "ar" ? "النتيجة الإجمالية" : "Overall Score",
-    outOf100: lang === "ar" ? "من 100%" : "out of 100%",
     confidential: lang === "ar" ? "سري" : "Confidential",
     performanceSummary: lang === "ar" ? "ملخص الأداء" : "Performance Summary",
-    tier: lang === "ar" ? "المستوى" : "Tier",
     actionRecs: lang === "ar" ? "توصيات عملية" : "Action Plan",
     swot: lang === "ar" ? "تحليل SWOT" : "SWOT Analysis",
     strengths: lang === "ar" ? "القوة" : "Strengths",
     opportunities: lang === "ar" ? "الفرص" : "Opportunities",
     weaknesses: lang === "ar" ? "الضعف" : "Weaknesses",
     threats: lang === "ar" ? "التهديدات" : "Threats",
-    noItems: lang === "ar" ? "لا توجد عناصر" : "No items",
     page: lang === "ar" ? "الصفحة" : "Page",
     of: lang === "ar" ? "من" : "of",
-    notFound: lang === "ar" ? "التقرير غير موجود" : "Report not found",
   };
 }
 
@@ -273,8 +228,8 @@ export default async function Page({ params, searchParams }: { params: { attempt
   const overallTier = tierFromPct(overallPct);
   const overallColor = tierColor(overallTier);
 
-  // Only show upsell if it's NOT the MRI Advanced (slug: mri)
   const showUpsell = row.assessment_id !== "mri";
+  const totalPages = showUpsell ? 5 : 4;
 
   return (
     <div className="pdf-root" dir={dir} lang={lang}>
@@ -295,6 +250,12 @@ export default async function Page({ params, searchParams }: { params: { attempt
         .recCard { border: 1px solid var(--border); border-radius: 12px; padding: 15px; background: #fff; border-inline-start: 4px solid; }
         .recList { padding-inline-start: 20px; font-size: 12px; line-height: 1.6; margin-top: 10px; }
         .recList li { margin-bottom: 5px; }
+        .swotGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1; margin-top: 20px; }
+        .swotBox { padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+        .swotTitle { font-weight: 900; font-size: 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .swotItems { list-style: none; font-size: 13px; line-height: 1.6; }
+        .swotItems li { margin-bottom: 6px; padding-inline-start: 12px; position: relative; }
+        .swotItems li::before { content: "•"; position: absolute; inset-inline-start: 0; color: var(--muted); }
       `}} />
 
       {/* PAGE 1: COVER */}
@@ -309,7 +270,6 @@ export default async function Page({ params, searchParams }: { params: { attempt
           </div>
           <div style={{ fontWeight: 900, fontSize: 12, color: 'var(--muted)' }}>{t.confidential}</div>
         </div>
-
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 40 }}>
           <div className="infoCard">
             <div className="infoRow"><span>{t.name}</span><span style={{ fontWeight: 900 }}>{row.full_name || "—"}</span></div>
@@ -317,23 +277,17 @@ export default async function Page({ params, searchParams }: { params: { attempt
             <div className="infoRow"><span>{t.company}</span><span style={{ fontWeight: 900 }}>{row.company || "—"}</span></div>
             <div className="infoRow"><span>{t.date}</span><span style={{ fontWeight: 900 }}>{formatDate(row.created_at, lang)}</span></div>
           </div>
-
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontWeight: 900, color: 'var(--muted)', marginBottom: 15 }}>{t.overallScore}</p>
             <ScoreRing percentage={overallPct} color={overallColor} size={180} />
           </div>
         </div>
-
-        <div className="footer"><span>{t.confidential}</span><span>{t.page} 1 {t.of} {showUpsell ? 4 : 3}</span></div>
+        <div className="footer"><span>{t.confidential}</span><span>{t.page} 1 {t.of} {totalPages}</span></div>
       </section>
 
       {/* PAGE 2: SUMMARY */}
       <section className="page">
-        <div className="topline">
-          <h2 style={{ fontWeight: 900 }}>{t.performanceSummary}</h2>
-          <div style={{ fontWeight: 900, color: overallColor }}>{overallPct}%</div>
-        </div>
-
+        <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.performanceSummary}</h2></div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {results.map(r => {
             const meta = COMPETENCIES.find(c => c.key === r.key);
@@ -351,11 +305,50 @@ export default async function Page({ params, searchParams }: { params: { attempt
             );
           })}
         </div>
-
-        <div className="footer"><span>{t.performanceSummary}</span><span>{t.page} 2 {t.of} {showUpsell ? 4 : 3}</span></div>
+        <div className="footer"><span>{t.performanceSummary}</span><span>{t.page} 2 {t.of} {totalPages}</span></div>
       </section>
 
-      {/* PAGE 3: RECOMMENDATIONS */}
+      {/* PAGE 3: SWOT */}
+      <section className="page">
+        <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.swot}</h2></div>
+        <div className="swotGrid">
+          <div className="swotBox" style={{ background: '#ecfdf5', borderColor: '#10b981' }}>
+            <div className="swotTitle" style={{ color: '#065f46' }}><span>💪</span> {t.strengths}</div>
+            <ul className="swotItems">
+              {results.filter(r => r.tier === "Strength").map(r => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="swotBox" style={{ background: '#f0f9ff', borderColor: '#0ea5e9' }}>
+            <div className="swotTitle" style={{ color: '#0c4a6e' }}><span>🚀</span> {t.opportunities}</div>
+            <ul className="swotItems">
+              {results.filter(r => r.tier === "Opportunity").map(r => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="swotBox" style={{ background: '#fffbeb', borderColor: '#f59e0b' }}>
+            <div className="swotTitle" style={{ color: '#78350f' }}><span>⚠️</span> {t.weaknesses}</div>
+            <ul className="swotItems">
+              {results.filter(r => r.tier === "Weakness").map(r => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="swotBox" style={{ background: '#fef2f2', borderColor: '#ef4444' }}>
+            <div className="swotTitle" style={{ color: '#7f1d1d' }}><span>🔥</span> {t.threats}</div>
+            <ul className="swotItems">
+              {results.filter(r => r.tier === "Threat").map(r => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="footer"><span>{t.swot}</span><span>{t.page} 3 {t.of} {totalPages}</span></div>
+      </section>
+
+      {/* PAGE 4: RECOMMENDATIONS */}
       <section className="page">
         <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.actionRecs}</h2></div>
         <div className="cardsGrid">
@@ -370,10 +363,10 @@ export default async function Page({ params, searchParams }: { params: { attempt
             );
           })}
         </div>
-        <div className="footer"><span>{t.actionRecs}</span><span>{t.page} 3 {t.of} {showUpsell ? 4 : 3}</span></div>
+        <div className="footer"><span>{t.actionRecs}</span><span>{t.page} 4 {t.of} {totalPages}</span></div>
       </section>
 
-      {/* PAGE 4: UPSELL (ONLY FOR FREE SCAN) */}
+      {/* PAGE 5: UPSELL */}
       {showUpsell && (
         <section className="page" style={{ background: '#0f172a', color: 'white' }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 30 }}>
@@ -381,7 +374,7 @@ export default async function Page({ params, searchParams }: { params: { attempt
             <p style={{ fontSize: 18, opacity: 0.8, maxWidth: 500 }}>{lang === "ar" ? "التقييم المجاني كشف الأعراض. الآن حان وقت الفحص الكامل بالرنين المغناطيسي." : "The free assessment exposed the symptoms. Now it's time for the full MRI scan."}</p>
             <a href={REGISTER_URL} style={{ background: '#0284c7', color: 'white', padding: '16px 40px', borderRadius: 12, fontWeight: 900, textDecoration: 'none', fontSize: 18 }}>{lang === "ar" ? "احصل على التقييم المتقدم الآن" : "GET ADVANCED MRI NOW"}</a>
           </div>
-          <div className="footer" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><span>OutdoorSalesMRI</span><span>{t.page} 4 {t.of} 4</span></div>
+          <div className="footer" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><span>OutdoorSalesMRI</span><span>{t.page} 5 {t.of} 5</span></div>
         </section>
       )}
     </div>
