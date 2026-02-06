@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { submitQuiz, getAssessmentConfig } from "@/lib/actions";
 import { useSession } from "@/contexts/SessionContext";
 import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const arabicFont = IBM_Plex_Sans_Arabic({ subsets: ["arabic"], weight: ["400", "700"] });
 const latinFont = Inter({ subsets: ["latin"], weight: ["400", "700"] });
@@ -37,6 +39,7 @@ export default function DynamicQuizPage() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isSessionLoading) return;
@@ -46,42 +49,50 @@ export default function DynamicQuizPage() {
     }
 
     const init = async () => {
-      const config = await getAssessmentConfig(slug as string);
-      if (!config) {
-        toast.error("Assessment not found");
-        router.push("/");
-        return;
+      try {
+        const config = await getAssessmentConfig(slug as string);
+        if (!config) {
+          setError(isArabic ? "التقييم غير موجود" : "Assessment not found");
+          setLoading(false);
+          return;
+        }
+        setAssessment(config);
+        const seconds = (config.timer_minutes || 20) * 60;
+        setTimeRemaining(seconds);
+
+        const { data, error: qError } = await supabase
+          .from("questions")
+          .select("*")
+          .eq("assessment_id", config.id);
+
+        if (qError) throw qError;
+
+        if (!data || data.length === 0) {
+          setError(isArabic ? "لا توجد أسئلة لهذا التقييم حالياً" : "No questions found for this assessment");
+          setLoading(false);
+          return;
+        }
+
+        const shuffled = shuffleArray(data);
+        setQuestions(shuffled);
+        setSelectedAnswers(shuffled.map(q => ({
+          questionId: q.id,
+          competencyId: q.competency_id,
+          selectedScore: -1
+        })));
+        setLoading(false);
+      } catch (err: any) {
+        console.error("Init error:", err);
+        setError(err.message || "Failed to load assessment");
+        setLoading(false);
       }
-      setAssessment(config);
-      // Use timer_minutes from CSV, fallback to 20
-      const seconds = (config.timer_minutes || 20) * 60;
-      setTimeRemaining(seconds);
-
-      const { data, error } = await supabase
-        .from("questions")
-        .select("*")
-        .eq("assessment_id", config.id);
-
-      if (error) {
-        toast.error("Error loading questions");
-        return;
-      }
-
-      const shuffled = shuffleArray(data || []);
-      setQuestions(shuffled);
-      setSelectedAnswers(shuffled.map(q => ({
-        questionId: q.id,
-        competencyId: q.competency_id,
-        selectedScore: -1
-      })));
-      setLoading(false);
     };
 
     init();
-  }, [user, isSessionLoading, slug]);
+  }, [user, isSessionLoading, slug, isArabic]);
 
   useEffect(() => {
-    if (loading || timeRemaining <= 0) return;
+    if (loading || timeRemaining <= 0 || error) return;
     const interval = setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 1) {
@@ -92,7 +103,7 @@ export default function DynamicQuizPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [loading, timeRemaining]);
+  }, [loading, timeRemaining, error]);
 
   const handleFinish = async () => {
     if (!user?.id || !assessment) return;
@@ -140,26 +151,62 @@ export default function DynamicQuizPage() {
     setShuffledOptions(shuffleArray(opts));
   }, [currentQuestionIndex, questions, language]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+        <p className="text-slate-500 font-medium">{isArabic ? "جاري تحميل التقييم..." : "Loading assessment..."}</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center gap-6">
+        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500">
+          <AlertCircle size={40} />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-slate-900">{isArabic ? "عذراً، حدث خطأ" : "Oops, something went wrong"}</h2>
+          <p className="text-slate-500 max-w-md">{error}</p>
+        </div>
+        <Button onClick={() => router.push("/dashboard")} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-6 rounded-xl">
+          {isArabic ? "العودة للوحة التحكم" : "Back to Dashboard"}
+        </Button>
+      </div>
+    );
+  }
 
   const q = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   return (
     <div className={`fixed inset-0 flex flex-col bg-slate-50 ${isArabic ? arabicFont.className : latinFont.className}`} dir={isArabic ? "rtl" : "ltr"}>
-      <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
-        <span>{currentQuestionIndex + 1}/{questions.length}</span>
-        <span className="font-bold">{Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}</span>
+      <div className="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md">
+        <span className="font-bold">{currentQuestionIndex + 1} / {questions.length}</span>
+        <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-lg">
+          <span className="text-xs opacity-80">{isArabic ? "الوقت المتبقي" : "Time Left"}</span>
+          <span className="font-mono font-bold">{Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}</span>
+        </div>
       </div>
-      <div className="h-1 bg-slate-200"><div className="h-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} /></div>
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border">
-            <h2 className="text-xl font-bold">{isArabic ? q.question_ar : q.question_en}</h2>
+      <div className="h-1.5 bg-slate-200">
+        <div className="h-full bg-blue-600 transition-all duration-500" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="w-full max-w-md space-y-6 py-8">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
+              {isArabic ? q.question_ar : q.question_en}
+            </h2>
           </div>
           <div className="space-y-3">
             {shuffledOptions.map((opt, i) => (
-              <button key={i} onClick={() => handleOptionSelect(opt.score)} className="w-full p-4 bg-white border rounded-xl hover:bg-blue-50 transition-colors text-start font-medium">
+              <button 
+                key={i} 
+                onClick={() => handleOptionSelect(opt.score)} 
+                disabled={isTransitioning}
+                className="w-full p-5 bg-white border border-slate-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50 transition-all text-start font-bold text-slate-700 shadow-sm active:scale-[0.98]"
+              >
                 {opt.text}
               </button>
             ))}
