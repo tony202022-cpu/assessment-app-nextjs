@@ -21,7 +21,7 @@ type CompetencyResult = {
   percentage: number;
 };
 
-// Global registry for competency metadata (The "Ingredients" list)
+// Global registry for competency metadata
 const COMPETENCY_REGISTRY: Record<string, { en: string; ar: string }> = {
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },

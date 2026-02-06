@@ -7,6 +7,7 @@ import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/contexts/LocaleContext";
 import { getAssessmentConfig } from "@/lib/actions";
+import { Download, Loader2 } from "lucide-react";
 
 function ResultsContent() {
   const { slug } = useParams();
@@ -18,6 +19,7 @@ function ResultsContent() {
   const [attempt, setAttempt] = useState<any>(null);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -32,6 +34,19 @@ function ResultsContent() {
     if (attemptId) load();
   }, [attemptId, slug]);
 
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      window.location.href = `/api/generate-pdf?attemptId=${attemptId}&lang=${language}`;
+    } catch (error) {
+      console.error("Download failed", error);
+    } finally {
+      // We can't easily know when the browser download starts, 
+      // so we just reset after a few seconds
+      setTimeout(() => setDownloading(false), 3000);
+    }
+  };
+
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (!attempt) return <div className="p-10 text-center">Results not found</div>;
 
@@ -43,10 +58,20 @@ function ResultsContent() {
           <h1 className="text-3xl font-black text-slate-900">
             {ar ? "نتائجك لـ " : "Your Results for "} {ar ? config?.name_ar : config?.name_en}
           </h1>
-          <div className="mt-8 flex justify-center">
+          
+          <div className="mt-8 flex flex-col items-center gap-6">
             <div className="relative w-48 h-48 flex items-center justify-center rounded-full border-8 border-blue-600">
               <span className="text-5xl font-black text-slate-900">{attempt.total_percentage}%</span>
             </div>
+
+            <Button 
+              onClick={handleDownload} 
+              disabled={downloading}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-4 rounded-xl flex gap-2"
+            >
+              {downloading ? <Loader2 className="animate-spin" /> : <Download size={20} />}
+              {ar ? "تحميل تقرير PDF" : "Download PDF Report"}
+            </Button>
           </div>
         </div>
 
@@ -64,7 +89,6 @@ function ResultsContent() {
           ))}
         </div>
 
-        {/* Dynamic Upsell based on CSV */}
         {config?.upsell_url && (
           <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-8 text-center">
             <h2 className="text-2xl font-bold text-amber-900">
