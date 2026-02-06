@@ -266,20 +266,16 @@ export default function ResultsClient() {
   const threats = useMemo(() => orderedResults.filter((c) => c.tier === "Threat"), [orderedResults]);
   const weaknesses = useMemo(() => orderedResults.filter((c) => c.tier === "Weakness"), [orderedResults]);
 
-  /** ===== PDF URL (client-safe) ===== */
-  const handleDownloadPDF = () => {
-    if (!attemptId) return;
+/** ===== PDF URL (client-safe) ===== */
+const handleDownloadPDF = () => {
+  if (!attemptId) return;
 
-    const base = (process.env.NEXT_PUBLIC_PDF_SERVICE_URL || "").trim();
-    const prefix = base ? base.replace(/\/$/, "") : ""; // if empty => same-origin
+  const url =
+    `/reports/pdf/${encodeURIComponent(attemptId)}` +
+    `?lang=${encodeURIComponent(language === "ar" ? "ar" : "en")}`;
 
-    const url =
-      `${prefix}/api/generate-pdf` +
-      `?attemptId=${encodeURIComponent(attemptId)}` +
-      `&lang=${encodeURIComponent(language === "ar" ? "ar" : "en")}`;
-
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
+  window.open(url, "_blank", "noopener,noreferrer");
+};
 
   /** ===== Render states ===== */
   if (loading || isSessionLoading) {
