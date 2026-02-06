@@ -2,7 +2,6 @@
 import { createClient } from "@supabase/supabase-js";
 <<<<<<< HEAD
 import { getRecommendations } from "@/lib/pdf-recommendations";
-import "../pdf.css";
 =======
 import type React from "react";
 import { getRecommendations as getPdfRecommendations } from "@/lib/pdf-recommendations";
