@@ -1,11 +1,6 @@
 // app/reports/pdf/[attemptId]/page.tsx
 import { createClient } from "@supabase/supabase-js";
-<<<<<<< HEAD
-import { getRecommendations } from "@/lib/pdf-recommendations";
-=======
-import type React from "react";
 import { getRecommendations as getPdfRecommendations } from "@/lib/pdf-recommendations";
->>>>>>> release/pdf-v1.0
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -70,23 +65,29 @@ const COMPETENCY_ALIASES: Record<string, CompetencyKey> = {
   mental_toughness: "mental_toughness",
   "mental toughness": "mental_toughness",
   "الصلابة الذهنية": "mental_toughness",
+
   opening_conversations: "opening_conversations",
   "opening conversations": "opening_conversations",
   "فتح المحادثات": "opening_conversations",
+
   identifying_real_needs: "identifying_real_needs",
   "identifying real needs": "identifying_real_needs",
   "تحديد الاحتياجات الحقيقية": "identifying_real_needs",
+
   handling_objections: "handling_objections",
   "handling objections": "handling_objections",
   destroying_objections: "handling_objections",
   "destroying objections": "handling_objections",
   "التعامل مع الاعتراضات": "handling_objections",
+
   creating_irresistible_offers: "creating_irresistible_offers",
   "creating irresistible offers": "creating_irresistible_offers",
   "إنشاء عروض لا تُقاوَم": "creating_irresistible_offers",
+
   mastering_closing: "mastering_closing",
   "mastering closing": "mastering_closing",
   "إتقان الإغلاق": "mastering_closing",
+
   follow_up_discipline: "follow_up_discipline",
   "follow-up discipline": "follow_up_discipline",
   "follow up discipline": "follow_up_discipline",
@@ -227,28 +228,6 @@ function extractRecsFromRaw(rawRow: any, lang: Lang): string[] {
   return toStringArray(picked);
 }
 
-function getRecommendations(key: CompetencyKey, tier: Tier, lang: Lang): string[] {
-  const recs: Record<Tier, { en: string[]; ar: string[] }> = {
-    Strength: {
-      en: ["Leverage this strength daily", "Mentor others", "Set stretch goals"],
-      ar: ["استفد من هذه القوة يومياً", "وجه الآخرين", "ضع أهدافاً طموحة"],
-    },
-    Opportunity: {
-      en: ["Practice consistently", "Seek feedback", "Track progress"],
-      ar: ["تدرب باستمرار", "اطلب الملاحظات", "تابع التقدم"],
-    },
-    Weakness: {
-      en: ["Follow a checklist", "Role-play scenarios", "Focus on basics"],
-      ar: ["اتبع قائمة مراجعة", "مثّل الأدوار", "ركز على الأساسيات"],
-    },
-    Threat: {
-      en: ["Get immediate coaching", "Simplify approach", "Daily feedback"],
-      ar: ["احصل على تدريب فوري", "بسّط النهج", "ملاحظات يومية"],
-    },
-  };
-  return recs[tier][lang];
-}
-
 function overallTips(tier: Tier, lang: Lang): string[] {
   const tips: Record<Tier, { en: string[]; ar: string[] }> = {
     Strength: {
@@ -303,78 +282,6 @@ function computeOverallPct(results: CompetencyResult[], fromDb?: any): number {
   return clamp(sum / Math.max(1, results.length));
 }
 
-<<<<<<< HEAD
-function getTierRecs(competencyKey: string, tier: Tier, lang: "ar" | "en") {
-  return getRecommendations(competencyKey, tier, lang)?.slice(0, 3) || [];
-}
-
-function getOverallScoreRecs(totalPercentage: number, lang: "ar" | "en") {
-  const pct = clampPct(totalPercentage);
-  
-  if (lang === "ar") {
-    if (pct >= 80) {
-      return [
-        "أداء متميز! ركز على تعزيز نقاط قوتك لتصبح مرجعاً في فريقك.",
-        "شارك استراتيجياتك الناجحة مع الزملاء لرفع مستوى الفريق كاملاً.",
-        "فكر في تدريب الآخرين لتعزيز مهاراتك القيادية."
-      ];
-    } else if (pct >= 60) {
-      return [
-        "أداء جيد مع إمكانية تحسين واضحة. ركز على تحويل الفرص إلى نقاط قوة.",
-        "اختر كفاءتين لتحسينهما أولاً وركز عليهما لمدة 30 يوماً.",
-        "اطلب تغذية راجعة من زملائك في المناطق التي تحتاج تحسين."
-      ];
-    } else if (pct >= 40) {
-      return [
-        "هناك مجال كبير للتحسين. ابدأ بأضعف 3 كفاءات وركز عليها.",
-        "خصص 30 دقيقة يومياً لممارسة مهارة واحدة تحتاج تحسين.",
-        "اطلب المساعدة من مرشد أو مدرب متخصص في المبيعات."
-      ];
-    } else {
-      return [
-        "الأداء بحاجة لتحسين عاجل. ابدأ ببرنامج تطوير مكثف.",
-        "ركز على أساسيات المبيعات أولاً قبل المهارات المتقدمة.",
-        "فكر في برنامج تدريبي متخصص لإعادة بناء المهارات الأساسية."
-      ];
-    }
-  } else {
-    if (pct >= 80) {
-      return [
-        "Outstanding performance! Focus on strengthening your strengths to become a team reference.",
-        "Share your successful strategies with colleagues to elevate the entire team's performance.",
-        "Consider mentoring others to enhance your leadership skills."
-      ];
-    } else if (pct >= 60) {
-      return [
-        "Good performance with clear improvement potential. Focus on converting opportunities into strengths.",
-        "Select two competencies to improve first and focus on them for 30 days.",
-        "Request feedback from colleagues in areas needing improvement."
-      ];
-    } else if (pct >= 40) {
-      return [
-        "Significant room for improvement. Start with your 3 weakest competencies and focus there.",
-        "Dedicate 30 minutes daily to practice one skill needing improvement.",
-        "Seek help from a mentor or sales coach specializing in your weak areas."
-      ];
-    } else {
-      return [
-        "Performance needs urgent improvement. Begin an intensive development program.",
-        "Focus on sales fundamentals before advanced skills.",
-        "Consider a specialized training program to rebuild core competencies."
-      ];
-    }
-  }
-}
-
-export default async function PdfReport({
-  params,
-  searchParams,
-}: {
-  params: { attemptId?: string };
-  searchParams?: { lang?: string };
-}) {
-=======
-
 function pickLang(dbLang: any, urlLang: any): Lang {
   const q = String(urlLang ?? "").toLowerCase();
   if (q === "ar") return "ar";
@@ -385,7 +292,6 @@ function pickLang(dbLang: any, urlLang: any): Lang {
 // ============================================================================
 // SUPABASE CLIENT
 // ============================================================================
->>>>>>> release/pdf-v1.0
 
 function getSupabaseAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -403,56 +309,6 @@ async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
     row = legacy;
   }
 
-<<<<<<< HEAD
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) {
-    return (
-      <div style={{ padding: 40, fontFamily: "system-ui" }}>
-        Missing env vars: SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) / SUPABASE_SERVICE_ROLE_KEY
-      </div>
-    );
-  }
-
-  const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-
-  const { data, error } = await supabase
-    .from("quiz_attempts")
-    .select("id, user_id, competency_results, total_percentage, language, created_at")
-    .eq("id", attemptId)
-    .single();
-
-  if (error || !data) {
-    return <div style={{ padding: 40, fontFamily: "system-ui" }}>Report not found</div>;
-  }
-
-  const dbLang = String((data as any).language || "").toLowerCase();
-  const urlLang = langRaw === "en" ? "en" : langRaw === "ar" ? "ar" : null;
-  const finalLang: "ar" | "en" = urlLang ? urlLang : dbLang === "en" ? "en" : "ar";
-  const finalIsArabic = finalLang === "ar";
-
-  const userId = String((data as any).user_id || "");
-  let fullName: string | null = null;
-  let company: string | null = null;
-  let email: string | null = null;
-
-  if (userId) {
-    const { data: prof } = await supabase
-      .from("profiles")
-      .select("full_name, company")
-      .eq("id", userId)
-      .single();
-
-    fullName = (prof as any)?.full_name || null;
-    company = (prof as any)?.company || null;
-
-    try {
-      const { data: u } = await supabase.auth.admin.getUserById(userId);
-      email = u?.user?.email || null;
-    } catch {
-      email = null;
-=======
   if (row && row.user_id) {
     const { data: profile } = await supabase.from("profiles").select("*").eq("id", row.user_id).maybeSingle();
     if (profile) {
@@ -463,7 +319,6 @@ async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
     if (!row.user_email && !row.email) {
       const { data: authUser } = await supabase.auth.admin.getUserById(row.user_id);
       if (authUser?.user?.email) row.user_email = authUser.user.email;
->>>>>>> release/pdf-v1.0
     }
   }
   return row as ReportRow;
@@ -473,11 +328,6 @@ async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
 // TRANSLATIONS
 // ============================================================================
 
-<<<<<<< HEAD
-  const rawResults = Array.isArray((data as any).competency_results)
-    ? ((data as any).competency_results as any[])
-    : [];
-=======
 function getTranslations(lang: Lang) {
   return {
     title: lang === "ar" ? "تشخيص لقدرات مندوبي المبيعات" : "Outdoor Sales SCAN Report",
@@ -510,7 +360,6 @@ function getTranslations(lang: Lang) {
     notFound: lang === "ar" ? "التقرير غير موجود" : "Report not found",
   };
 }
->>>>>>> release/pdf-v1.0
 
 // ============================================================================
 // SVG RING COMPONENT
@@ -523,399 +372,6 @@ function ScoreRing({ percentage, color, size = 120 }: { percentage: number; colo
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
   const center = size / 2;
 
-<<<<<<< HEAD
-  const COVER_TITLE_EN = "Field Sales Assessment";
-  const COVER_SUBTITLE_EN = "Field Competency Analysis";
-  const COVER_TITLE_AR = "تقييم المبيعات الميدانية";
-  const COVER_SUBTITLE_AR = "تحليل كفاءات ميدانية";
-
-  const coverTitle = finalIsArabic ? COVER_TITLE_AR : COVER_TITLE_EN;
-  const coverSubtitle = finalIsArabic ? COVER_SUBTITLE_AR : COVER_SUBTITLE_EN;
-
-  return (
-    <div
-      className="pdf-root"
-      dir={textDir}
-      lang={finalLang}
-      data-pdf-ready="1"
-      data-render="pdf"
-      suppressHydrationWarning
-    >
-      <div className="report">
-        {/* PAGE 1: COVER */}
-        <section className="page cover-page">
-          <div className="cover-bg" aria-hidden="true">
-            <img src="/sales-visual.jpg" alt="" className="cover-bg-img" />
-            <div className="cover-bg-overlay" />
-          </div>
-
-          <div className="cover-inner">
-            <img src="/new levelup logo 3.png" className="cover-logo" alt="Logo" />
-
-            <div className="cover-head">
-              <h1 className="cover-title">{coverTitle}</h1>
-              <h2 className="cover-subtitle">{coverSubtitle}</h2>
-            </div>
-
-            <div className="cover-layout">
-              <div className="cover-info-slot">
-                <div className="cover-user-info">
-                  <div className="cover-user-line">
-                    <span className="cover-user-label">{finalIsArabic ? "الاسم" : "Name"}</span>
-                    <span className="cover-user-value rtl-value">{displayName}</span>
-                  </div>
-
-                  {displayCompany ? (
-                    <div className="cover-user-line">
-                      <span className="cover-user-label">{finalIsArabic ? "الشركة" : "Company"}</span>
-                      <span className="cover-user-value rtl-value">{displayCompany}</span>
-                    </div>
-                  ) : null}
-
-                  <div className="cover-user-line">
-                    <span className="cover-user-label">{finalIsArabic ? "البريد الإلكتروني" : "Email"}</span>
-                    <span className="cover-user-value ltr">{displayEmail}</span>
-                  </div>
-
-                  <div className="cover-user-line">
-                    <span className="cover-user-label">{finalIsArabic ? "تاريخ التقييم" : "Assessment Date"}</span>
-                    <span className="cover-user-value rtl-value">{reportDate}</span>
-                  </div>
-
-                  <div className="cover-user-line">
-                    <span className="cover-user-label">{finalIsArabic ? "معرف المحاولة" : "Attempt ID"}</span>
-                    <span className="cover-user-value ltr">{attemptId ? attemptId.slice(0, 8) : "—"}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="cover-score-slot">
-                <div
-                  className="score-circle"
-                  style={{
-                    border: `3px solid ${circleColors.border}`,
-                    background: `radial-gradient(circle, ${circleColors.inner} 0%, ${circleColors.outer} 70%)`,
-                  }}
-                >
-                  <span className="score-value num">{clampPct(totalPercentage)}%</span>
-                </div>
-
-                <div className="cover-score-label">
-                  {finalIsArabic ? "النتيجة الإجمالية" : "Overall Score"}
-                </div>
-              </div>
-
-              <div className="cover-bottom-slot" />
-            </div>
-
-            <div className="cover-footer">
-              <div className="footer">Dyad © 2026</div>
-            </div>
-          </div>
-        </section>
-
-        {/* PAGE 2: PERFORMANCE SUMMARY */}
-        <section className="page page-2">
-          <h2 className="section-title">
-            {finalIsArabic ? "ملخص الأداء" : "Performance Summary"}
-          </h2>
-
-          <div className="competency-grid">
-            {results.slice(0, 7).map((c) => {
-              const key = normalizeCompetencyId(c.competencyId);
-              const meta = COMPETENCY_META[key];
-              const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-              const diag = meta ? (finalIsArabic ? meta.diagnosticAr : meta.diagnosticEn) : "";
-              const pct = clampPct(c.percentage);
-              const color = tierColor(c.tier);
-
-              return (
-                <div key={c.competencyId} className="competency-card">
-                  <div className="competency-header">
-                    <h3 className="competency-title rtl-text">{title}</h3>
-                    <span className="tier-pill" style={{ borderColor: color, color }}>
-                      {tierLabel(c.tier, finalIsArabic)}
-                    </span>
-                  </div>
-                  <p className="competency-desc rtl-text clamp-2">{diag}</p>
-                  <div className="competency-bar-row">
-                    <div className="competency-bar-track">
-                      <div className="competency-bar-fill" style={{ 
-                        width: `${pct}%`, 
-                        backgroundColor: color 
-                      }} />
-                    </div>
-                    <span className="competency-pct num">{pct}%</span>
-                  </div>
-                </div>
-              );
-            })}
-            
-            <div className="competency-card overall-card">
-              <div className="competency-header">
-                <h3 className="competency-title rtl-text">
-                  {finalIsArabic ? "الملخص الإجمالي" : "Overall Summary"}
-                </h3>
-                <span className="tier-pill" style={{ borderColor: circleColors.border, color: circleColors.border }}>
-                  <span className="num">{clampPct(totalPercentage)}%</span>
-                </span>
-              </div>
-              <p className="competency-desc rtl-text clamp-2" style={{ marginTop: 4 }}>
-                {finalIsArabic
-                  ? "لمحة سريعة عن أدائك عبر الكفاءات الأساسية."
-                  : "A quick snapshot of your performance across core competencies."}
-              </p>
-              <div className="overall-counts">
-                <div className="overall-count" style={{ color: "#16a34a" }}>
-                  <span className="overall-count-label">{finalIsArabic ? "قوة" : "Strengths"}</span>
-                  <span className="overall-count-value num">{strengths.length}</span>
-                </div>
-                <div className="overall-count" style={{ color: "#2563eb" }}>
-                  <span className="overall-count-label">{finalIsArabic ? "فرص" : "Opportunities"}</span>
-                  <span className="overall-count-value num">{opportunities.length}</span>
-                </div>
-                <div className="overall-count" style={{ color: "#d97706" }}>
-                  <span className="overall-count-label">{finalIsArabic ? "تهديد" : "Threats"}</span>
-                  <span className="overall-count-value num">{threats.length}</span>
-                </div>
-                <div className="overall-count" style={{ color: "#dc2626" }}>
-                  <span className="overall-count-label">{finalIsArabic ? "ضعف" : "Weaknesses"}</span>
-                  <span className="overall-count-value num">{weaknesses.length}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="footer">Dyad © 2026</div>
-        </section>
-
-        {/* PAGE 3: RECOMMENDATIONS - 3x3 GRID */}
-        <section className="page page-3">
-          <h2 className="section-title">
-            {finalIsArabic ? "التوصيات العملية" : "Action Recommendations"}
-          </h2>
-
-          <div className="recommendations-grid">
-            {/* ALL 7 competencies in 3x3 grid */}
-            {results.slice(0, 7).map((c, index) => {
-              const key = normalizeCompetencyId(c.competencyId);
-              const meta = COMPETENCY_META[key];
-              const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-              const color = tierColor(c.tier);
-              const recs = getTierRecs(key, c.tier, finalLang);
-
-              return (
-                <div 
-                  key={c.competencyId} 
-                  className="recommendation-card card-hover"
-                  data-tier={c.tier}
-                  style={{
-                    /* Position Follow-Up Discipline in bottom left */
-                    gridColumn: index === 6 ? 1 : 'auto',
-                    gridRow: index === 6 ? 3 : 'auto'
-                  }}
-                >
-                  <div className="recommendation-header">
-                    <h3 className="recommendation-title rtl-text">
-                      {title}
-                    </h3>
-                    <span className="tier-pill" style={{ borderColor: color, color }}>
-                      {tierLabel(c.tier, finalIsArabic)}
-                    </span>
-                  </div>
-
-                  {recs.length ? (
-                    <ul className="recommendation-list rtl-text">
-                      {recs.map((t, idx) => (
-                        <li key={idx}>{t}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="muted rtl-text">
-                      {finalIsArabic
-                        ? "لا توجد توصيات متاحة لهذه الكفاءة حاليًا."
-                        : "No recommendations available for this competency yet."}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-            
-            {/* OVERALL SCORE RECOMMENDATIONS - spans 2 columns */}
-            <div className="recommendation-card overall-rec-card card-hover" style={{
-              gridColumn: "2 / span 2",
-              gridRow: 3
-            }}>
-              <div className="recommendation-header">
-                <h3 className="recommendation-title rtl-text">
-                  {finalIsArabic 
-                    ? `توصيات للنتيجة الإجمالية (${clampPct(totalPercentage)}%)`
-                    : `Overall Score (${clampPct(totalPercentage)}%)`
-                  }
-                </h3>
-              </div>
-              <ul className="recommendation-list rtl-text">
-                {getOverallScoreRecs(totalPercentage, finalLang).map((rec, idx) => (
-                  <li key={idx}>{rec}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="footer">Dyad © 2026</div>
-        </section>
-
-        {/* PAGE 4: SWOT + UPSELL */}
-        <section className="page page-4 page-last">
-          <div className="swot-section">
-            <div className="swot-header">
-              <h2 className="text-gradient">
-                {finalIsArabic ? "تحليل SWOT" : "SWOT Analysis"}
-              </h2>
-              <p className="rtl-text">
-                {finalIsArabic
-                  ? "تحليل شامل لنقاط القوة، الضعف، الفرص، والتهديدات لمسارك المهني"
-                  : "Comprehensive analysis of strengths, weaknesses, opportunities, and threats for your career path"}
-              </p>
-            </div>
-
-            <div className="swot-grid-enhanced">
-              <div className="swot-card-enhanced swot-strength card-hover">
-                <div className="swot-icon">S</div>
-                <h4 className="swot-title-enhanced rtl-text">
-                  {finalIsArabic ? "نقاط القوة" : "Strengths"}
-                </h4>
-                <ul className="swot-list-enhanced rtl-text">
-                  {strengths.length ? strengths.map((r) => {
-                    const key = normalizeCompetencyId(r.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                    return <li key={r.competencyId}>{title}</li>;
-                  }) : (
-                    <li>{finalIsArabic ? "لا توجد نقاط قوة محددة" : "No specific strengths identified"}</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="swot-card-enhanced swot-weakness card-hover">
-                <div className="swot-icon">W</div>
-                <h4 className="swot-title-enhanced rtl-text">
-                  {finalIsArabic ? "نقاط الضعف" : "Weaknesses"}
-                </h4>
-                <ul className="swot-list-enhanced rtl-text">
-                  {weaknesses.length ? weaknesses.map((r) => {
-                    const key = normalizeCompetencyId(r.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                    return <li key={r.competencyId}>{title}</li>;
-                  }) : (
-                    <li>{finalIsArabic ? "لا توجد نقاط ضعف محددة" : "No specific weaknesses identified"}</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="swot-card-enhanced swot-opportunity card-hover">
-                <div className="swot-icon">O</div>
-                <h4 className="swot-title-enhanced rtl-text">
-                  {finalIsArabic ? "الفرص" : "Opportunities"}
-                </h4>
-                <ul className="swot-list-enhanced rtl-text">
-                  {opportunities.length ? opportunities.map((r) => {
-                    const key = normalizeCompetencyId(r.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                    return <li key={r.competencyId}>{title}</li>;
-                  }) : (
-                    <li>{finalIsArabic ? "لا توجد فرص محددة" : "No specific opportunities identified"}</li>
-                  )}
-                </ul>
-              </div>
-
-              <div className="swot-card-enhanced swot-threat card-hover">
-                <div className="swot-icon">T</div>
-                <h4 className="swot-title-enhanced rtl-text">
-                  {finalIsArabic ? "التهديدات" : "Threats"}
-                </h4>
-                <ul className="swot-list-enhanced rtl-text">
-                  {threats.length ? threats.map((r) => {
-                    const key = normalizeCompetencyId(r.competencyId);
-                    const meta = COMPETENCY_META[key];
-                    const title = meta ? (finalIsArabic ? meta.labelAr : meta.labelEn) : key;
-                    return <li key={r.competencyId}>{title}</li>;
-                  }) : (
-                    <li>{finalIsArabic ? "لا توجد تهديدات محددة" : "No specific threats identified"}</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="upsell-section-premium">
-            <span className="upsell-badge">
-              {finalIsArabic ? "المرحلة التالية" : "Next Level"}
-            </span>
-            <h3 className="upsell-title-premium rtl-text">
-              {finalIsArabic ? "جاهز للتحول المهني الحقيقي؟" : "Ready for Real Professional Transformation?"}
-            </h3>
-            
-            <p className="upsell-subtitle rtl-text">
-              {finalIsArabic
-                ? "هذا التقرير هو البداية فقط. برنامج Sales MRI المتقدم يحول هذه الرؤى إلى خطة تنفيذ يومية مع أدوات عملية، متابعة شخصية، ونتائج قابلة للقياس."
-                : "This report is just the beginning. The Sales MRI Advanced Program turns these insights into a daily execution plan with practical tools, personal guidance, and measurable results."}
-            </p>
-
-            <div className="upsell-features-premium">
-              <div className="upsell-feature-item">
-                <div className="upsell-feature-icon">📊</div>
-                <div className="upsell-feature-text rtl-text">
-                  {finalIsArabic ? "75 سؤال تقييم متعمق" : "75 In-depth Assessment Questions"}
-                </div>
-              </div>
-              <div className="upsell-feature-item">
-                <div className="upsell-feature-icon">🎯</div>
-                <div className="upsell-feature-text rtl-text">
-                  {finalIsArabic ? "12 كفاءة متقدمة" : "12 Advanced Competencies"}
-                </div>
-              </div>
-              <div className="upsell-feature-item">
-                <div className="upsell-feature-icon">🎁</div>
-                <div className="upsell-feature-text rtl-text">
-                  {finalIsArabic ? "5 مكافآت حصرية" : "5 Exclusive Bonuses"}
-                </div>
-              </div>
-              <div className="upsell-feature-item">
-                <div className="upsell-feature-icon">📈</div>
-                <div className="upsell-feature-text rtl-text">
-                  {finalIsArabic ? "خطة عمل مخصصة" : "Customized Action Plan"}
-                </div>
-              </div>
-              <div className="upsell-feature-item">
-                <div className="upsell-feature-icon">🛠️</div>
-                <div className="upsell-feature-text rtl-text">
-                  {finalIsArabic ? "أدوات ميدانية جاهزة" : "Ready Field Tools"}
-                </div>
-              </div>
-              <div className="upsell-feature-item">
-                <div className="upsell-feature-icon">🏆</div>
-                <div className="upsell-feature-text rtl-text">
-                  {finalIsArabic ? "شهادة إنجاز معتمدة" : "Certified Achievement Certificate"}
-                </div>
-              </div>
-            </div>
-
-            <a 
-              className="upsell-cta-premium" 
-              href={finalIsArabic ? "/ar/sales-mri" : "/en/sales-mri"}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {finalIsArabic ? "ابدأ رحلة التحول الآن" : "Start Your Transformation Journey"}
-            </a>
-          </div>
-
-          <div className="footer">Dyad © 2026</div>
-        </section>
-=======
   return (
     <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
@@ -936,7 +392,6 @@ function ScoreRing({ percentage, color, size = 120 }: { percentage: number; colo
         <span suppressHydrationWarning={true} style={{ fontSize: 30, fontWeight: 900, color: "#0f172a" }}>
           {percentage}%
         </span>
->>>>>>> release/pdf-v1.0
       </div>
     </div>
   );
@@ -1596,12 +1051,12 @@ export default async function Page({
     max-height: 296mm !important;
     overflow: hidden !important;
   }
-  
+
   .bonuses-container-main {
     max-height: 120px;
     overflow: hidden;
   }
-  
+
   .competencies-grid-3col {
     page-break-inside: avoid;
   }
@@ -1705,7 +1160,16 @@ export default async function Page({
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                 <span style={{ fontWeight: 900, fontSize: 14 }}>{t.overallScore}</span>
-                <span style={{ fontWeight: 900, fontSize: 11, padding: "3px 9px", borderRadius: 6, background: tierBg(overallTier), color: tierColor(overallTier) }}>
+                <span
+                  style={{
+                    fontWeight: 900,
+                    fontSize: 11,
+                    padding: "3px 9px",
+                    borderRadius: 6,
+                    background: tierBg(overallTier),
+                    color: tierColor(overallTier),
+                  }}
+                >
                   {tierLabel(overallTier, lang)}
                 </span>
               </div>
@@ -1736,7 +1200,16 @@ export default async function Page({
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                     <span style={{ fontWeight: 900, fontSize: 14 }}>{lang === "ar" ? labelAr : labelEn}</span>
-                    <span style={{ fontWeight: 900, fontSize: 11, padding: "3px 9px", borderRadius: 6, background: tierBg(r.tier), color }}>
+                    <span
+                      style={{
+                        fontWeight: 900,
+                        fontSize: 11,
+                        padding: "3px 9px",
+                        borderRadius: 6,
+                        background: tierBg(r.tier),
+                        color,
+                      }}
+                    >
                       {tierLabel(r.tier, lang)}
                     </span>
                   </div>
@@ -1871,13 +1344,11 @@ export default async function Page({
             const rawRow = rawResults.find((z: any) => normalizeCompetencyKey(z?.competencyId || z?.competency) === key);
             const rawTips = extractRecsFromRaw(rawRow, lang);
 
-            const pdfKey = key === "handling_objections" ? "destroying_objections" : key;
+            const pdfKey = PDF_KEY_MAP[key] ?? key;
 
-            const tips =
-              rawTips.length > 0 ? rawTips : getPdfRecommendations(pdfKey, r.tier as any, (lang === "ar" ? "ar" : "en") as any);
+            const tips = rawTips.length > 0 ? rawTips : getPdfRecommendations(pdfKey as any, r.tier as any, (lang === "ar" ? "ar" : "en") as any);
 
-            const safeTips =
-              tips.length > 0 ? tips : [lang === "ar" ? "سيتم إضافة توصيات مخصصة قريباً." : "Personalized recommendations will appear here."];
+            const safeTips = tips.length > 0 ? tips : [lang === "ar" ? "سيتم إضافة توصيات مخصصة قريباً." : "Personalized recommendations will appear here."];
 
             const tierTint =
               r.tier === "Weakness"
@@ -1914,6 +1385,7 @@ export default async function Page({
           </span>
         </div>
       </section>
+
       {/* PAGE 4: ADVANCED MRI - OPTIMIZED FOR SINGLE PAGE */}
       <section className="page page-4">
         <div className="topline">
@@ -1930,13 +1402,15 @@ export default async function Page({
         </div>
 
         {/* HEIGHT CONTROL WRAPPER */}
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          flex: 1, 
-          overflow: 'hidden',
-          gap: '8px'
-        }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            overflow: "hidden",
+            gap: "8px",
+          }}
+        >
           <div className="page-4-header">
             {/* WARNING SECTION */}
             <div className="warning-box">
@@ -1946,70 +1420,94 @@ export default async function Page({
             </div>
 
             {/* HERO TITLE */}
-            <h2 className="hero-title">
-              {isArabic ? "التقييم المجاني كان مجرد المقبلات" : "The Free Assessment Was Just The Appetizer"}
-            </h2>
-            <h3 className="hero-subtitle">
-              {isArabic ? "هذا هو فحص الدم الوظيفي لحياتك المهنية" : "This Is Your Career Blood Test"}
-            </h3>
-            
+            <h2 className="hero-title">{isArabic ? "التقييم المجاني كان مجرد المقبلات" : "The Free Assessment Was Just The Appetizer"}</h2>
+            <h3 className="hero-subtitle">{isArabic ? "هذا هو فحص الدم الوظيفي لحياتك المهنية" : "This Is Your Career Blood Test"}</h3>
+
             <p className="hero-description">
-              {isArabic 
+              {isArabic
                 ? "تقريرك المجاني كشف الأعراض. الآن حان وقت الفحص الكامل بالرنين المغناطيسي الذي يكشف بالضبط لماذا تفقد بعض الصفقات - وكيف تضاعف مبيعاتك في 90 يوم."
-                : "Your free report exposed the symptoms. Now it's time for the full MRI scan that reveals exactly why some deals slip through your fingers - and how to double your sales in 90 days."
-              }
+                : "Your free report exposed the symptoms. Now it's time for the full MRI scan that reveals exactly why some deals slip through your fingers - and how to double your sales in 90 days."}
             </p>
 
             {/* CTA BUTTON */}
             <a href={REGISTER_URL} target="_blank" rel="noreferrer" className="cta-button-large">
               {isArabic ? "احصل على التقييم المتقدم للمبيعات الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
             </a>
-            
+
             <p className="availability-note">
-              {isArabic 
+              {isArabic
                 ? "47 حجز متبقي فقط للتقييم المتقدم هذا الشهر. التقييم المجاني حددك كمرشح للنمو السريع."
-                : "Only 47 advanced MRI slots available this month. The free assessment identified you as a candidate for rapid growth."
-              }
+                : "Only 47 advanced MRI slots available this month. The free assessment identified you as a candidate for rapid growth."}
             </p>
           </div>
 
           {/* COMPARISON SECTION */}
-          <h3 className="comparison-title-main">
-            {isArabic ? "التقييم المجاني مقابل التقييم المتقدم:" : "Free Assessment vs. Advanced MRI:"}
-          </h3>
-          <h4 className="comparison-subtitle">
-            {isArabic ? "المعرفة مقابل التحول" : "Knowing vs. Transforming"}
-          </h4>
-          
+          <h3 className="comparison-title-main">{isArabic ? "التقييم المجاني مقابل التقييم المتقدم:" : "Free Assessment vs. Advanced MRI:"}</h3>
+          <h4 className="comparison-subtitle">{isArabic ? "المعرفة مقابل التحول" : "Knowing vs. Transforming"}</h4>
+
           <div className="comparison-container">
             {/* FREE ASSESSMENT */}
             <div className="comparison-card free">
-              <div className="comparison-card-title free">
-                {isArabic ? "التقييم المجاني" : "Free Assessment"}
-              </div>
+              <div className="comparison-card-title free">{isArabic ? "التقييم المجاني" : "Free Assessment"}</div>
               <ul className="comparison-features">
-                <li>{isArabic ? "30 سؤال" : "30 Questions"}<br/><small>{isArabic ? "يقيس 7 كفاءات أساسية" : "Tests 7 core competencies"}</small></li>
-                <li>{isArabic ? "تقرير PDF أساسي" : "Basic PDF Report"}<br/><small>{isArabic ? "4 صفحات مع تحليل SWOT" : "4-page overview with SWOT analysis"}</small></li>
-                <li>{isArabic ? "التحليل السلوكي العميق" : "Deep Behavioral Analysis"}<br/><small>{isArabic ? "مفقود - رؤى سطحية فقط" : "Missing - only surface level insights"}</small></li>
-                <li>{isArabic ? "خطة عمل 90 يوماً" : "90-Day Action Plan"}<br/><small>{isArabic ? "لا توجد خطة تنفيذ يومية" : "No daily implementation roadmap"}</small></li>
-                <li>{isArabic ? "المتابعة الأسبوعية" : "Weekly Follow-up"}<br/><small>{isArabic ? "لا يوجد نظام للمساءلة" : "No accountability system"}</small></li>
+                <li>
+                  {isArabic ? "30 سؤال" : "30 Questions"}
+                  <br />
+                  <small>{isArabic ? "يقيس 7 كفاءات أساسية" : "Tests 7 core competencies"}</small>
+                </li>
+                <li>
+                  {isArabic ? "تقرير PDF أساسي" : "Basic PDF Report"}
+                  <br />
+                  <small>{isArabic ? "4 صفحات مع تحليل SWOT" : "4-page overview with SWOT analysis"}</small>
+                </li>
+                <li>
+                  {isArabic ? "التحليل السلوكي العميق" : "Deep Behavioral Analysis"}
+                  <br />
+                  <small>{isArabic ? "مفقود - رؤى سطحية فقط" : "Missing - only surface level insights"}</small>
+                </li>
+                <li>
+                  {isArabic ? "خطة عمل 90 يوماً" : "90-Day Action Plan"}
+                  <br />
+                  <small>{isArabic ? "لا توجد خطة تنفيذ يومية" : "No daily implementation roadmap"}</small>
+                </li>
+                <li>
+                  {isArabic ? "المتابعة الأسبوعية" : "Weekly Follow-up"}
+                  <br />
+                  <small>{isArabic ? "لا يوجد نظام للمساءلة" : "No accountability system"}</small>
+                </li>
               </ul>
             </div>
 
             {/* ADVANCED MRI */}
             <div className="comparison-card advanced">
-              <div className={`recommended-badge ${isArabic ? 'rtl' : 'ltr'}`}>
-                {isArabic ? "مُوصى به" : "RECOMMENDED"}
-              </div>
-              <div className="comparison-card-title advanced">
-                {isArabic ? "التقييم المتقدم للمبيعات" : "Advanced Sales MRI"}
-              </div>
+              <div className={`recommended-badge ${isArabic ? "rtl" : "ltr"}`}>{isArabic ? "مُوصى به" : "RECOMMENDED"}</div>
+              <div className="comparison-card-title advanced">{isArabic ? "التقييم المتقدم للمبيعات" : "Advanced Sales MRI"}</div>
               <ul className="comparison-features">
-                <li>{isArabic ? "75 سؤال دقيق" : "75 Precision Questions"}<br/><small>{isArabic ? "يقيس 15 كفاءة متقدمة - لا غش ممكن" : "Tests 15 advanced competencies - no cheating possible"}</small></li>
-                <li>{isArabic ? "تقرير 25 صفحة" : "25-Page Magazine-Style Report"}<br/><small>{isArabic ? "تحليل محترف لكل قوة وضعف" : "Professional analysis of every strength and weakness"}</small></li>
-                <li>{isArabic ? "فحص سلوكي كامل" : "Full Behavioral MRI Scan"}<br/><small>{isArabic ? "يكشف النقاط العمياء والعقبات المخفية" : "Reveals blind spots and hidden obstacles"}</small></li>
-                <li>{isArabic ? "خطة تنفيذ يومية 90 يوماً" : "Daily 90-Day Implementation Plan"}<br/><small>{isArabic ? "بالضبط ماذا تفعل كل يوم لـ مضاعفة المبيعات" : "Exactly what to do each day to double sales"}</small></li>
-                <li>{isArabic ? "تتبع التقدم الأسبوعي" : "Weekly Progress Tracking"}<br/><small>{isArabic ? "نظام مساءلة يضمن التنفيذ" : "Accountability system to ensure you implement"}</small></li>
+                <li>
+                  {isArabic ? "75 سؤال دقيق" : "75 Precision Questions"}
+                  <br />
+                  <small>{isArabic ? "يقيس 15 كفاءة متقدمة - لا غش ممكن" : "Tests 15 advanced competencies - no cheating possible"}</small>
+                </li>
+                <li>
+                  {isArabic ? "تقرير 25 صفحة" : "25-Page Magazine-Style Report"}
+                  <br />
+                  <small>{isArabic ? "تحليل محترف لكل قوة وضعف" : "Professional analysis of every strength and weakness"}</small>
+                </li>
+                <li>
+                  {isArabic ? "فحص سلوكي كامل" : "Full Behavioral MRI Scan"}
+                  <br />
+                  <small>{isArabic ? "يكشف النقاط العمياء والعقبات المخفية" : "Reveals blind spots and hidden obstacles"}</small>
+                </li>
+                <li>
+                  {isArabic ? "خطة تنفيذ يومية 90 يوماً" : "Daily 90-Day Implementation Plan"}
+                  <br />
+                  <small>{isArabic ? "بالضبط ماذا تفعل كل يوم لـ مضاعفة المبيعات" : "Exactly what to do each day to double sales"}</small>
+                </li>
+                <li>
+                  {isArabic ? "تتبع التقدم الأسبوعي" : "Weekly Progress Tracking"}
+                  <br />
+                  <small>{isArabic ? "نظام مساءلة يضمن التنفيذ" : "Accountability system to ensure you implement"}</small>
+                </li>
               </ul>
             </div>
           </div>
@@ -2019,171 +1517,82 @@ export default async function Page({
             {isArabic ? "الكفاءات الـ15 التي يتم تحليلها في التقييم المتقدم" : "15 Competencies We Scan In Your Advanced Sales MRI"}
           </h3>
           <p className="competencies-description">
-            {isArabic 
+            {isArabic
               ? "هذه ليست مفاهيم نظرية. هذه هي السلوكيات الدقيقة التي تحدد ما إذا كنت ستحقق أهدافك أو تعود إلى المنزل خالي الوفاض."
-              : "These aren't theoretical concepts. These are the exact behaviors that determine whether you hit your targets or go home empty-handed."
-            }
+              : "These aren't theoretical concepts. These are the exact behaviors that determine whether you hit your targets or go home empty-handed."}
           </p>
-          
+
           <div className="competencies-grid-3col">
-            {/* COLUMN 1 */}
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">1</div>
-              <div className="competency-name-3col">
-                {isArabic ? "التنقيب عن العملاء الجدد" : "Prospecting & Finding New Clients"}
+            {[
+              [1, isArabic ? "التنقيب عن العملاء الجدد" : "Prospecting & Finding New Clients"],
+              [2, isArabic ? "فتح المحادثات" : "Opening Conversations"],
+              [3, isArabic ? "تحديد الاحتياجات الحقيقية" : "Identifying Real Needs"],
+              [4, isArabic ? "المبيعات الاستشارية" : "Consultative Selling"],
+              [5, isArabic ? "التعامل مع الاعتراضات" : "Destroying Objections"],
+              [6, isArabic ? "تصميم العروض الجذابة" : "Designing Irresistible Offers"],
+              [7, isArabic ? "الإغلاق بثقة" : "Closing with Confidence"],
+              [8, isArabic ? "انضباط المتابعة" : "Follow-up Discipline"],
+              [9, isArabic ? "إدارة الوقت والمنطقة" : "Time & Territory Management"],
+              [10, isArabic ? "الخبرة في المنتج" : "Product Expertise"],
+              [11, isArabic ? "مهارات التفاوض" : "Negotiation Skills"],
+              [12, isArabic ? "عقلية التحفيز والموقف" : "Attitude & Motivation Mindset"],
+              [13, isArabic ? "التعامل مع المدير" : "Dealing with Your Boss"],
+              [14, isArabic ? "التعامل مع العملاء الصعبين" : "Handling Difficult Customers"],
+              [15, isArabic ? "التعامل مع الزملاء الصعبين" : "Handling Difficult Colleagues"],
+            ].map(([n, label]) => (
+              <div className="competency-item-3col" key={n as number}>
+                <div className="competency-number-3col">{n as number}</div>
+                <div className="competency-name-3col">{label as string}</div>
               </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">2</div>
-              <div className="competency-name-3col">
-                {isArabic ? "فتح المحادثات" : "Opening Conversations"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">3</div>
-              <div className="competency-name-3col">
-                {isArabic ? "تحديد الاحتياجات الحقيقية" : "Identifying Real Needs"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">4</div>
-              <div className="competency-name-3col">
-                {isArabic ? "المبيعات الاستشارية" : "Consultative Selling"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">5</div>
-              <div className="competency-name-3col">
-                {isArabic ? "التعامل مع الاعتراضات" : "Destroying Objections"}
-              </div>
-            </div>
-            
-            {/* COLUMN 2 */}
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">6</div>
-              <div className="competency-name-3col">
-                {isArabic ? "تصميم العروض الجذابة" : "Designing Irresistible Offers"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">7</div>
-              <div className="competency-name-3col">
-                {isArabic ? "الإغلاق بثقة" : "Closing with Confidence"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">8</div>
-              <div className="competency-name-3col">
-                {isArabic ? "انضباط المتابعة" : "Follow-up Discipline"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">9</div>
-              <div className="competency-name-3col">
-                {isArabic ? "إدارة الوقت والمنطقة" : "Time & Territory Management"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">10</div>
-              <div className="competency-name-3col">
-                {isArabic ? "الخبرة في المنتج" : "Product Expertise"}
-              </div>
-            </div>
-            
-            {/* COLUMN 3 */}
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">11</div>
-              <div className="competency-name-3col">
-                {isArabic ? "مهارات التفاوض" : "Negotiation Skills"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">12</div>
-              <div className="competency-name-3col">
-                {isArabic ? "عقلية التحفيز والموقف" : "Attitude & Motivation Mindset"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">13</div>
-              <div className="competency-name-3col">
-                {isArabic ? "التعامل مع المدير" : "Dealing with Your Boss"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">14</div>
-              <div className="competency-name-3col">
-                {isArabic ? "التعامل مع العملاء الصعبين" : "Handling Difficult Customers"}
-              </div>
-            </div>
-            <div className="competency-item-3col">
-              <div className="competency-number-3col">15</div>
-              <div className="competency-name-3col">
-                {isArabic ? "التعامل مع الزملاء الصعبين" : "Handling Difficult Colleagues"}
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* BONUSES SECTION */}
-          <h3 className="bonuses-title-main">
-            {isArabic ? "الهدايا المجانية المرفقة مع التقييم المتقدم" : "5 Premium Bonuses Included With Your Advanced MRI"}
-          </h3>
+          <h3 className="bonuses-title-main">{isArabic ? "الهدايا المجانية المرفقة مع التقييم المتقدم" : "5 Premium Bonuses Included With Your Advanced MRI"}</h3>
           <p className="bonuses-description">
-            {isArabic 
+            {isArabic
               ? "قيمة هذه الهدايا وحدها تتجاوز 500 دولار. ستكون لك مجاناً عندما تحصل على التقييم المتقدم للمبيعات اليوم."
-              : "These bonuses alone are worth over $500. They're yours FREE when you get your Advanced Sales MRI today."
-            }
+              : "These bonuses alone are worth over $500. They're yours FREE when you get your Advanced Sales MRI today."}
           </p>
-          
+
           <div className="bonuses-container-main">
-            <div className="bonus-item-main">
-              <div className="bonus-number-main">1</div>
-              <div className="bonus-text-main">
-                {isArabic 
+            {[
+              [
+                1,
+                isArabic
                   ? "أفضل 47 إجابة لأصعب 47 اعتراض: دليل 47 صفحة مع ردود حرفية على الاعتراضات التي تجعل معظم مندوبي المبيعات يتعثرون. ليست نظرية - عبارات دقيقة تعمل في الأسواق الشرق أوسطية والغربية."
-                  : "The $0 Best Answers to the $0 Hardest Objections: A 47-page playbook with word-for-word responses to objections that make most salespeople stumble. Not theory - exact phrases that work in the Middle Eastern and Western markets."
-                }
-              </div>
-            </div>
-            
-            <div className="bonus-item-main">
-              <div className="bonus-number-main">2</div>
-              <div className="bonus-text-main">
-                {isArabic 
+                  : "The $0 Best Answers to the $0 Hardest Objections: A 47-page playbook with word-for-word responses to objections that make most salespeople stumble. Not theory - exact phrases that work in the Middle Eastern and Western markets.",
+              ],
+              [
+                2,
+                isArabic
                   ? "كيف تعلمت البيع من لعب كرة القدم: التحولات الذهنية غير التقليدية التي تفصل بين المتفوقين والمتوسطين. كيفية تحويل الغرائز التنافسية إلى نتائج مبيعات."
-                  : "How I Learned to Sell From Playing Soccer: The unconventional mindset shifts that separate top performers from the average. How to turn competitive instincts into sales results."
-                }
-              </div>
-            </div>
-            
-            <div className="bonus-item-main">
-              <div className="bonus-number-main">3</div>
-              <div className="bonus-text-main">
-                {isArabic 
+                  : "How I Learned to Sell From Playing Soccer: The unconventional mindset shifts that separate top performers from the average. How to turn competitive instincts into sales results.",
+              ],
+              [
+                3,
+                isArabic
                   ? "كيف تحفز نفسك تحت الضغط: عندما تبدو الأهداف مستحيلة ويتراكم الرفض، يمنحك هذا الدليل الأدوات النفسية لإعادة الضبط والهجوم مرة أخرى."
-                  : "How to Motivate Yourself Under Pressure: When targets seem impossible and rejection piles up, this guide gives you the psychological tools to reset and attack again."
-                }
-              </div>
-            </div>
-            
-            <div className="bonus-item-main">
-              <div className="bonus-number-main">4</div>
-              <div className="bonus-text-main">
-                {isArabic 
+                  : "How to Motivate Yourself Under Pressure: When targets seem impossible and rejection piles up, this guide gives you the psychological tools to reset and attack again.",
+              ],
+              [
+                4,
+                isArabic
                   ? "كيف تحجز مواعيد مع الشخصيات المهمة: اختراق الحراس والحصول على لقاء وجهًا لوجه مع صانعي القرار الذين يمكنهم بالفعل قول 'نعم' للصفقات الكبيرة."
-                  : "How to Block Appointments With VIPs: Breaking through gatekeepers and getting face-to-face with decision-makers who can actually say 'yes' to big deals."
-                }
-              </div>
-            </div>
-            
-            <div className="bonus-item-main">
-              <div className="bonus-number-main">5</div>
-              <div className="bonus-text-main">
-                {isArabic 
+                  : "How to Block Appointments With VIPs: Breaking through gatekeepers and getting face-to-face with decision-makers who can actually say 'yes' to big deals.",
+              ],
+              [
+                5,
+                isArabic
                   ? "إتقان إدارة الوقت للمبيعات الخارجية بالإضافة إلى: كيفية زيادة مبيعاتك 40٪ باستخدام الذكاء الاصطناعي مع د. كيث فايات. وصول حصري للدورة التدريبية القادمة عبر الإنترنت مع أولوية التسجيل."
-                  : "Time-Management Mastery for Outdoor Sales Plus: How to Increase Your Sales 40% Using AI with Dr. Kith Fayat. Exclusive access to the upcoming online course with registration priority."
-                }
+                  : "Time-Management Mastery for Outdoor Sales Plus: How to Increase Your Sales 40% Using AI with Dr. Kith Fayat. Exclusive access to the upcoming online course with registration priority.",
+              ],
+            ].map(([n, text]) => (
+              <div className="bonus-item-main" key={n as number}>
+                <div className="bonus-number-main">{n as number}</div>
+                <div className="bonus-text-main">{text as string}</div>
               </div>
-            </div>
+            ))}
           </div>
 
           {/* FINAL CTA */}
@@ -2192,18 +1601,18 @@ export default async function Page({
               {isArabic ? "الانتقال إلى التقييم المتقدم الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
             </a>
             <p className="final-cta-note">
-              {isArabic 
-                ? "سيتم توجيهك إلى صفحة التسجيل والدفع"
-                : "You will be redirected to the registration and payment page"
-              }
+              {isArabic ? "سيتم توجيهك إلى صفحة التسجيل والدفع" : "You will be redirected to the registration and payment page"}
             </p>
           </div>
-        </div> {/* End of height control wrapper */}
+        </div>
 
         <div className="footer">
           <span>{isArabic ? "التقييم المتقدم للمبيعات MRI" : "Advanced Sales MRI"}</span>
-          <span>{t.page} 4 {t.of} 4</span>
+          <span>
+            {t.page} 4 {t.of} 4
+          </span>
         </div>
-      </section>    </div>
+      </section>
+    </div>
   );
 }
