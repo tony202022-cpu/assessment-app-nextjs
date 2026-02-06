@@ -742,327 +742,343 @@ export default async function Page({
           box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
         }
 
-        /* ===================== PAGE 4 - ADVANCED MRI (NEW LAYOUT) ===================== */
-        .page-4 {
-          overflow: visible !important;
-          height: auto !important;
-          min-height: 296mm;
-        }
-        
-        .page-4-header {
-          margin-bottom: 14px;
-        }
-        
-        .warning-box {
-          background-color: rgba(220, 38, 38, 0.1);
-          border-left: 4px solid #dc2626;
-          padding: 10px 14px;
-          margin-bottom: 14px;
-          border-radius: 6px;
-        }
-        
-        .warning-text {
-          font-size: 14px;
-          font-weight: 900;
-          color: #dc2626;
-          text-align: center;
-        }
-        
-        .hero-title {
-          font-size: 20px;
-          font-weight: 950;
-          text-align: center;
-          color: var(--ink);
-          margin-bottom: 4px;
-        }
-        
-        .hero-subtitle {
-          font-size: 14px;
-          font-weight: 900;
-          text-align: center;
-          color: #0284c7;
-          margin-bottom: 12px;
-        }
-        
-        .hero-description {
-          font-size: 12.5px;
-          text-align: center;
-          color: var(--muted);
-          line-height: 1.5;
-          margin-bottom: 16px;
-          font-weight: 600;
-        }
-        
-        .cta-button-large {
-          display: block;
-          background: linear-gradient(135deg, #0284c7, #059669);
-          color: white;
-          font-weight: 950;
-          font-size: 14px;
-          text-align: center;
-          padding: 14px;
-          border-radius: 12px;
-          text-decoration: none;
-          margin: 0 auto 12px;
-          width: 100%;
-          max-width: 300px;
-          box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
-        }
-        
-        .availability-note {
-          font-size: 10px;
-          color: var(--muted);
-          text-align: center;
-          font-weight: 700;
-        }
-        
-        /* Comparison Section */
-        .comparison-title-main {
-          font-size: 16px;
-          font-weight: 900;
-          color: var(--ink);
-          text-align: center;
-          margin: 20px 0 10px;
-          padding-bottom: 8px;
-          border-bottom: 2px solid var(--border);
-        }
-        
-        .comparison-subtitle {
-          font-size: 13px;
-          font-weight: 900;
-          color: var(--muted);
-          text-align: center;
-          margin-bottom: 16px;
-        }
-        
-        .comparison-container {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          margin-bottom: 20px;
-        }
-        
-        .comparison-card {
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 14px;
-          background: #fff;
-        }
-        
-        .comparison-card.free {
-          border-top: 4px solid #94a3b8;
-        }
-        
-        .comparison-card.advanced {
-          border-top: 4px solid #0284c7;
-          position: relative;
-        }
-        
-        .recommended-badge {
-          position: absolute;
-          top: -8px;
-          background: #0284c7;
-          color: white;
-          font-size: 9px;
-          font-weight: 900;
-          padding: 3px 10px;
-          border-radius: 12px;
-          text-transform: uppercase;
-        }
-        
-        .comparison-card-title {
-          font-size: 14px;
-          font-weight: 900;
-          text-align: center;
-          margin-bottom: 12px;
-          padding-bottom: 6px;
-          border-bottom: 1px dashed var(--border);
-        }
-        
-        .comparison-card-title.free {
-          color: #64748b;
-        }
-        
-        .comparison-card-title.advanced {
-          color: #0284c7;
-        }
-        
-        .comparison-features {
-          margin: 0;
-          padding-inline-start: 16px;
-          font-size: 11px;
-          line-height: 1.6;
-          list-style-type: disc;
-        }
-        
-        .comparison-features li {
-          margin-bottom: 6px;
-        }
-        
-        /* Competencies Section - 3 Columns */
-        .competencies-title-main {
-          font-size: 16px;
-          font-weight: 900;
-          color: var(--ink);
-          text-align: center;
-          margin: 20px 0 10px;
-          padding-bottom: 8px;
-          border-bottom: 2px solid var(--border);
-        }
-        
-        .competencies-description {
-          font-size: 12px;
-          color: var(--muted);
-          text-align: center;
-          margin-bottom: 16px;
-          line-height: 1.5;
-        }
-        
-        .competencies-grid-3col {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 8px;
-          margin-bottom: 20px;
-        }
-        
-        .competency-item-3col {
-          padding: 8px 10px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: #fff;
-          font-size: 11px;
-          display: flex;
-          align-items: flex-start;
-          gap: 6px;
-          min-height: 50px;
-        }
-        
-        .competency-number-3col {
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background: #0284c7;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 11px;
-          font-weight: 900;
-          flex-shrink: 0;
-          margin-top: 1px;
-        }
-        
-        .competency-name-3col {
-          font-weight: 700;
-          line-height: 1.3;
-          font-size: 10.5px;
-        }
-        
-        /* Bonuses Section */
-        .bonuses-title-main {
-          font-size: 16px;
-          font-weight: 900;
-          color: var(--ink);
-          text-align: center;
-          margin: 20px 0 10px;
-          padding-bottom: 8px;
-          border-bottom: 2px solid var(--border);
-        }
-        
-        .bonuses-description {
-          font-size: 12px;
-          color: var(--muted);
-          text-align: center;
-          margin-bottom: 16px;
-          line-height: 1.5;
-        }
-        
-        .bonuses-container-main {
-          padding: 16px;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          background: linear-gradient(135deg, rgba(237, 137, 54, 0.08) 0%, rgba(221, 107, 32, 0.05) 100%);
-          margin-bottom: 20px;
-        }
-        
-        .bonus-item-main {
-          display: flex;
-          align-items: flex-start;
-          margin-bottom: 12px;
-          padding-bottom: 12px;
-          border-bottom: 1px dashed rgba(0,0,0,0.1);
-        }
-        
-        .bonus-item-main:last-child {
-          border-bottom: none;
-          margin-bottom: 0;
-          padding-bottom: 0;
-        }
-        
-        .bonus-number-main {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #ed8936;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 900;
-          margin-inline-end: 12px;
-          flex-shrink: 0;
-        }
-        
-        .bonus-text-main {
-          font-size: 12px;
-          font-weight: 700;
-          line-height: 1.4;
-        }
-        
-        /* Final CTA */
-        .final-cta {
-          text-align: center;
-          margin-top: 20px;
-        }
-        
-        .final-cta-button {
-          display: inline-block;
-          background: linear-gradient(135deg, #0284c7, #059669);
-          color: white;
-          font-weight: 950;
-          font-size: 15px;
-          text-align: center;
-          padding: 15px 30px;
-          border-radius: 12px;
-          text-decoration: none;
-          box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
-          transition: all 0.2s ease;
-        }
-        
-        .final-cta-note {
-          font-size: 11px;
-          color: var(--muted);
-          margin-top: 8px;
-          font-weight: 700;
-        }
-        
-        @media print {
-          .cta-button-large:hover,
-          .final-cta-button:hover {
-            transform: none;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
-          }
-          
-          .page-4 {
-            height: 296mm !important;
-            overflow: visible !important;
-          }
-          
-          .competencies-grid-3col {
-            page-break-inside: avoid;
-          }
-        }
+/* ===================== PAGE 4 - ADVANCED MRI (OPTIMIZED FOR SINGLE PAGE) ===================== */
+.page-4 {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 296mm;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-4-header {
+  margin-bottom: 8px;
+}
+
+.warning-box {
+  background-color: rgba(220, 38, 38, 0.08);
+  border-left: 3px solid #dc2626;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+.warning-text {
+  font-size: 13px;
+  font-weight: 900;
+  color: #dc2626;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 18px;
+  font-weight: 950;
+  text-align: center;
+  color: var(--ink);
+  margin-bottom: 3px;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+  color: #0284c7;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.hero-description {
+  font-size: 11px;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.cta-button-large {
+  display: block;
+  background: linear-gradient(135deg, #0284c7, #059669);
+  color: white;
+  font-weight: 950;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  margin: 0 auto 10px;
+  width: 100%;
+  max-width: 280px;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.3);
+}
+
+.availability-note {
+  font-size: 9px;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* Comparison Section - COMPACT */
+.comparison-title-main {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+  text-align: center;
+  margin: 12px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.comparison-subtitle {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.comparison-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.comparison-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+  font-size: 10px;
+}
+
+.comparison-card.free {
+  border-top: 3px solid #94a3b8;
+}
+
+.comparison-card.advanced {
+  border-top: 3px solid #0284c7;
+  position: relative;
+}
+
+.recommended-badge {
+  position: absolute;
+  top: -7px;
+  background: #0284c7;
+  color: white;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.comparison-card-title {
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.comparison-card-title.free {
+  color: #64748b;
+}
+
+.comparison-card-title.advanced {
+  color: #0284c7;
+}
+
+.comparison-features {
+  margin: 0;
+  padding-inline-start: 14px;
+  font-size: 9.5px;
+  line-height: 1.5;
+  list-style-type: disc;
+}
+
+.comparison-features li {
+  margin-bottom: 4px;
+}
+
+.comparison-features small {
+  font-size: 8.5px;
+  display: block;
+  color: #64748b;
+}
+
+/* Competencies Section - COMPACT 3 Columns */
+.competencies-title-main {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+  text-align: center;
+  margin: 12px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.competencies-description {
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.competencies-grid-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.competency-item-3col {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 9.5px;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  min-height: 42px;
+}
+
+.competency-number-3col {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0284c7;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.competency-name-3col {
+  font-weight: 700;
+  line-height: 1.3;
+  font-size: 9.5px;
+}
+
+/* Bonuses Section - COMPACT */
+.bonuses-title-main {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+  text-align: center;
+  margin: 12px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bonuses-description {
+  font-size: 10.5px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.bonuses-container-main {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(237, 137, 54, 0.08) 0%, rgba(221, 107, 32, 0.05) 100%);
+  margin-bottom: 12px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.bonus-item-main {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(0,0,0,0.08);
+}
+
+.bonus-item-main:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.bonus-number-main {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ed8936;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  margin-inline-end: 8px;
+  flex-shrink: 0;
+}
+
+.bonus-text-main {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Final CTA */
+.final-cta {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.final-cta-button {
+  display: inline-block;
+  background: linear-gradient(135deg, #0284c7, #059669);
+  color: white;
+  font-weight: 950;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px 24px;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.4);
+}
+
+.final-cta-note {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+/* Page break prevention for PDF */
+@media print {
+  .page-4 {
+    page-break-inside: avoid;
+    height: 296mm !important;
+    max-height: 296mm !important;
+    overflow: hidden !important;
+  }
+  
+  .bonuses-container-main {
+    max-height: 120px;
+    overflow: hidden;
+  }
+  
+  .competencies-grid-3col {
+    page-break-inside: avoid;
+  }
+}
       `,
         }}
       />
@@ -1371,8 +1387,7 @@ export default async function Page({
           </span>
         </div>
       </section>
-
-      {/* PAGE 4: ADVANCED MRI - UPDATED WITH IMAGE CONTENT */}
+      {/* PAGE 4: ADVANCED MRI - OPTIMIZED FOR SINGLE PAGE */}
       <section className="page page-4">
         <div className="topline">
           <div className="brand">
@@ -1387,273 +1402,281 @@ export default async function Page({
           <div className="badge">{isArabic ? "الخطوة التالية" : "Next Step"}</div>
         </div>
 
-        <div className="page-4-header">
-          {/* WARNING SECTION */}
-          <div className="warning-box">
-            <div className="warning-text">
-              {isArabic ? "تحذير: هذا التشخيص سيكشف حمضك النووي الحقيقي في المبيعات" : "WARNING: THIS WILL REVEAL YOUR TRUE SALES DNA"}
+        {/* HEIGHT CONTROL WRAPPER */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          flex: 1, 
+          overflow: 'hidden',
+          gap: '8px'
+        }}>
+          <div className="page-4-header">
+            {/* WARNING SECTION */}
+            <div className="warning-box">
+              <div className="warning-text">
+                {isArabic ? "تحذير: هذا التشخيص سيكشف حمضك النووي الحقيقي في المبيعات" : "WARNING: THIS WILL REVEAL YOUR TRUE SALES DNA"}
+              </div>
             </div>
+
+            {/* HERO TITLE */}
+            <h2 className="hero-title">
+              {isArabic ? "التقييم المجاني كان مجرد المقبلات" : "The Free Assessment Was Just The Appetizer"}
+            </h2>
+            <h3 className="hero-subtitle">
+              {isArabic ? "هذا هو فحص الدم الوظيفي لحياتك المهنية" : "This Is Your Career Blood Test"}
+            </h3>
+            
+            <p className="hero-description">
+              {isArabic 
+                ? "تقريرك المجاني كشف الأعراض. الآن حان وقت الفحص الكامل بالرنين المغناطيسي الذي يكشف بالضبط لماذا تفقد بعض الصفقات - وكيف تضاعف مبيعاتك في 90 يوم."
+                : "Your free report exposed the symptoms. Now it's time for the full MRI scan that reveals exactly why some deals slip through your fingers - and how to double your sales in 90 days."
+              }
+            </p>
+
+            {/* CTA BUTTON */}
+            <a href={REGISTER_URL} target="_blank" rel="noreferrer" className="cta-button-large">
+              {isArabic ? "احصل على التقييم المتقدم للمبيعات الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
+            </a>
+            
+            <p className="availability-note">
+              {isArabic 
+                ? "47 حجز متبقي فقط للتقييم المتقدم هذا الشهر. التقييم المجاني حددك كمرشح للنمو السريع."
+                : "Only 47 advanced MRI slots available this month. The free assessment identified you as a candidate for rapid growth."
+              }
+            </p>
           </div>
 
-          {/* HERO TITLE */}
-          <h2 className="hero-title">
-            {isArabic ? "التقييم المجاني كان مجرد المقبلات" : "The Free Assessment Was Just The Appetizer"}
-          </h2>
-          <h3 className="hero-subtitle">
-            {isArabic ? "هذا هو فحص الدم الوظيفي لحياتك المهنية" : "This Is Your Career Blood Test"}
+          {/* COMPARISON SECTION */}
+          <h3 className="comparison-title-main">
+            {isArabic ? "التقييم المجاني مقابل التقييم المتقدم:" : "Free Assessment vs. Advanced MRI:"}
           </h3>
+          <h4 className="comparison-subtitle">
+            {isArabic ? "المعرفة مقابل التحول" : "Knowing vs. Transforming"}
+          </h4>
           
-          <p className="hero-description">
+          <div className="comparison-container">
+            {/* FREE ASSESSMENT */}
+            <div className="comparison-card free">
+              <div className="comparison-card-title free">
+                {isArabic ? "التقييم المجاني" : "Free Assessment"}
+              </div>
+              <ul className="comparison-features">
+                <li>{isArabic ? "30 سؤال" : "30 Questions"}<br/><small>{isArabic ? "يقيس 7 كفاءات أساسية" : "Tests 7 core competencies"}</small></li>
+                <li>{isArabic ? "تقرير PDF أساسي" : "Basic PDF Report"}<br/><small>{isArabic ? "4 صفحات مع تحليل SWOT" : "4-page overview with SWOT analysis"}</small></li>
+                <li>{isArabic ? "التحليل السلوكي العميق" : "Deep Behavioral Analysis"}<br/><small>{isArabic ? "مفقود - رؤى سطحية فقط" : "Missing - only surface level insights"}</small></li>
+                <li>{isArabic ? "خطة عمل 90 يوماً" : "90-Day Action Plan"}<br/><small>{isArabic ? "لا توجد خطة تنفيذ يومية" : "No daily implementation roadmap"}</small></li>
+                <li>{isArabic ? "المتابعة الأسبوعية" : "Weekly Follow-up"}<br/><small>{isArabic ? "لا يوجد نظام للمساءلة" : "No accountability system"}</small></li>
+              </ul>
+            </div>
+
+            {/* ADVANCED MRI */}
+            <div className="comparison-card advanced">
+              <div className={`recommended-badge ${isArabic ? 'rtl' : 'ltr'}`}>
+                {isArabic ? "مُوصى به" : "RECOMMENDED"}
+              </div>
+              <div className="comparison-card-title advanced">
+                {isArabic ? "التقييم المتقدم للمبيعات" : "Advanced Sales MRI"}
+              </div>
+              <ul className="comparison-features">
+                <li>{isArabic ? "75 سؤال دقيق" : "75 Precision Questions"}<br/><small>{isArabic ? "يقيس 15 كفاءة متقدمة - لا غش ممكن" : "Tests 15 advanced competencies - no cheating possible"}</small></li>
+                <li>{isArabic ? "تقرير 25 صفحة" : "25-Page Magazine-Style Report"}<br/><small>{isArabic ? "تحليل محترف لكل قوة وضعف" : "Professional analysis of every strength and weakness"}</small></li>
+                <li>{isArabic ? "فحص سلوكي كامل" : "Full Behavioral MRI Scan"}<br/><small>{isArabic ? "يكشف النقاط العمياء والعقبات المخفية" : "Reveals blind spots and hidden obstacles"}</small></li>
+                <li>{isArabic ? "خطة تنفيذ يومية 90 يوماً" : "Daily 90-Day Implementation Plan"}<br/><small>{isArabic ? "بالضبط ماذا تفعل كل يوم لـ مضاعفة المبيعات" : "Exactly what to do each day to double sales"}</small></li>
+                <li>{isArabic ? "تتبع التقدم الأسبوعي" : "Weekly Progress Tracking"}<br/><small>{isArabic ? "نظام مساءلة يضمن التنفيذ" : "Accountability system to ensure you implement"}</small></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* COMPETENCIES SECTION - 3 COLUMNS */}
+          <h3 className="competencies-title-main">
+            {isArabic ? "الكفاءات الـ15 التي يتم تحليلها في التقييم المتقدم" : "15 Competencies We Scan In Your Advanced Sales MRI"}
+          </h3>
+          <p className="competencies-description">
             {isArabic 
-              ? "تقريرك المجاني كشف الأعراض. الآن حان وقت الفحص الكامل بالرنين المغناطيسي الذي يكشف بالضبط لماذا تفقد بعض الصفقات - وكيف تضاعف مبيعاتك في 90 يوم."
-              : "Your free report exposed the symptoms. Now it's time for the full MRI scan that reveals exactly why some deals slip through your fingers - and how to double your sales in 90 days."
+              ? "هذه ليست مفاهيم نظرية. هذه هي السلوكيات الدقيقة التي تحدد ما إذا كنت ستحقق أهدافك أو تعود إلى المنزل خالي الوفاض."
+              : "These aren't theoretical concepts. These are the exact behaviors that determine whether you hit your targets or go home empty-handed."
             }
           </p>
-
-          {/* CTA BUTTON */}
-          <a href={REGISTER_URL} target="_blank" rel="noreferrer" className="cta-button-large">
-            {isArabic ? "احصل على التقييم المتقدم للمبيعات الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
-          </a>
           
-          <p className="availability-note">
+          <div className="competencies-grid-3col">
+            {/* COLUMN 1 */}
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">1</div>
+              <div className="competency-name-3col">
+                {isArabic ? "التنقيب عن العملاء الجدد" : "Prospecting & Finding New Clients"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">2</div>
+              <div className="competency-name-3col">
+                {isArabic ? "فتح المحادثات" : "Opening Conversations"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">3</div>
+              <div className="competency-name-3col">
+                {isArabic ? "تحديد الاحتياجات الحقيقية" : "Identifying Real Needs"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">4</div>
+              <div className="competency-name-3col">
+                {isArabic ? "المبيعات الاستشارية" : "Consultative Selling"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">5</div>
+              <div className="competency-name-3col">
+                {isArabic ? "التعامل مع الاعتراضات" : "Destroying Objections"}
+              </div>
+            </div>
+            
+            {/* COLUMN 2 */}
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">6</div>
+              <div className="competency-name-3col">
+                {isArabic ? "تصميم العروض الجذابة" : "Designing Irresistible Offers"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">7</div>
+              <div className="competency-name-3col">
+                {isArabic ? "الإغلاق بثقة" : "Closing with Confidence"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">8</div>
+              <div className="competency-name-3col">
+                {isArabic ? "انضباط المتابعة" : "Follow-up Discipline"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">9</div>
+              <div className="competency-name-3col">
+                {isArabic ? "إدارة الوقت والمنطقة" : "Time & Territory Management"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">10</div>
+              <div className="competency-name-3col">
+                {isArabic ? "الخبرة في المنتج" : "Product Expertise"}
+              </div>
+            </div>
+            
+            {/* COLUMN 3 */}
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">11</div>
+              <div className="competency-name-3col">
+                {isArabic ? "مهارات التفاوض" : "Negotiation Skills"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">12</div>
+              <div className="competency-name-3col">
+                {isArabic ? "عقلية التحفيز والموقف" : "Attitude & Motivation Mindset"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">13</div>
+              <div className="competency-name-3col">
+                {isArabic ? "التعامل مع المدير" : "Dealing with Your Boss"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">14</div>
+              <div className="competency-name-3col">
+                {isArabic ? "التعامل مع العملاء الصعبين" : "Handling Difficult Customers"}
+              </div>
+            </div>
+            <div className="competency-item-3col">
+              <div className="competency-number-3col">15</div>
+              <div className="competency-name-3col">
+                {isArabic ? "التعامل مع الزملاء الصعبين" : "Handling Difficult Colleagues"}
+              </div>
+            </div>
+          </div>
+
+          {/* BONUSES SECTION */}
+          <h3 className="bonuses-title-main">
+            {isArabic ? "الهدايا المجانية المرفقة مع التقييم المتقدم" : "5 Premium Bonuses Included With Your Advanced MRI"}
+          </h3>
+          <p className="bonuses-description">
             {isArabic 
-              ? "47 حجز متبقي فقط للتقييم المتقدم هذا الشهر. التقييم المجاني حددك كمرشح للنمو السريع."
-              : "Only 47 advanced MRI slots available this month. The free assessment identified you as a candidate for rapid growth."
+              ? "قيمة هذه الهدايا وحدها تتجاوز 500 دولار. ستكون لك مجاناً عندما تحصل على التقييم المتقدم للمبيعات اليوم."
+              : "These bonuses alone are worth over $500. They're yours FREE when you get your Advanced Sales MRI today."
             }
           </p>
-        </div>
+          
+          <div className="bonuses-container-main">
+            <div className="bonus-item-main">
+              <div className="bonus-number-main">1</div>
+              <div className="bonus-text-main">
+                {isArabic 
+                  ? "أفضل 47 إجابة لأصعب 47 اعتراض: دليل 47 صفحة مع ردود حرفية على الاعتراضات التي تجعل معظم مندوبي المبيعات يتعثرون. ليست نظرية - عبارات دقيقة تعمل في الأسواق الشرق أوسطية والغربية."
+                  : "The $0 Best Answers to the $0 Hardest Objections: A 47-page playbook with word-for-word responses to objections that make most salespeople stumble. Not theory - exact phrases that work in the Middle Eastern and Western markets."
+                }
+              </div>
+            </div>
+            
+            <div className="bonus-item-main">
+              <div className="bonus-number-main">2</div>
+              <div className="bonus-text-main">
+                {isArabic 
+                  ? "كيف تعلمت البيع من لعب كرة القدم: التحولات الذهنية غير التقليدية التي تفصل بين المتفوقين والمتوسطين. كيفية تحويل الغرائز التنافسية إلى نتائج مبيعات."
+                  : "How I Learned to Sell From Playing Soccer: The unconventional mindset shifts that separate top performers from the average. How to turn competitive instincts into sales results."
+                }
+              </div>
+            </div>
+            
+            <div className="bonus-item-main">
+              <div className="bonus-number-main">3</div>
+              <div className="bonus-text-main">
+                {isArabic 
+                  ? "كيف تحفز نفسك تحت الضغط: عندما تبدو الأهداف مستحيلة ويتراكم الرفض، يمنحك هذا الدليل الأدوات النفسية لإعادة الضبط والهجوم مرة أخرى."
+                  : "How to Motivate Yourself Under Pressure: When targets seem impossible and rejection piles up, this guide gives you the psychological tools to reset and attack again."
+                }
+              </div>
+            </div>
+            
+            <div className="bonus-item-main">
+              <div className="bonus-number-main">4</div>
+              <div className="bonus-text-main">
+                {isArabic 
+                  ? "كيف تحجز مواعيد مع الشخصيات المهمة: اختراق الحراس والحصول على لقاء وجهًا لوجه مع صانعي القرار الذين يمكنهم بالفعل قول 'نعم' للصفقات الكبيرة."
+                  : "How to Block Appointments With VIPs: Breaking through gatekeepers and getting face-to-face with decision-makers who can actually say 'yes' to big deals."
+                }
+              </div>
+            </div>
+            
+            <div className="bonus-item-main">
+              <div className="bonus-number-main">5</div>
+              <div className="bonus-text-main">
+                {isArabic 
+                  ? "إتقان إدارة الوقت للمبيعات الخارجية بالإضافة إلى: كيفية زيادة مبيعاتك 40٪ باستخدام الذكاء الاصطناعي مع د. كيث فايات. وصول حصري للدورة التدريبية القادمة عبر الإنترنت مع أولوية التسجيل."
+                  : "Time-Management Mastery for Outdoor Sales Plus: How to Increase Your Sales 40% Using AI with Dr. Kith Fayat. Exclusive access to the upcoming online course with registration priority."
+                }
+              </div>
+            </div>
+          </div>
 
-        {/* COMPARISON SECTION */}
-        <h3 className="comparison-title-main">
-          {isArabic ? "التقييم المجاني مقابل التقييم المتقدم:" : "Free Assessment vs. Advanced MRI:"}
-        </h3>
-        <h4 className="comparison-subtitle">
-          {isArabic ? "المعرفة مقابل التحول" : "Knowing vs. Transforming"}
-        </h4>
-        
-        <div className="comparison-container">
-          {/* FREE ASSESSMENT */}
-          <div className="comparison-card free">
-            <div className="comparison-card-title free">
-              {isArabic ? "التقييم المجاني" : "Free Assessment"}
-            </div>
-            <ul className="comparison-features">
-              <li>{isArabic ? "30 سؤال" : "30 Questions"}<br/><small>{isArabic ? "يقيس 7 كفاءات أساسية" : "Tests 7 core competencies"}</small></li>
-              <li>{isArabic ? "تقرير PDF أساسي" : "Basic PDF Report"}<br/><small>{isArabic ? "4 صفحات مع تحليل SWOT" : "4-page overview with SWOT analysis"}</small></li>
-              <li>{isArabic ? "التحليل السلوكي العميق" : "Deep Behavioral Analysis"}<br/><small>{isArabic ? "مفقود - رؤى سطحية فقط" : "Missing - only surface level insights"}</small></li>
-              <li>{isArabic ? "خطة عمل 90 يوماً" : "90-Day Action Plan"}<br/><small>{isArabic ? "لا توجد خطة تنفيذ يومية" : "No daily implementation roadmap"}</small></li>
-              <li>{isArabic ? "المتابعة الأسبوعية" : "Weekly Follow-up"}<br/><small>{isArabic ? "لا يوجد نظام للمساءلة" : "No accountability system"}</small></li>
-            </ul>
-          </div>
-
-          {/* ADVANCED MRI */}
-          <div className="comparison-card advanced">
-            <div className={`recommended-badge ${isArabic ? 'rtl' : 'ltr'}`}>
-              {isArabic ? "مُوصى به" : "RECOMMENDED"}
-            </div>
-            <div className="comparison-card-title advanced">
-              {isArabic ? "التقييم المتقدم للمبيعات" : "Advanced Sales MRI"}
-            </div>
-            <ul className="comparison-features">
-              <li>{isArabic ? "75 سؤال دقيق" : "75 Precision Questions"}<br/><small>{isArabic ? "يقيس 15 كفاءة متقدمة - لا غش ممكن" : "Tests 15 advanced competencies - no cheating possible"}</small></li>
-              <li>{isArabic ? "تقرير 25 صفحة" : "25-Page Magazine-Style Report"}<br/><small>{isArabic ? "تحليل محترف لكل قوة وضعف" : "Professional analysis of every strength and weakness"}</small></li>
-              <li>{isArabic ? "فحص سلوكي كامل" : "Full Behavioral MRI Scan"}<br/><small>{isArabic ? "يكشف النقاط العمياء والعقبات المخفية" : "Reveals blind spots and hidden obstacles"}</small></li>
-              <li>{isArabic ? "خطة تنفيذ يومية 90 يوماً" : "Daily 90-Day Implementation Plan"}<br/><small>{isArabic ? "بالضبط ماذا تفعل كل يوم لـ مضاعفة المبيعات" : "Exactly what to do each day to double sales"}</small></li>
-              <li>{isArabic ? "تتبع التقدم الأسبوعي" : "Weekly Progress Tracking"}<br/><small>{isArabic ? "نظام مساءلة يضمن التنفيذ" : "Accountability system to ensure you implement"}</small></li>
-            </ul>
-          </div>
-        </div>
-
-        {/* COMPETENCIES SECTION - 3 COLUMNS */}
-        <h3 className="competencies-title-main">
-          {isArabic ? "الكفاءات الـ15 التي يتم تحليلها في التقييم المتقدم" : "15 Competencies We Scan In Your Advanced Sales MRI"}
-        </h3>
-        <p className="competencies-description">
-          {isArabic 
-            ? "هذه ليست مفاهيم نظرية. هذه هي السلوكيات الدقيقة التي تحدد ما إذا كنت ستحقق أهدافك أو تعود إلى المنزل خالي الوفاض."
-            : "These aren't theoretical concepts. These are the exact behaviors that determine whether you hit your targets or go home empty-handed."
-          }
-        </p>
-        
-        <div className="competencies-grid-3col">
-          {/* COLUMN 1 */}
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">1</div>
-            <div className="competency-name-3col">
-              {isArabic ? "التنقيب عن العملاء الجدد" : "Prospecting & Finding New Clients"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">2</div>
-            <div className="competency-name-3col">
-              {isArabic ? "فتح المحادثات" : "Opening Conversations"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">3</div>
-            <div className="competency-name-3col">
-              {isArabic ? "تحديد الاحتياجات الحقيقية" : "Identifying Real Needs"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">4</div>
-            <div className="competency-name-3col">
-              {isArabic ? "المبيعات الاستشارية" : "Consultative Selling"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">5</div>
-            <div className="competency-name-3col">
-              {isArabic ? "التعامل مع الاعتراضات" : "Destroying Objections"}
-            </div>
-          </div>
-          
-          {/* COLUMN 2 */}
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">6</div>
-            <div className="competency-name-3col">
-              {isArabic ? "تصميم العروض الجذابة" : "Designing Irresistible Offers"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">7</div>
-            <div className="competency-name-3col">
-              {isArabic ? "الإغلاق بثقة" : "Closing with Confidence"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">8</div>
-            <div className="competency-name-3col">
-              {isArabic ? "انضباط المتابعة" : "Follow-up Discipline"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">9</div>
-            <div className="competency-name-3col">
-              {isArabic ? "إدارة الوقت والمنطقة" : "Time & Territory Management"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">10</div>
-            <div className="competency-name-3col">
-              {isArabic ? "الخبرة في المنتج" : "Product Expertise"}
-            </div>
-          </div>
-          
-          {/* COLUMN 3 */}
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">11</div>
-            <div className="competency-name-3col">
-              {isArabic ? "مهارات التفاوض" : "Negotiation Skills"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">12</div>
-            <div className="competency-name-3col">
-              {isArabic ? "عقلية التحفيز والموقف" : "Attitude & Motivation Mindset"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">13</div>
-            <div className="competency-name-3col">
-              {isArabic ? "التعامل مع المدير" : "Dealing with Your Boss"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">14</div>
-            <div className="competency-name-3col">
-              {isArabic ? "التعامل مع العملاء الصعبين" : "Handling Difficult Customers"}
-            </div>
-          </div>
-          <div className="competency-item-3col">
-            <div className="competency-number-3col">15</div>
-            <div className="competency-name-3col">
-              {isArabic ? "التعامل مع الزملاء الصعبين" : "Handling Difficult Colleagues"}
-            </div>
-          </div>
-        </div>
-
-        {/* BONUSES SECTION */}
-        <h3 className="bonuses-title-main">
-          {isArabic ? "الهدايا المجانية المرفقة مع التقييم المتقدم" : "5 Premium Bonuses Included With Your Advanced MRI"}
-        </h3>
-        <p className="bonuses-description">
-          {isArabic 
-            ? "قيمة هذه الهدايا وحدها تتجاوز 500 دولار. ستكون لك مجاناً عندما تحصل على التقييم المتقدم للمبيعات اليوم."
-            : "These bonuses alone are worth over $500. They're yours FREE when you get your Advanced Sales MRI today."
-          }
-        </p>
-        
-        <div className="bonuses-container-main">
-          <div className="bonus-item-main">
-            <div className="bonus-number-main">1</div>
-            <div className="bonus-text-main">
+          {/* FINAL CTA */}
+          <div className="final-cta">
+            <a href={REGISTER_URL} target="_blank" rel="noreferrer" className="final-cta-button">
+              {isArabic ? "الانتقال إلى التقييم المتقدم الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
+            </a>
+            <p className="final-cta-note">
               {isArabic 
-                ? "أفضل 47 إجابة لأصعب 47 اعتراض: دليل 47 صفحة مع ردود حرفية على الاعتراضات التي تجعل معظم مندوبي المبيعات يتعثرون. ليست نظرية - عبارات دقيقة تعمل في الأسواق الشرق أوسطية والغربية."
-                : "The $0 Best Answers to the $0 Hardest Objections: A 47-page playbook with word-for-word responses to objections that make most salespeople stumble. Not theory - exact phrases that work in the Middle Eastern and Western markets."
+                ? "سيتم توجيهك إلى صفحة التسجيل والدفع"
+                : "You will be redirected to the registration and payment page"
               }
-            </div>
+            </p>
           </div>
-          
-          <div className="bonus-item-main">
-            <div className="bonus-number-main">2</div>
-            <div className="bonus-text-main">
-              {isArabic 
-                ? "كيف تعلمت البيع من لعب كرة القدم: التحولات الذهنية غير التقليدية التي تفصل بين المتفوقين والمتوسطين. كيفية تحويل الغرائز التنافسية إلى نتائج مبيعات."
-                : "How I Learned to Sell From Playing Soccer: The unconventional mindset shifts that separate top performers from the average. How to turn competitive instincts into sales results."
-              }
-            </div>
-          </div>
-          
-          <div className="bonus-item-main">
-            <div className="bonus-number-main">3</div>
-            <div className="bonus-text-main">
-              {isArabic 
-                ? "كيف تحفز نفسك تحت الضغط: عندما تبدو الأهداف مستحيلة ويتراكم الرفض، يمنحك هذا الدليل الأدوات النفسية لإعادة الضبط والهجوم مرة أخرى."
-                : "How to Motivate Yourself Under Pressure: When targets seem impossible and rejection piles up, this guide gives you the psychological tools to reset and attack again."
-              }
-            </div>
-          </div>
-          
-          <div className="bonus-item-main">
-            <div className="bonus-number-main">4</div>
-            <div className="bonus-text-main">
-              {isArabic 
-                ? "كيف تحجز مواعيد مع الشخصيات المهمة: اختراق الحراس والحصول على لقاء وجهًا لوجه مع صانعي القرار الذين يمكنهم بالفعل قول 'نعم' للصفقات الكبيرة."
-                : "How to Block Appointments With VIPs: Breaking through gatekeepers and getting face-to-face with decision-makers who can actually say 'yes' to big deals."
-              }
-            </div>
-          </div>
-          
-          <div className="bonus-item-main">
-            <div className="bonus-number-main">5</div>
-            <div className="bonus-text-main">
-              {isArabic 
-                ? "إتقان إدارة الوقت للمبيعات الخارجية بالإضافة إلى: كيفية زيادة مبيعاتك 40٪ باستخدام الذكاء الاصطناعي مع د. كيث فايات. وصول حصري للدورة التدريبية القادمة عبر الإنترنت مع أولوية التسجيل."
-                : "Time-Management Mastery for Outdoor Sales Plus: How to Increase Your Sales 40% Using AI with Dr. Kith Fayat. Exclusive access to the upcoming online course with registration priority."
-              }
-            </div>
-          </div>
-        </div>
-
-        {/* FINAL CTA */}
-        <div className="final-cta">
-          <a href={REGISTER_URL} target="_blank" rel="noreferrer" className="final-cta-button">
-            {isArabic ? "الانتقال إلى التقييم المتقدم الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
-          </a>
-          <p className="final-cta-note">
-            {isArabic 
-              ? "سيتم توجيهك إلى صفحة التسجيل والدفع"
-              : "You will be redirected to the registration and payment page"
-            }
-          </p>
-        </div>
+        </div> {/* End of height control wrapper */}
 
         <div className="footer">
           <span>{isArabic ? "التقييم المتقدم للمبيعات MRI" : "Advanced Sales MRI"}</span>
           <span>{t.page} 4 {t.of} 4</span>
         </div>
-      </section>
-    </div>
+      </section>    </div>
   );
 }
