@@ -7,7 +7,7 @@ import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/contexts/LocaleContext";
 import { getAssessmentConfig } from "@/lib/actions";
-import { Download, Loader2, Share2, Check, Copy } from "lucide-react";
+import { Download, Loader2, Share2, Check, TrendingUp, Lightbulb, AlertTriangle, ShieldAlert } from "lucide-react";
 import {
   Radar,
   RadarChart,
@@ -50,6 +50,18 @@ function ResultsContent() {
       A: res.percentage,
       fullMark: 100,
     }));
+  }, [attempt]);
+
+  const swotData = useMemo(() => {
+    if (!attempt?.competency_results) return { strengths: [], opportunities: [], weaknesses: [], threats: [] };
+    
+    const results = attempt.competency_results;
+    return {
+      strengths: results.filter((r: any) => r.tier === "Strength"),
+      opportunities: results.filter((r: any) => r.tier === "Opportunity"),
+      weaknesses: results.filter((r: any) => r.tier === "Weakness"),
+      threats: results.filter((r: any) => r.tier === "Threat"),
+    };
   }, [attempt]);
 
   const handleDownload = async () => {
@@ -182,6 +194,78 @@ function ResultsContent() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* SWOT ANALYSIS SECTION */}
+        <div className="space-y-6">
+          <h3 className="text-2xl font-black text-slate-900">
+            {ar ? "تحليل SWOT الاستراتيجي" : "Strategic SWOT Analysis"}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* STRENGTHS */}
+            <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 space-y-4">
+              <div className="flex items-center gap-3 text-emerald-700">
+                <TrendingUp size={24} />
+                <h4 className="text-lg font-bold">{ar ? "نقاط القوة" : "Strengths"}</h4>
+              </div>
+              <ul className="space-y-2">
+                {swotData.strengths.length > 0 ? swotData.strengths.map((s: any) => (
+                  <li key={s.competencyId} className="flex items-center gap-2 text-emerald-900 text-sm font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    {s.name}
+                  </li>
+                )) : <li className="text-emerald-600/60 text-sm italic">{ar ? "لا توجد نتائج في هذه الفئة" : "No results in this category"}</li>}
+              </ul>
+            </div>
+
+            {/* OPPORTUNITIES */}
+            <div className="bg-blue-50 border border-blue-100 rounded-3xl p-6 space-y-4">
+              <div className="flex items-center gap-3 text-blue-700">
+                <Lightbulb size={24} />
+                <h4 className="text-lg font-bold">{ar ? "الفرص" : "Opportunities"}</h4>
+              </div>
+              <ul className="space-y-2">
+                {swotData.opportunities.length > 0 ? swotData.opportunities.map((s: any) => (
+                  <li key={s.competencyId} className="flex items-center gap-2 text-blue-900 text-sm font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    {s.name}
+                  </li>
+                )) : <li className="text-blue-600/60 text-sm italic">{ar ? "لا توجد نتائج في هذه الفئة" : "No results in this category"}</li>}
+              </ul>
+            </div>
+
+            {/* WEAKNESSES */}
+            <div className="bg-amber-50 border border-amber-100 rounded-3xl p-6 space-y-4">
+              <div className="flex items-center gap-3 text-amber-700">
+                <AlertTriangle size={24} />
+                <h4 className="text-lg font-bold">{ar ? "نقاط الضعف" : "Weaknesses"}</h4>
+              </div>
+              <ul className="space-y-2">
+                {swotData.weaknesses.length > 0 ? swotData.weaknesses.map((s: any) => (
+                  <li key={s.competencyId} className="flex items-center gap-2 text-amber-900 text-sm font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    {s.name}
+                  </li>
+                )) : <li className="text-amber-600/60 text-sm italic">{ar ? "لا توجد نتائج في هذه الفئة" : "No results in this category"}</li>}
+              </ul>
+            </div>
+
+            {/* THREATS */}
+            <div className="bg-rose-50 border border-rose-100 rounded-3xl p-6 space-y-4">
+              <div className="flex items-center gap-3 text-rose-700">
+                <ShieldAlert size={24} />
+                <h4 className="text-lg font-bold">{ar ? "التهديدات" : "Threats"}</h4>
+              </div>
+              <ul className="space-y-2">
+                {swotData.threats.length > 0 ? swotData.threats.map((s: any) => (
+                  <li key={s.competencyId} className="flex items-center gap-2 text-rose-900 text-sm font-medium">
+                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    {s.name}
+                  </li>
+                )) : <li className="text-rose-600/60 text-sm italic">{ar ? "لا توجد نتائج في هذه الفئة" : "No results in this category"}</li>}
+              </ul>
             </div>
           </div>
         </div>
