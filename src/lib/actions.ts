@@ -59,15 +59,28 @@ function tierFromPercentage(pct: number): Tier {
   return "Threat";
 }
 
-export async function getAssessmentConfig(id: string) {
+export async function getAssessmentConfig(routeSlug: string) {
   const supabase = getSupabaseAdmin();
+
+  // ✅ Route slug (URL) → DB assessment id (engine)
+  const ROUTE_TO_ASSESSMENT_ID: Record<string, string> = {
+    scan: "outdoor_sales_scan",
+    mri: "outdoor_sales_mri",
+  };
+
+  const assessmentId = ROUTE_TO_ASSESSMENT_ID[routeSlug] ?? routeSlug;
+
   const { data, error } = await supabase
     .from("assessments")
     .select("*")
-    .eq("id", id)
+    .eq("id", assessmentId)
     .single();
-  
-  if (error || !data) return null;
+
+  if (error || !data) {
+    console.error("Assessment lookup failed:", { routeSlug, assessmentId, error });
+    return null;
+  }
+
   return data;
 }
 
@@ -77,16 +90,22 @@ export async function submitQuiz(
   language: Language,
   assessmentId: string
 ): Promise<{ attemptId: string }> {
-  if (!userId || !assessmentId) throw new Error("Missing required IDs");
-  
+  if (!userId || !assessmentId) {
+    throw new Error("Missing required IDs");
+  }
+
+  // ✅ Improvement #1: prevent empty submissions
+  if (!Array.isArray(finalAnswers) || finalAnswers.length === 0) {
+    throw new Error("No answers submitted");
+  }
+
   const supabase = getSupabaseAdmin();
 
-  const totalQuestions = finalAnswers.length;
-  const totalScore = finalAnswers.reduce((s, a) => s + (Number(a.selectedScore) || 0), 0);
-  const overallMax = totalQuestions * 5;
-  const totalPercentage = overallMax > 0 ? clampPct((totalScore / overallMax) * 100) : 0;
-
+  // --------------------------------------------------
+  // Aggregate answers by competency
+  // --------------------------------------------------
   const byComp = new Map<string, { score: number; count: number }>();
+
   for (const a of finalAnswers) {
     const prev = byComp.get(a.competencyId) || { score: 0, count: 0 };
     byComp.set(a.competencyId, {
@@ -95,20 +114,47 @@ export async function submitQuiz(
     });
   }
 
-  const competency_results: CompetencyResult[] = Array.from(byComp.entries()).map(([cid, row]) => {
-    const maxScore = row.count * 5;
-    const pct = maxScore > 0 ? clampPct((row.score / maxScore) * 100) : 0;
-    const meta = COMPETENCY_REGISTRY[cid] || { en: cid, ar: cid };
-    return {
-      competencyId: cid,
-      name: language === "ar" ? meta.ar : meta.en,
-      score: row.score,
-      maxScore,
-      percentage: pct,
-      tier: tierFromPercentage(pct),
-    };
-  });
+  // --------------------------------------------------
+  // Build competency results (stable order)
+  // --------------------------------------------------
+  const competency_results: CompetencyResult[] = Array.from(byComp.entries())
+    // ✅ Improvement #2: stable, predictable order
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([cid, row]) => {
+      const maxScore = row.count * 5;
+      const pct = maxScore > 0 ? clampPct((row.score / maxScore) * 100) : 0;
+      const meta = COMPETENCY_REGISTRY[cid] || { en: cid, ar: cid };
 
+      return {
+        competencyId: cid,
+        name: language === "ar" ? meta.ar : meta.en,
+        score: row.score,
+        maxScore,
+        percentage: pct,
+        tier: tierFromPercentage(pct),
+      };
+    });
+
+  // --------------------------------------------------
+  // Overall score (single source of truth)
+  // --------------------------------------------------
+  let overallScore = 0;
+  let overallMax = 0;
+
+  for (const r of competency_results) {
+    overallScore += Number(r.score) || 0;
+    overallMax += Number(r.maxScore) || 0;
+  }
+
+  const totalPercentage =
+    overallMax > 0 ? clampPct((overallScore / overallMax) * 100) : 0;
+
+  const totalQuestions = finalAnswers.length;
+  const totalScore = overallScore;
+
+  // --------------------------------------------------
+  // Persist attempt
+  // --------------------------------------------------
   const { data, error } = await supabase
     .from("quiz_attempts")
     .insert({
@@ -124,7 +170,9 @@ export async function submitQuiz(
     .select("id")
     .single();
 
-  if (error || !data?.id) throw new Error(error?.message || "Insert failed");
+  if (error || !data?.id) {
+    throw new Error(error?.message || "Insert failed");
+  }
 
   return { attemptId: data.id };
 }

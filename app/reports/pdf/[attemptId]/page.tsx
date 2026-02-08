@@ -1,13 +1,8 @@
-// app/reports/pdf/[attemptId]/page.tsx
 import { createClient } from "@supabase/supabase-js";
 import { getRecommendations as getPdfRecommendations } from "@/lib/pdf-recommendations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// ============================================================================
-// TYPES
-// ============================================================================
 
 type Lang = "en" | "ar";
 type Tier = "Strength" | "Opportunity" | "Weakness" | "Threat";
@@ -33,28 +28,28 @@ type CompetencyResult = {
   key: CompetencyKey;
   percentage: number;
   tier: Tier;
-  recommendations?: string[];
 };
 
 type ReportRow = {
   id: string;
   user_id?: string | null;
-  assessment_id?: string | null;
+  assessment_id?: string | null; // ✅ DB truth: outdoor_sales_scan / outdoor_sales_mri
   created_at?: string | null;
   language?: string | null;
   total_percentage?: number | null;
   competency_results?: any[] | null;
-  swot_analysis?: any | null;
   full_name?: string | null;
-  name?: string | null;
   company?: string | null;
   user_email?: string | null;
   email?: string | null;
 };
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
+// ✅ DB ids
+const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
+const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
+
+// Registration CTA (Scan upsell page)
+const REGISTER_URL = "https://www.levelupbusinessconsulting.com/advanced-mri";
 
 const COMPETENCIES: { key: CompetencyKey; labelEn: string; labelAr: string }[] = [
   { key: "mental_toughness", labelEn: "Mental Toughness", labelAr: "الصلابة الذهنية" },
@@ -93,13 +88,6 @@ const COMPETENCY_ALIASES: Record<string, CompetencyKey> = {
   handling_difficult_colleagues: "handling_difficult_colleagues",
 };
 
-// Registration CTA (Page 4)
-const REGISTER_URL = "https://www.levelupbusinessconsulting.com/advanced-mri";
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
 function normalizeCompetencyKey(input: any): CompetencyKey | null {
   const raw = String(input ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
   return COMPETENCY_ALIASES[raw] ?? null;
@@ -114,8 +102,8 @@ function formatDate(iso: any, lang: Lang): string {
   try {
     const d = new Date(String(iso));
     if (isNaN(d.getTime())) return "—";
-    const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+    const monthsEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const monthsAr = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
     const day = d.getUTCDate();
     const month = d.getUTCMonth();
     const year = d.getUTCFullYear();
@@ -160,6 +148,7 @@ function getSupabaseAdminClient() {
 async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
   const supabase = getSupabaseAdminClient();
   const { data: row } = await supabase.from("quiz_attempts").select("*").eq("id", attemptId).maybeSingle();
+
   if (row && row.user_id) {
     const { data: profile } = await supabase.from("profiles").select("*").eq("id", row.user_id).maybeSingle();
     if (profile) {
@@ -167,13 +156,22 @@ async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
       row.company = row.company || profile.company;
     }
   }
+
   return row as ReportRow;
 }
 
-function getTranslations(lang: Lang) {
+function getTranslations(lang: Lang, isMri: boolean) {
+  const baseTitle = isMri
+    ? (lang === "ar" ? "تقرير MRI المتقدم للمبيعات" : "Advanced Sales MRI Report")
+    : (lang === "ar" ? "تقرير تقييم المبيعات" : "Sales Assessment Report");
+
+  const subtitle = isMri
+    ? (lang === "ar" ? "تشخيص عميق وخطة تنفيذ" : "Deep diagnosis & execution plan")
+    : (lang === "ar" ? "تحليل الكفاءات الميدانية" : "Field Competency Analysis");
+
   return {
-    title: lang === "ar" ? "تقرير تقييم المبيعات" : "Sales Assessment Report",
-    subtitle: lang === "ar" ? "تحليل الكفاءات الميدانية" : "Field Competency Analysis",
+    title: baseTitle,
+    subtitle,
     name: lang === "ar" ? "الاسم" : "Name",
     email: lang === "ar" ? "البريد الإلكتروني" : "Email",
     company: lang === "ar" ? "الشركة" : "Company",
@@ -182,6 +180,7 @@ function getTranslations(lang: Lang) {
     confidential: lang === "ar" ? "سري" : "Confidential",
     performanceSummary: lang === "ar" ? "ملخص الأداء" : "Performance Summary",
     actionRecs: lang === "ar" ? "توصيات عملية" : "Action Plan",
+    bonuses: lang === "ar" ? "البونصات والمخرجات" : "Bonuses & Deliverables",
     swot: lang === "ar" ? "تحليل SWOT" : "SWOT Analysis",
     strengths: lang === "ar" ? "القوة" : "Strengths",
     opportunities: lang === "ar" ? "الفرص" : "Opportunities",
@@ -197,11 +196,22 @@ function ScoreRing({ percentage, color, size = 120 }: { percentage: number; colo
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
   return (
     <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} />
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+        />
       </svg>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <span style={{ fontSize: 30, fontWeight: 900, color: "#0f172a" }}>{percentage}%</span>
@@ -210,30 +220,43 @@ function ScoreRing({ percentage, color, size = 120 }: { percentage: number; colo
   );
 }
 
-export default async function Page({ params, searchParams }: { params: { attemptId: string }; searchParams?: { lang?: string } }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: { attemptId: string };
+  searchParams?: { lang?: string };
+}) {
   const row = await fetchReportRow(params.attemptId);
   if (!row) return <div style={{ padding: 40, textAlign: "center" }}>Report not found</div>;
 
+  const isMri = row.assessment_id === MRI_ASSESSMENT_ID;
   const lang: Lang = (searchParams?.lang === "ar" || row.language === "ar") ? "ar" : "en";
-  const t = getTranslations(lang);
   const dir = lang === "ar" ? "rtl" : "ltr";
+  const t = getTranslations(lang, isMri);
 
-  const results: CompetencyResult[] = (row.competency_results || []).map((r: any) => {
-    const key = normalizeCompetencyKey(r.competencyId || r.key);
-    const pct = clamp(r.percentage);
-    return { key, percentage: pct, tier: tierFromPct(pct) };
-  }).filter(r => r.key !== null) as CompetencyResult[];
+  const results: CompetencyResult[] = (row.competency_results || [])
+    .map((r: any) => {
+      const key = normalizeCompetencyKey(r.competencyId || r.key);
+      const pct = clamp(r.percentage);
+      return { key, percentage: pct, tier: tierFromPct(pct) };
+    })
+    .filter((r) => r.key !== null) as CompetencyResult[];
 
   const overallPct = clamp(row.total_percentage);
   const overallTier = tierFromPct(overallPct);
   const overallColor = tierColor(overallTier);
 
-  const showUpsell = row.assessment_id !== "mri";
-  const totalPages = showUpsell ? 5 : 4;
+  // ✅ Pages:
+  // Scan: 5 pages (includes recommendations + upsell)
+  // MRI : 4 pages (bonuses page instead of upsell)
+  const totalPages = isMri ? 4 : 5;
 
   return (
     <div className="pdf-root" dir={dir} lang={lang}>
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap");
         :root { --ink: #0f172a; --muted: #64748b; --border: #e2e8f0; --bg: #f8fafc; --pad: 16mm; --pageW: 210mm; --radius: 12px; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -256,50 +279,63 @@ export default async function Page({ params, searchParams }: { params: { attempt
         .swotItems { list-style: none; font-size: 13px; line-height: 1.6; }
         .swotItems li { margin-bottom: 6px; padding-inline-start: 12px; position: relative; }
         .swotItems li::before { content: "•"; position: absolute; inset-inline-start: 0; color: var(--muted); }
-      `}} />
+        .bonusGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+        .bonusCard { border: 1px solid var(--border); border-radius: 14px; padding: 18px; background: #fff; }
+        .badge { display:inline-block; font-size: 11px; font-weight: 900; padding: 6px 10px; border-radius: 999px; background:#eef2ff; color:#3730a3; }
+      `,
+        }}
+      />
 
       {/* PAGE 1: COVER */}
       <section className="page">
         <div className="topline">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div className="logoWrap">LU</div>
             <div>
               <h1 style={{ fontSize: 18, fontWeight: 900 }}>{t.title}</h1>
-              <p style={{ fontSize: 12, color: 'var(--muted)' }}>{t.subtitle}</p>
+              <p style={{ fontSize: 12, color: "var(--muted)" }}>{t.subtitle}</p>
             </div>
           </div>
-          <div style={{ fontWeight: 900, fontSize: 12, color: 'var(--muted)' }}>{t.confidential}</div>
+          <div style={{ fontWeight: 900, fontSize: 12, color: "var(--muted)" }}>{t.confidential}</div>
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 40 }}>
+
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 40 }}>
           <div className="infoCard">
             <div className="infoRow"><span>{t.name}</span><span style={{ fontWeight: 900 }}>{row.full_name || "—"}</span></div>
             <div className="infoRow"><span>{t.email}</span><span style={{ fontWeight: 900 }}>{row.user_email || row.email || "—"}</span></div>
             <div className="infoRow"><span>{t.company}</span><span style={{ fontWeight: 900 }}>{row.company || "—"}</span></div>
             <div className="infoRow"><span>{t.date}</span><span style={{ fontWeight: 900 }}>{formatDate(row.created_at, lang)}</span></div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontWeight: 900, color: 'var(--muted)', marginBottom: 15 }}>{t.overallScore}</p>
+
+          <div style={{ textAlign: "center" }}>
+            <p style={{ fontWeight: 900, color: "var(--muted)", marginBottom: 15 }}>{t.overallScore}</p>
             <ScoreRing percentage={overallPct} color={overallColor} size={180} />
+            {isMri && (
+              <div style={{ marginTop: 12 }}>
+                <span className="badge">{lang === "ar" ? "MRI متقدم" : "Advanced MRI"}</span>
+              </div>
+            )}
           </div>
         </div>
+
         <div className="footer"><span>{t.confidential}</span><span>{t.page} 1 {t.of} {totalPages}</span></div>
       </section>
 
       {/* PAGE 2: SUMMARY */}
       <section className="page">
         <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.performanceSummary}</h2></div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {results.map(r => {
-            const meta = COMPETENCIES.find(c => c.key === r.key);
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {results.map((r) => {
+            const meta = COMPETENCIES.find((c) => c.key === r.key);
             const color = tierColor(r.tier);
             return (
-              <div key={r.key} style={{ padding: 15, border: '1px solid var(--border)', borderRadius: 12, borderInlineStart: `4px solid ${color}` }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div key={r.key} style={{ padding: 15, border: "1px solid var(--border)", borderRadius: 12, borderInlineStart: `4px solid ${color}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
                   <span style={{ fontWeight: 900 }}>{lang === "ar" ? meta?.labelAr : meta?.labelEn}</span>
                   <span style={{ fontWeight: 900, color }}>{tierLabel(r.tier, lang)}</span>
                 </div>
-                <div style={{ height: 8, background: '#f1f5f9', borderRadius: 99, overflow: 'hidden' }}>
-                  <div style={{ width: `${r.percentage}%`, background: color, height: '100%' }} />
+                <div style={{ height: 8, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
+                  <div style={{ width: `${r.percentage}%`, background: color, height: "100%" }} />
                 </div>
               </div>
             );
@@ -312,35 +348,38 @@ export default async function Page({ params, searchParams }: { params: { attempt
       <section className="page">
         <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.swot}</h2></div>
         <div className="swotGrid">
-          <div className="swotBox" style={{ background: '#ecfdf5', borderColor: '#10b981' }}>
-            <div className="swotTitle" style={{ color: '#065f46' }}><span>💪</span> {t.strengths}</div>
+          <div className="swotBox" style={{ background: "#ecfdf5", borderColor: "#10b981" }}>
+            <div className="swotTitle" style={{ color: "#065f46" }}><span>💪</span> {t.strengths}</div>
             <ul className="swotItems">
-              {results.filter(r => r.tier === "Strength").map(r => (
-                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              {results.filter((r) => r.tier === "Strength").map((r) => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)?.labelAr : COMPETENCIES.find((c) => c.key === r.key)?.labelEn}</li>
               ))}
             </ul>
           </div>
-          <div className="swotBox" style={{ background: '#f0f9ff', borderColor: '#0ea5e9' }}>
-            <div className="swotTitle" style={{ color: '#0c4a6e' }}><span>🚀</span> {t.opportunities}</div>
+
+          <div className="swotBox" style={{ background: "#f0f9ff", borderColor: "#0ea5e9" }}>
+            <div className="swotTitle" style={{ color: "#0c4a6e" }}><span>🚀</span> {t.opportunities}</div>
             <ul className="swotItems">
-              {results.filter(r => r.tier === "Opportunity").map(r => (
-                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              {results.filter((r) => r.tier === "Opportunity").map((r) => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)?.labelAr : COMPETENCIES.find((c) => c.key === r.key)?.labelEn}</li>
               ))}
             </ul>
           </div>
-          <div className="swotBox" style={{ background: '#fffbeb', borderColor: '#f59e0b' }}>
-            <div className="swotTitle" style={{ color: '#78350f' }}><span>⚠️</span> {t.weaknesses}</div>
+
+          <div className="swotBox" style={{ background: "#fffbeb", borderColor: "#f59e0b" }}>
+            <div className="swotTitle" style={{ color: "#78350f" }}><span>⚠️</span> {t.weaknesses}</div>
             <ul className="swotItems">
-              {results.filter(r => r.tier === "Weakness").map(r => (
-                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              {results.filter((r) => r.tier === "Weakness").map((r) => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)?.labelAr : COMPETENCIES.find((c) => c.key === r.key)?.labelEn}</li>
               ))}
             </ul>
           </div>
-          <div className="swotBox" style={{ background: '#fef2f2', borderColor: '#ef4444' }}>
-            <div className="swotTitle" style={{ color: '#7f1d1d' }}><span>🔥</span> {t.threats}</div>
+
+          <div className="swotBox" style={{ background: "#fef2f2", borderColor: "#ef4444" }}>
+            <div className="swotTitle" style={{ color: "#7f1d1d" }}><span>🔥</span> {t.threats}</div>
             <ul className="swotItems">
-              {results.filter(r => r.tier === "Threat").map(r => (
-                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find(c => c.key === r.key)?.labelAr : COMPETENCIES.find(c => c.key === r.key)?.labelEn}</li>
+              {results.filter((r) => r.tier === "Threat").map((r) => (
+                <li key={r.key}>{lang === "ar" ? COMPETENCIES.find((c) => c.key === r.key)?.labelAr : COMPETENCIES.find((c) => c.key === r.key)?.labelEn}</li>
               ))}
             </ul>
           </div>
@@ -348,33 +387,108 @@ export default async function Page({ params, searchParams }: { params: { attempt
         <div className="footer"><span>{t.swot}</span><span>{t.page} 3 {t.of} {totalPages}</span></div>
       </section>
 
-      {/* PAGE 4: RECOMMENDATIONS */}
-      <section className="page">
-        <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.actionRecs}</h2></div>
-        <div className="cardsGrid">
-          {results.slice(0, 6).map(r => {
-            const meta = COMPETENCIES.find(c => c.key === r.key);
-            const tips = getPdfRecommendations(r.key, r.tier, lang);
-            return (
-              <div key={r.key} className="recCard" style={{ borderInlineStartColor: tierColor(r.tier) }}>
-                <div style={{ fontWeight: 900, fontSize: 14 }}>{lang === "ar" ? meta?.labelAr : meta?.labelEn}</div>
-                <ul className="recList">{tips.map((tip, i) => <li key={i}>{tip}</li>)}</ul>
-              </div>
-            );
-          })}
-        </div>
-        <div className="footer"><span>{t.actionRecs}</span><span>{t.page} 4 {t.of} {totalPages}</span></div>
-      </section>
-
-      {/* PAGE 5: UPSELL */}
-      {showUpsell && (
-        <section className="page" style={{ background: '#0f172a', color: 'white' }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 30 }}>
-            <h2 style={{ fontSize: 32, fontWeight: 900 }}>{lang === "ar" ? "هل تريد التحول الكامل؟" : "Want Complete Transformation?"}</h2>
-            <p style={{ fontSize: 18, opacity: 0.8, maxWidth: 500 }}>{lang === "ar" ? "التقييم المجاني كشف الأعراض. الآن حان وقت الفحص الكامل بالرنين المغناطيسي." : "The free assessment exposed the symptoms. Now it's time for the full MRI scan."}</p>
-            <a href={REGISTER_URL} style={{ background: '#0284c7', color: 'white', padding: '16px 40px', borderRadius: 12, fontWeight: 900, textDecoration: 'none', fontSize: 18 }}>{lang === "ar" ? "احصل على التقييم المتقدم الآن" : "GET ADVANCED MRI NOW"}</a>
+      {/* PAGE 4: Scan=Recommendations | MRI=Bonuses */}
+      {!isMri ? (
+        <section className="page">
+          <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.actionRecs}</h2></div>
+          <div className="cardsGrid">
+            {results.slice(0, 6).map((r) => {
+              const meta = COMPETENCIES.find((c) => c.key === r.key);
+              const tips = getPdfRecommendations(r.key, r.tier, lang);
+              return (
+                <div key={r.key} className="recCard" style={{ borderInlineStartColor: tierColor(r.tier) }}>
+                  <div style={{ fontWeight: 900, fontSize: 14 }}>{lang === "ar" ? meta?.labelAr : meta?.labelEn}</div>
+                  <ul className="recList">{tips.map((tip, i) => <li key={i}>{tip}</li>)}</ul>
+                </div>
+              );
+            })}
           </div>
-          <div className="footer" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><span>OutdoorSalesMRI</span><span>{t.page} 5 {t.of} 5</span></div>
+          <div className="footer"><span>{t.actionRecs}</span><span>{t.page} 4 {t.of} {totalPages}</span></div>
+        </section>
+      ) : (
+        <section className="page">
+          <div className="topline"><h2 style={{ fontWeight: 900 }}>{t.bonuses}</h2></div>
+
+          <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.6 }}>
+            {lang === "ar"
+              ? "هذه الصفحة مخصصة لمخرجات MRI: خطة تنفيذ + أدوات تطبيق + بونصات."
+              : "This page contains your MRI deliverables: execution plan + implementation tools + bonuses."}
+          </div>
+
+          <div className="bonusGrid">
+            <div className="bonusCard">
+              <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>
+                {lang === "ar" ? "خطة 30 يوم" : "30-Day Action Plan"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>
+                {lang === "ar"
+                  ? "خطوات أسبوعية ويومية لتحسين أهم 3 فجوات لديك."
+                  : "Weekly + daily steps to close your top 3 gaps."}
+              </div>
+            </div>
+
+            <div className="bonusCard">
+              <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>
+                {lang === "ar" ? "سكربتات جاهزة" : "Ready-to-Use Scripts"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>
+                {lang === "ar"
+                  ? "افتتاحيات + أسئلة احتياج + ردود اعتراض + إغلاق."
+                  : "Openers + needs questions + objection handling + closing."}
+              </div>
+            </div>
+
+            <div className="bonusCard">
+              <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>
+                {lang === "ar" ? "تحسين سريع" : "Quick Wins"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>
+                {lang === "ar"
+                  ? "3 تغييرات تعطي نتائج ملموسة خلال 7 أيام."
+                  : "3 changes that show measurable results in 7 days."}
+              </div>
+            </div>
+
+            <div className="bonusCard">
+              <div style={{ fontWeight: 900, fontSize: 16, marginBottom: 6 }}>
+                {lang === "ar" ? "خريطة تطوير" : "Development Roadmap"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.7 }}>
+                {lang === "ar"
+                  ? "مسار تدريبي بحسب نقاط ضعفك ونقاط قوتك."
+                  : "A tailored path based on your strengths and weaknesses."}
+              </div>
+            </div>
+          </div>
+
+          <div className="footer"><span>{t.bonuses}</span><span>{t.page} 4 {t.of} {totalPages}</span></div>
+        </section>
+      )}
+
+      {/* PAGE 5: UPSELL only for Scan */}
+      {!isMri && (
+        <section className="page" style={{ background: "#0f172a", color: "white" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 30 }}>
+            <h2 style={{ fontSize: 32, fontWeight: 900 }}>
+              {lang === "ar" ? "هل تريد التحول الكامل؟" : "Want Complete Transformation?"}
+            </h2>
+            <p style={{ fontSize: 18, opacity: 0.8, maxWidth: 520 }}>
+              {lang === "ar"
+                ? "التقييم المجاني كشف الأعراض. الآن حان وقت الفحص الكامل بالرنين المغناطيسي."
+                : "The free assessment exposed the symptoms. Now it's time for the full MRI scan."}
+            </p>
+            <a
+              href={REGISTER_URL}
+              style={{ background: "#0284c7", color: "white", padding: "16px 40px", borderRadius: 12, fontWeight: 900, textDecoration: "none", fontSize: 18 }}
+            >
+              {lang === "ar" ? "احصل على التقييم المتقدم الآن" : "GET ADVANCED MRI NOW"}
+            </a>
+          </div>
+
+          <div className="footer" style={{ borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+            <span>OutdoorSales</span>
+            <span>{t.page} 5 {t.of} 5</span>
+          </div>
         </section>
       )}
     </div>

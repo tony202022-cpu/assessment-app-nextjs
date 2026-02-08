@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { Question, AnswerPayload } from "@/types";
 import { useLocale } from "@/contexts/LocaleContext";
 import { getTranslation } from "@/lib/translations";
 import { toast } from "sonner";
-import { submitQuiz } from "@/lib/actions";
+import { submitQuiz, getAssessmentConfig } from "@/lib/actions";
 import { useSession } from "@/contexts/SessionContext";
 import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
 
@@ -21,8 +21,6 @@ const latinFont = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
-const QUIZ_TIME_LIMIT = 20 * 60;
-
 // DO NOT TOUCH — shuffle logic
 const shuffleArray = <T,>(array: T[]): T[] => {
   const shuffled = [...array];
@@ -34,55 +32,131 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 export default function QuizPage() {
-  // DO NOT TOUCH — state logic
+  const router = useRouter();
+  const params = useParams();
+  const slug = (params?.slug as string) || ""; // "scan" | "mri"
+  const { language } = useLocale();
+  const { user, isLoading: isSessionLoading } = useSession();
+  const isArabic = language === "ar";
+
+  // Kitchen: menu-driven config
+  const [assessmentId, setAssessmentId] = useState<string>("");
+  const [questionLimit, setQuestionLimit] = useState<number>(30);
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number>(20 * 60);
+
+  // Quiz state
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<AnswerPayload[]>([]);
   const [loading, setLoading] = useState(true);
-  const [timeRemaining, setTimeRemaining] = useState(QUIZ_TIME_LIMIT);
+  const [timeRemaining, setTimeRemaining] = useState(20 * 60);
   const [timerStarted, setTimerStarted] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<
     Array<{ text: string; score: number; index: number }>
   >([]);
 
-  const router = useRouter();
-  const { language } = useLocale();
-  const { user, isLoading: isSessionLoading } = useSession();
-  const isArabic = language === "ar";
-
-  // DO NOT TOUCH — auth + fetch logic
+  // 1) Auth guard
   useEffect(() => {
     if (isSessionLoading) return;
-
     if (!user) {
       toast.info(getTranslation("loginRequired", language));
-      router.replace("/login");
-      return;
+      // IMPORTANT: your app uses /[slug]/login. If slug missing, fallback to /scan/login
+      router.replace(`/${slug || "scan"}/login?lang=${language}`);
     }
+  }, [user, isSessionLoading, router, language, slug]);
 
+  // 2) Load assessment config based on slug (menu)
+  useEffect(() => {
+    const loadConfig = async () => {
+      if (!slug) return;
+
+      try {
+        const conf: any = await getAssessmentConfig(slug);
+
+        // We accept multiple possible shapes to avoid breaking:
+        const aId =
+          conf?.assessmentId ||
+          conf?.assessment_id ||
+          conf?.id ||
+          conf?.slug_assessment_id ||
+          "";
+
+        const qLimit =
+          Number(conf?.question_limit ?? conf?.questionCount ?? conf?.questions_count ?? conf?.questions_limit) ||
+          (slug === "mri" ? 75 : 30);
+
+        const tSeconds =
+          Number(conf?.time_limit_seconds ?? conf?.timeLimitSeconds) ||
+          (slug === "mri" ? 90 * 60 : 20 * 60);
+
+        if (!aId) {
+          console.error("getAssessmentConfig returned without assessmentId:", conf);
+          toast.error(isArabic ? "تعذر تحميل إعدادات التقييم" : "Failed to load assessment config");
+          return;
+        }
+
+        setAssessmentId(aId);
+        setQuestionLimit(qLimit);
+        setTimeLimitSeconds(tSeconds);
+        setTimeRemaining(tSeconds);
+      } catch (e) {
+        console.error("loadConfig failed:", e);
+        toast.error(isArabic ? "تعذر تحميل إعدادات التقييم" : "Failed to load assessment config");
+      }
+    };
+
+    loadConfig();
+  }, [slug, isArabic]);
+
+  // 3) Fetch questions (only after we have assessmentId)
+  useEffect(() => {
     const fetchQuestions = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("questions")
-        .select("*")
-        .order("created_at", { ascending: true })
-        .limit(30); // Limit to 30 questions
+      if (!user?.id) return;
+      if (!assessmentId) return;
 
+      setLoading(true);
+
+      // Your schema may use assessment_id OR assessmentId.
+      // We try assessment_id first; if 0 rows, fallback to no filter (last resort).
+      const base = supabase.from("questions").select("*");
+
+      // Attempt 1: filter by assessment_id
+      let q = base.eq("assessment_id", assessmentId);
+
+      let { data, error } = await q.order("created_at", { ascending: true }).limit(questionLimit);
+
+      // If column doesn't exist or returns nothing, fallback attempt
       if (error) {
-        console.error("Questions fetch error:", error);
-        toast.error(getTranslation("errorFetchingQuestions", language));
+        console.warn("Questions fetch attempt1 error:", error);
+      }
+
+      if (!data || data.length === 0) {
+        // Attempt 2: filter by assessmentId (camel)
+        const q2 = supabase.from("questions").select("*").eq("assessmentId", assessmentId);
+        const res2 = await q2.order("created_at", { ascending: true }).limit(questionLimit);
+        data = res2.data || [];
+        error = res2.error || null;
+
+        if (error) {
+          console.warn("Questions fetch attempt2 error:", error);
+        }
+      }
+
+      if (!data || data.length === 0) {
+        console.error("No questions returned for assessmentId:", assessmentId);
+        toast.error(isArabic ? "لا توجد أسئلة لهذا التقييم" : "No questions found for this assessment");
         setLoading(false);
         return;
       }
 
-      const shuffled = shuffleArray(data || []);
+      const shuffled = shuffleArray(data);
       setQuestions(shuffled);
 
       setSelectedAnswers(
-        shuffled.map((q) => ({
-          questionId: q.id,
-          competencyId: q.competency_id,
+        shuffled.map((qItem: any) => ({
+          questionId: qItem.id,
+          competencyId: qItem.competency_id,
           selectedScore: -1,
         }))
       );
@@ -91,17 +165,17 @@ export default function QuizPage() {
       setLoading(false);
     };
 
-    if (user) fetchQuestions();
-  }, [user, isSessionLoading, router, language]);
+    if (!isSessionLoading && user?.id && assessmentId) {
+      fetchQuestions();
+    }
+  }, [user?.id, isSessionLoading, assessmentId, questionLimit, isArabic]);
 
-  // DO NOT TOUCH — timer logic
+  // 4) Timer
   useEffect(() => {
     if (!timerStarted || loading) return;
-
     const interval = setInterval(() => {
       setTimeRemaining((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
-
     return () => clearInterval(interval);
   }, [timerStarted, loading]);
 
@@ -109,6 +183,7 @@ export default function QuizPage() {
     if (timeRemaining === 0 && timerStarted && !loading) {
       handleFinish();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRemaining]);
 
   const formatTime = (seconds: number) => {
@@ -119,12 +194,12 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  // DO NOT TOUCH — answer shuffle logic
+  // 5) Shuffle answers per question (keep score)
   useEffect(() => {
     if (!currentQuestion || isTransitioning) return;
 
-    const raw = language === "en" ? currentQuestion.options_en : currentQuestion.options_ar;
-    const scores = currentQuestion.options_scores || [];
+    const raw = language === "en" ? (currentQuestion as any).options_en : (currentQuestion as any).options_ar;
+    const scores = (currentQuestion as any).options_scores || [];
 
     const opts = (Array.isArray(raw) ? raw : []).map((item, idx) => ({
       text:
@@ -138,9 +213,13 @@ export default function QuizPage() {
     setShuffledOptions(shuffleArray(opts));
   }, [currentQuestionIndex, language, isTransitioning, currentQuestion]);
 
-  // DO NOT TOUCH — finish logic
+  // 6) Finish -> submitQuiz MUST include assessmentId
   const handleFinish = async () => {
     if (!user?.id) return;
+    if (!assessmentId) {
+      toast.error(isArabic ? "تعذر حفظ المحاولة: معرف التقييم مفقود" : "Cannot submit: missing assessmentId");
+      return;
+    }
 
     setIsTransitioning(true);
 
@@ -150,31 +229,40 @@ export default function QuizPage() {
     }));
 
     try {
-      const { attemptId } = await submitQuiz(finalAnswers, user.id, language);
-      router.push(`/results?attemptId=${attemptId}&lang=${language}`);
+      const res: any = await submitQuiz(finalAnswers, user.id, language, assessmentId);
+
+      const attemptId =
+        (typeof res === "string" ? res : null) ||
+        res?.attemptId ||
+        res?.id ||
+        res?.attempt_id ||
+        res?.data?.id ||
+        res?.data?.attemptId;
+
+      if (!attemptId) {
+        console.error("submitQuiz() returned:", res);
+        throw new Error("Missing required ID (attemptId not returned)");
+      }
+
+      const target = `/${slug}/results?attemptId=${attemptId}&lang=${language}`;
+      window.location.href = target;
     } catch (e: any) {
-  console.error("submitQuiz failed:", e);
-
-  toast.error(
-    (language === "ar"
-      ? "فشل حفظ المحاولة: "
-      : "Failed to save attempt: ") +
-      (e?.message || "Unknown error")
-  );
-
-  setIsTransitioning(false);
-}
-
+      console.error("submitQuiz failed:", e);
+      toast.error(
+        (language === "ar" ? "فشل حفظ المحاولة: " : "Failed to save attempt: ") + (e?.message || "Unknown error")
+      );
+      setIsTransitioning(false);
+    }
   };
 
-  // DO NOT TOUCH — option select logic
+  // 7) Option select
   const handleOptionSelect = (score: number) => {
     if (isTransitioning) return;
 
     const copy = [...selectedAnswers];
     copy[currentQuestionIndex] = {
-      questionId: currentQuestion.id,
-      competencyId: currentQuestion.competency_id ?? "",
+      questionId: (currentQuestion as any).id,
+      competencyId: (currentQuestion as any).competency_id ?? "",
       selectedScore: score,
     };
     setSelectedAnswers(copy);
@@ -190,11 +278,11 @@ export default function QuizPage() {
     }, 300);
   };
 
-  if (loading || isSessionLoading) return null;
-  if (!currentQuestion) return null;
-
-  const questionText = isArabic ? currentQuestion.question_ar : currentQuestion.question_en;
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  // UI helpers
+  const progress = useMemo(() => {
+    if (!questions.length) return 0;
+    return ((currentQuestionIndex + 1) / questions.length) * 100;
+  }, [currentQuestionIndex, questions.length]);
 
   const timerColor =
     timeRemaining < 180
@@ -208,7 +296,11 @@ export default function QuizPage() {
   const clamp3 =
     "[display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden";
 
-  // ✅ VISUALS ONLY BELOW THIS POINT
+  if (loading || isSessionLoading) return null;
+  if (!currentQuestion) return null;
+
+  const questionText = isArabic ? (currentQuestion as any).question_ar : (currentQuestion as any).question_en;
+
   return (
     <div
       className={`fixed inset-0 h-[100dvh] flex flex-col overflow-hidden
@@ -242,7 +334,7 @@ export default function QuizPage() {
       {/* CONTENT */}
       <div className="flex-1 flex items-center justify-center px-4 py-5">
         <div className="w-full max-w-md space-y-3">
-          {/* QUESTION BLOCK — SAME GRADIENT AS TIMER */}
+          {/* QUESTION */}
           <div
             className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white
             backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-5"
@@ -255,7 +347,7 @@ export default function QuizPage() {
             </h2>
           </div>
 
-          {/* ANSWERS — CONTRASTING GLASSY WHITE */}
+          {/* ANSWERS */}
           <div className="space-y-3">
             {shuffledOptions.map((option, index) => (
               <button

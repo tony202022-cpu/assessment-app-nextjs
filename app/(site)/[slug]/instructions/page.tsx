@@ -1,78 +1,109 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSession } from "@/contexts/SessionContext";
-import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 
+type AssessmentType = "scan" | "mri";
+
+// ✅ your routes are /scan/* and /mri/*
+function getAssessmentType(slug: string): AssessmentType {
+  return slug === "mri" ? "mri" : "scan";
+}
+
 export default function InstructionsPage() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const { language } = useLocale();
+
+  const { language, setLanguage } = useLocale();
   const { user, isLoading } = useSession();
+
+  const langParam = searchParams.get("lang"); // "en" | "ar" | null
   const ar = language === "ar";
 
   const [hydrated, setHydrated] = useState(false);
-  const redirectedRef = useRef(false);
 
-  useEffect(() => setHydrated(true), []);
-
+  // ✅ hydration + language sync
   useEffect(() => {
-    if (redirectedRef.current) return;
-    if (!hydrated) return;
-    if (isLoading) return;
+    setHydrated(true);
+
+    if (langParam && langParam !== language) {
+      setLanguage(langParam as "en" | "ar");
+    }
+  }, [langParam, language, setLanguage]);
+
+  // ✅ auth guard
+  useEffect(() => {
+    if (!hydrated || isLoading) return;
 
     if (!user) {
-      redirectedRef.current = true;
-      router.replace(`/${slug}/login`);
+      router.replace(`/${slug}/start?lang=${langParam || "en"}`);
     }
-  }, [hydrated, isLoading, user, router, slug]);
+  }, [hydrated, isLoading, user, router, slug, langParam]);
 
-  if (!hydrated || isLoading) return null;
-  if (!user) return null;
+  if (!hydrated || isLoading || !user) return null;
+
+  const type = getAssessmentType(slug);
+  const isScan = type === "scan";
 
   return (
     <div
-      lang={language}
+      className="min-h-screen flex items-center justify-center px-6 bg-gradient-to-br from-[#1a5cff] via-[#2f7bff] to-[#3b82f6]"
       dir={ar ? "rtl" : "ltr"}
-      className="min-h-screen flex flex-col bg-gradient-to-br from-blue-950 via-blue-900 to-blue-700"
     >
-      <Header />
+      <div className="w-full max-w-xl rounded-2xl bg-white/15 backdrop-blur-xl shadow-xl p-8 space-y-6">
+        {/* TITLE */}
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-white">
+          {ar ? "تعليمات قبل البدء" : "Before You Begin"}
+        </h1>
 
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6 sm:p-8 space-y-6 animate-fadeIn">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-white drop-shadow-lg">
-            {ar ? "تعليمات هامة قبل التقييم" : "Assessment Instructions"}
-          </h1>
+        {/* SUBTITLE */}
+        <p className="text-center text-white/90 text-base sm:text-lg font-medium">
+          {isScan
+            ? ar
+              ? "فحص مهني سريع – يرجى القراءة بعناية"
+              : "Quick professional scan — please read carefully"
+            : ar
+            ? "تقييم متقدم (MRI) – التزام كامل مطلوب"
+            : "Advanced MRI assessment — full commitment required"}
+        </p>
 
-          <div className="space-y-2 text-base sm:text-lg text-white/90 leading-snug">
-            {ar ? (
-              <>
-                <p>• ستشاهد مواقف وسيناريوهات عملية تتعلق بالمبيعات.</p>
-                <p>• اختر الإجابة التي تعكس تصرفك الفعلي.</p>
-                <p>• لا توجد إجابات صحيحة أو خاطئة.</p>
-                <p className="font-bold text-amber-300">• أجب بسرعة. إذا انتهى الوقت سيتم إرسال إجاباتك تلقائياً.</p>
-              </>
-            ) : (
-              <>
-                <p>• You will see realistic sales scenarios.</p>
-                <p>• Choose the option that reflects what you actually do.</p>
-                <p>• There are no right or wrong answers.</p>
-                <p className="font-bold text-amber-300">• Answer quickly. If time runs out, the system will auto‑submit.</p>
-              </>
-            )}
-          </div>
+        {/* INSTRUCTIONS */}
+        <div className="space-y-4 text-white/95 text-sm sm:text-base leading-relaxed">
+          {isScan ? (
+            <>
+              <p>🎯 {ar ? "هذا الفحص يعطيك لمحة دقيقة عن مستواك الحالي." : "This scan gives you a clear snapshot of your current level."}</p>
+              <p>⏱️ {ar ? "التقييم بزمن محدد، اتبع حدسك." : "The assessment is timed — follow your instinct."}</p>
+              <p>🧠 {ar ? "اختر ما يعكس تصرفك الحقيقي." : "Choose what reflects your real behavior."}</p>
+              <p>🔒 {ar ? "لا توجد إجابات صحيحة أو خاطئة." : "There are no right or wrong answers."}</p>
+            </>
+          ) : (
+            <>
+              <p>🎯 {ar ? "هذا تقييم احترافي متقدم للتحليل العميق." : "This is a deep professional assessment."}</p>
+              <p>⏱️ {ar ? "لا يمكن إيقاف أو إعادة التقييم." : "The assessment cannot be paused or restarted."}</p>
+              <p>🧠 {ar ? "أجب بصدق وتلقائية." : "Answer honestly and instinctively."}</p>
+              <p>⚠️ {ar ? "أي مساعدة خارجية تقلل دقة النتائج." : "External help reduces result accuracy."}</p>
+            </>
+          )}
+        </div>
 
-          <div className="flex justify-center pt-2">
-            <Button
-              className="px-8 py-3 text-lg font-bold bg-amber-400 hover:bg-amber-300 text-slate-900 rounded-xl shadow-lg"
-              onClick={() => router.push(`/${slug}/quiz`)}
-            >
-              {ar ? "بدء التقييم" : "Start Assessment"}
-            </Button>
-          </div>
+        {/* CTA */}
+        <div className="pt-4">
+          <Button
+            className="w-full py-4 text-base sm:text-lg font-bold rounded-xl bg-black text-white hover:bg-slate-900 transition"
+            onClick={() => router.push(`/${slug}/quiz?lang=${langParam || "en"}`)}
+          >
+            {ar
+              ? isScan
+                ? "ابدأ الفحص"
+                : "ابدأ التقييم المتقدم"
+              : isScan
+              ? "Start Scan"
+              : "Start Assessment"}
+          </Button>
         </div>
       </div>
     </div>

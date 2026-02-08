@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -19,21 +19,35 @@ export default function ProfilePage() {
   const isArabic = language === "ar";
 
   const [hydrated, setHydrated] = useState(false);
-  const [nextPath, setNextPath] = useState<string>("/quiz");
+
+  // ✅ IMPORTANT: default must be slug-based (never "/quiz")
+  const [nextPath, setNextPath] = useState<string>("/scan/quiz");
 
   const [fullName, setFullName] = useState("");
   const [company, setCompany] = useState("");
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Hydration guard + read ?next= safely (no useSearchParams)
+  // Hydration guard + compute nextPath safely
   useEffect(() => {
     setHydrated(true);
 
     try {
       const sp = new URLSearchParams(window.location.search);
+
+      // 1) If caller provided ?next=..., use it
       const n = sp.get("next");
-      if (n && typeof n === "string") setNextPath(n);
+      if (n && typeof n === "string") {
+        // If someone accidentally passes "/quiz", auto-fix it to "/scan/quiz"
+        setNextPath(n === "/quiz" ? "/scan/quiz" : n);
+        return;
+      }
+
+      // 2) Otherwise, derive slug from the current URL (scan/mri) or fallback to scan
+      const path = window.location.pathname; // e.g. "/scan/profile" or "/mri/profile"
+      const maybeSlug = (path.split("/")[1] || "").toLowerCase();
+      const slug = maybeSlug === "mri" ? "mri" : "scan";
+      setNextPath(`/${slug}/quiz`);
     } catch {
       // ignore
     }
@@ -96,7 +110,16 @@ export default function ProfilePage() {
     }
 
     toast.success(isArabic ? "تم الحفظ ✅" : "Saved ✅");
-    router.replace(nextPath);
+
+    // ✅ Safety: never allow navigation to "/quiz" (must be "/scan/quiz" or "/mri/quiz")
+    const safeNext =
+      nextPath === "/quiz"
+        ? "/scan/quiz"
+        : /^\/(scan|mri)\/quiz(\b|\/|\?)/.test(nextPath)
+        ? nextPath
+        : "/scan/quiz";
+
+    router.replace(safeNext);
   };
 
   if (!hydrated || isLoading || loadingProfile) return null;
@@ -152,9 +175,7 @@ export default function ProfilePage() {
               </Button>
 
               <div className="text-xs text-white/70 text-center">
-                {isArabic
-                  ? "🔒 لن نشارك بياناتك مع أي طرف."
-                  : "🔒 We don’t share your data with third parties."}
+                {isArabic ? "🔒 لن نشارك بياناتك مع أي طرف." : "🔒 We don’t share your data with third parties."}
               </div>
             </div>
           </div>
