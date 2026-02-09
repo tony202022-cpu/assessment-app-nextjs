@@ -21,7 +21,7 @@ type CompetencyResult = {
   percentage: number;
 };
 
-// Global registry for competency metadata
+// Global registry for competency metadata (render labels at save-time)
 const COMPETENCY_REGISTRY: Record<string, { en: string; ar: string }> = {
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
@@ -30,6 +30,8 @@ const COMPETENCY_REGISTRY: Record<string, { en: string; ar: string }> = {
   creating_irresistible_offers: { en: "Creating Irresistible Offers", ar: "إنشاء عروض لا تُقاوَم" },
   mastering_closing: { en: "Mastering Closing", ar: "إتقان الإغلاق" },
   follow_up_discipline: { en: "Follow-Up Discipline", ar: "انضباط المتابعة" },
+
+  // MRI extras (if/when used)
   consultative_selling: { en: "Consultative Selling", ar: "المبيعات الاستشارية" },
   time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
   product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
@@ -52,11 +54,49 @@ function clampPct(n: any) {
   return Math.max(0, Math.min(100, x));
 }
 
+/**
+ * ✅ MUST MATCH UI + pdf-recommendations.ts
+ * Strength >= 75
+ * Opportunity >= 50
+ * Threat >= 30
+ * Weakness < 30
+ */
 function tierFromPercentage(pct: number): Tier {
-  if (pct >= 75) return "Strength";
-  if (pct >= 50) return "Opportunity";
-  if (pct >= 25) return "Weakness";
-  return "Threat";
+  const p = Number(pct) || 0;
+  if (p >= 75) return "Strength";
+  if (p >= 50) return "Opportunity";
+  if (p >= 30) return "Threat";
+  return "Weakness";
+}
+
+/**
+ * ✅ Normalize competency ids so:
+ * - destroying_objections NEVER survives into DB
+ * - labels + recommendations always match
+ */
+function normalizeCompetencyId(id: string): string {
+  const clean = String(id || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/-/g, "_");
+
+  const map: Record<string, string> = {
+    mental_toughness: "mental_toughness",
+    opening_conversations: "opening_conversations",
+    identifying_real_needs: "identifying_real_needs",
+    destroying_objections: "handling_objections",
+    handling_objections: "handling_objections",
+    creating_irresistible_offers: "creating_irresistible_offers",
+    mastering_closing: "mastering_closing",
+    follow_up_discipline: "follow_up_discipline",
+
+    // if some questions use other spellings:
+    followup_discipline: "follow_up_discipline",
+    follow_up: "follow_up_discipline",
+  };
+
+  return map[clean] || clean;
 }
 
 export async function getAssessmentConfig(routeSlug: string) {
@@ -68,7 +108,7 @@ export async function getAssessmentConfig(routeSlug: string) {
     mri: "outdoor_sales_mri",
   };
 
-  const assessmentId = ROUTE_TO_ASSESSMENT_ID[routeSlug] ?? routeSlug;
+  const assessmentId = ROUTE_TO_ASSESSMENT_ID[String(routeSlug || "").toLowerCase()] ?? routeSlug;
 
   const { data, error } = await supabase
     .from("assessments")
@@ -90,78 +130,57 @@ export async function submitQuiz(
   language: Language,
   assessmentId: string
 ): Promise<{ attemptId: string }> {
-  if (!userId || !assessmentId) {
-    throw new Error("Missing required IDs");
-  }
-
-  // ✅ Improvement #1: prevent empty submissions
-  if (!Array.isArray(finalAnswers) || finalAnswers.length === 0) {
-    throw new Error("No answers submitted");
-  }
-
+  if (!userId || !assessmentId) throw new Error("Missing required IDs");
   const supabase = getSupabaseAdmin();
 
-  // --------------------------------------------------
-  // Aggregate answers by competency
-  // --------------------------------------------------
-  const byComp = new Map<string, { score: number; count: number }>();
+  // ✅ normalize answers BEFORE saving
+  const normalizedAnswers: AnswerPayload[] = (Array.isArray(finalAnswers) ? finalAnswers : []).map((a) => ({
+    questionId: String(a?.questionId || ""),
+    competencyId: normalizeCompetencyId(String(a?.competencyId || "")),
+    selectedScore: Number(a?.selectedScore) || 0,
+  }));
 
-  for (const a of finalAnswers) {
-    const prev = byComp.get(a.competencyId) || { score: 0, count: 0 };
-    byComp.set(a.competencyId, {
+  const totalQuestions = normalizedAnswers.length;
+  const totalScore = normalizedAnswers.reduce((s, a) => s + (Number(a.selectedScore) || 0), 0);
+  const overallMax = totalQuestions * 5;
+  const totalPercentage = overallMax > 0 ? clampPct((totalScore / overallMax) * 100) : 0;
+
+  // Aggregate by competency
+  const byComp = new Map<string, { score: number; count: number }>();
+  for (const a of normalizedAnswers) {
+    const cid = normalizeCompetencyId(a.competencyId);
+    if (!cid) continue;
+
+    const prev = byComp.get(cid) || { score: 0, count: 0 };
+    byComp.set(cid, {
       score: prev.score + (Number(a.selectedScore) || 0),
       count: prev.count + 1,
     });
   }
 
-  // --------------------------------------------------
-  // Build competency results (stable order)
-  // --------------------------------------------------
-  const competency_results: CompetencyResult[] = Array.from(byComp.entries())
-    // ✅ Improvement #2: stable, predictable order
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([cid, row]) => {
-      const maxScore = row.count * 5;
-      const pct = maxScore > 0 ? clampPct((row.score / maxScore) * 100) : 0;
-      const meta = COMPETENCY_REGISTRY[cid] || { en: cid, ar: cid };
+  const competency_results: CompetencyResult[] = Array.from(byComp.entries()).map(([cid, row]) => {
+    const maxScore = row.count * 5;
+    const pct = maxScore > 0 ? clampPct((row.score / maxScore) * 100) : 0;
 
-      return {
-        competencyId: cid,
-        name: language === "ar" ? meta.ar : meta.en,
-        score: row.score,
-        maxScore,
-        percentage: pct,
-        tier: tierFromPercentage(pct),
-      };
-    });
+    const meta = COMPETENCY_REGISTRY[cid] || { en: cid, ar: cid };
 
-  // --------------------------------------------------
-  // Overall score (single source of truth)
-  // --------------------------------------------------
-  let overallScore = 0;
-  let overallMax = 0;
+    return {
+      competencyId: cid,
+      name: language === "ar" ? meta.ar : meta.en,
+      score: row.score,
+      maxScore,
+      percentage: pct,
+      tier: tierFromPercentage(pct),
+    };
+  });
 
-  for (const r of competency_results) {
-    overallScore += Number(r.score) || 0;
-    overallMax += Number(r.maxScore) || 0;
-  }
-
-  const totalPercentage =
-    overallMax > 0 ? clampPct((overallScore / overallMax) * 100) : 0;
-
-  const totalQuestions = finalAnswers.length;
-  const totalScore = overallScore;
-
-  // --------------------------------------------------
-  // Persist attempt
-  // --------------------------------------------------
   const { data, error } = await supabase
     .from("quiz_attempts")
     .insert({
       user_id: userId,
       assessment_id: assessmentId,
       language,
-      answers: finalAnswers,
+      answers: normalizedAnswers,
       score: totalScore,
       total_questions: totalQuestions,
       total_percentage: totalPercentage,
@@ -171,6 +190,7 @@ export async function submitQuiz(
     .single();
 
   if (error || !data?.id) {
+    console.error("Insert failed:", error);
     throw new Error(error?.message || "Insert failed");
   }
 

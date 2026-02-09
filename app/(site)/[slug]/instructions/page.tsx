@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useSession } from "@/contexts/SessionContext";
@@ -13,6 +13,15 @@ function getAssessmentType(slug: string): AssessmentType {
   return slug === "mri" ? "mri" : "scan";
 }
 
+// ✅ DB truth (menu IDs)
+const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
+const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
+
+function safeLang(x: string | null) {
+  const v = String(x || "").toLowerCase().trim();
+  return v === "ar" ? "ar" : "en";
+}
+
 export default function InstructionsPage() {
   const { slug } = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
@@ -21,7 +30,8 @@ export default function InstructionsPage() {
   const { language, setLanguage } = useLocale();
   const { user, isLoading } = useSession();
 
-  const langParam = searchParams.get("lang"); // "en" | "ar" | null
+  const langParamRaw = searchParams.get("lang"); // "en" | "ar" | null
+  const urlLang = useMemo(() => safeLang(langParamRaw), [langParamRaw]);
   const ar = language === "ar";
 
   const [hydrated, setHydrated] = useState(false);
@@ -30,31 +40,40 @@ export default function InstructionsPage() {
   useEffect(() => {
     setHydrated(true);
 
-    if (langParam && langParam !== language) {
-      setLanguage(langParam as "en" | "ar");
+    // only accept en/ar
+    if (urlLang !== language) {
+      setLanguage(urlLang as "en" | "ar");
     }
-  }, [langParam, language, setLanguage]);
+  }, [urlLang, language, setLanguage]);
 
   // ✅ auth guard
   useEffect(() => {
     if (!hydrated || isLoading) return;
 
     if (!user) {
-      router.replace(`/${slug}/start?lang=${langParam || "en"}`);
+      router.replace(`/${slug}/start?lang=${urlLang}`);
     }
-  }, [hydrated, isLoading, user, router, slug, langParam]);
+  }, [hydrated, isLoading, user, router, slug, urlLang]);
 
   if (!hydrated || isLoading || !user) return null;
 
   const type = getAssessmentType(slug);
   const isScan = type === "scan";
 
+  // ✅ always pass assessmentId so the quiz can load deterministically
+  const assessmentId = isScan ? SCAN_ASSESSMENT_ID : MRI_ASSESSMENT_ID;
+
+  const goToQuiz = () => {
+    // Force a deterministic URL even if the quiz page relies on query params
+    router.push(`/${slug}/quiz?assessmentId=${encodeURIComponent(assessmentId)}&lang=${encodeURIComponent(urlLang)}`);
+  };
+
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-6 bg-gradient-to-br from-[#1a5cff] via-[#2f7bff] to-[#3b82f6]"
+      className="min-h-screen flex items-center justify-center px-6 bg-gradient-to-br from-[#0b1220] via-[#0f1f3a] to-[#102a5a]"
       dir={ar ? "rtl" : "ltr"}
     >
-      <div className="w-full max-w-xl rounded-2xl bg-white/15 backdrop-blur-xl shadow-xl p-8 space-y-6">
+      <div className="w-full max-w-xl rounded-2xl bg-white/10 backdrop-blur-xl shadow-xl p-8 space-y-6 border border-white/15">
         {/* TITLE */}
         <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-white">
           {ar ? "تعليمات قبل البدء" : "Before You Begin"}
@@ -93,8 +112,8 @@ export default function InstructionsPage() {
         {/* CTA */}
         <div className="pt-4">
           <Button
-            className="w-full py-4 text-base sm:text-lg font-bold rounded-xl bg-black text-white hover:bg-slate-900 transition"
-            onClick={() => router.push(`/${slug}/quiz?lang=${langParam || "en"}`)}
+            className="w-full py-4 text-base sm:text-lg font-bold rounded-xl bg-white text-slate-900 hover:bg-slate-100 transition"
+            onClick={goToQuiz}
           >
             {ar
               ? isScan
@@ -104,6 +123,12 @@ export default function InstructionsPage() {
               ? "Start Scan"
               : "Start Assessment"}
           </Button>
+
+          {/* Helpful debug hint (invisible to users, but safe) */}
+          <div className="mt-3 text-center text-xs text-white/60">
+            {ar ? "معرّف التقييم:" : "Assessment ID:"}{" "}
+            <span style={{ direction: "ltr", display: "inline-block" }}>{assessmentId}</span>
+          </div>
         </div>
       </div>
     </div>
