@@ -102,97 +102,174 @@ function normalizeCompetencyId(id: string): string {
 export async function getAssessmentConfig(routeSlug: string) {
   const supabase = getSupabaseAdmin();
 
-  // ✅ Route slug (URL) → DB assessment id (engine)
-  const ROUTE_TO_ASSESSMENT_ID: Record<string, string> = {
-    scan: "outdoor_sales_scan",
-    mri: "outdoor_sales_mri",
-  };
-
-  const assessmentId = ROUTE_TO_ASSESSMENT_ID[String(routeSlug || "").toLowerCase()] ?? routeSlug;
+  const slug = String(routeSlug || "").trim().toLowerCase();
+  if (!slug) return null;
 
   const { data, error } = await supabase
     .from("assessments")
     .select("*")
-    .eq("id", assessmentId)
+    .eq("slug", slug)
     .single();
 
   if (error || !data) {
-    console.error("Assessment lookup failed:", { routeSlug, assessmentId, error });
+    console.error("Assessment lookup failed (by slug):", { slug, error });
     return null;
   }
 
   return data;
 }
 
+
 export async function submitQuiz(
   finalAnswers: AnswerPayload[],
-  userId: string,
+  attemptId: string,
   language: Language,
   assessmentId: string
 ): Promise<{ attemptId: string }> {
-  if (!userId || !assessmentId) throw new Error("Missing required IDs");
+  if (!attemptId || !assessmentId) {
+    throw new Error("Missing required IDs (attemptId or assessmentId)");
+  }
+
   const supabase = getSupabaseAdmin();
 
-  // ✅ normalize answers BEFORE saving
-  const normalizedAnswers: AnswerPayload[] = (Array.isArray(finalAnswers) ? finalAnswers : []).map((a) => ({
-    questionId: String(a?.questionId || ""),
-    competencyId: normalizeCompetencyId(String(a?.competencyId || "")),
-    selectedScore: Number(a?.selectedScore) || 0,
+  // --------------------------------------------------
+  // 0) Ensure attempt exists + validate ownership
+  // --------------------------------------------------
+  const { data: existing, error: attemptErr } = await supabase
+    .from("quiz_attempts")
+    .select("id, assessment_id, language")
+    .eq("id", attemptId)
+    .maybeSingle();
+
+  if (attemptErr) throw attemptErr;
+  if (!existing) {
+    throw new Error("Attempt not found. Missing or invalid attemptId.");
+  }
+
+  // Hard safety: prevent mixing assessments
+  if (existing.assessment_id && existing.assessment_id !== assessmentId) {
+    throw new Error("Assessment mismatch for this attempt.");
+  }
+
+  // Normalize assessment_id + language ONLY if missing
+  if (!existing.assessment_id || !existing.language) {
+    const { error: normalizeErr } = await supabase
+      .from("quiz_attempts")
+      .update({
+        assessment_id: existing.assessment_id || assessmentId,
+        language: existing.language || language,
+      })
+      .eq("id", attemptId);
+
+    if (normalizeErr) throw normalizeErr;
+  }
+
+  // --------------------------------------------------
+  // 1) Normalize answers (no -1 values)
+  // --------------------------------------------------
+  const normalized = (finalAnswers || []).map((a) => ({
+    questionId: a.questionId,
+    competencyId: a.competencyId,
+    selectedScore: a.selectedScore === -1 ? 0 : Number(a.selectedScore || 0),
   }));
 
-  const totalQuestions = normalizedAnswers.length;
-  const totalScore = normalizedAnswers.reduce((s, a) => s + (Number(a.selectedScore) || 0), 0);
-  const overallMax = totalQuestions * 5;
-  const totalPercentage = overallMax > 0 ? clampPct((totalScore / overallMax) * 100) : 0;
-
-  // Aggregate by competency
-  const byComp = new Map<string, { score: number; count: number }>();
-  for (const a of normalizedAnswers) {
-    const cid = normalizeCompetencyId(a.competencyId);
-    if (!cid) continue;
-
-    const prev = byComp.get(cid) || { score: 0, count: 0 };
-    byComp.set(cid, {
-      score: prev.score + (Number(a.selectedScore) || 0),
-      count: prev.count + 1,
-    });
+  if (!normalized.length) {
+    throw new Error("No answers to submit");
   }
 
-  const competency_results: CompetencyResult[] = Array.from(byComp.entries()).map(([cid, row]) => {
-    const maxScore = row.count * 5;
-    const pct = maxScore > 0 ? clampPct((row.score / maxScore) * 100) : 0;
+  // --------------------------------------------------
+  // 2) Compute per-competency percentages
+  // --------------------------------------------------
+  const questionIds = Array.from(
+    new Set(normalized.map((a) => a.questionId).filter(Boolean))
+  );
 
-    const meta = COMPETENCY_REGISTRY[cid] || { en: cid, ar: cid };
+  const { data: qrows, error: qerr } = await supabase
+    .from("questions")
+    .select("id, competency_id, options_scores")
+    .in("id", questionIds);
 
-    return {
-      competencyId: cid,
-      name: language === "ar" ? meta.ar : meta.en,
-      score: row.score,
-      maxScore,
-      percentage: pct,
-      tier: tierFromPercentage(pct),
+  if (qerr) throw qerr;
+
+  const qMap = new Map<string, any>(
+    (qrows || []).map((q) => [q.id, q])
+  );
+
+  const agg = new Map<
+    string,
+    { earned: number; possible: number; count: number }
+  >();
+
+  for (const a of normalized) {
+    const q = qMap.get(a.questionId);
+    const competencyId = String(
+      a.competencyId || q?.competency_id || ""
+    ).trim();
+
+    if (!competencyId) continue;
+
+    const scoresArr = Array.isArray(q?.options_scores)
+      ? q.options_scores
+      : null;
+
+    const maxScore =
+      scoresArr && scoresArr.length
+        ? Math.max(...scoresArr.map((n: any) => Number(n || 0)))
+        : 5;
+
+    const earned = Number(a.selectedScore || 0);
+
+    const cur = agg.get(competencyId) || {
+      earned: 0,
+      possible: 0,
+      count: 0,
     };
-  });
 
-  const { data, error } = await supabase
-    .from("quiz_attempts")
-    .insert({
-      user_id: userId,
-      assessment_id: assessmentId,
-      language,
-      answers: normalizedAnswers,
-      score: totalScore,
-      total_questions: totalQuestions,
-      total_percentage: totalPercentage,
-      competency_results,
-    })
-    .select("id")
-    .single();
+    cur.earned += earned;
+    cur.possible += maxScore;
+    cur.count += 1;
 
-  if (error || !data?.id) {
-    console.error("Insert failed:", error);
-    throw new Error(error?.message || "Insert failed");
+    agg.set(competencyId, cur);
   }
 
-  return { attemptId: data.id };
+  const competency_results = Array.from(agg.entries()).map(
+    ([competencyId, v]) => ({
+      competencyId,
+      percentage:
+        v.possible > 0
+          ? Math.round((v.earned / v.possible) * 100)
+          : 0,
+    })
+  );
+
+  const totalEarned = Array.from(agg.values()).reduce(
+    (s, v) => s + v.earned,
+    0
+  );
+
+  const totalPossible = Array.from(agg.values()).reduce(
+    (s, v) => s + v.possible,
+    0
+  );
+
+  const total_percentage =
+    totalPossible > 0
+      ? Math.round((totalEarned / totalPossible) * 100)
+      : 0;
+
+  // --------------------------------------------------
+  // 3) Persist results INTO THE SAME attempt row
+  // --------------------------------------------------
+  const { error: updateErr } = await supabase
+    .from("quiz_attempts")
+    .update({
+      answers: normalized,
+      competency_results,
+      total_percentage,
+    })
+    .eq("id", attemptId);
+
+  if (updateErr) throw updateErr;
+
+  return { attemptId };
 }

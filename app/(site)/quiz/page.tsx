@@ -5,10 +5,8 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { Question, AnswerPayload } from "@/types";
 import { useLocale } from "@/contexts/LocaleContext";
-import { getTranslation } from "@/lib/translations";
 import { toast } from "sonner";
 import { submitQuiz, getAssessmentConfig } from "@/lib/actions";
-import { useSession } from "@/contexts/SessionContext";
 import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
 
 const arabicFont = IBM_Plex_Sans_Arabic({
@@ -40,17 +38,28 @@ function safeSlug(slug: any) {
   return s === "mri" ? "mri" : "scan";
 }
 
+function safeLang(x: any) {
+  const v = String(x || "").toLowerCase().trim();
+  return v === "ar" ? "ar" : "en";
+}
+
 export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
+  const { language } = useLocale();
 
   const slugRaw = (params?.slug as string) || "";
   const slug = safeSlug(slugRaw);
 
-  const { language } = useLocale();
-  const { user, isLoading: isSessionLoading } = useSession();
-  const isArabic = language === "ar";
+  const urlLang = useMemo(() => safeLang(searchParams?.get("lang")), [searchParams]);
+  const isArabic = (language || urlLang) === "ar";
+
+  // ✅ REQUIRED: attemptId drives everything now
+  const attemptId = useMemo(() => {
+    const v = String(searchParams?.get("attemptId") || "").trim();
+    return v || null;
+  }, [searchParams]);
 
   // ✅ prevent double-submit (LAST QUESTION bug)
   const finishLockRef = useRef(false);
@@ -73,14 +82,14 @@ export default function QuizPage() {
     Array<{ text: string; score: number; index: number }>
   >([]);
 
-  // 1) Auth guard
-  useEffect(() => {
-    if (isSessionLoading) return;
-    if (!user) {
-      toast.info(getTranslation("loginRequired", language));
-      router.replace(`/${slug || "scan"}/login?lang=${language}`);
-    }
-  }, [user, isSessionLoading, router, language, slug]);
+ // ✅ HARD GUARD — run once only (prevents redirect loops)
+useEffect(() => {
+  if (attemptId === null) {
+    router.replace(`/${slug}/login?lang=${encodeURIComponent(urlLang)}`);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   // ✅ Pull assessmentId from URL if present
   const assessmentIdFromUrl = useMemo(() => {
@@ -88,7 +97,7 @@ export default function QuizPage() {
     return v || "";
   }, [searchParams]);
 
-  // 2) Load assessment config (robust)
+  // 1) Load assessment config (robust)
   useEffect(() => {
     const loadConfig = async () => {
       if (!slug) return;
@@ -116,15 +125,10 @@ export default function QuizPage() {
           "";
 
         const qLimit =
-          Number(
-            conf?.question_limit ??
-              conf?.questionCount ??
-              conf?.questions_count ??
-              conf?.questions_limit
-          ) || defaultQ;
+          Number(conf?.question_limit ?? conf?.questionCount ?? conf?.questions_count ?? conf?.questions_limit) ||
+          defaultQ;
 
-        const tSeconds =
-          Number(conf?.time_limit_seconds ?? conf?.timeLimitSeconds) || defaultT;
+        const tSeconds = Number(conf?.time_limit_seconds ?? conf?.timeLimitSeconds) || defaultT;
 
         if (aId) {
           setAssessmentId(String(aId));
@@ -133,10 +137,8 @@ export default function QuizPage() {
           setTimeRemaining(tSeconds);
           return;
         }
-
-        console.warn("getAssessmentConfig returned without assessmentId:", conf);
-      } catch (e) {
-        console.warn("getAssessmentConfig failed; falling back to slug mapping:", e);
+      } catch {
+        // ignore
       }
 
       // Priority 3: hard fallback mapping
@@ -150,11 +152,11 @@ export default function QuizPage() {
     loadConfig();
   }, [slug, assessmentIdFromUrl]);
 
-  // 3) Fetch questions
+  // 2) Fetch questions
   useEffect(() => {
     const fetchQuestions = async () => {
-      if (!user?.id) return;
       if (!assessmentId) return;
+      if (!attemptId) return;
 
       setLoading(true);
 
@@ -179,11 +181,9 @@ export default function QuizPage() {
 
         data = res2.data || [];
         error = res2.error || null;
-        if (error) console.warn("Questions fetch attempt2 error:", error);
       }
 
       if (!data || data.length === 0) {
-        console.error("No questions returned for assessmentId:", assessmentId);
         toast.error(isArabic ? "لا توجد أسئلة لهذا التقييم" : "No questions found for this assessment");
         setLoading(false);
         return;
@@ -203,18 +203,15 @@ export default function QuizPage() {
       setTimerStarted(true);
       setLoading(false);
 
-      // Important: reset finish lock when quiz is freshly loaded
       finishLockRef.current = false;
       setIsSubmitting(false);
       setIsTransitioning(false);
     };
 
-    if (!isSessionLoading && user?.id && assessmentId) {
-      fetchQuestions();
-    }
-  }, [user?.id, isSessionLoading, assessmentId, questionLimit, isArabic]);
+    fetchQuestions();
+  }, [assessmentId, questionLimit, isArabic, attemptId]);
 
-  // 4) Timer
+  // 3) Timer
   useEffect(() => {
     if (!timerStarted || loading || isSubmitting) return;
     const interval = setInterval(() => {
@@ -223,11 +220,11 @@ export default function QuizPage() {
     return () => clearInterval(interval);
   }, [timerStarted, loading, isSubmitting]);
 
-  // 5) Time up -> finish (submit once)
+  // 4) Time up -> finish (submit once)
   useEffect(() => {
     if (timeRemaining !== 0) return;
     if (!timerStarted || loading) return;
-    if (finishLockRef.current) return; // ✅ prevent double-submit
+    if (finishLockRef.current) return;
     handleFinish();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeRemaining]);
@@ -240,12 +237,12 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  // 6) Shuffle answers per question (keep score)
+  // 5) Shuffle answers per question (keep score)
   useEffect(() => {
     if (!currentQuestion || isTransitioning || isSubmitting) return;
 
     const raw =
-      language === "en"
+      urlLang === "en"
         ? (currentQuestion as any).options_en
         : (currentQuestion as any).options_ar;
 
@@ -261,18 +258,17 @@ export default function QuizPage() {
     }));
 
     setShuffledOptions(shuffleArray(opts));
-  }, [currentQuestionIndex, language, isTransitioning, currentQuestion, isSubmitting]);
+  }, [currentQuestionIndex, urlLang, isTransitioning, currentQuestion, isSubmitting]);
 
-  // 7) Finish -> submitQuiz (SUBMIT ONCE)
+  // 6) Finish -> submitQuiz (attemptId-driven)
   const handleFinish = async () => {
-    if (!user?.id) return;
+    if (!attemptId) return;
 
-    // ✅ hard lock
     if (finishLockRef.current) return;
     finishLockRef.current = true;
 
     if (!assessmentId) {
-      toast.error(isArabic ? "تعذر حفظ المحاولة: معرف التقييم مفقود" : "Cannot submit: missing assessmentId");
+      toast.error(isArabic ? "تعذر الحفظ: معرف التقييم مفقود" : "Cannot submit: missing assessmentId");
       finishLockRef.current = false;
       return;
     }
@@ -286,36 +282,21 @@ export default function QuizPage() {
     }));
 
     try {
-      const res: any = await submitQuiz(finalAnswers, user.id, language, assessmentId);
+      // ✅ NEW: submitQuiz answers INTO the existing attempt
+      await submitQuiz(finalAnswers, attemptId, urlLang, assessmentId);
 
-      const attemptId =
-        (typeof res === "string" ? res : null) ||
-        res?.attemptId ||
-        res?.id ||
-        res?.attempt_id ||
-        res?.data?.id ||
-        res?.data?.attemptId;
-
-      if (!attemptId) {
-        console.error("submitQuiz() returned:", res);
-        throw new Error("Missing required ID (attemptId not returned)");
-      }
-
-      window.location.href = `/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(language)}`;
+      window.location.href = `/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(
+        urlLang
+      )}`;
     } catch (e: any) {
-      console.error("submitQuiz failed:", e);
-      toast.error(
-        (language === "ar" ? "فشل حفظ المحاولة: " : "Failed to save attempt: ") +
-          (e?.message || "Unknown error")
-      );
-      // unlock so they can retry
+      toast.error((isArabic ? "فشل الحفظ: " : "Failed to save: ") + (e?.message || "Unknown error"));
       finishLockRef.current = false;
       setIsSubmitting(false);
       setIsTransitioning(false);
     }
   };
 
-  // 8) Option select
+  // 7) Option select
   const handleOptionSelect = (score: number) => {
     if (isTransitioning || isSubmitting) return;
 
@@ -327,14 +308,12 @@ export default function QuizPage() {
     };
     setSelectedAnswers(copy);
 
-    // Transition to next OR finish
     const isLast = currentQuestionIndex === questions.length - 1;
 
     setIsTransitioning(true);
     setTimeout(() => {
-      if (isLast) {
-        handleFinish();
-      } else {
+      if (isLast) handleFinish();
+      else {
         setCurrentQuestionIndex((i) => i + 1);
         setIsTransitioning(false);
       }
@@ -354,17 +333,14 @@ export default function QuizPage() {
       ? "from-amber-500 to-orange-600"
       : "from-blue-600 to-indigo-700";
 
-  const clamp2 =
-    "[display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden";
-  const clamp3 =
-    "[display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden";
+  const clamp2 = "[display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden";
+  const clamp3 = "[display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden";
 
-  if (loading || isSessionLoading) return null;
+  if (!attemptId) return null;
+  if (loading) return null;
   if (!currentQuestion) return null;
 
-  const questionText = isArabic
-    ? (currentQuestion as any).question_ar
-    : (currentQuestion as any).question_en;
+  const questionText = isArabic ? (currentQuestion as any).question_ar : (currentQuestion as any).question_en;
 
   return (
     <div
@@ -390,18 +366,13 @@ export default function QuizPage() {
           <span className="text-sm font-semibold opacity-90">
             {currentQuestionIndex + 1}/{questions.length}
           </span>
-          <span className="text-xl font-extrabold tracking-wider drop-shadow-sm">
-            {formatTime(timeRemaining)}
-          </span>
+          <span className="text-xl font-extrabold tracking-wider drop-shadow-sm">{formatTime(timeRemaining)}</span>
         </div>
       </div>
 
       {/* PROGRESS */}
       <div className="h-1.5 bg-white/40">
-        <div
-          className="h-full bg-indigo-600 transition-all duration-500 rounded-r-full"
-          style={{ width: `${progress}%` }}
-        />
+        <div className="h-full bg-indigo-600 transition-all duration-500 rounded-r-full" style={{ width: `${progress}%` }} />
       </div>
 
       {/* CONTENT */}
@@ -425,10 +396,7 @@ export default function QuizPage() {
                   hover:bg-white/80 hover:shadow-lg active:scale-[0.98] transition-all duration-200`}
               >
                 <div className={`flex items-start gap-4 ${isArabic ? "text-right" : "text-left"}`}>
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
-                      bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-900 shadow-inner font-bold"
-                  >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-900 shadow-inner font-bold">
                     💡
                   </div>
 
@@ -439,11 +407,6 @@ export default function QuizPage() {
               </button>
             ))}
           </div>
-
-          {/* DEBUG (optional): remove later if you want */}
-          {/* <div className="text-[11px] text-slate-500 text-center">
-            assessmentId: <span className="font-mono">{assessmentId}</span>
-          </div> */}
         </div>
       </div>
     </div>

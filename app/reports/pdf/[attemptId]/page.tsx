@@ -147,18 +147,35 @@ function getSupabaseAdminClient() {
 
 async function fetchReportRow(attemptId: string): Promise<ReportRow | null> {
   const supabase = getSupabaseAdminClient();
-  const { data: row } = await supabase.from("quiz_attempts").select("*").eq("id", attemptId).maybeSingle();
 
-  if (row && row.user_id) {
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", row.user_id).maybeSingle();
+  const { data: row, error } = await supabase
+    .from("quiz_attempts")
+    .select("*")
+    .eq("id", attemptId)
+    .maybeSingle();
+
+  if (error || !row) return null;
+
+  // Optional: hydrate name/company from profiles (if you use profiles)
+  if (row.user_id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name,company")
+      .eq("id", row.user_id)
+      .maybeSingle();
+
     if (profile) {
       row.full_name = row.full_name || profile.full_name;
       row.company = row.company || profile.company;
     }
   }
 
+  // Email: show whatever was stored on the attempt row (NO validation)
+  row.user_email = row.user_email || row.email || null;
+
   return row as ReportRow;
 }
+
 
 function getTranslations(lang: Lang, isMri: boolean) {
   const baseTitle = isMri

@@ -26,7 +26,6 @@ import {
   ShieldAlert,
   Gift,
   FileText,
-  Sparkles,
   Target,
   User,
   Mail,
@@ -49,7 +48,7 @@ import { toast } from "sonner";
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 
-// ✅ Client-side competency label registry (render-time translation)
+// ✅ Local fallback labels (safe default)
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
@@ -58,17 +57,29 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   creating_irresistible_offers: { en: "Creating Irresistible Offers", ar: "إنشاء عروض لا تُقاوَم" },
   mastering_closing: { en: "Mastering Closing", ar: "إتقان الإغلاق" },
   follow_up_discipline: { en: "Follow-Up Discipline", ar: "انضباط المتابعة" },
+  // MRI extras
+  consultative_selling: { en: "Consultative Selling", ar: "المبيعات الاستشارية" },
+  time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
+  product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
+  negotiation_skills: { en: "Negotiation Skills", ar: "مهارات التفاوض" },
+  attitude_motivation_mindset: { en: "Attitude & Motivation", ar: "عقلية التحفيز والموقف" },
+  dealing_with_boss: { en: "Dealing with Boss", ar: "التعامل مع المدير" },
+  handling_difficult_customers: { en: "Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
+  handling_difficult_colleagues: { en: "Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
+
 };
 
 function normalizeCompetencySafe(raw: any) {
   const id = normalizeCompetencyId(String(raw || ""));
-  // ✅ never render destroying_objections
   if (id === "destroying_objections") return "handling_objections";
   return id;
 }
 
-// ✅ Robust menu detection
-function isProbablyMRI(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
+function isProbablyMRI(
+  routeSlug?: string,
+  attemptAssessmentId?: string | null,
+  configType?: string | null
+) {
   const s = String(routeSlug || "").toLowerCase();
   const a = String(attemptAssessmentId || "").toLowerCase();
   const c = String(configType || "").toLowerCase();
@@ -78,7 +89,11 @@ function isProbablyMRI(routeSlug?: string, attemptAssessmentId?: string | null, 
   if (a === MRI_ASSESSMENT_ID) return true;
   return false;
 }
-function isProbablyScan(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
+function isProbablyScan(
+  routeSlug?: string,
+  attemptAssessmentId?: string | null,
+  configType?: string | null
+) {
   const s = String(routeSlug || "").toLowerCase();
   const a = String(attemptAssessmentId || "").toLowerCase();
   const c = String(configType || "").toLowerCase();
@@ -113,7 +128,6 @@ function tierBadgeColor(tier: Tier) {
   }
 }
 
-// ✅ SWOT-colored bar backgrounds
 function tierBarColor(tier: Tier) {
   switch (tier) {
     case "Strength":
@@ -139,9 +153,6 @@ function tierShortLabel(tier: Tier, ar: boolean) {
     : "ضعف";
 }
 
-/* -----------------------------
-   ✅ Identity extraction
------------------------------- */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function isEmailLike(s: string) {
   return EMAIL_RE.test(String(s || "").trim());
@@ -155,7 +166,9 @@ function pickFirstNonEmpty(...vals: any[]) {
 }
 function dig(obj: any, path: string) {
   try {
-    return path.split(".").reduce((acc: any, k: string) => (acc ? acc[k] : undefined), obj);
+    return path
+      .split(".")
+      .reduce((acc: any, k: string) => (acc ? acc[k] : undefined), obj);
   } catch {
     return undefined;
   }
@@ -272,31 +285,35 @@ function ParticipantIdentityCard({
   attemptId: string;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl" data-rtl={ar ? "true" : "false"}>
-      {/* Premium Background Accents */}
+    <section
+      className="relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl"
+      data-rtl={ar ? "true" : "false"}
+    >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-gradient-to-br from-blue-200 to-indigo-300 blur-3xl opacity-40" />
         <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-gradient-to-br from-purple-200 to-blue-300 blur-3xl opacity-30" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 blur-3xl opacity-20" />
       </div>
 
-      <div className="relative p-8">
-        <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="relative p-5 sm:p-6 md:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5 md:mb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Award className="text-blue-600" size={22} />
-              <div className="text-xl font-black text-slate-900">
+              <Award className="text-blue-600" size={20} />
+              <div className="text-lg md:text-xl font-black text-slate-900">
                 {ar ? "بطاقة هوية المشارك" : "Participant Identity Card"}
               </div>
             </div>
-            <div className="text-sm text-slate-600">
-              {ar ? "هوية احترافية عالمية المستوى لمشاركة النتائج بثقة تامة." : "World-class professional identity for confident results sharing."}
+            <div className="text-xs md:text-sm text-slate-600">
+              {ar
+                ? "هوية احترافية عالمية المستوى لمشاركة النتائج بثقة تامة."
+                : "World-class professional identity for confident results sharing."}
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-slate-300 px-4 py-2.5 bg-white shadow-sm">
-            <Fingerprint size={18} className="text-slate-600" />
-            <span className="text-sm font-black text-slate-700">
+          <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-slate-300 px-3 md:px-4 py-2 md:py-2.5 bg-white shadow-sm self-start sm:self-auto">
+            <Fingerprint size={16} className="text-slate-600" />
+            <span className="text-xs md:text-sm font-black text-slate-700">
               ID:{" "}
               <span className="font-mono text-blue-600" style={{ direction: "ltr" }}>
                 {shortAttemptId(attemptId) || "—"}
@@ -305,55 +322,55 @@ function ParticipantIdentityCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Full Name - LARGER FONTS */}
-          <div className="group relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg transition-all duration-300">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+          <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-6 shadow-sm hover:shadow-lg transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative flex items-start gap-4">
-              <div className="shrink-0 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                <User size={24} />
+            <div className="relative flex items-start gap-3 md:gap-4">
+              <div className="shrink-0 inline-flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                <User size={20} className="md:w-6 md:h-6" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1.5 md:mb-2">
                   {ar ? "الاسم الكامل" : "Full Name"}
                 </div>
-                <div className="text-lg font-bold text-slate-900 break-words leading-tight">
+                <div className="text-base md:text-lg font-bold text-slate-900 break-words leading-tight">
                   {fullName || "—"}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Email - LARGER FONTS */}
-          <div className="group relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-6 shadow-sm hover:shadow-lg transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative flex items-start gap-4">
-              <div className="shrink-0 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md">
-                <Mail size={24} />
+            <div className="relative flex items-start gap-3 md:gap-4">
+              <div className="shrink-0 inline-flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md">
+                <Mail size={20} className="md:w-6 md:h-6" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1.5 md:mb-2">
                   {ar ? "البريد الإلكتروني" : "Email"}
                 </div>
-                <div className="text-lg font-bold text-slate-900 break-words leading-tight" style={{ direction: "ltr", textAlign: "left" }}>
+                <div
+                  className="text-base md:text-lg font-bold text-slate-900 break-words leading-tight"
+                  style={{ direction: "ltr", textAlign: "left" }}
+                >
                   {email || "—"}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Company - LARGER FONTS */}
-          <div className="group relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-6 shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-6 shadow-sm hover:shadow-lg transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative flex items-start gap-4">
-              <div className="shrink-0 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
-                <Building2 size={24} />
+            <div className="relative flex items-start gap-3 md:gap-4">
+              <div className="shrink-0 inline-flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
+                <Building2 size={20} className="md:w-6 md:h-6" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">
+                <div className="text-xs font-black uppercase tracking-widest text-slate-500 mb-1.5 md:mb-2">
                   {ar ? "الشركة" : "Company"}
                 </div>
-                <div className="text-lg font-bold text-slate-900 break-words leading-tight">
+                <div className="text-base md:text-lg font-bold text-slate-900 break-words leading-tight">
                   {company || "—"}
                 </div>
               </div>
@@ -430,10 +447,22 @@ function ResultsContent() {
   const isMri = isProbablyMRI(routeSlug, attempt?.assessment_id, config?.type);
   const isScan = isProbablyScan(routeSlug, attempt?.assessment_id, config?.type) && !isMri;
 
+  // ✅ DB-driven competency labels (menu-driven), fallback to local map
+  const labelsFromConfig = useMemo(() => {
+    const out: Record<string, { en: string; ar: string }> = {};
+    const arr = (config?.config?.competencies || []) as any[];
+    for (const c of arr) {
+      const id = normalizeCompetencySafe(c?.id);
+      if (!id) continue;
+      out[id] = { en: String(c?.en || ""), ar: String(c?.ar || "") };
+    }
+    return out;
+  }, [config]);
+
   const getCompetencyLabel = (res: any) => {
     const id = normalizeCompetencySafe(res?.competencyId);
-    const meta = id ? COMPETENCY_LABELS[id] : null;
-    if (meta) return ar ? meta.ar : meta.en;
+    const meta = (id && labelsFromConfig[id]) || (id && COMPETENCY_LABELS[id]) || null;
+    if (meta) return ar ? (meta.ar || meta.en) : (meta.en || meta.ar);
     return String(res?.name || id || "");
   };
 
@@ -454,7 +483,7 @@ function ResultsContent() {
       fullMark: 100,
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [competencyRows, ar]);
+  }, [competencyRows, ar, labelsFromConfig]);
 
   const swotData = useMemo(() => {
     return {
@@ -469,6 +498,27 @@ function ResultsContent() {
   const overallTier: Tier = tierFromPercentage(overallPct);
 
   const identity = useMemo(() => extractIdentity(attempt), [attempt]);
+
+  // ✅ Menu-driven titles (use DB, fallback to current strings)
+  const titleFromDb =
+    (ar
+      ? (config?.title_ar || config?.name_ar || "")
+      : (config?.title_en || config?.name_en || "")) || "";
+
+  const subtitleFromDb =
+    (ar
+      ? String(config?.config?.subtitle_ar || "")
+      : String(config?.config?.subtitle_en || "")) || "";
+
+  const heroTitle =
+    titleFromDb ||
+    (ar ? "نتائج فحص المبيعات" : "Sales Competency Results");
+
+  const heroSubtitle =
+    subtitleFromDb ||
+    (ar
+      ? "تحليل شامل للكفاءات مع تحليل SWOT وخطة تنفيذ فورية."
+      : "Comprehensive analysis with strategic SWOT and immediate action plan.");
 
   const handleDownload = () => {
     if (!attemptId) return;
@@ -507,7 +557,7 @@ function ResultsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-4">
         <div className="text-center space-y-4">
           <Loader2 className="animate-spin text-blue-600 mx-auto" size={48} />
           <div className="text-sm font-bold text-slate-600">
@@ -531,8 +581,10 @@ function ResultsContent() {
   const showUpsell = isScan && !!config?.upsell_url;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" data-rtl={ar ? "true" : "false"}>
-      {/* ✅ HARD FORCE RTL/LTR */}
+    <div
+      className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+      data-rtl={ar ? "true" : "false"}
+    >
       <style jsx global>{`
         [data-rtl="true"] * { direction: rtl !important; }
         [data-rtl="true"] .force-ltr { direction: ltr !important; text-align: left !important; }
@@ -543,89 +595,76 @@ function ResultsContent() {
 
       <Header />
 
-      <main className="flex-1 w-full max-w-6xl mx-auto p-6 space-y-10">
-        {/* 🎨 PREMIUM HERO SECTION */}
-        <div className="relative overflow-hidden rounded-3xl shadow-2xl border-2 border-slate-200">
-          {/* Gradient Background */}
+      <main className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
+        {/* HERO */}
+        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-slate-200">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900" />
-          
-          {/* Animated Accents */}
+
           <div className="absolute inset-0 overflow-hidden opacity-30">
             <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-blue-400 blur-3xl animate-pulse" />
             <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-indigo-400 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
           </div>
 
-          {/* Content */}
-          <div className="relative p-10 md:p-14">
-            <div className="flex flex-col lg:flex-row items-center gap-12">
-              {/* Left Content */}
-              <div className="flex-1 space-y-6 text-center lg:text-start">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-sm font-bold backdrop-blur-sm">
-                  <Check size={18} className="text-emerald-300" />
+          <div className="relative p-6 sm:p-8 md:p-10 lg:p-14">
+            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+              <div className="flex-1 space-y-4 sm:space-y-6 text-center lg:text-start w-full">
+                <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs sm:text-sm font-bold backdrop-blur-sm">
+                  <Check size={16} className="sm:w-5 sm:h-5" />
                   {ar ? "اكتمل التقييم بنجاح" : "Assessment Completed"}
                 </div>
 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight rtl-text">
-                  {ar ? "نتائج فحص المبيعات" : "Sales Competency Results"}
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight rtl-text">
+                  {heroTitle}
                 </h1>
-                
-                <p className="text-lg md:text-xl text-blue-100 leading-relaxed rtl-text max-w-2xl">
-                  {ar 
-                    ? "تحليل شامل لـ 7 كفاءات أساسية مع تحليل SWOT استراتيجي وخطة تنفيذ فورية."
-                    : "Comprehensive analysis of 7 core competencies with strategic SWOT and immediate action plan."}
+
+                <p className="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed rtl-text">
+                  {heroSubtitle}
                 </p>
 
-                {/* Action Buttons */}
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
+                <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
                   <Button
                     onClick={handleDownload}
                     disabled={downloading}
-                    className="bg-white hover:bg-slate-100 text-slate-900 font-black px-8 py-7 rounded-2xl flex gap-3 shadow-xl transition-all active:scale-95 text-base"
+                    className="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-900 font-black px-6 sm:px-8 py-6 sm:py-7 rounded-2xl flex gap-2 sm:gap-3 shadow-xl transition-all active:scale-95 text-sm sm:text-base min-h-[48px]"
                   >
-                    {downloading ? <Loader2 className="animate-spin" size={22} /> : <Download size={22} />}
+                    {downloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
                     {ar ? "تحميل PDF" : "Download PDF"}
                   </Button>
 
                   <Button
                     variant="outline"
                     onClick={handleShare}
-                    className="border-2 border-white/30 bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-7 rounded-2xl flex gap-3 backdrop-blur-sm transition-all active:scale-95 text-base"
+                    className="w-full sm:w-auto border-2 border-white/30 bg-white/10 hover:bg-white/20 text-white font-bold px-6 sm:px-8 py-6 sm:py-7 rounded-2xl flex gap-2 sm:gap-3 backdrop-blur-sm transition-all active:scale-95 text-sm sm:text-base min-h-[48px]"
                   >
-                    {copied ? <Check size={22} className="text-emerald-300" /> : <Share2 size={22} />}
+                    {copied ? <Check size={20} className="text-emerald-300" /> : <Share2 size={20} />}
                     {ar ? "مشاركة" : "Share"}
                   </Button>
 
                   <Button
                     onClick={goToFullReport}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black px-8 py-7 rounded-2xl flex gap-3 shadow-xl transition-all active:scale-95 text-base"
+                    className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black px-6 sm:px-8 py-6 sm:py-7 rounded-2xl flex gap-2 sm:gap-3 shadow-xl transition-all active:scale-95 text-sm sm:text-base min-h-[48px]"
                   >
-                    <FileText size={22} />
+                    <FileText size={20} />
                     {ar ? "التقرير الكامل" : "Full Report"}
                   </Button>
                 </div>
               </div>
 
-              {/* Right - Score Circle */}
-              <div className="w-full max-w-[360px] aspect-square relative flex items-center justify-center">
-                {/* Outer Ring */}
-                <div className="absolute inset-0 rounded-full border-8 border-white/20 backdrop-blur-md" />
-                
-                {/* Animated Glow */}
-                <div className="absolute inset-4 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 blur-2xl opacity-50 animate-pulse" />
-                
-                {/* Inner Content */}
-                <div className="relative z-10 text-center space-y-4">
-                  <div className="text-8xl font-black text-white drop-shadow-2xl">
+              <div className="w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[360px] aspect-square relative flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-white/20 backdrop-blur-md" />
+                <div className="absolute inset-2 sm:inset-4 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 blur-2xl opacity-50 animate-pulse" />
+
+                <div className="relative z-10 text-center space-y-2 sm:space-y-4">
+                  <div className="text-6xl sm:text-7xl lg:text-8xl font-black text-white drop-shadow-2xl">
                     {overallPct}%
                   </div>
-                  <div className="text-sm font-black text-blue-200 uppercase tracking-widest">
+                  <div className="text-xs sm:text-sm font-black text-blue-200 uppercase tracking-widest px-2">
                     {ar ? "النتيجة الإجمالية" : "Overall Score"}
                   </div>
-                  
-                  {/* Tier Badge */}
-                  <div className="flex items-center justify-center pt-2">
-                    <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black shadow-lg ${tierBadgeColor(overallTier)}`}>
-                      <Target size={16} />
+
+                  <div className="flex items-center justify-center pt-1 sm:pt-2">
+                    <span className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-black shadow-lg ${tierBadgeColor(overallTier)}`}>
+                      <Target size={14} className="sm:w-4 sm:h-4" />
                       {ar ? tierShortLabel(overallTier, ar) : overallTier}
                     </span>
                   </div>
@@ -635,7 +674,6 @@ function ResultsContent() {
           </div>
         </div>
 
-        {/* ✅ PARTICIPANT IDENTITY CARD */}
         <ParticipantIdentityCard
           ar={ar}
           fullName={identity.fullName}
@@ -644,133 +682,145 @@ function ResultsContent() {
           attemptId={attemptId}
         />
 
-        {/* RADAR + BREAKDOWN */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Radar Chart - FIX OVERLAPPING LABELS */}
-          <div className="lg:col-span-2 bg-white rounded-3xl border-2 border-slate-200 shadow-xl p-8">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-                <Zap size={24} />
-              </div>
-              <h3 className="text-2xl font-black text-slate-900 rtl-text">
-                {ar ? "مخطط الكفاءات" : "Competency Profile"}
-              </h3>
-            </div>
+{/* RADAR + BREAKDOWN */}
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+  {/* Radar */}
+  <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8">
+    <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+      <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+        <Zap size={20} className="sm:w-6 sm:h-6" />
+      </div>
+      <h3 className="text-xl sm:text-2xl font-black text-slate-900 rtl-text">
+        {ar ? "مخطط الكفاءات" : "Competency Profile"}
+      </h3>
+    </div>
 
-            <div className="h-[420px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
-                  <PolarGrid stroke="#cbd5e1" strokeWidth={2} />
-                  <PolarAngleAxis
-                    dataKey="subject"
-                    tick={{ 
-                      fill: "#475569", 
-                      fontSize: 11, 
-                      fontWeight: 700,
-                    }}
-                    tickLine={false}
-                  />
-                  <Radar
-                    name="Score"
-                    dataKey="A"
-                    stroke="#3b82f6"
-                    strokeWidth={3}
-                    fill="#3b82f6"
-                    fillOpacity={0.6}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
+    <div className="h-[380px] sm:h-[460px] md:h-[540px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart
+          cx="50%"
+          cy="50%"
+          outerRadius="65%"
+          data={chartData}
+          margin={{ top: 30, right: 30, bottom: 30, left: 30 }}
+        >
+          <PolarGrid stroke="#cbd5e1" strokeWidth={2} />
+
+          <PolarAngleAxis
+            dataKey="subject"
+            tickLine={false}
+            tick={{
+              fill: "#475569",
+              fontSize: 10,
+              fontWeight: 800,
+            }}
+            dy={8}
+          />
+
+          <Radar
+            name="Score"
+            dataKey="A"
+            stroke="#3b82f6"
+            strokeWidth={3}
+            fill="#3b82f6"
+            fillOpacity={0.6}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+
+  {/* Breakdown */}
+  <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
+    <div className="flex items-center gap-2 sm:gap-3">
+      <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg">
+        <Target size={20} className="sm:w-6 sm:h-6" />
+      </div>
+      <h3 className="text-lg sm:text-xl font-black text-slate-900 rtl-text">
+        {ar ? "التفصيل" : "Breakdown"}
+      </h3>
+    </div>
+
+    <div className="space-y-4 sm:space-y-5">
+      {competencyRows.map((res: any) => {
+        const tier = res.derivedTier;
+        return (
+          <div key={String(res.competencyId)} className="space-y-2">
+            <div className="flex justify-between items-center gap-2">
+              <span className="font-bold text-slate-800 text-xs sm:text-sm rtl-text leading-tight">
+                {getCompetencyLabel(res)}
+              </span>
+              <span
+                className={`shrink-0 text-xs font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md force-ltr ${tierBadgeColor(
+                  tier
+                )}`}
+              >
+                {safePct(res.percentage)}%
+              </span>
+            </div>
+            <div className="h-2 sm:h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+              <div
+                className={`h-full bg-gradient-to-r transition-all duration-1000 rounded-full ${tierBarColor(
+                  tier
+                )}`}
+                style={{ width: `${safePct(res.percentage)}%` }}
+              />
             </div>
           </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
 
-          {/* Competency Breakdown - SWOT COLORED BARS */}
-          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-xl p-8 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg">
-                <Target size={24} />
-              </div>
-              <h3 className="text-xl font-black text-slate-900 rtl-text">
-                {ar ? "التفصيل" : "Breakdown"}
-              </h3>
-            </div>
 
-            <div className="space-y-5">
-              {competencyRows.map((res: any) => {
-                const tier = res.derivedTier;
-                return (
-                  <div key={String(res.competencyId)} className="space-y-2">
-                    <div className="flex justify-between items-center gap-2">
-                      <span className="font-bold text-slate-800 text-sm rtl-text leading-tight">
-                        {getCompetencyLabel(res)}
-                      </span>
-                      <span className={`shrink-0 text-xs font-black px-3 py-1.5 rounded-xl shadow-md force-ltr ${tierBadgeColor(tier)}`}>
-                        {safePct(res.percentage)}%
-                      </span>
-                    </div>
-                    <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                      <div
-                        className={`h-full bg-gradient-to-r transition-all duration-1000 rounded-full ${tierBarColor(tier)}`}
-                        style={{ width: `${safePct(res.percentage)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+        {/* SWOT */}
+        <div className="space-y-5 sm:space-y-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-lg">
+              <Award size={24} className="sm:w-7 sm:h-7" />
             </div>
-          </div>
-        </div>
-
-        {/* 🎨 BOLD SWOT CARDS */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-lg">
-              <Award size={28} />
-            </div>
-            <h3 className="text-3xl font-black text-slate-900 rtl-text">
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
               {ar ? "تحليل SWOT الاستراتيجي" : "Strategic SWOT Analysis"}
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* STRENGTH - BOLD GREEN */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
             <BoldSwotCard
               ar={ar}
               titleAr="نقاط القوة"
               titleEn="Strengths"
-              icon={<TrendingUp size={28} />}
+              icon={<TrendingUp size={24} className="sm:w-7 sm:h-7" />}
               bgClass="bg-gradient-to-br from-emerald-500 to-green-600"
               items={swotData.strengths}
               getLabel={getCompetencyLabel}
             />
-            
-            {/* OPPORTUNITY - BOLD BLUE */}
+
             <BoldSwotCard
               ar={ar}
               titleAr="الفرص"
               titleEn="Opportunities"
-              icon={<Lightbulb size={28} />}
+              icon={<Lightbulb size={24} className="sm:w-7 sm:h-7" />}
               bgClass="bg-gradient-to-br from-blue-500 to-cyan-600"
               items={swotData.opportunities}
               getLabel={getCompetencyLabel}
             />
-            
-            {/* WEAKNESS - BOLD RED */}
+
             <BoldSwotCard
               ar={ar}
               titleAr="نقاط الضعف"
               titleEn="Weaknesses"
-              icon={<ShieldAlert size={28} />}
+              icon={<ShieldAlert size={24} className="sm:w-7 sm:h-7" />}
               bgClass="bg-gradient-to-br from-rose-500 to-red-600"
               items={swotData.weaknesses}
               getLabel={getCompetencyLabel}
             />
-            
-            {/* THREAT - BOLD YELLOW */}
+
             <BoldSwotCard
               ar={ar}
               titleAr="التهديدات"
               titleEn="Threats"
-              icon={<AlertTriangle size={28} />}
+              icon={<AlertTriangle size={24} className="sm:w-7 sm:h-7" />}
               bgClass="bg-gradient-to-br from-amber-400 to-orange-500"
               items={swotData.threats}
               getLabel={getCompetencyLabel}
@@ -780,17 +830,16 @@ function ResultsContent() {
 
         {/* EXECUTION PLAN */}
         {isScan && (
-          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-xl p-10 space-y-10">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
-                <Clock size={28} />
+          <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-6 sm:p-8 md:p-10 space-y-8 sm:space-y-10">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
+                <Clock size={24} className="sm:w-7 sm:h-7" />
               </div>
-              <h3 className="text-3xl font-black text-slate-900 rtl-text">
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
                 {ar ? "خطة التنفيذ السريعة" : "Fast Execution Plan"}
               </h3>
             </div>
 
-            {/* ✅ OVERALL SCORE BLOCK (8th card) */}
             <ExecutionCard
               ar={ar}
               titleAr="النتيجة الإجمالية"
@@ -799,10 +848,9 @@ function ResultsContent() {
               descEn="Your overall pattern — what prospects actually experience."
               tier={overallTier}
               recommendations={getRecommendations("overall_score", overallTier, language as Language)}
-              icon={<Target size={24} />}
+              icon={<Target size={20} className="sm:w-6 sm:h-6" />}
             />
 
-            {/* Competency Cards */}
             {competencyRows.map((res: any) => {
               const id = String(res.competencyId);
               const tier: Tier = res.derivedTier;
@@ -823,19 +871,18 @@ function ResultsContent() {
           </div>
         )}
 
-        {/* MRI Bonuses */}
         {isMri && (
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-2xl p-10 text-white">
-            <div className="flex items-center gap-3 mb-8">
-              <Gift className="text-white" size={32} />
-              <h3 className="text-3xl font-black rtl-text">
+          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl md:rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 text-white">
+            <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+              <Gift className="text-white" size={28} />
+              <h3 className="text-2xl sm:text-3xl font-black rtl-text">
                 {ar ? "البونصات الحصرية" : "Exclusive Bonuses"}
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-6 hover:bg-white/20 transition-all">
-                <div className="font-black text-xl mb-3 rtl-text">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
+              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-5 sm:p-6 hover:bg-white/20 transition-all">
+                <div className="font-black text-lg sm:text-xl mb-2 sm:mb-3 rtl-text">
                   {ar ? "خطة 90 يوم" : "90-Day Plan"}
                 </div>
                 <div className="text-sm text-white/90 leading-relaxed rtl-text">
@@ -843,15 +890,19 @@ function ResultsContent() {
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-6 hover:bg-white/20 transition-all">
-                <div className="font-black text-xl mb-3 rtl-text">{ar ? "5 بونصات" : "5 Bonuses"}</div>
+              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-5 sm:p-6 hover:bg-white/20 transition-all">
+                <div className="font-black text-lg sm:text-xl mb-2 sm:mb-3 rtl-text">
+                  {ar ? "5 بونصات" : "5 Bonuses"}
+                </div>
                 <div className="text-sm text-white/90 leading-relaxed rtl-text">
                   {ar ? "أدوات قابلة للتطبيق الفوري." : "Tools ready for immediate application."}
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-6 hover:bg-white/20 transition-all">
-                <div className="font-black text-xl mb-3 rtl-text">{ar ? "دورة 3 أيام" : "3-Day Course"}</div>
+              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-5 sm:p-6 hover:bg-white/20 transition-all">
+                <div className="font-black text-lg sm:text-xl mb-2 sm:mb-3 rtl-text">
+                  {ar ? "دورة 3 أيام" : "3-Day Course"}
+                </div>
                 <div className="text-sm text-white/90 leading-relaxed rtl-text">
                   {ar ? "مقعد مجاني في التدريب المتقدم." : "Free seat in advanced training."}
                 </div>
@@ -860,27 +911,28 @@ function ResultsContent() {
           </div>
         )}
 
-        {/* Scan Upsell */}
         {showUpsell && (
-          <div className="relative overflow-hidden bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-3xl shadow-2xl">
+          <div className="relative overflow-hidden bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-2xl md:rounded-3xl shadow-2xl">
             <div className="absolute inset-0 opacity-20">
               <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-white blur-3xl" />
               <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-white blur-3xl" />
             </div>
 
-            <div className="relative p-12 text-center text-white space-y-6">
-              <div className="inline-block p-4 bg-white/20 backdrop-blur-md rounded-3xl text-5xl mb-2">🚀</div>
-              <h2 className="text-4xl font-black rtl-text">
+            <div className="relative p-8 sm:p-10 md:p-12 text-center text-white space-y-5 sm:space-y-6">
+              <div className="inline-block p-3 sm:p-4 bg-white/20 backdrop-blur-md rounded-3xl text-4xl sm:text-5xl mb-2">
+                🚀
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black rtl-text">
                 {ar ? "هل أنت مستعد للتحول الكامل؟" : "Ready for Complete Transformation?"}
               </h2>
-              <p className="text-xl text-white/95 leading-relaxed max-w-2xl mx-auto rtl-text">
+              <p className="text-base sm:text-lg md:text-xl text-white/95 leading-relaxed max-w-2xl mx-auto rtl-text px-4">
                 {ar
                   ? "تقريرك المجاني كشف الأعراض. الآن حان وقت الحل الكامل."
                   : "Your free report revealed the symptoms. Now it's time for the complete solution."}
               </p>
               <Button
                 asChild
-                className="bg-white text-orange-600 hover:bg-slate-50 font-black px-12 py-8 text-xl rounded-2xl shadow-2xl transition-all hover:scale-105 active:scale-95"
+                className="w-full sm:w-auto bg-white text-orange-600 hover:bg-slate-50 font-black px-8 sm:px-12 py-6 sm:py-8 text-lg sm:text-xl rounded-2xl shadow-2xl transition-all hover:scale-105 active:scale-95 min-h-[56px]"
               >
                 <a href={config.upsell_url} target="_blank" rel="noreferrer">
                   {ar ? "ارتقِ الآن" : "Upgrade Now"}
@@ -894,7 +946,6 @@ function ResultsContent() {
   );
 }
 
-// 🎨 BOLD SWOT CARD COMPONENT
 function BoldSwotCard({
   ar,
   titleAr,
@@ -913,35 +964,33 @@ function BoldSwotCard({
   getLabel: (x: any) => string;
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-3xl shadow-2xl border-2 border-white/20 ${bgClass} p-8`}>
-      {/* Subtle Pattern Overlay */}
+    <div className={`relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-white/20 ${bgClass} p-6 sm:p-8`}>
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-white blur-3xl" />
         <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-white blur-3xl" />
       </div>
 
-      <div className="relative space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="text-white drop-shadow-lg">
-            {icon}
-          </div>
-          <h4 className="text-2xl font-black text-white drop-shadow-md rtl-text">
+      <div className="relative space-y-5 sm:space-y-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="text-white drop-shadow-lg">{icon}</div>
+          <h4 className="text-xl sm:text-2xl font-black text-white drop-shadow-md rtl-text">
             {ar ? titleAr : titleEn}
           </h4>
         </div>
 
-        <ul className="space-y-3 text-white">
+        <ul className="space-y-2.5 sm:space-y-3 text-white">
           {items?.length ? (
             items.map((s: any) => (
-              <li key={String(s.competencyId || s.name)} className="flex items-start gap-3 text-base font-bold rtl-text">
-                <div className="shrink-0 mt-1.5 w-2 h-2 rounded-full bg-white shadow-md" />
-                <span className="flex-1 leading-relaxed">
-                  {getLabel(s)}
-                </span>
+              <li
+                key={String(s.competencyId || s.name)}
+                className="flex items-start gap-2.5 sm:gap-3 text-sm sm:text-base font-bold rtl-text"
+              >
+                <div className="shrink-0 mt-1.5 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white shadow-md" />
+                <span className="flex-1 leading-relaxed">{getLabel(s)}</span>
               </li>
             ))
           ) : (
-            <li className="text-base italic opacity-80 rtl-text">
+            <li className="text-sm sm:text-base italic opacity-80 rtl-text">
               {ar ? "لا توجد نتائج" : "No results"}
             </li>
           )}
@@ -951,7 +1000,6 @@ function BoldSwotCard({
   );
 }
 
-// EXECUTION CARD COMPONENT
 function ExecutionCard({
   ar,
   titleAr,
@@ -972,41 +1020,44 @@ function ExecutionCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-8 shadow-lg hover:shadow-xl transition-shadow">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+    <div className="rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 sm:p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5 sm:mb-6">
         <div className="space-y-2 flex-1">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {icon && <div className="text-slate-700">{icon}</div>}
-            <h4 className="font-black text-slate-900 text-xl rtl-text">
+            <h4 className="font-black text-slate-900 text-lg sm:text-xl rtl-text">
               {ar ? titleAr : titleEn}
             </h4>
           </div>
           {(descAr || descEn) && (
-            <p className="text-sm text-slate-600 rtl-text leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 rtl-text leading-relaxed">
               {ar ? descAr : descEn}
             </p>
           )}
         </div>
 
-        <span className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black shadow-md ${tierBadgeColor(tier)}`}>
-          <Target size={14} />
+        <span
+          className={`shrink-0 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-black shadow-md ${tierBadgeColor(
+            tier
+          )} self-start md:self-auto`}
+        >
+          <Target size={12} className="sm:w-3.5 sm:h-3.5" />
           {ar ? tierShortLabel(tier, ar) : tier}
         </span>
       </div>
 
-      {/* Recommendations */}
       {ar ? (
-        <ol className="rtl-ol space-y-4 list-decimal">
+        <ol className="rtl-ol space-y-3 sm:space-y-4 list-decimal">
           {recommendations.slice(0, 3).map((r, i) => (
-            <li key={i} className="text-slate-700 text-base leading-relaxed rtl-text font-medium">
+            <li key={i} className="text-slate-700 text-sm sm:text-base leading-relaxed rtl-text font-medium">
               {r}
             </li>
           ))}
         </ol>
       ) : (
-        <ol className="ltr-ol space-y-4 list-decimal">
+        <ol className="ltr-ol space-y-3 sm:space-y-4 list-decimal">
           {recommendations.slice(0, 3).map((r, i) => (
-            <li key={i} className="text-slate-700 text-base leading-relaxed font-medium">
+            <li key={i} className="text-slate-700 text-sm sm:text-base leading-relaxed font-medium">
               {r}
             </li>
           ))}
@@ -1020,7 +1071,7 @@ export default function DynamicResultsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-4">
           <div className="text-center space-y-4">
             <Loader2 className="animate-spin text-blue-600 mx-auto" size={48} />
             <div className="text-sm font-bold text-slate-600">Loading...</div>
