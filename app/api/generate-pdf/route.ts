@@ -7,10 +7,16 @@ export const runtime = "nodejs";
 
 async function getBrowser() {
   if (process.env.NODE_ENV === "development") {
-    // Local development - Windows Chrome path
+    // Local development - adjust Chrome path if needed
+    const executablePath = process.platform === "win32"
+      ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      : process.platform === "darwin"
+      ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+      : "/usr/bin/google-chrome";
+
     return await puppeteer.launch({
       headless: true,
-      executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      executablePath,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
@@ -20,11 +26,17 @@ async function getBrowser() {
     });
   } else {
     // Production (Vercel) - use Sparticuz Chromium
+    console.log("🔧 Launching Chromium on Vercel...");
+    
+    const executablePath = await chromium.executablePath();
+    console.log("📍 Chromium path:", executablePath);
+    
     return await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
+      executablePath,
       headless: chromium.headless,
+      ignoreHTTPSErrors: true,
     });
   }
 }
@@ -44,34 +56,36 @@ export async function GET(request: NextRequest) {
   let browser;
   
   try {
+    console.log("🚀 Starting PDF generation for attemptId:", attemptId);
+    
     // Build the URL to your results page
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
                    "http://localhost:3000");
     
     const reportUrl = `${baseUrl}/scan/results?attemptId=${attemptId}&lang=${lang}`;
-
-    console.log("📄 Generating PDF for:", reportUrl);
+    console.log("📄 Target URL:", reportUrl);
 
     // Launch browser
     browser = await getBrowser();
+    console.log("✅ Browser launched successfully");
+    
     const page = await browser.newPage();
-
-    // Set viewport and navigate
     await page.setViewport({ width: 1200, height: 800 });
     
-    console.log("🌐 Loading page...");
+    // Navigate to the page
+    console.log("🔄 Loading page...");
     await page.goto(reportUrl, { 
       waitUntil: "networkidle0", 
       timeout: 60000 
     });
     
-    // Wait for content to fully load
-    console.log("⏳ Waiting for content...");
+    // Wait for dynamic content (React components, charts)
+    console.log("⏳ Waiting for content to render...");
     await page.waitForTimeout(3000);
 
     // Generate PDF
-    console.log("📝 Creating PDF...");
+    console.log("📝 Generating PDF...");
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -83,7 +97,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log("✅ PDF generated successfully!");
+    console.log("✅ PDF generated successfully! Size:", pdfBuffer.length, "bytes");
 
     return new NextResponse(pdfBuffer, {
       headers: {
@@ -102,6 +116,7 @@ export async function GET(request: NextRequest) {
         details: error instanceof Error ? error.message : "Unknown error",
         attemptId,
         timestamp: new Date().toISOString(),
+        environment: process.env.VERCEL ? "vercel" : "local",
       },
       { status: 500 }
     );
