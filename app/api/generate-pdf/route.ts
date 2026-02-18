@@ -3,43 +3,7 @@ import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
-async function getBrowser() {
-  if (process.env.NODE_ENV === "development") {
-    // Local development - adjust Chrome path if needed
-    const executablePath = process.platform === "win32"
-      ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-      : process.platform === "darwin"
-      ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-      : "/usr/bin/google-chrome";
-
-    return await puppeteer.launch({
-      headless: true,
-      executablePath,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-      ],
-    });
-  } else {
-    // Production (Vercel) - use Sparticuz Chromium
-    console.log("🔧 Launching Chromium on Vercel...");
-    
-    const executablePath = await chromium.executablePath();
-    console.log("📍 Chromium path:", executablePath);
-    
-    return await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath,
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
-    });
-  }
-}
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -47,83 +11,93 @@ export async function GET(request: NextRequest) {
   const lang = searchParams.get("lang") || "en";
 
   if (!attemptId) {
-    return NextResponse.json(
-      { error: "Missing attemptId parameter" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
   }
 
-  let browser;
-  
+  let browser = null;
+
   try {
-    console.log("🚀 Starting PDF generation for attemptId:", attemptId);
-    
-    // Build the URL to your results page
+    console.log("🚀 Starting PDF generation for:", attemptId);
+
+    // Determine browser launch configuration
+    let launchOptions: any = {
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--hide-scrollbars",
+      ],
+      headless: true,
+    };
+
+    if (process.env.VERCEL) {
+      // VERCEL PRODUCTION - Let chromium package handle everything
+      console.log("☁️ Running on Vercel");
+      
+      const executablePath = await chromium.executablePath();
+      console.log("📍 Chromium path:", executablePath);
+      
+      // Verify we're not getting the old problematic path
+      if (executablePath.includes("/app/api/bin")) {
+        throw new Error("Detected old chrome-aws-lambda path. Cache cleanup needed.");
+      }
+
+      launchOptions.executablePath = executablePath;
+      launchOptions.args = [...chromium.args, ...launchOptions.args];
+      launchOptions.defaultViewport = chromium.defaultViewport;
+    } else {
+      // LOCAL DEVELOPMENT
+      console.log("🏠 Running locally");
+      launchOptions.executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    }
+
+    // Launch browser
+    browser = await puppeteer.launch(launchOptions);
+    const page = await browser.newPage();
+
+    // Build URL
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
                    "http://localhost:3000");
     
     const reportUrl = `${baseUrl}/scan/results?attemptId=${attemptId}&lang=${lang}`;
-    console.log("📄 Target URL:", reportUrl);
+    console.log("📄 Loading:", reportUrl);
 
-    // Launch browser
-    browser = await getBrowser();
-    console.log("✅ Browser launched successfully");
-    
-    const page = await browser.newPage();
+    // Load page and generate PDF
     await page.setViewport({ width: 1200, height: 800 });
+    await page.goto(reportUrl, { waitUntil: "networkidle0", timeout: 45000 });
     
-    // Navigate to the page
-    console.log("🔄 Loading page...");
-    await page.goto(reportUrl, { 
-      waitUntil: "networkidle0", 
-      timeout: 60000 
-    });
-    
-    // Wait for dynamic content (React components, charts)
-    console.log("⏳ Waiting for content to render...");
+    // Wait for React components and MRI sales section to render
     await page.waitForTimeout(3000);
 
-    // Generate PDF
-    console.log("📝 Generating PDF...");
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: {
-        top: "20px",
-        right: "20px",
-        bottom: "20px",
-        left: "20px",
-      },
+      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
     });
 
-    console.log("✅ PDF generated successfully! Size:", pdfBuffer.length, "bytes");
+    console.log("✅ PDF generated successfully:", pdfBuffer.length, "bytes");
 
     return new NextResponse(pdfBuffer, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="sales-assessment-${attemptId}.pdf"`,
-        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Cache-Control": "no-cache",
       },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ PDF generation failed:", error);
-    
-    return NextResponse.json(
-      {
-        error: "PDF generation failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-        attemptId,
-        timestamp: new Date().toISOString(),
-        environment: process.env.VERCEL ? "vercel" : "local",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      error: "PDF generation failed",
+      details: error.message,
+      attemptId,
+      timestamp: new Date().toISOString(),
+    }, { status: 500 });
   } finally {
     if (browser) {
       await browser.close();
-      console.log("🔒 Browser closed");
     }
   }
 }
