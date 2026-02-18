@@ -2,9 +2,7 @@
   "functions": {
     "app/api/generate-pdf/route.ts": {
       "maxDuration": 60,
-"memory": 2048
-
-
+      "memory": 1024
     }
   }
 }
