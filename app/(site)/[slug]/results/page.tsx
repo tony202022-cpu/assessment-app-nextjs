@@ -1,4 +1,3 @@
-// FILE: app/(site)/[slug]/results/page.tsx
 "use client";
 
 import {
@@ -34,6 +33,10 @@ import {
   Zap,
   Award,
   Clock,
+  ArrowRight,
+  CheckCircle2,
+  X,
+  Shield,
 } from "lucide-react";
 import {
   Radar,
@@ -44,11 +47,14 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
-// ✅ DB truth (menu IDs)
+// ✅ Assessment IDs
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 
-// ✅ Local fallback labels (safe default)
+// 🔗 New Zenler payment URL (empty until ready)
+const MRI_PAYMENT_URL = "";
+
+// ✅ Competency labels fallback
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
@@ -57,7 +63,6 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   creating_irresistible_offers: { en: "Creating Irresistible Offers", ar: "إنشاء عروض لا تُقاوَم" },
   mastering_closing: { en: "Mastering Closing", ar: "إتقان الإغلاق" },
   follow_up_discipline: { en: "Follow-Up Discipline", ar: "انضباط المتابعة" },
-  // MRI extras
   consultative_selling: { en: "Consultative Selling", ar: "المبيعات الاستشارية" },
   time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
   product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
@@ -66,7 +71,6 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   dealing_with_boss: { en: "Dealing with Boss", ar: "التعامل مع المدير" },
   handling_difficult_customers: { en: "Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
   handling_difficult_colleagues: { en: "Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
-
 };
 
 function normalizeCompetencySafe(raw: any) {
@@ -89,6 +93,7 @@ function isProbablyMRI(
   if (a === MRI_ASSESSMENT_ID) return true;
   return false;
 }
+
 function isProbablyScan(
   routeSlug?: string,
   attemptAssessmentId?: string | null,
@@ -447,7 +452,6 @@ function ResultsContent() {
   const isMri = isProbablyMRI(routeSlug, attempt?.assessment_id, config?.type);
   const isScan = isProbablyScan(routeSlug, attempt?.assessment_id, config?.type) && !isMri;
 
-  // ✅ DB-driven competency labels (menu-driven), fallback to local map
   const labelsFromConfig = useMemo(() => {
     const out: Record<string, { en: string; ar: string }> = {};
     const arr = (config?.config?.competencies || []) as any[];
@@ -499,7 +503,6 @@ function ResultsContent() {
 
   const identity = useMemo(() => extractIdentity(attempt), [attempt]);
 
-  // ✅ Menu-driven titles (use DB, fallback to current strings)
   const titleFromDb =
     (ar
       ? (config?.title_ar || config?.name_ar || "")
@@ -578,7 +581,7 @@ function ResultsContent() {
     );
   }
 
-  const showUpsell = isScan && !!config?.upsell_url;
+  const showUpsell = isScan;
 
   return (
     <div
@@ -682,97 +685,92 @@ function ResultsContent() {
           attemptId={attemptId}
         />
 
-{/* RADAR + BREAKDOWN */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-  {/* Radar */}
-  <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8">
-    <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-      <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-        <Zap size={20} className="sm:w-6 sm:h-6" />
-      </div>
-      <h3 className="text-xl sm:text-2xl font-black text-slate-900 rtl-text">
-        {ar ? "مخطط الكفاءات" : "Competency Profile"}
-      </h3>
-    </div>
-
-    <div className="h-[380px] sm:h-[460px] md:h-[540px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart
-          cx="50%"
-          cy="50%"
-          outerRadius="65%"
-          data={chartData}
-          margin={{ top: 30, right: 30, bottom: 30, left: 30 }}
-        >
-          <PolarGrid stroke="#cbd5e1" strokeWidth={2} />
-
-          <PolarAngleAxis
-            dataKey="subject"
-            tickLine={false}
-            tick={{
-              fill: "#475569",
-              fontSize: 10,
-              fontWeight: 800,
-            }}
-            dy={8}
-          />
-
-          <Radar
-            name="Score"
-            dataKey="A"
-            stroke="#3b82f6"
-            strokeWidth={3}
-            fill="#3b82f6"
-            fillOpacity={0.6}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-
-  {/* Breakdown */}
-  <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
-    <div className="flex items-center gap-2 sm:gap-3">
-      <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg">
-        <Target size={20} className="sm:w-6 sm:h-6" />
-      </div>
-      <h3 className="text-lg sm:text-xl font-black text-slate-900 rtl-text">
-        {ar ? "التفصيل" : "Breakdown"}
-      </h3>
-    </div>
-
-    <div className="space-y-4 sm:space-y-5">
-      {competencyRows.map((res: any) => {
-        const tier = res.derivedTier;
-        return (
-          <div key={String(res.competencyId)} className="space-y-2">
-            <div className="flex justify-between items-center gap-2">
-              <span className="font-bold text-slate-800 text-xs sm:text-sm rtl-text leading-tight">
-                {getCompetencyLabel(res)}
-              </span>
-              <span
-                className={`shrink-0 text-xs font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md force-ltr ${tierBadgeColor(
-                  tier
-                )}`}
-              >
-                {safePct(res.percentage)}%
-              </span>
+        {/* RADAR + BREAKDOWN */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8">
+            <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+              <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+                <Zap size={20} className="sm:w-6 sm:h-6" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 rtl-text">
+                {ar ? "مخطط الكفاءات" : "Competency Profile"}
+              </h3>
             </div>
-            <div className="h-2 sm:h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-              <div
-                className={`h-full bg-gradient-to-r transition-all duration-1000 rounded-full ${tierBarColor(
-                  tier
-                )}`}
-                style={{ width: `${safePct(res.percentage)}%` }}
-              />
+
+            <div className="h-[380px] sm:h-[460px] md:h-[540px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="65%"
+                  data={chartData}
+                  margin={{ top: 30, right: 30, bottom: 30, left: 30 }}
+                >
+                  <PolarGrid stroke="#cbd5e1" strokeWidth={2} />
+                  <PolarAngleAxis
+                    dataKey="subject"
+                    tickLine={false}
+                    tick={{
+                      fill: "#475569",
+                      fontSize: 10,
+                      fontWeight: 800,
+                    }}
+                    dy={8}
+                  />
+                  <Radar
+                    name="Score"
+                    dataKey="A"
+                    stroke="#3b82f6"
+                    strokeWidth={3}
+                    fill="#3b82f6"
+                    fillOpacity={0.6}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
             </div>
           </div>
-        );
-      })}
-    </div>
-  </div>
-</div>
 
+          <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg">
+                <Target size={20} className="sm:w-6 sm:h-6" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 rtl-text">
+                {ar ? "التفصيل" : "Breakdown"}
+              </h3>
+            </div>
+
+            <div className="space-y-4 sm:space-y-5">
+              {competencyRows.map((res: any) => {
+                const tier = res.derivedTier;
+                return (
+                  <div key={String(res.competencyId)} className="space-y-2">
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="font-bold text-slate-800 text-xs sm:text-sm rtl-text leading-tight">
+                        {getCompetencyLabel(res)}
+                      </span>
+                      <span
+                        className={`shrink-0 text-xs font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md force-ltr ${tierBadgeColor(
+                          tier
+                        )}`}
+                      >
+                        {safePct(res.percentage)}%
+                      </span>
+                    </div>
+                    <div className="h-2 sm:h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                      <div
+                        className={`h-full bg-gradient-to-r transition-all duration-1000 rounded-full ${tierBarColor(
+                          tier
+                        )}`}
+                        style={{ width: `${safePct(res.percentage)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
         {/* SWOT */}
         <div className="space-y-5 sm:space-y-6">
@@ -911,36 +909,387 @@ function ResultsContent() {
           </div>
         )}
 
+        {/* 🚀 COMPLETE MRI SALES PAGE - ONLY FOR SCAN RESULTS */}
         {showUpsell && (
-          <div className="relative overflow-hidden bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-2xl md:rounded-3xl shadow-2xl">
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-white blur-3xl" />
-              <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-white blur-3xl" />
+          <div className="space-y-16 mt-20">
+            
+            {/* WARNING HERO SECTION */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-red-900 rounded-3xl shadow-2xl border border-red-500">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-red-600" />
+              
+              <div className="relative p-8 md:p-16 text-center text-white space-y-8">
+                <div className="inline-block bg-red-800 text-red-100 px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider border-2 border-red-600">
+                  {ar ? "تحذير: هذا سيكشف الحمض النووي الحقيقي لمبيعاتك" : "WARNING: This Will Reveal Your True Sales DNA"}
+                </div>
+                
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
+                  {ar ? (
+                    <>
+                      التقييم المجاني كان مجرد{" "}
+                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
+                        المقبلات
+                      </span>
+                      <br />
+                      هذا هو{" "}
+                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
+                        فحص الدم المهني
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      The Free Assessment Was Just The{" "}
+                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
+                        Appetizer
+                      </span>
+                      <br />
+                      This Is Your{" "}
+                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
+                        Career Blood Test
+                      </span>
+                    </>
+                  )}
+                </h2>
+                
+                <p className="text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed text-red-100">
+                  {ar 
+                    ? "كشف تقريرك المجاني عن الأعراض. حان الوقت الآن لإجراء فحص MRI الكامل الذي يكشف بالضبط لماذا تنزلق بعض الصفقات من بين أصابعك - وكيف تضاعف مبيعاتك في 90 يومًا."
+                    : "Your free report exposed the symptoms. Now it's time for the full MRI scan that reveals exactly why some deals slip through your fingers—and how to double your sales in 90 days."}
+                </p>
+                
+                <div className="pt-4">
+                  {MRI_PAYMENT_URL ? (
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black text-lg px-10 py-8 rounded-2xl shadow-2xl transition-all hover:scale-105"
+                    >
+                      <a href={MRI_PAYMENT_URL} target="_blank" rel="noreferrer" className="flex items-center gap-3">
+                        {ar ? "احصل على MRI المبيعات المتقدم الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
+                        <ArrowRight className="w-6 h-6" />
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      disabled
+                      className="bg-white/20 text-red-200 font-black text-lg px-10 py-8 rounded-2xl shadow-2xl cursor-not-allowed"
+                    >
+                      {ar ? "قريباً" : "COMING SOON"}
+                    </Button>
+                  )}
+                </div>
+                
+                <p className="text-sm text-red-200 max-w-2xl mx-auto">
+                  {ar ? "47 مقعد MRI متقدم فقط متاح هذا الشهر. التقييم المجاني حددك كمرشح للنمو السريع." : "Only 47 advanced MRI slots available this month. The free assessment identified you as a candidate for rapid growth."}
+                </p>
+              </div>
             </div>
 
-            <div className="relative p-8 sm:p-10 md:p-12 text-center text-white space-y-5 sm:space-y-6">
-              <div className="inline-block p-3 sm:p-4 bg-white/20 backdrop-blur-md rounded-3xl text-4xl sm:text-5xl mb-2">
-                🚀
+            {/* COMPARISON SECTION */}
+            <div className="space-y-8">
+              <h3 className="text-3xl md:text-4xl font-black text-center text-slate-900">
+                {ar ? "التقييم المجاني مقابل MRI المتقدم: المعرفة مقابل التحول" : "Free Assessment vs. Advanced MRI: Knowing vs. Transforming"}
+              </h3>
+              
+              <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-slate-200">
+                <div className="grid md:grid-cols-2 divide-x divide-slate-200">
+                  
+                  {/* FREE ASSESSMENT COLUMN */}
+                  <div className="p-8 bg-slate-50 space-y-6">
+                    <h4 className="text-2xl font-black text-slate-600 text-center mb-8">
+                      {ar ? "التقييم المجاني" : "Free Assessment"}
+                    </h4>
+                    
+                    <div className="space-y-5">
+                      <div className="flex items-start gap-4">
+                        <CheckCircle2 className="text-green-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "30 سؤالاً" : "30 Questions"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "اختبار 7 كفاءات أساسية" : "Tests 7 core competencies"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4">
+                        <CheckCircle2 className="text-green-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "تقرير PDF أساسي" : "Basic PDF Report"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "نظرة عامة من 4 صفحات مع تحليل SWOT" : "4-page overview with SWOT analysis"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4 opacity-60">
+                        <X className="text-red-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "تحليل سلوكي عميق" : "Deep Behavioral Analysis"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "مفقود - رؤى سطحية فقط" : "Missing - only surface level insights"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4 opacity-60">
+                        <X className="text-red-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "خطة عمل 90 يومًا" : "90-Day Action Plan"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "لا توجد خارطة طريق للتنفيذ اليومي" : "No daily implementation roadmap"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4 opacity-60">
+                        <X className="text-red-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "متابعة أسبوعية" : "Weekly Follow-up"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "لا يوجد نظام مساءلة" : "No accountability system"}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ADVANCED MRI COLUMN */}
+                  <div className="p-8 bg-white space-y-6 relative">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider shadow-lg">
+                      {ar ? "موصى به" : "RECOMMENDED"}
+                    </div>
+                    
+                    <h4 className="text-2xl font-black text-slate-900 text-center mb-8 mt-4">
+                      {ar ? "MRI المبيعات المتقدم" : "Advanced Sales MRI"}
+                    </h4>
+                    
+                    <div className="space-y-5">
+                      <div className="flex items-start gap-4">
+                        <CheckCircle2 className="text-green-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "75 سؤال دقيق" : "75 Precision Questions"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "اختبار 15 كفاءة متقدمة - لا يمكن الغش" : "Tests 15 advanced competencies - no cheating possible"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4">
+                        <CheckCircle2 className="text-green-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "تقرير احترافي 25 صفحة" : "25-Page Magazine-Style Report"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "تحليل احترافي لكل نقطة قوة وضعف" : "Professional analysis of every strength and weakness"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4">
+                        <CheckCircle2 className="text-green-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "فحص MRI سلوكي كامل" : "Full Behavioral MRI Scan"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "يكشف النقاط العمياء والعقبات الخفية" : "Reveals blind spots and hidden obstacles"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4">
+                        <CheckCircle2 className="text-green-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "خطة تنفيذ يومية لمدة 90 يومًا" : "Daily 90-Day Implementation Plan"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "بالضبط ما يجب فعله كل يوم لمضاعفة المبيعات" : "Exactly what to do each day to double sales"}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4">
+                        <CheckCircle2 className="text-green-600 flex-shrink-0 mt-1" size={24} />
+                        <div>
+                          <div className="font-bold text-slate-900 mb-1">{ar ? "تتبع التقدم الأسبوعي" : "Weekly Progress Tracking"}</div>
+                          <div className="text-slate-600 text-sm">{ar ? "نظام مساءلة لضمان التنفيذ" : "Accountability system to ensure you implement"}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black rtl-text">
-                {ar ? "هل أنت مستعد للتحول الكامل؟" : "Ready for Complete Transformation?"}
-              </h2>
-              <p className="text-base sm:text-lg md:text-xl text-white/95 leading-relaxed max-w-2xl mx-auto rtl-text px-4">
-                {ar
-                  ? "تقريرك المجاني كشف الأعراض. الآن حان وقت الحل الكامل."
-                  : "Your free report revealed the symptoms. Now it's time for the complete solution."}
-              </p>
-              <Button
-                asChild
-                className="w-full sm:w-auto bg-white text-orange-600 hover:bg-slate-50 font-black px-8 sm:px-12 py-6 sm:py-8 text-lg sm:text-xl rounded-2xl shadow-2xl transition-all hover:scale-105 active:scale-95 min-h-[56px]"
-              >
-                <a href={config.upsell_url} target="_blank" rel="noreferrer">
-                  {ar ? "ارتقِ الآن" : "Upgrade Now"}
-                </a>
-              </Button>
             </div>
+
+            {/* 15 COMPETENCIES GRID */}
+            <div className="bg-slate-50 rounded-3xl p-8 md:p-12 space-y-8">
+              <div className="text-center space-y-4">
+                <h3 className="text-3xl md:text-4xl font-black text-slate-900">
+                  {ar ? "15 كفاءة نفحصها في MRI المبيعات المتقدم" : "15 Competencies We Scan In Your Advanced Sales MRI"}
+                </h3>
+                <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+                  {ar 
+                    ? "هذه ليست مفاهيم نظرية. هذه هي السلوكيات الدقيقة التي تحدد ما إذا كنت ستحقق أهدافك أم ستعود خالي الوفاض."
+                    : "These aren't theoretical concepts. These are the exact behaviors that determine whether you hit your targets or go home empty-handed."}
+                </p>
+              </div>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[
+                  { num: 1, titleEn: "Prospecting & Finding New Clients", titleAr: "التنقيب وإيجاد عملاء جدد", descEn: "How you identify and approach potential clients when the pipeline is dry.", descAr: "كيف تحدد وتتواصل مع العملاء المحتملين عندما يجف خط الأنابيب." },
+                  { num: 2, titleEn: "Opening Conversations", titleAr: "فتح المحادثات", descEn: "Your exact approach when first meeting a prospect - what works and what repels.", descAr: "نهجك الدقيق عند مقابلة عميل محتمل لأول مرة - ما ينجح وما ينفر." },
+                  { num: 3, titleEn: "Identifying Real Needs", titleAr: "تحديد الاحتياجات الحقيقية", descEn: "How deep you go beyond surface-level requests to uncover the actual pain points.", descAr: "مدى عمقك في تجاوز الطلبات السطحية لكشف نقاط الألم الحقيقية." },
+                  { num: 4, titleEn: "Consultative Selling", titleAr: "البيع الاستشاري", descEn: "Moving from product-pusher to trusted advisor in the client's eyes.", descAr: "الانتقال من دافع للمنتج إلى مستشار موثوق في نظر العميل." },
+                  { num: 5, titleEn: "Destroying Objections", titleAr: "تدمير الاعتراضات", descEn: "Your instinctive response to common (and uncommon) sales objections.", descAr: "رد فعلك الغريزي على اعتراضات المبيعات الشائعة (وغير الشائعة)." },
+                  { num: 6, titleEn: "Designing Irresistible Offers", titleAr: "تصميم عروض لا تقاوم", descEn: "How you package value so prospects feel stupid saying no.", descAr: "كيف تغلف القيمة بحيث يشعر العملاء المحتملون بالغباء لقول لا." },
+                  { num: 7, titleEn: "Closing with Confidence", titleAr: "الإغلاق بثقة", descEn: "Your timing, wording, and mindset when asking for the business.", descAr: "توقيتك، وصياغتك، وعقليتك عند طلب العمل." },
+                  { num: 8, titleEn: "Follow-up Discipline", titleAr: "انضباط المتابعة", descEn: "Your systematic approach to staying top-of-mind without being annoying.", descAr: "نهجك المنهجي للبقاء في الذاكرة دون أن تكون مزعجًا." },
+                  { num: 9, titleEn: "Time & Territory Management", titleAr: "إدارة الوقت والمنطقة", descEn: "How you prioritize activities that actually generate revenue.", descAr: "كيف ترتب أولويات الأنشطة التي تدر إيرادات بالفعل." },
+                  { num: 10, titleEn: "Product Expertise", titleAr: "الخبرة في المنتج", descEn: "Not just knowing features, but connecting them to client outcomes.", descAr: "ليس مجرد معرفة الميزات، بل ربطها بنتائج العميل." },
+                  { num: 11, titleEn: "Negotiation Skills", titleAr: "مهارات التفاوض", descEn: "Protecting margin while still closing the deal.", descAr: "حماية الهامش مع الاستمرار في إغلاق الصفقة." },
+                  { num: 12, titleEn: "Attitude & Motivation Mindset", titleAr: "عقلية الموقف والتحفيز", descEn: "How you rebound from rejection and maintain momentum.", descAr: "كيف ترتد من الرفض وتحافظ على الزخم." },
+                  { num: 13, titleEn: "Dealing with Your Boss", titleAr: "التعامل مع مديرك", descEn: "Managing up effectively to get the support you need.", descAr: "الإدارة لأعلى بفعالية للحصول على الدعم الذي تحتاجه." },
+                  { num: 14, titleEn: "Handling Difficult Customers", titleAr: "التعامل مع العملاء الصعبين", descEn: "Turning complainers into advocates.", descAr: "تحويل المشتكين إلى مدافعين." },
+                  { num: 15, titleEn: "Handling Difficult Colleagues", titleAr: "التعامل مع الزملاء الصعبين", descEn: "Navigating internal politics while staying focused on results.", descAr: "التنقل في السياسات الداخلية مع الاستمرار في التركيز على النتائج." }
+                ].map((competency) => (
+                  <div key={competency.num} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-slate-200 hover:border-blue-500 transition-all hover:shadow-xl">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 text-white font-black text-lg mb-4 shadow-lg">
+                      {competency.num}
+                    </div>
+                    <h4 className="text-xl font-black text-slate-900 mb-3">
+                      {ar ? competency.titleAr : competency.titleEn}
+                    </h4>
+                    <p className="text-slate-600 text-sm leading-relaxed">
+                      {ar ? competency.descAr : competency.descEn}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 5 PREMIUM BONUSES */}
+            <div className="bg-white rounded-3xl shadow-2xl border-2 border-amber-200 p-8 md:p-12 relative overflow-hidden">
+              <div className="absolute top-6 right-6 bg-red-600 text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-wider transform rotate-12 shadow-lg">
+                {ar ? "بونصات لفترة محدودة" : "LIMITED TIME BONUSES"}
+              </div>
+              
+              <div className="space-y-8">
+                <div className="text-center space-y-4">
+                  <h3 className="text-3xl md:text-4xl font-black text-slate-900">
+                    {ar ? "5 بونصات بريميوم مشمولة مع MRI المتقدم" : "5 Premium Bonuses Included With Your Advanced MRI"}
+                  </h3>
+                  <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+                    {ar 
+                      ? "هذه البونصات وحدها تساوي أكثر من 500 دولار. هي ملكك مجانًا عند حصولك على MRI المبيعات المتقدم اليوم."
+                      : "These bonuses alone are worth over $500. They're yours FREE when you get your Advanced Sales MRI today."}
+                  </p>
+                </div>
+                
+                <div className="space-y-6">
+                  {[
+                    { num: 1, titleEn: "The 50 Best Answers to the 50 Hardest Objections", titleAr: "أفضل 50 إجابة على أصعب 50 اعتراض", descEn: "A 47-page playbook with word-for-word responses to objections that make most salespeople stumble. Not theory - exact phrases that work in the Middle Eastern and Western markets.", descAr: "كتاب تشغيل من 47 صفحة مع ردود كلمة بكلمة على الاعتراضات التي تجعل معظم مندوبي المبيعات يتعثرون. ليس نظرية - عبارات دقيقة تعمل في أسواق الشرق الأوسط والغرب." },
+                    { num: 2, titleEn: "How I Learned to Sell From Playing Soccer", titleAr: "كيف تعلمت البيع من لعب كرة القدم", descEn: "The unconventional mindset shifts that separate top performers from the average. How to turn competitive instincts into sales results.", descAr: "التحولات العقلية غير التقليدية التي تفصل أفضل الأداء عن المتوسط. كيفية تحويل الغرائز التنافسية إلى نتائج مبيعات." },
+                    { num: 3, titleEn: "How to Motivate Yourself Under Pressure", titleAr: "كيف تحفز نفسك تحت الضغط", descEn: "When targets seem impossible and rejection piles up, this guide gives you the psychological tools to reset and attack again.", descAr: "عندما تبدو الأهداف مستحيلة ويتراكم الرفض، يمنحك هذا الدليل الأدوات النفسية لإعادة الضبط والهجوم مرة أخرى." },
+                    { num: 4, titleEn: "How to Book Appointments With VIPs", titleAr: "كيفية حجز المواعيد مع كبار الشخصيات", descEn: "Breaking through gatekeepers and getting face-to-face with decision makers who can actually say 'yes' to big deals.", descAr: "اختراق حراس البوابة والحصول على لقاء وجهًا لوجه مع صانعي القرار الذين يمكنهم بالفعل قول 'نعم' للصفقات الكبيرة." },
+                    { num: 5, titleEn: "Time-Management Mastery for Outdoor Sales", titleAr: "إتقان إدارة الوقت للمبيعات الخارجية", descEn: "Plus: 'How to Increase Your Sales 40% Using AI' with Dr. Kifah Fayad. Exclusive access to the upcoming online course with registration priority.", descAr: "بالإضافة إلى: 'كيفية زيادة مبيعاتك بنسبة 40٪ باستخدام الذكاء الاصطناعي' مع الدكتور كفاح فياض. وصول حصري إلى الدورة التدريبية القادمة عبر الإنترنت مع أولوية التسجيل." },
+                  ].map((bonus) => (
+                    <div key={bonus.num} className="flex items-start gap-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 hover:shadow-lg transition-shadow">
+                      <div className="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center font-black text-2xl shadow-lg">
+                        {bonus.num}
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-black text-slate-900 mb-3">
+                          {ar ? bonus.titleAr : bonus.titleEn}
+                        </h4>
+                        <p className="text-slate-700 leading-relaxed">
+                          {ar ? bonus.descAr : bonus.descEn}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* TESTIMONIAL */}
+            <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 p-8 md:p-12 relative">
+              <div className="absolute top-8 left-8 text-9xl text-slate-200 font-serif leading-none">"</div>
+              
+              <div className="relative z-10 space-y-8">
+                <p className="text-xl md:text-2xl text-slate-700 italic leading-relaxed">
+                  {ar 
+                    ? "لقد أجريت التقييم المجاني واعتقدت أنني أفهم نقاط ضعفي. ثم حصلت على MRI المتقدم وأدركت أنني كنت أعمى عن مشاكلي الفعلية. الخطة التي أعطوني إياها لمدة 90 يومًا لم تكن مجرد نصيحة - كانت وصفة طبية يومية. في 3 أشهر، انتقلت من فقدان الأهداف إلى تجاوزها بنسبة 160٪. هذا ليس تدريبًا. إنها جراحة سلوكية."
+                    : "I took the free assessment and thought I understood my weaknesses. Then I got the Advanced MRI and realized I was blind to my actual problems. The 90-day plan they gave me wasn't just advice - it was a day-by-day prescription. In 3 months, I went from missing targets to exceeding them by 160%. This isn't training. It's behavioral surgery."}
+                </p>
+                
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-2xl shadow-lg">
+                    AH
+                  </div>
+                  <div>
+                    <div className="font-black text-slate-900 text-xl">
+                      {ar ? "أحمد حسن" : "Ahmed Hassan"}
+                    </div>
+                    <div className="text-slate-600 text-lg">
+                      {ar ? "مدير مبيعات أول، دبي • كان يكافح سابقًا، الآن أفضل أداء" : "Senior Sales Executive, Dubai • Formerly struggling, now top performer"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PRICING & GUARANTEE */}
+            <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 rounded-3xl shadow-2xl border border-slate-700 p-8 md:p-16 text-center text-white relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-red-600" />
+              
+              <div className="relative z-10 space-y-8">
+                <div>
+                  <h3 className="text-3xl md:text-4xl font-black mb-6">
+                    {ar ? "استثمارك في مضاعفة المبيعات" : "Your Investment in Doubling Sales"}
+                  </h3>
+                  <p className="text-lg md:text-xl text-blue-200 max-w-3xl mx-auto leading-relaxed">
+                    {ar 
+                      ? "يكلف فحص MRI الطبي الكامل أكثر من 1000 دولار. فحص دم مهني يكشف بالضبط سبب ترك المال على الطاولة؟"
+                      : "A complete medical MRI costs $1,000+. A career blood test that reveals exactly why you're leaving money on the table?"}
+                  </p>
+                </div>
+                
+                <div>
+                  <div className="text-7xl md:text-8xl font-black mb-4">
+                    <span className="text-4xl align-super">$</span>297
+                  </div>
+                  <p className="text-xl text-blue-200 mb-8">
+                    {ar ? "دفعة واحدة • بدون اشتراك • بدون رسوم خفية" : "One-time payment • No subscription • No hidden fees"}
+                  </p>
+                </div>
+                
+                <div>
+                  {MRI_PAYMENT_URL ? (
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-xl font-black px-12 py-8 rounded-2xl shadow-2xl transition-all hover:scale-105"
+                    >
+                      <a href={MRI_PAYMENT_URL} target="_blank" rel="noreferrer" className="flex items-center gap-3">
+                        {ar ? "احصل على MRI المبيعات المتقدم الآن" : "GET MY ADVANCED SALES MRI NOW"}
+                        <ArrowRight className="w-6 h-6" />
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      disabled
+                      className="bg-white/20 text-white/50 text-xl font-black px-12 py-8 rounded-2xl shadow-2xl cursor-not-allowed"
+                    >
+                      {ar ? "قريباً" : "COMING SOON"}
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 bg-white/10 p-6 rounded-2xl border border-white/20 max-w-4xl mx-auto">
+                  <div className="inline-flex items-center gap-2 bg-green-600 px-6 py-3 rounded-full font-black uppercase tracking-wider text-sm">
+                    <Shield size={20} />
+                    {ar ? "ضمان 90 يومًا" : "90-DAY GUARANTEE"}
+                  </div>
+                  <p className="text-blue-100 text-center md:text-left">
+                    {ar 
+                      ? "إذا اتبعت خطة الـ 90 يومًا ولم تشهد تحسنًا ملموسًا في نتائج مبيعاتك، فسنقوم برد 100٪ من استثمارك."
+                      : "If you follow the 90-day plan and don't see measurable improvement in your sales results, we'll refund 100% of your investment."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* FINAL CTA */}
+            <div className="text-center py-8">
+              <p className="text-xl md:text-2xl font-bold text-slate-900 max-w-4xl mx-auto leading-relaxed">
+                {ar 
+                  ? "كان التقييم المجاني بمثابة جرس الإنذار. هذا هو المنبه الذي لن يتوقف عن الرنين حتى تتخذ إجراءً."
+                  : "The free assessment was your wake-up call. This is your alarm clock that won't stop ringing until you take action."}
+              </p>
+            </div>
+
           </div>
         )}
+
       </main>
     </div>
   );

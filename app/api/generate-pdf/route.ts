@@ -12,9 +12,17 @@ function getSupabaseAdmin() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-function isMriAttempt(assessmentId?: string | null) {
-  const a = String(assessmentId || "").toLowerCase();
-  return a.includes("mri");
+// ✅ IMPROVED: More reliable assessment type detection
+function getPdfType(assessmentId: string | null): "mri" | "scan" {
+  const id = String(assessmentId || "").toLowerCase();
+  
+  // Exact matches first
+  if (id === "outdoor_sales_mri") return "mri";
+  if (id === "outdoor_sales_scan") return "scan";
+  
+  // Fallback pattern matching
+  if (id.includes("mri")) return "mri";
+  return "scan"; // Default to scan
 }
 
 export async function GET(req: Request) {
@@ -26,10 +34,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
   }
 
-  let browser: any = null;
+  let browser = null;
 
   try {
-    // 1) Read attempt to know if it's Scan or MRI (DB is source of truth)
+    // 1. Get assessment type from database
     const supabase = getSupabaseAdmin();
     const { data: attempt, error: attErr } = await supabase
       .from("quiz_attempts")
@@ -41,28 +49,45 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Attempt not found" }, { status: 404 });
     }
 
-    const pdfType = isMriAttempt(attempt.assessment_id) ? "mri" : "scan";
+    // 2. Determine PDF type
+    const pdfType = getPdfType(attempt.assessment_id);
+    
+    // 3. Build the EXACT route URL
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const host = req.headers.get("host");
+    
+    // 🚨 KEY FIX: Force specific routing
+    const reportUrl = `${protocol}://${host}/reports/pdf/${pdfType}/${attemptId}?lang=${encodeURIComponent(lang)}`;
+    
+    console.log(`🎯 PDF Type: ${pdfType} | Generating from: ${reportUrl}`);
 
-    // 2) Launch browser
-    const executablePath = await chromium.executablePath();
+    // 4. Launch browser (with local development support)
+    const isLocal = process.env.NODE_ENV === "development";
+    
+    let executablePath;
+    if (isLocal) {
+      // For local testing (optional - you can skip this and just test on Vercel)
+      executablePath = process.env.LOCAL_CHROME_PATH || 
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    } else {
+      // Production (Vercel)
+      executablePath = await chromium.executablePath();
+    }
+
     browser = await puppeteer.launch({
-      args: chromium.args,
+      args: isLocal ? ['--no-sandbox'] : chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath,
-      headless: chromium.headless,
+      headless: isLocal ? true : chromium.headless,
     });
 
     const page = await browser.newPage();
 
-    // 3) Go to the correct PDF page route
-    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-    const host = req.headers.get("host");
-
-    const reportUrl = `${protocol}://${host}/reports/pdf/${pdfType}/${attemptId}?lang=${encodeURIComponent(
-      lang
-    )}`;
-
-    await page.goto(reportUrl, { waitUntil: "networkidle0" });
+    // 5. Navigate and generate
+    await page.goto(reportUrl, { 
+      waitUntil: "networkidle0",
+      timeout: 30000
+    });
 
     const pdf = await page.pdf({
       format: "A4",
@@ -70,17 +95,22 @@ export async function GET(req: Request) {
       margin: { top: "0px", right: "0px", bottom: "0px", left: "0px" },
     });
 
-    const prefix = pdfType === "mri" ? "MRI" : "SCAN";
+    const filename = `${pdfType.toUpperCase()}-Report-${attemptId.slice(0, 8)}.pdf`;
 
     return new Response(pdf, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${prefix}-Report-${attemptId.slice(0, 8)}.pdf"`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
+
   } catch (error: any) {
-    console.error("PDF Generation Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("❌ PDF Generation Error:", error);
+    return NextResponse.json({ 
+      error: `PDF generation failed: ${error.message}`,
+      attemptId,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   } finally {
     if (browser) await browser.close();
   }
