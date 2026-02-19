@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // This is CRITICAL for PDF generation
   experimental: {
-    serverComponentsExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
+    serverComponentsExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
+    //                                                    ^^^^^^^^^^^^^^^^^^^^
+    //                                                    Fixed: Added "-min"
   },
 };
 

@@ -92,9 +92,6 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@sparticuz/chromium':
-        specifier: 129.0.0
-        version: 129.0.0
       '@sparticuz/chromium-min':
         specifier: 126.0.0
         version: 126.0.0
@@ -978,10 +975,6 @@ packages:
 
   '@sparticuz/chromium-min@126.0.0':
     resolution: {integrity: sha512-Wn51LRKXHwBEfm6OWnZmcMVkzWg1TQvSMsG0H5p6UFrOcM6GUjGLxty9Er863EuJC2gwIEc6kNr8h/mhT893oA==}
-    engines: {node: '>= 16'}
-
-  '@sparticuz/chromium@129.0.0':
-    resolution: {integrity: sha512-39B1OTmq0VG7QvBWDeLG+LqBclmeYLPOpjsmzb1gcC0wJwPHvbccNKcUAUH3D07cop2VCwrqmyl3zUB138ho2w==}
     engines: {node: '>= 16'}
 
   '@standard-schema/spec@1.1.0':
@@ -2956,16 +2949,6 @@ snapshots:
       react-redux: 9.2.0(@types/react@18.3.12)(react@18.3.1)(redux@5.0.1)
 
   '@sparticuz/chromium-min@126.0.0':
-    dependencies:
-      follow-redirects: 1.15.11
-      tar-fs: 3.1.1
-    transitivePeerDependencies:
-      - bare-abort-controller
-      - bare-buffer
-      - debug
-      - react-native-b4a
-
-  '@sparticuz/chromium@129.0.0':
     dependencies:
       follow-redirects: 1.15.11
       tar-fs: 3.1.1
