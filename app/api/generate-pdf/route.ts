@@ -20,54 +20,33 @@ export async function GET(request: NextRequest) {
     console.log("🚀 [PDF] Starting generation for attemptId:", attemptId);
     console.log("🌍 [PDF] Environment:", process.env.VERCEL ? "Vercel Production" : "Local Development");
 
-    // Configure browser launch options
-    let launchOptions: any = {
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox", 
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--hide-scrollbars",
-      ],
-      headless: true,
-    };
+    let launchOptions: any;
 
     if (process.env.VERCEL) {
-      // VERCEL PRODUCTION - Use @sparticuz/chromium
+      // VERCEL PRODUCTION - Use @sparticuz/chromium exactly as designed
       console.log("☁️ [PDF] Configuring for Vercel");
       
       const executablePath = await chromium.executablePath();
       console.log("📍 [PDF] Chromium path:", executablePath);
-      
-      // Enhanced check for problematic cached paths
-      const problematicPaths = [
-        "/app/api/bin",
-        "/var/task/.next/server/app/api/bin", 
-        ".next/server/app/api/bin"
-      ];
-      
-      const hasProblematicPath = problematicPaths.some(path => 
-        executablePath.includes(path)
-      );
-      
-      if (hasProblematicPath) {
-        console.error("🚨 [PDF] CACHE CONTAMINATION DETECTED!");
-        console.error("🚨 [PDF] Found problematic path:", executablePath);
-        throw new Error(
-          `Cache issue detected: Got ${executablePath} but expected /tmp/chromium. ` +
-          `Vercel is still using chrome-aws-lambda artifacts. Force rebuild without cache.`
-        );
-      }
+      console.log("🔧 [PDF] Using chromium args:", chromium.args.slice(0, 5).join(' ') + '...');
 
-      // Use @sparticuz/chromium configuration
-      launchOptions.executablePath = executablePath;
-      launchOptions.args = [...chromium.args, ...launchOptions.args];
-      launchOptions.defaultViewport = chromium.defaultViewport;
+      // CRITICAL: Use chromium configuration exactly as provided
+      // Do NOT modify or add custom args - they include --single-process and other essential flags
+      launchOptions = {
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: executablePath,
+        headless: chromium.headless,
+      };
       
     } else {
       // LOCAL DEVELOPMENT
       console.log("🏠 [PDF] Local development mode");
-      launchOptions.executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+      launchOptions = {
+        executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      };
     }
 
     // Launch browser
@@ -87,30 +66,42 @@ export async function GET(request: NextRequest) {
     const reportUrl = `${baseUrl}/scan/results?attemptId=${attemptId}&lang=${lang}`;
     console.log("📄 [PDF] Loading:", reportUrl);
 
-    // Set viewport and load page
+    // Set viewport and navigate
     await page.setViewport({ width: 1200, height: 800 });
+    
+    console.log("⏳ [PDF] Navigating to results page...");
     await page.goto(reportUrl, { 
       waitUntil: ["networkidle0", "domcontentloaded"],
       timeout: 45000 
     });
     
-    console.log("⏳ [PDF] Page loaded, waiting for content...");
+    console.log("⏳ [PDF] Page loaded, waiting for content to render...");
 
-    // Wait for content to render (FIXED: No more waitForTimeout)
+    // Wait for critical elements to load
     await Promise.all([
-      // Wait for any charts or visualizations
-      page.waitForSelector('canvas, svg', { timeout: 5000 }).catch(() => null),
-      // Wait for main content
-      page.waitForSelector('[class*="result"], [class*="assessment"]', { timeout: 5000 }).catch(() => null),
+      page.waitForSelector('canvas, svg, [class*="chart"]', { timeout: 8000 }).catch(() => {
+        console.log("⚠️ [PDF] No charts detected, continuing...");
+        return null;
+      }),
+      page.waitForSelector('main, [role="main"], [class*="result"]', { timeout: 8000 }).catch(() => {
+        console.log("⚠️ [PDF] No main content container found, continuing...");
+        return null;
+      }),
     ]);
 
-    // Additional wait for MRI section and animations (PROPER WAY)
+    // Wait for dynamic content including MRI section
+    console.log("⏳ [PDF] Waiting for MRI section and dynamic content...");
     await page.evaluate(() => {
-      return new Promise((resolve) => {
-        // Scroll to trigger lazy-loaded content
+      return new Promise<void>((resolve) => {
+        // Scroll to bottom to trigger lazy-loaded content
         window.scrollTo(0, document.body.scrollHeight);
-        // Wait for animations and dynamic content
-        setTimeout(resolve, 3000);
+        
+        // Wait for animations and dynamic rendering
+        setTimeout(() => {
+          // Scroll back to top for PDF generation
+          window.scrollTo(0, 0);
+          resolve();
+        }, 3000);
       });
     });
 
@@ -126,6 +117,7 @@ export async function GET(request: NextRequest) {
         bottom: "20px", 
         left: "20px" 
       },
+      preferCSSPageSize: false,
     });
 
     console.log(`✅ [PDF] Generated successfully: ${pdfBuffer.length} bytes`);
@@ -150,13 +142,13 @@ export async function GET(request: NextRequest) {
       details: error.message,
       attemptId,
       timestamp: new Date().toISOString(),
-      cacheIssue: error.message.includes("cache") || error.message.includes("chrome-aws-lambda"),
     }, { status: 500 });
 
   } finally {
     if (browser) {
       try {
         await browser.close();
+        console.log("🔒 [PDF] Browser closed");
       } catch (closeError) {
         console.error("⚠️ [PDF] Error closing browser:", closeError);
       }
