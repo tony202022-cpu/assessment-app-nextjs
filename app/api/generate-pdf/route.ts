@@ -1,132 +1,172 @@
-import { NextRequest, NextResponse } from 'next/server';
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
-import path from 'path';
-import { Buffer } from 'buffer'; // ADD THIS IMPORT
+import { NextRequest, NextResponse } from "next/server";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium-min";
 
-// CRITICAL: Force Node.js runtime (not Edge) for Vercel
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Free plan allows up to 60 seconds
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const attemptId = searchParams.get("attemptId");
+  const lang = searchParams.get("lang") || "en";
+
+  if (!attemptId) {
+    return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
+  }
+
+  let browser = null;
+
   try {
-    const body = await request.json();
-    const { attemptId, lang = 'en' } = body;
+    console.log("🚀 [PDF] Starting generation for attemptId:", attemptId);
+    console.log("🌍 [PDF] Environment:", process.env.VERCEL ? "Vercel Free Plan" : "Local Development");
 
-    if (!attemptId) {
-      return NextResponse.json(
-        { error: 'Missing attemptId' }, 
-        { status: 400 }
-      );
+    let launchOptions: any;
+
+    if (process.env.VERCEL) {
+      // VERCEL PRODUCTION - Memory optimized for 1GB limit
+      console.log("☁️ [PDF] Configuring chromium-min for Vercel Free Plan");
+      
+      const executablePath = await chromium.executablePath();
+      console.log("📍 [PDF] Chromium path:", executablePath);
+
+      // Memory-saving browser flags for 1GB limit
+      const memoryOptimizedArgs = [
+        ...chromium.args,
+        "--single-process",        // Critical for serverless/memory constraints
+        "--no-zygote",            // Reduces memory overhead
+        "--disable-gpu",          // GPU not needed for PDF
+        "--disable-dev-shm-usage", // Use disk instead of shared memory
+        "--disable-extensions",   // Reduce memory footprint
+        "--no-first-run",         // Skip first-run setup
+        "--disable-default-apps", // Don't load default Chrome apps
+      ];
+
+      launchOptions = {
+        args: memoryOptimizedArgs,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: executablePath,
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+      };
+      
+    } else {
+      // LOCAL DEVELOPMENT
+      console.log("🏠 [PDF] Local development mode");
+      launchOptions = {
+        executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      };
     }
 
-    // Launch browser with Vercel-optimized settings
-    const browser = await puppeteer.launch({
-      args: [
-        ...chromium.args,
-        '--hide-scrollbars',
-        '--disable-web-security',
-        '--disable-features=IsolateOrigins,site-per-process',
-        '--disable-setuid-sandbox',
-        '--no-sandbox',
-        '--single-process', // REQUIRED FOR VERCEL
-        '--no-zygote',
-        '--disable-gpu',
-        '--disable-dev-shm-usage',
-      ],
-      executablePath: await chromium.executablePath(
-        process.env.VERCEL_URL 
-          ? 'https://' + process.env.VERCEL_URL 
-          : 'http://localhost:3000'
-      ),
-      headless: chromium.headless,
-      // Fix TypeScript error by using any cast for env
-      // @ts-ignore
-      ignoreHTTPSErrors: true,
-      // @ts-ignore
-      env: {
-        ...process.env,
-        // Point to Chromium's libraries
-        LD_LIBRARY_PATH: `${path.dirname(await chromium.executablePath())}:${process.env.LD_LIBRARY_PATH || ''}`
-      }
-    } as any); // Cast to any to bypass strict type checking
+    console.log("🌐 [PDF] Launching browser...");
+    browser = await puppeteer.launch(launchOptions);
+    console.log("✅ [PDF] Browser launched successfully");
 
     const page = await browser.newPage();
+
+    // Build URL using proper host detection
+    const protocol = request.headers.get("x-forwarded-proto") || "https";
+    const host = request.headers.get("host");
+    const baseUrl = process.env.VERCEL 
+      ? `${protocol}://${host}`
+      : (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000");
     
-    try {
-      // Construct URL properly
-      const baseUrl = process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}` 
-        : 'http://localhost:3000';
-      
-      const url = `${baseUrl}/scan/results?attemptId=${attemptId}&lang=${lang}`;
-      
-      console.log(`Generating PDF for: ${url}`);
-      
-      // Navigate with extended timeout
-      await page.goto(url, { 
-        waitUntil: 'networkidle0', 
-        timeout: 60000 
-      });
+    const reportUrl = `${baseUrl}/scan/results?attemptId=${attemptId}&lang=${lang}`;
+    console.log("📄 [PDF] Loading:", reportUrl);
 
-      // Wait for page to be fully rendered
-      await page.waitForFunction(() => {
-        return document.readyState === 'complete';
-      }, { timeout: 15000 });
-
-      // Wait for your MRI upsell section (FIND THE ACTUAL SELECTOR)
-      await page.waitForSelector('[data-section="mri-upsell"], .mri-upsell, #mri-upsell', { 
-        timeout: 10000 
-      }).catch(() => {
-        console.log('MRI section selector not found, continuing...');
-      });
-
-      // Generate PDF with optimal settings
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { 
-          top: '20px', 
-          right: '20px', 
-          bottom: '40px', 
-          left: '20px' 
-        },
-        preferCSSPageSize: true,
-        scale: 0.85,
-        displayHeaderFooter: false,
-      });
-
-      await browser.close();
-
-      // CONVERT Uint8Array to Buffer for NextResponse compatibility
-      const buffer = Buffer.from(pdfBuffer);
-
-      return new NextResponse(buffer, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': `inline; filename="assessment-${attemptId}.pdf"`,
-          'Cache-Control': 'no-store',
-        },
-      });
-
-    } catch (error) {
-      await browser.close().catch(() => {});
-      throw error;
-    }
-
-  } catch (error) {
-    console.error('PDF Generation Error:', error);
+    // Configure page and navigate
+    await page.setViewport({ width: 1200, height: 800 });
     
-    return NextResponse.json(
-      {
-        error: 'PDF generation failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-        vercelUrl: process.env.VERCEL_URL,
-        chromiumPath: await chromium.executablePath().catch(() => 'unknown')
+    console.log("⏳ [PDF] Navigating to results page...");
+    await page.goto(reportUrl, { 
+      waitUntil: ["networkidle0", "domcontentloaded"],
+      timeout: 30000 // Reasonable timeout for free plan
+    });
+    
+    console.log("✅ [PDF] Page loaded successfully");
+
+    // Wait for critical content elements
+    console.log("⏳ [PDF] Waiting for content elements...");
+    await Promise.all([
+      page.waitForSelector('canvas, svg, [class*="chart"]', { timeout: 8000 }).catch(() => {
+        console.log("⚠️ [PDF] No charts detected, continuing...");
+        return null;
+      }),
+      page.waitForSelector('main, [role="main"], [class*="result"]', { timeout: 8000 }).catch(() => {
+        console.log("⚠️ [PDF] No main container found, continuing...");
+        return null;
+      }),
+    ]);
+
+    // Wait for MRI section and dynamic content
+    console.log("⏳ [PDF] Rendering dynamic content and MRI section...");
+    await page.evaluate(() => {
+      return new Promise<void>((resolve) => {
+        // Scroll to bottom to trigger lazy-loaded content
+        window.scrollTo(0, document.body.scrollHeight);
+        
+        // Wait for animations and dynamic rendering
+        setTimeout(() => {
+          // Scroll back to top for PDF generation
+          window.scrollTo(0, 0);
+          resolve();
+        }, 3000);
+      });
+    });
+
+    console.log("📊 [PDF] Content ready, generating PDF...");
+
+    // Generate PDF
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { 
+        top: "20px", 
+        right: "20px", 
+        bottom: "20px", 
+        left: "20px" 
       },
-      { status: 500 }
-    );
+      preferCSSPageSize: false,
+    });
+
+    console.log(`✅ [PDF] Generated successfully: ${pdfBuffer.length} bytes`);
+
+    await browser.close();
+    browser = null;
+
+    return new NextResponse(pdfBuffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="sales-assessment-${attemptId}.pdf"`,
+        "Cache-Control": "no-store, max-age=0",
+      },
+    });
+
+  } catch (error: any) {
+    console.error("❌ [PDF] Generation failed:", error.message);
+    console.error("❌ [PDF] Full error details:", error);
+    
+    return NextResponse.json({
+      error: "PDF generation failed",
+      details: error.message,
+      attemptId,
+      timestamp: new Date().toISOString(),
+      hint: error.message.includes("timeout") 
+        ? "Page took longer than expected to load. Please try again."
+        : error.message.includes("memory") || error.message.includes("out of memory")
+        ? "Memory limit reached. The page may be too complex for the free plan."
+        : undefined
+    }, { status: 500 });
+
+  } finally {
+    if (browser) {
+      try {
+        await browser.close();
+        console.log("🔒 [PDF] Browser closed");
+      } catch (closeError) {
+        console.error("⚠️ [PDF] Error closing browser:", closeError);
+      }
+    }
   }
 }
