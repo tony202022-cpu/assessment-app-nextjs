@@ -141,3 +141,71 @@
     direction: rtl !important;
   }
 }
+/* ==========================================
+   PROFESSIONAL PRINT STYLES FOR PDF
+   ========================================== */
+
+@media print {
+  /* Hide navigation and UI elements */
+  .no-print, header, nav, button:not(.print-button) {
+    display: none !important;
+  }
+
+  /* Paper configuration */
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+
+  /* Ensure white background and colors print */
+  html, body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  /* Typography optimization for print */
+  h1 {
+    font-size: 28pt !important;
+    page-break-after: avoid;
+    color: #1a1a1a !important;
+  }
+
+  h2 {
+    font-size: 22pt !important;
+    page-break-after: avoid;
+    color: #1a1a1a !important;
+  }
+
+  h3 {
+    font-size: 18pt !important;
+    page-break-after: avoid;
+    color: #1a1a1a !important;
+  }
+
+  p {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+  }
+
+  /* Preserve all colors and backgrounds */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Prevent awkward page breaks */
+  img, canvas, svg, table, .chart-container, .swot-grid {
+    page-break-inside: avoid;
+  }
+
+  /* RTL support for Arabic */
+  [dir="rtl"] {
+    direction: rtl !important;
+  }
+
+  [dir="rtl"] * {
+    text-align: right !important;
+  }
+}

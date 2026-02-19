@@ -523,21 +523,11 @@ function ResultsContent() {
       ? "تحليل شامل للكفاءات مع تحليل SWOT وخطة تنفيذ فورية."
       : "Comprehensive analysis with strategic SWOT and immediate action plan.");
 
+  // ✅ NEW: Simple print function that always works
   const handleDownload = () => {
-    if (!attemptId) return;
-    setDownloading(true);
-
-    try {
-      window.location.href = `/api/generate-pdf?attemptId=${encodeURIComponent(
-        attemptId
-      )}&lang=${encodeURIComponent(language)}`;
-    } catch (error) {
-      console.error("Download failed", error);
-      toast.error(ar ? "فشل تحميل التقرير" : "Failed to download report");
-    } finally {
-      setTimeout(() => setDownloading(false), 2500);
-    }
+    window.print();
   };
+
 
   const handleShare = async () => {
     try {
@@ -597,6 +587,22 @@ function ResultsContent() {
       `}</style>
 
       <Header />
+ 
+      {/* ✅ NEW: Floating Download Button */}
+      <div className="fixed top-4 right-4 z-50 no-print">
+        <button
+          onClick={handleDownload}
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-lg flex items-center gap-2 font-semibold transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H7a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10V9z" />
+          </svg>
+          {ar ? "تحميل التقرير الاحترافي" : "Download Professional Report"}
+        </button>
+      </div>
+
+      <main className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
+
 
       <main className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
         {/* HERO */}
