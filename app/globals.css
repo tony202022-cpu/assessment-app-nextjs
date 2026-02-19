@@ -78,247 +78,49 @@
 }
 
 /* ==========================================
-   MAGAZINE-QUALITY PDF PRINT STYLES
-   Single comprehensive print stylesheet
+   SAFE MINIMAL PRINT STYLES
+   Only essential fixes - preserves all layouts
    ========================================== */
 
 @media print {
-  /* ===== HIDE UI ELEMENTS ===== */
-  .no-print, header, nav, button, .fixed, .absolute {
+  /* Hide UI elements only */
+  .no-print {
     display: none !important;
   }
 
-  /* ===== PROFESSIONAL PAPER CONFIGURATION ===== */
+  /* Professional paper setup */
   @page {
     size: A4 portrait;
-    margin: 15mm;
+    margin: 12mm;
   }
 
-  /* ===== DOCUMENT FOUNDATION ===== */
+  /* Ensure colors print correctly */
   html, body {
     background: white !important;
     -webkit-print-color-adjust: exact !important;
     color-adjust: exact !important;
-    font-size: 12pt;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
   }
 
-  /* ===== PREVENT CONTENT OVERFLOW (CRITICAL FIX) ===== */
+  /* Preserve ALL colors and backgrounds */
   * {
-    max-width: 100% !important;
-    overflow: visible !important;
-    box-sizing: border-box !important;
-  }
-
-  /* ===== MAIN CONTAINER OPTIMIZATION ===== */
-  main {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* ===== PROFESSIONAL TYPOGRAPHY SYSTEM ===== */
-  h1 {
-    font-size: 24pt !important;
-    line-height: 1.2 !important;
-    color: #1a1a1a !important;
-    page-break-after: avoid;
-    margin: 0 0 12pt 0 !important;
-    font-weight: 900 !important;
-  }
-
-  h2 {
-    font-size: 20pt !important;
-    line-height: 1.3 !important;
-    color: #1a1a1a !important;
-    page-break-after: avoid;
-    margin: 0 0 10pt 0 !important;
-    font-weight: 800 !important;
-  }
-
-  h3 {
-    font-size: 16pt !important;
-    line-height: 1.3 !important;
-    color: #1a1a1a !important;
-    page-break-after: avoid;
-    margin: 0 0 8pt 0 !important;
-    font-weight: 700 !important;
-  }
-
-  h4 {
-    font-size: 14pt !important;
-    line-height: 1.3 !important;
-    color: #1a1a1a !important;
-    page-break-after: avoid;
-    margin: 0 0 6pt 0 !important;
-    font-weight: 600 !important;
-  }
-
-  p {
-    font-size: 11pt !important;
-    line-height: 1.5 !important;
-    color: #333 !important;
-    margin: 0 0 8pt 0 !important;
-    orphans: 3;
-    widows: 3;
-  }
-
-  /* ===== LIST FORMATTING ===== */
-  ol, ul {
-    margin: 8pt 0 !important;
-    padding-left: 20pt !important;
-    padding-right: 0 !important;
-  }
-
-  li {
-    font-size: 11pt !important;
-    line-height: 1.5 !important;
-    color: #333 !important;
-    margin-bottom: 4pt !important;
-    page-break-inside: avoid;
-  }
-
-  /* ===== CARD AND SECTION STYLING ===== */
-  .rounded-2xl, .rounded-3xl, .shadow-xl, .border-2 {
-    page-break-inside: avoid;
-    break-inside: avoid;
-    border: 1pt solid #e2e8f0 !important;
-    box-shadow: none !important;
-    margin-bottom: 12pt !important;
-    padding: 12pt !important;
-  }
-
-  /* ===== LAYOUT OPTIMIZATIONS ===== */
-  .grid {
-    display: block !important;
-  }
-
-  .grid > * {
-    width: 100% !important;
-    margin-bottom: 8pt !important;
-    display: block !important;
-  }
-
-  .flex {
-    display: block !important;
-  }
-
-  .flex > * {
-    margin-bottom: 6pt !important;
-    display: block !important;
-  }
-
-  /* ===== IMAGES AND CHARTS - PREVENT OVERFLOW ===== */
-  img, canvas, svg {
-    max-width: 100% !important;
-    max-height: 200pt !important;
-    height: auto !important;
-    page-break-inside: avoid;
-    margin: 8pt 0 !important;
-  }
-
-  .recharts-wrapper {
-    max-height: 250pt !important;
-    page-break-inside: avoid;
-    margin: 12pt 0 !important;
-  }
-
-  /* ===== SMART PAGE BREAKS FOR MAJOR SECTIONS ===== */
-  .space-y-16 > * {
-    page-break-before: always;
-    break-before: page;
-    margin-top: 0 !important;
-  }
-
-  .print-page-break {
-    page-break-before: always;
-    break-before: page;
-  }
-  
-  .print-page-break:first-child {
-    page-break-before: avoid;
-    break-before: avoid;
-  }
-
-  /* ===== PRESERVE ESSENTIAL BACKGROUND COLORS ===== */
-  .bg-gradient-to-br,
-  .bg-emerald-500, .bg-emerald-600,
-  .bg-blue-500, .bg-blue-600, .bg-blue-900,
-  .bg-rose-500, .bg-rose-600,
-  .bg-amber-400, .bg-amber-500,
-  .bg-red-600, .bg-red-700, .bg-red-900,
-  .bg-purple-600, .bg-indigo-900,
-  .bg-slate-900 {
     -webkit-print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
 
-  /* ===== TEXT COLORS ON COLORED BACKGROUNDS ===== */
-  .text-white {
-    color: white !important;
-  }
-
-  .text-blue-100 {
-    color: #dbeafe !important;
-  }
-
-  .text-red-100 {
-    color: #fee2e2 !important;
-  }
-
-  .text-emerald-300 {
-    color: #6ee7b7 !important;
-  }
-
-  .text-orange-300 {
-    color: #fdba74 !important;
-  }
-
-  /* ===== RTL SUPPORT FOR ARABIC IN PRINT ===== */
+  /* RTL support for Arabic */
   [dir="rtl"], [data-rtl="true"] {
     direction: rtl !important;
+  }
+
+  [dir="rtl"] *, [data-rtl="true"] * {
     text-align: right !important;
   }
 
-  [dir="rtl"] * {
-    text-align: right !important;
-  }
-
-  [dir="rtl"] ol, [data-rtl="true"] ol {
-    padding-right: 20pt !important;
-    padding-left: 0 !important;
-  }
-
-  [dir="rtl"] ul, [data-rtl="true"] ul {
-    padding-right: 20pt !important;
-    padding-left: 0 !important;
-  }
-
-  /* ===== REDUCE EXCESSIVE PADDING FOR PRINT ===== */
-  .p-4, .p-5, .p-6, .p-8, .p-10, .p-12, .p-16 {
-    padding: 10pt !important;
-  }
-
-  .space-y-6 > *, .space-y-8 > * {
-    margin-bottom: 10pt !important;
-  }
-
-  /* ===== IDENTITY CARDS GRID OPTIMIZATION ===== */
-  .grid-cols-3 {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 8pt !important;
-  }
-
-  /* ===== CLEAN UP EXCESSIVE MARGINS ===== */
-  .mt-20 {
-    margin-top: 0 !important;
-  }
-
-  /* ===== COMPACT LAYOUT FOR EXECUTION CARDS ===== */
-  .space-y-8 > .rounded-2xl {
-    margin-bottom: 8pt !important;
+  /* Prevent page breaks in critical elements */
+  .recharts-wrapper, 
+  .grid > div,
+  .rounded-2xl,
+  .rounded-3xl {
+    page-break-inside: avoid;
   }
 }
