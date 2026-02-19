@@ -92,7 +92,7 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react@18.3.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@sparticuz/chromium-min':
+      '@sparticuz/chromium':
         specifier: 126.0.0
         version: 126.0.0
       '@supabase/auth-ui-react':
@@ -973,8 +973,8 @@ packages:
       react-redux:
         optional: true
 
-  '@sparticuz/chromium-min@126.0.0':
-    resolution: {integrity: sha512-Wn51LRKXHwBEfm6OWnZmcMVkzWg1TQvSMsG0H5p6UFrOcM6GUjGLxty9Er863EuJC2gwIEc6kNr8h/mhT893oA==}
+  '@sparticuz/chromium@126.0.0':
+    resolution: {integrity: sha512-qqGQmZQj3y0/V2osKswRHbzK4Qe80YHSDnpt6ac51hsY1bMDinMS9Q+eEmcL+re2MEhYN+ykoV9BY8Dyw1Lyjg==}
     engines: {node: '>= 16'}
 
   '@standard-schema/spec@1.1.0':
@@ -2948,7 +2948,7 @@ snapshots:
       react: 18.3.1
       react-redux: 9.2.0(@types/react@18.3.12)(react@18.3.1)(redux@5.0.1)
 
-  '@sparticuz/chromium-min@126.0.0':
+  '@sparticuz/chromium@126.0.0':
     dependencies:
       follow-redirects: 1.15.11
       tar-fs: 3.1.1

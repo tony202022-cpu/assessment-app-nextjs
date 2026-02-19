@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium-min";
+import chromium from "@sparticuz/chromium";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing attemptId" }, { status: 400 });
   }
 
-  let browser = null;
+  let browser: any = null;
 
   try {
     console.log("🚀 [PDF] Starting generation for attemptId:", attemptId);
@@ -22,15 +23,15 @@ export async function GET(request: NextRequest) {
     let launchOptions: any;
 
     if (process.env.VERCEL) {
-      console.log("☁️ [PDF] Vercel Environment - Using chromium-min with includeFiles");
-      
+      console.log("☁️ [PDF] Vercel Environment - Using @sparticuz/chromium");
+
       const executablePath = await chromium.executablePath();
       console.log("📍 [PDF] Executable Path:", executablePath);
 
       launchOptions = {
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
-        executablePath: executablePath,
+        executablePath,
         headless: chromium.headless,
         ignoreHTTPSErrors: true,
       };
@@ -51,28 +52,26 @@ export async function GET(request: NextRequest) {
 
     const protocol = request.headers.get("x-forwarded-proto") || "https";
     const host = request.headers.get("host");
-    const baseUrl = process.env.VERCEL 
+    const baseUrl = process.env.VERCEL
       ? `${protocol}://${host}`
       : (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000");
-    
+
     const reportUrl = `${baseUrl}/scan/results?attemptId=${attemptId}&lang=${lang}`;
     console.log("📄 [PDF] Loading:", reportUrl);
 
     await page.setViewport({ width: 1200, height: 800 });
-    
-    await page.goto(reportUrl, { 
+
+    await page.goto(reportUrl, {
       waitUntil: ["networkidle0", "domcontentloaded"],
-      timeout: 45000 
+      timeout: 45000,
     });
 
     console.log("⏳ [PDF] Waiting for content and MRI section...");
-    
-    // Wait for main content
-    await page.waitForSelector('main, [role="main"], [class*="result"]', { 
-      timeout: 10000 
-    }).catch(() => console.log("⚠️ Main content not found"));
-    
-    // Wait for dynamic content including MRI section
+
+    await page
+      .waitForSelector('main, [role="main"], [class*="result"]', { timeout: 10000 })
+      .catch(() => console.log("⚠️ Main content not found"));
+
     await page.evaluate(() => {
       return new Promise<void>((resolve) => {
         window.scrollTo(0, document.body.scrollHeight);
@@ -102,18 +101,19 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "no-store, max-age=0",
       },
     });
-
   } catch (error: any) {
     console.error("❌ [PDF] Generation failed:", error.message);
     console.error("❌ [PDF] Full error:", error);
-    
-    return NextResponse.json({
-      error: "PDF generation failed",
-      details: error.message,
-      attemptId,
-      timestamp: new Date().toISOString(),
-    }, { status: 500 });
 
+    return NextResponse.json(
+      {
+        error: "PDF generation failed",
+        details: error.message,
+        attemptId,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   } finally {
     if (browser) {
       try {
