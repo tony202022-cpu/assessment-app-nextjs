@@ -851,23 +851,31 @@ function ResultsContent() {
               icon={<Target size={20} className="sm:w-6 sm:h-6" />}
             />
 
-            {competencyRows.map((res: any) => {
-              const id = String(res.competencyId);
-              const tier: Tier = res.derivedTier;
-              const recs = getRecommendations(id, tier, language as Language);
-              if (!recs.length) return null;
+{competencyRows
+  .filter((res: any, index: number) => {
+    const id = String(res.competencyId);
+    const tier: Tier = res.derivedTier;
+    const recs = getRecommendations(id, tier, language as Language);
+    // Only include competencies that have recommendations AND aren't duplicates
+    return recs.length > 0;
+  })
+  .map((res: any, index: number) => {
+    const id = String(res.competencyId);
+    const tier: Tier = res.derivedTier;
+    const recs = getRecommendations(id, tier, language as Language);
 
-              return (
-                <ExecutionCard
-                  key={id}
-                  ar={ar}
-                  titleAr={getCompetencyLabel({ competencyId: id })}
-                  titleEn={getCompetencyLabel({ competencyId: id })}
-                  tier={tier}
-                  recommendations={recs}
-                />
-              );
-            })}
+    return (
+      <ExecutionCard
+        key={`${id}-${tier}-${index}-${res.percentage}`}
+        ar={ar}
+        titleAr={getCompetencyLabel({ competencyId: id })}
+        titleEn={getCompetencyLabel({ competencyId: id })}
+        tier={tier}
+        recommendations={recs}
+      />
+    );
+  })}
+
           </div>
         )}
 
