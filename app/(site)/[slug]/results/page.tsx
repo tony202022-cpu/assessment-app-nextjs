@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import {
   getRecommendations,
   normalizeCompetencyId,
@@ -7,7 +8,7 @@ import {
   Tier,
   Language,
 } from "@/lib/pdf-recommendations";
-import React, { useEffect, useMemo, useState, Suspense } from "react";
+import React, { useEffect, useMemo, Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/header";
@@ -37,6 +38,7 @@ import {
   CheckCircle2,
   X,
   Shield,
+  HelpCircle,
 } from "lucide-react";
 import {
   Radar,
@@ -276,6 +278,47 @@ function extractIdentity(attempt: any) {
   return { fullName, email, company };
 }
 
+const PrintInstructions = () => {
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  return (
+    <>
+      <button
+        onClick={() => setShowInstructions(true)}
+        className="print-hide text-sm text-blue-600 hover:underline flex items-center gap-1"
+      >
+        <HelpCircle size={14} />
+        Print Help
+      </button>
+
+      {showInstructions && (
+        <div className="print-hide fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <h3 className="font-bold text-lg mb-4">Perfect PDF Settings</h3>
+            <div className="space-y-3 text-sm">
+              <div><strong>1. Destination:</strong> Save as PDF</div>
+              <div><strong>2. Paper:</strong> A4 or Letter</div>
+              <div><strong>3. Margins:</strong> None or Minimum</div>
+              <div className="bg-yellow-50 p-2 rounded">
+                <strong>Important:</strong> Uncheck "Headers and footers" to remove URLs
+              </div>
+              <div className="bg-blue-50 p-2 rounded">
+                <strong>For colors:</strong> Check "Background graphics"
+              </div>
+            </div>
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 function ParticipantIdentityCard({
   ar,
   fullName,
@@ -291,7 +334,7 @@ function ParticipantIdentityCard({
 }) {
   return (
     <section
-      className="relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl"
+      className="pdf-avoid-break relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl"
       data-rtl={ar ? "true" : "false"}
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -523,9 +566,13 @@ function ResultsContent() {
       ? "تحليل شامل للكفاءات مع تحليل SWOT وخطة تنفيذ فورية."
       : "Comprehensive analysis with strategic SWOT and immediate action plan.");
 
-  // ✅ Simple print function that always works
+  // Simple download handler - MRI opens new tab, others print
   const handleDownload = () => {
-    window.print();
+    if (isMri && attemptId) {
+      window.open(`/reports/pdf/mri/${attemptId}`, '_blank');
+    } else {
+      window.print();
+    }
   };
 
   const handleShare = async () => {
@@ -574,7 +621,7 @@ function ResultsContent() {
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
+      className="scan-pdf-container min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"
       data-rtl={ar ? "true" : "false"}
     >
       <style jsx global>{`
@@ -587,22 +634,21 @@ function ResultsContent() {
 
       <Header />
  
-      {/* Floating Download Button */}
-      <div className="fixed top-4 right-4 z-50 no-print">
+      {/* Download Controls */}
+      <div className="print-hide fixed top-4 right-4 z-50 flex items-center gap-2">
+        <PrintInstructions />
         <button
           onClick={handleDownload}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-lg flex items-center gap-2 font-semibold transition-all"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H7a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10V9z" />
-          </svg>
-          {ar ? "تحميل التقرير الاحترافي" : "Download Professional Report"}
+          <Download size={20} />
+          {ar ? "تحميل PDF" : "Download PDF"}
         </button>
       </div>
 
       <main className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
         {/* HERO */}
-        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-slate-200">
+        <div className="pdf-avoid-break relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-slate-200">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900" />
 
           <div className="absolute inset-0 overflow-hidden opacity-30">
@@ -626,7 +672,7 @@ function ResultsContent() {
                   {heroSubtitle}
                 </p>
 
-                <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
+                <div className="print-hide flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
                   <Button
                     onClick={handleDownload}
                     disabled={downloading}
@@ -689,7 +735,7 @@ function ResultsContent() {
 
         {/* RADAR + BREAKDOWN */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          <div className="lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8">
+          <div className="pdf-avoid-break lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8">
             <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
               <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
                 <Zap size={20} className="sm:w-6 sm:h-6" />
@@ -732,7 +778,7 @@ function ResultsContent() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
+          <div className="pdf-avoid-break bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg">
                 <Target size={20} className="sm:w-6 sm:h-6" />
@@ -856,7 +902,6 @@ function ResultsContent() {
     const id = String(res.competencyId);
     const tier: Tier = res.derivedTier;
     const recs = getRecommendations(id, tier, language as Language);
-    // Only include competencies that have recommendations AND aren't duplicates
     return recs.length > 0;
   })
   .map((res: any, index: number) => {
@@ -880,7 +925,7 @@ function ResultsContent() {
         )}
 
         {isMri && (
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl md:rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 text-white">
+          <div className="pdf-avoid-break bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl md:rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 text-white">
             <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
               <Gift className="text-white" size={28} />
               <h3 className="text-2xl sm:text-3xl font-black rtl-text">
@@ -919,11 +964,9 @@ function ResultsContent() {
           </div>
         )}
 
-        {/* 🚀 COMPLETE MRI SALES PAGE - ONLY FOR SCAN RESULTS */}
+        {/* MRI UPSELL - ONLY FOR SCAN */}
         {showUpsell && (
-          <div className="space-y-16 mt-20">
-            
-            {/* WARNING HERO SECTION */}
+          <div className="print-hide space-y-16 mt-20">
             <div className="relative overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-red-900 rounded-3xl shadow-2xl border border-red-500">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-red-600" />
               
@@ -994,9 +1037,6 @@ function ResultsContent() {
                 </p>
               </div>
             </div>
-
-            {/* Rest of MRI upsell content continues... */}
-
           </div>
         )}
 
@@ -1023,7 +1063,7 @@ function BoldSwotCard({
   getLabel: (x: any) => string;
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-white/20 ${bgClass} p-6 sm:p-8`}>
+    <div className={`pdf-avoid-break relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-white/20 ${bgClass} p-6 sm:p-8`}>
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-white blur-3xl" />
         <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-white blur-3xl" />
@@ -1079,7 +1119,7 @@ function ExecutionCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 sm:p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow">
+    <div className="pdf-avoid-break rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 sm:p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5 sm:mb-6">
         <div className="space-y-2 flex-1">
           <div className="flex items-center gap-2 sm:gap-3">
