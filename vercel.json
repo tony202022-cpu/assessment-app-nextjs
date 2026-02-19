@@ -2,7 +2,15 @@
   "functions": {
     "app/api/generate-pdf/route.ts": {
       "maxDuration": 60,
-      "memory": 1024
+      "memory": 1024,
+      "runtime": "nodejs20.x"
     }
+  },
+  "buildCommand": "next build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "env": {
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+    "NODE_OPTIONS": "--max-old-space-size=2048"
   }
 }
