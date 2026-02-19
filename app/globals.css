@@ -209,3 +209,62 @@
     text-align: right !important;
   }
 }
+/* ==========================================
+   PROFESSIONAL PDF PRINT STYLES
+   ========================================== */
+
+@media print {
+  /* Hide buttons, headers, and navigation during print */
+  .no-print, header, nav, button {
+    display: none !important;
+  }
+
+  /* Set professional paper size and margins */
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  /* Ensure all colors and backgrounds print correctly */
+  html, body {
+    background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Professional typography for print */
+  h1 {
+    font-size: 24pt !important;
+    color: #1a1a1a !important;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-size: 20pt !important;
+    color: #1a1a1a !important;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 16pt !important;
+    color: #1a1a1a !important;
+    page-break-after: avoid;
+  }
+
+  p {
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    color: #333 !important;
+  }
+
+  /* Prevent awkward page breaks */
+  img, canvas, svg, table, .chart-container, .swot-grid {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure your MRI upsell section prints with colors */
+  .bg-gradient-to-br, .bg-blue-900, .bg-purple-900 {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}

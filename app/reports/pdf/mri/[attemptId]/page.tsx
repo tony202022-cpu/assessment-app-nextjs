@@ -234,32 +234,6 @@ function getSupabaseAdmin() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-"use client"; // Required for window.print() in Next.js App Router
-
-// ============================================================================
-// FIXED: PDF DOWNLOAD LINK (Client-Side Print Solution)
-// ============================================================================
-const PDFDownloadLink = ({ 
-  attemptId, 
-  lang, 
-  ar 
-}: { 
-  attemptId: string; 
-  lang: string; 
-  ar: boolean;
-}) => (
-  <button
-    type="button"
-    onClick={() => window.print()}
-    className="no-print inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg transition-all active:scale-95"
-  >
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H7a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10V9z" />
-    </svg>
-    {ar ? "تحميل PDF" : "Download PDF"}
-  </button>
-);
-
 
 // ============================================================================
 // PAGE 1: HIGH CONTRAST COVER WITH PROMINENT DATE & EMAIL
@@ -1654,8 +1628,7 @@ export default async function PdfMriReportPage({ params, searchParams }: any) {
   return (
     <>
       <ExecutiveStyles />
-      <PDFDownloadLink attemptId={attemptId} lang={lang} ar={ar} />
-      
+            
       <div
         dir={ar ? "rtl" : "ltr"}
         style={{
