@@ -85,3 +85,59 @@
     padding-left: 0;
   }
 }
+/* ==========================================
+   PROFESSIONAL PRINT STYLES
+   ========================================== */
+
+@media print {
+  /* Hide buttons and navigation during print */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Set paper size and margins */
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+
+  /* Ensure colors print correctly */
+  html, body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  /* Optimize typography for print */
+  h1 {
+    font-size: 28pt !important;
+    color: #1a1a1a !important;
+  }
+
+  h2 {
+    font-size: 22pt !important;
+    color: #1a1a1a !important;
+  }
+
+  h3 {
+    font-size: 18pt !important;
+    color: #1a1a1a !important;
+  }
+
+  p {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+  }
+
+  /* Ensure all colors and backgrounds print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Support for Arabic text */
+  [dir="rtl"] {
+    direction: rtl !important;
+  }
+}
