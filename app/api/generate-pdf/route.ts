@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 import path from 'path';
+import { Buffer } from 'buffer'; // ADD THIS IMPORT
 
 // CRITICAL: Force Node.js runtime (not Edge) for Vercel
 export const runtime = 'nodejs';
@@ -97,7 +98,10 @@ export async function POST(request: NextRequest) {
 
       await browser.close();
 
-      return new NextResponse(pdfBuffer, {
+      // CONVERT Uint8Array to Buffer for NextResponse compatibility
+      const buffer = Buffer.from(pdfBuffer);
+
+      return new NextResponse(buffer, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
