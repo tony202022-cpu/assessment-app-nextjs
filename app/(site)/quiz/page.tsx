@@ -34,8 +34,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 function safeSlug(slug: any) {
-  const s = String(slug || "").toLowerCase().trim();
-  return s === "mri" ? "mri" : "scan";
+  return String(slug || "").toLowerCase().trim();
 }
 
 function safeLang(x: any) {
