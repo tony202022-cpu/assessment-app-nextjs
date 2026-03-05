@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 type Lang = "en" | "ar";
 
-// DB truth
+// DB truth (current)
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 
@@ -19,17 +19,17 @@ function assessmentIdFromSlug(slug: string) {
   return slug === "mri" ? MRI_ASSESSMENT_ID : SCAN_ASSESSMENT_ID;
 }
 
+function safeLang(x: string | null): Lang {
+  return x === "ar" ? "ar" : "en";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const params = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
 
-  const slug = String(params?.slug || "scan");
-
-  const urlLang = useMemo<Lang>(() => {
-    const v = String(searchParams.get("lang") || "").toLowerCase().trim();
-    return v === "ar" ? "ar" : "en";
-  }, [searchParams]);
+  const slug = String(params?.slug || "scan").toLowerCase().trim();
+  const urlLang = useMemo<Lang>(() => safeLang(searchParams.get("lang")), [searchParams]);
 
   const { language, setLanguage } = useLocale();
   const { user, isLoading } = useSession();
@@ -38,11 +38,19 @@ export default function LoginPage() {
   const dir = ar ? "rtl" : "ltr";
 
   const [hydrated, setHydrated] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const [submitting, setSubmitting] = useState(false);
 
+  // ✅ FIX: prevents "already logged in" flash after logout
+  const [forceLoggedOut, setForceLoggedOut] = useState(false);
+
+  // Simple mode switch (no confusing hidden fields)
+  const [mode, setMode] = useState<"login" | "signup">("login");
+
+  // Always-visible fields (for reports)
   const [fullName, setFullName] = useState("");
   const [company, setCompany] = useState("");
+
+  // Auth fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -53,24 +61,76 @@ export default function LoginPage() {
     if (language !== urlLang) setLanguage(urlLang);
   }, [hydrated, urlLang, language, setLanguage]);
 
-  // ---------- CREATE ATTEMPT (SCHEMA SAFE) ----------
+  // Prefill from signed-in user (if exists)
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!user) return;
+
+    const meta: any = (user as any).user_metadata || {};
+    setFullName((meta?.full_name as string) || "");
+    setCompany((meta?.company as string) || "");
+    setEmail(((user as any).email as string) || "");
+  }, [hydrated, user]);
+
+  // ✅ FIX: if user becomes available again, allow signed-in UI
+  useEffect(() => {
+    if (user) setForceLoggedOut(false);
+  }, [user]);
+
+  const inputClass =
+    "h-12 rounded-2xl bg-white text-slate-900 placeholder:text-slate-500 " +
+    "border border-white/30 shadow-sm " +
+    "focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-0";
+
+  const title = ar ? "تسجيل الدخول" : "Sign In";
+  const subtitle =
+    slug === "mri"
+      ? ar
+        ? "ابدأ التقييم المتقدم خلال 90 دقيقة."
+        : "Start the advanced assessment (90 minutes)."
+      : ar
+      ? "ابدأ الفحص المجاني خلال 20 دقيقة."
+      : "Start the free scan (20 minutes).";
+
+  const saveProfileToSupabaseUser = async () => {
+    // Save to auth metadata so it’s available later for reports
+    if (!user) return;
+
+    const name = fullName.trim();
+    const comp = company.trim();
+
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        full_name: name || null,
+        company: comp || null,
+      },
+    });
+
+    if (error) {
+      // Not fatal; attempt will still store name/company in quiz_attempts
+      console.warn("updateUser metadata error:", error);
+    }
+  };
+
   const createAttempt = async () => {
     const assessmentId = assessmentIdFromSlug(slug);
     const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user?.id) throw new Error(ar ? "غير مسجل الدخول" : "Not authenticated");
 
+    const meta: any = auth.user.user_metadata || {};
     const payload = {
       assessment_id: assessmentId,
       language: urlLang,
-      full_name: fullName.trim() || null,
-      company: company.trim() || null,
-      user_email: email.trim() || auth.user?.email || null,
-      user_id: auth.user?.id ?? null,
 
-      // REQUIRED NOT NULL
+      full_name: fullName.trim() || meta?.full_name || null,
+      company: company.trim() || meta?.company || null,
+      user_email: (auth.user.email || "").trim() || null,
+      user_id: auth.user.id,
+
+      // required columns (match your schema)
       total_questions: slug === "mri" ? 75 : 30,
       score: 0,
       total_percentage: 0,
-
       answers: [],
       competency_results: [],
     };
@@ -85,28 +145,32 @@ export default function LoginPage() {
     return data.id as string;
   };
 
-  // ---------- CONTINUE ----------
   const goNext = async () => {
     setSubmitting(true);
     try {
+      // keep profile updated for reports
+      await saveProfileToSupabaseUser();
+
       const attemptId = await createAttempt();
       router.replace(
         `/${slug}/instructions?lang=${urlLang}&attemptId=${encodeURIComponent(attemptId)}`
       );
     } catch (e: any) {
-      toast.error(e?.message || "Failed to continue");
+      toast.error(e?.message || (ar ? "فشل المتابعة" : "Failed to continue"));
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ---------- AUTH ----------
-  const handleLogin = async () => {
-    if (!email || !password) return;
-    setSubmitting(true);
+  const handleEmailLogin = async () => {
+    if (!email.trim() || !password) {
+      toast.error(ar ? "أدخل البريد وكلمة المرور" : "Enter email and password");
+      return;
+    }
 
+    setSubmitting(true);
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
 
@@ -120,14 +184,21 @@ export default function LoginPage() {
   };
 
   const handleSignup = async () => {
-    if (!fullName || !email || !password) return;
+    if (!fullName.trim() || !email.trim() || !password) {
+      toast.error(ar ? "أدخل الاسم والبريد وكلمة المرور" : "Enter name, email, and password");
+      return;
+    }
+
     setSubmitting(true);
 
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
-        data: { full_name: fullName, company: company || null },
+        data: {
+          full_name: fullName.trim(),
+          company: company.trim() || null,
+        },
       },
     });
 
@@ -137,13 +208,10 @@ export default function LoginPage() {
       return;
     }
 
-    const { error: signInErr } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInErr) {
-      toast.error("Disable Email Confirmations in Supabase");
+    // If email confirmations are ON, user may not be logged in yet
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user) {
+      toast.error(ar ? "تحقق من بريدك لتأكيد الحساب" : "Check your email to confirm your account");
       setSubmitting(false);
       return;
     }
@@ -151,36 +219,169 @@ export default function LoginPage() {
     await goNext();
   };
 
+  // ✅ FIXED: stable logout (no flicker, no loop)
+  const handleSignOut = async () => {
+    // Immediately force logged-out UI to avoid flicker while SessionContext updates.
+    setForceLoggedOut(true);
+    setSubmitting(true);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        setForceLoggedOut(false);
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success(ar ? "تم تسجيل الخروج" : "Signed out");
+
+      // Clear sensitive fields
+      setPassword("");
+
+      // Replace to a clean login URL so the page is stable and doesn't bounce.
+      router.replace(`/${slug}/login?lang=${urlLang}&t=${Date.now()}`);
+      router.refresh();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (!hydrated || isLoading) return null;
 
+  // ✅ FIX: respects forceLoggedOut so "Already signed in" never flashes after logout
+  const alreadyLoggedIn = !!user && !forceLoggedOut;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-950 via-blue-900 to-blue-700" dir={dir}>
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-white text-center">
-          {mode === "login" ? (ar ? "تسجيل الدخول" : "Sign In") : ar ? "إنشاء حساب" : "Create Account"}
-        </h1>
+    <div
+      className="min-h-screen flex items-center justify-center px-5 sm:px-6 py-10
+                 bg-gradient-to-br from-[#071a3a] via-[#0b1b3a] to-[#102a5a]"
+      dir={dir}
+    >
+      <div className="w-full max-w-md rounded-3xl bg-white/10 border border-white/15 shadow-2xl backdrop-blur-xl p-6 sm:p-8 space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-white">{title}</h1>
+          <p className="text-white/80 text-sm sm:text-base">{subtitle}</p>
+        </div>
 
-        <Input placeholder={ar ? "الاسم الكامل" : "Full name"} value={fullName} onChange={e => setFullName(e.target.value)} />
-        <Input placeholder={ar ? "الشركة" : "Company"} value={company} onChange={e => setCompany(e.target.value)} />
-        <Input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <Input type="password" placeholder={ar ? "كلمة المرور" : "Password"} value={password} onChange={e => setPassword(e.target.value)} />
+        {/* Session banner (NO auto redirect) */}
+        {alreadyLoggedIn && (
+          <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-white/90 text-sm">
+            {ar
+              ? "أنت مسجل الدخول بالفعل. يمكنك المتابعة أو تسجيل الخروج."
+              : "You’re already signed in. You can continue or sign out."}
+          </div>
+        )}
 
-        <Button
-          disabled={submitting}
-          className="w-full bg-amber-400 text-slate-900 font-bold"
-          onClick={mode === "login" ? handleLogin : handleSignup}
-        >
-          {submitting ? "…" : mode === "login" ? (ar ? "دخول" : "Sign In") : (ar ? "إنشاء الحساب والمتابعة" : "Create & Continue")}
-        </Button>
+        {/* Always visible (report fields) */}
+        <div className="space-y-3">
+          <Input
+            className={inputClass}
+            placeholder={ar ? "الاسم الكامل (سيظهر في التقرير)" : "Full name (shown in report)"}
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            autoComplete="name"
+          />
+          <Input
+            className={inputClass}
+            placeholder={ar ? "الشركة (اختياري)" : "Company (optional)"}
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            autoComplete="organization"
+          />
+        </div>
 
-        <button
-          className="text-amber-200 text-sm w-full"
-          onClick={() => setMode(mode === "login" ? "signup" : "login")}
-        >
-          {mode === "login"
-            ? ar ? "ليس لديك حساب؟" : "No account?"
-            : ar ? "لديك حساب؟" : "Have an account?"}
-        </button>
+        {/* Mode toggle */}
+        {!alreadyLoggedIn && (
+          <div className="grid grid-cols-2 gap-2 bg-white/10 p-1 rounded-2xl border border-white/10">
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className={`h-11 rounded-xl font-bold transition ${
+                mode === "login" ? "bg-white text-[#0b1b3a]" : "text-white/80 hover:text-white"
+              }`}
+            >
+              {ar ? "دخول" : "Sign In"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className={`h-11 rounded-xl font-bold transition ${
+                mode === "signup" ? "bg-white text-[#0b1b3a]" : "text-white/80 hover:text-white"
+              }`}
+            >
+              {ar ? "حساب جديد" : "Create Account"}
+            </button>
+          </div>
+        )}
+
+        {/* Email/Password always visible (unless already logged in) */}
+        {!alreadyLoggedIn && (
+          <div className="space-y-3">
+            <Input
+              className={inputClass}
+              placeholder={ar ? "البريد الإلكتروني" : "Email"}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              inputMode="email"
+            />
+            <Input
+              className={inputClass}
+              type="password"
+              placeholder={ar ? "كلمة المرور" : "Password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+            />
+          </div>
+        )}
+
+        {/* Primary action */}
+        {alreadyLoggedIn ? (
+          <div className="space-y-3">
+            <Button
+              disabled={submitting}
+              className="w-full h-12 rounded-2xl bg-amber-400 text-slate-900 font-extrabold hover:bg-amber-300"
+              onClick={goNext}
+            >
+              {submitting ? "…" : ar ? "متابعة" : "Continue"}
+            </Button>
+
+            <button
+              type="button"
+              className="w-full text-xs text-white/70 hover:text-white"
+              onClick={handleSignOut}
+            >
+              {ar ? "تسجيل الخروج" : "Sign out"}
+            </button>
+          </div>
+        ) : (
+          <>
+            <Button
+              disabled={submitting}
+              className="w-full h-12 rounded-2xl bg-amber-400 text-slate-900 font-extrabold hover:bg-amber-300"
+              onClick={mode === "login" ? handleEmailLogin : handleSignup}
+            >
+              {submitting
+                ? "…"
+                : mode === "login"
+                ? ar
+                  ? "تسجيل الدخول"
+                  : "Sign In"
+                : ar
+                ? "إنشاء الحساب والمتابعة"
+                : "Create & Continue"}
+            </Button>
+
+            <div className="text-center text-xs text-white/55">
+              {ar
+                ? "لن نرسل رسائل مزعجة. هذا فقط لحفظ نتائجك."
+                : "No spam. This is only to save your results."}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

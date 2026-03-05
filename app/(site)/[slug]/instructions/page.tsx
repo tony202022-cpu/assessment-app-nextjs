@@ -12,12 +12,17 @@ function safeLang(x: string | null) {
   return x === "ar" ? "ar" : "en";
 }
 
+function safeSlug(x: any) {
+  return String(x || "").toLowerCase().trim();
+}
+
 export default function InstructionsPage() {
   const router = useRouter();
-  const { slug } = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
   const { language, setLanguage } = useLocale();
 
+  const slug = useMemo(() => safeSlug(params?.slug), [params]);
   const urlLang = useMemo(() => safeLang(searchParams.get("lang")), [searchParams]);
   const attemptId = searchParams.get("attemptId");
 
@@ -30,13 +35,23 @@ export default function InstructionsPage() {
 
   if (!hydrated) return null;
 
-  const isScan = slug !== "mri";
-  const assessmentId = isScan ? SCAN_ASSESSMENT_ID : MRI_ASSESSMENT_ID;
-  const ar = language === "ar";
+  // ✅ Correct classification for both old slugs (scan/mri) and new ones (outdoor-scan/outdoor-mri)
+  const isMRI = slug === "mri" || slug.endsWith("mri");
+  const isScan = slug === "scan" || slug.endsWith("scan");
+
+  // Safe default: if slug is unknown, treat it as scan (prevents breaking)
+  const effectiveIsScan = !isMRI && isScan ? true : !isMRI;
+
+  const assessmentId = effectiveIsScan ? SCAN_ASSESSMENT_ID : MRI_ASSESSMENT_ID;
+  const ar = (language || urlLang) === "ar";
 
   const goToQuiz = () => {
+    // attemptId should exist, but we won't hard-crash if missing
+    const a = attemptId ? `&attemptId=${encodeURIComponent(attemptId)}` : "";
     router.replace(
-      `/${slug}/quiz?assessmentId=${assessmentId}&attemptId=${attemptId}&lang=${urlLang}`
+      `/${encodeURIComponent(slug)}/quiz?assessmentId=${encodeURIComponent(assessmentId)}${a}&lang=${encodeURIComponent(
+        urlLang
+      )}`
     );
   };
 
@@ -55,7 +70,7 @@ export default function InstructionsPage() {
             {ar ? "تعليمات قبل البدء" : "Before You Begin"}
           </h1>
           <p className="text-white/80 text-base sm:text-lg">
-            {isScan
+            {effectiveIsScan
               ? ar
                 ? "فحص احترافي سريع يعطيك صورة دقيقة عن مستواك الحالي."
                 : "A fast professional scan that gives you a clear snapshot of your current level."
@@ -69,35 +84,23 @@ export default function InstructionsPage() {
         <div className="rounded-2xl bg-white/10 border border-white/20 p-6 space-y-5 text-white/90">
           <div className="grid gap-4 sm:grid-cols-2 text-sm sm:text-base">
             <div>
-              ⏱️{" "}
-              <strong>
-                {ar ? "التقييم بزمن محدد:" : "Timed assessment:"}
-              </strong>{" "}
-              {isScan
+              ⏱️ <strong>{ar ? "التقييم بزمن محدد:" : "Timed assessment:"}</strong>{" "}
+              {effectiveIsScan
                 ? ar ? "حوالي 20 دقيقة." : "About 20 minutes."
                 : ar ? "حوالي 90 دقيقة." : "About 90 minutes."}
             </div>
 
             <div>
-              🧠{" "}
-              <strong>
-                {ar ? "أسلوب الإجابة:" : "Answering style:"}
-              </strong>{" "}
+              🧠 <strong>{ar ? "أسلوب الإجابة:" : "Answering style:"}</strong>{" "}
               {ar ? "تلقائي، دون تفكير مطوّل." : "Instinctive, no overthinking."}
             </div>
 
             <div>
-              🔒{" "}
-              <strong>
-                {ar ? "لا توجد إجابات صحيحة أو خاطئة." : "No right or wrong answers."}
-              </strong>
+              🔒 <strong>{ar ? "لا توجد إجابات صحيحة أو خاطئة." : "No right or wrong answers."}</strong>
             </div>
 
             <div>
-              🎯{" "}
-              <strong>
-                {ar ? "يقيس سلوكك الحقيقي" : "Measures real behavior"}
-              </strong>
+              🎯 <strong>{ar ? "يقيس سلوكك الحقيقي" : "Measures real behavior"}</strong>
             </div>
           </div>
         </div>
@@ -116,9 +119,10 @@ export default function InstructionsPage() {
               : "All answer options are intentionally realistic. Choose what you would truly do."}
           </p>
 
-          {!isScan && (
+          {!effectiveIsScan && (
             <p className="text-amber-200 font-semibold">
-              ⚠️ {ar
+              ⚠️{" "}
+              {ar
                 ? "لا يمكن إيقاف أو إعادة التقييم بعد البدء."
                 : "Once started, the assessment cannot be paused or restarted."}
             </p>
@@ -134,10 +138,10 @@ export default function InstructionsPage() {
             onClick={goToQuiz}
           >
             {ar
-              ? isScan
+              ? effectiveIsScan
                 ? "ابدأ الفحص الآن"
                 : "ابدأ التقييم المتقدم"
-              : isScan
+              : effectiveIsScan
               ? "Start the Scan Now"
               : "Start the Advanced Assessment"}
           </Button>

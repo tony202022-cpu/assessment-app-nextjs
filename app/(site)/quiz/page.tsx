@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Question, AnswerPayload } from "@/types";
 import { useLocale } from "@/contexts/LocaleContext";
 import { toast } from "sonner";
-import { submitQuiz, getAssessmentConfig } from "@/lib/actions";
+import { submitQuiz } from "@/lib/actions";
 import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
 
 const arabicFont = IBM_Plex_Sans_Arabic({
@@ -42,6 +42,11 @@ function safeLang(x: any) {
   return v === "ar" ? "ar" : "en";
 }
 
+// ✅ NEW: localStorage key helper (attemptId-scoped)
+function deadlineKey(attemptId: string) {
+  return `quiz_deadline_ms:${attemptId}`;
+}
+
 export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
@@ -73,7 +78,10 @@ export default function QuizPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<AnswerPayload[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ✅ NEW: timeRemaining is now derived from a stored deadline
   const [timeRemaining, setTimeRemaining] = useState(20 * 60);
+
   const [timerStarted, setTimerStarted] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,14 +89,16 @@ export default function QuizPage() {
     Array<{ text: string; score: number; index: number }>
   >([]);
 
- // ✅ HARD GUARD — run once only (prevents redirect loops)
-useEffect(() => {
-  if (attemptId === null) {
-    router.replace(`/${slug}/login?lang=${encodeURIComponent(urlLang)}`);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+  // ✅ NEW: holds the deadline timestamp (ms)
+  const deadlineMsRef = useRef<number | null>(null);
 
+  // ✅ HARD GUARD — run once only (prevents redirect loops)
+  useEffect(() => {
+    if (attemptId === null) {
+      router.replace(`/${slug}/login?lang=${encodeURIComponent(urlLang)}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ✅ Pull assessmentId from URL if present
   const assessmentIdFromUrl = useMemo(() => {
@@ -101,43 +111,42 @@ useEffect(() => {
     const loadConfig = async () => {
       if (!slug) return;
 
-      const defaultQ = slug === "mri" ? 75 : 30;
-      const defaultT = slug === "mri" ? 90 * 60 : 20 * 60;
+      const isMRI = slug.endsWith("mri") || slug === "mri";
+      const defaultQ = isMRI ? 75 : 30;
+      const defaultT = isMRI ? 90 * 60 : 20 * 60;
 
       // Priority 1: assessmentId from URL
       if (assessmentIdFromUrl) {
         setAssessmentId(assessmentIdFromUrl);
+        // keep defaults as a safe fallback ONLY
         setQuestionLimit(defaultQ);
         setTimeLimitSeconds(defaultT);
         setTimeRemaining(defaultT);
-        return;
+        // but DO NOT return; we still want to load the real config by slug
       }
 
-      // Priority 2: try config loader
+      // Priority 2: load config from Supabase using client (works in client components)
       try {
-        const conf: any = await (getAssessmentConfig as any)?.(slug);
-        const aId =
-          conf?.assessmentId ||
-          conf?.assessment_id ||
-          conf?.id ||
-          conf?.slug_assessment_id ||
-          "";
+        const { data: conf, error } = await supabase
+          .from("assessments")
+          .select("id, num_questions, timer_minutes, status")
+          .eq("slug", slug)
+          .maybeSingle();
 
-        const qLimit =
-          Number(conf?.question_limit ?? conf?.questionCount ?? conf?.questions_count ?? conf?.questions_limit) ||
-          defaultQ;
+        if (error) console.warn("Assessment config load error:", error);
 
-        const tSeconds = Number(conf?.time_limit_seconds ?? conf?.timeLimitSeconds) || defaultT;
+        if (conf && conf.status === "active") {
+          const qLimit = Number(conf.num_questions) || defaultQ;
+          const tSeconds = (Number(conf.timer_minutes) || defaultT / 60) * 60;
 
-        if (aId) {
-          setAssessmentId(String(aId));
+          setAssessmentId(String(conf.id));
           setQuestionLimit(qLimit);
           setTimeLimitSeconds(tSeconds);
           setTimeRemaining(tSeconds);
           return;
         }
-      } catch {
-        // ignore
+      } catch (e) {
+        console.warn("Assessment config load exception:", e);
       }
 
       // Priority 3: hard fallback mapping
@@ -199,6 +208,25 @@ useEffect(() => {
         }))
       );
 
+      // ✅ NEW: Create or reuse a stored deadline that survives tab-switch/lock/refresh
+      // Only set it once per attemptId.
+      const key = deadlineKey(attemptId);
+      const existing = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
+
+      const now = Date.now();
+      let deadlineMs = Number(existing || "");
+
+      if (!deadlineMs || Number.isNaN(deadlineMs) || deadlineMs <= now) {
+        // Set a fresh deadline: now + full time limit
+        deadlineMs = now + timeLimitSeconds * 1000;
+        window.localStorage.setItem(key, String(deadlineMs));
+      }
+
+      deadlineMsRef.current = deadlineMs;
+
+      const remainingSeconds = Math.max(0, Math.ceil((deadlineMs - now) / 1000));
+      setTimeRemaining(remainingSeconds);
+
       setTimerStarted(true);
       setLoading(false);
 
@@ -208,16 +236,43 @@ useEffect(() => {
     };
 
     fetchQuestions();
-  }, [assessmentId, questionLimit, isArabic, attemptId]);
+  }, [assessmentId, questionLimit, isArabic, attemptId, timeLimitSeconds]);
 
-  // 3) Timer
+  // ✅ 3) Timer (deadline-based, survives leaving the page)
   useEffect(() => {
     if (!timerStarted || loading || isSubmitting) return;
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => (prev <= 1 ? 0 : prev - 1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timerStarted, loading, isSubmitting]);
+    if (!attemptId) return;
+
+    const key = deadlineKey(attemptId);
+
+    const tick = () => {
+      const now = Date.now();
+
+      // Refresh deadline from storage in case another tab writes it,
+      // or if the page refreshed and ref wasn’t set yet.
+      const stored = window.localStorage.getItem(key);
+      const deadlineMs = Number(stored || "") || deadlineMsRef.current || 0;
+
+      if (!deadlineMs) {
+        // If something cleared it unexpectedly, recreate using current remaining.
+        const recreated = now + Math.max(0, timeRemaining) * 1000;
+        window.localStorage.setItem(key, String(recreated));
+        deadlineMsRef.current = recreated;
+        return;
+      }
+
+      deadlineMsRef.current = deadlineMs;
+
+      const remaining = Math.max(0, Math.ceil((deadlineMs - now) / 1000));
+      setTimeRemaining(remaining);
+    };
+
+    // Run immediately so UI is correct after tab refocus
+    tick();
+
+    const interval = window.setInterval(tick, 500); // smoother + resilient
+    return () => window.clearInterval(interval);
+  }, [timerStarted, loading, isSubmitting, attemptId]);
 
   // 4) Time up -> finish (submit once)
   useEffect(() => {
@@ -259,6 +314,17 @@ useEffect(() => {
     setShuffledOptions(shuffleArray(opts));
   }, [currentQuestionIndex, urlLang, isTransitioning, currentQuestion, isSubmitting]);
 
+  // ✅ helper: clear deadline storage when quiz ends
+  const clearStoredDeadline = () => {
+    if (!attemptId) return;
+    try {
+      window.localStorage.removeItem(deadlineKey(attemptId));
+    } catch {
+      // ignore
+    }
+    deadlineMsRef.current = null;
+  };
+
   // 6) Finish -> submitQuiz (attemptId-driven)
   const handleFinish = async () => {
     if (!attemptId) return;
@@ -283,6 +349,9 @@ useEffect(() => {
     try {
       // ✅ NEW: submitQuiz answers INTO the existing attempt
       await submitQuiz(finalAnswers, attemptId, urlLang, assessmentId);
+
+      // ✅ NEW: clear deadline so a new attempt starts fresh
+      clearStoredDeadline();
 
       window.location.href = `/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(
         urlLang
@@ -332,7 +401,7 @@ useEffect(() => {
       ? "from-amber-500 to-orange-600"
       : "from-blue-600 to-indigo-700";
 
-  const clamp2 = "[display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden";
+  // ❌ Removed line-clamps for answers (Problem 1 fix)
   const clamp3 = "[display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden";
 
   if (!attemptId) return null;
@@ -360,7 +429,9 @@ useEffect(() => {
       )}
 
       {/* TIMER */}
-      <div className={`w-full bg-gradient-to-r ${timerColor} text-white px-5 py-3 shadow-md backdrop-blur-xl border-b border-white/20`}>
+      <div
+        className={`w-full bg-gradient-to-r ${timerColor} text-white px-5 py-3 shadow-md backdrop-blur-xl border-b border-white/20`}
+      >
         <div className="max-w-md mx-auto flex items-center justify-between">
           <span className="text-sm font-semibold opacity-90">
             {currentQuestionIndex + 1}/{questions.length}
@@ -379,7 +450,11 @@ useEffect(() => {
         <div className="w-full max-w-md space-y-3">
           {/* QUESTION */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-5">
-            <h2 className={`text-[clamp(17px,4.5vw,20px)] font-extrabold leading-snug ${isArabic ? "text-right" : "text-left"} ${clamp3}`}>
+            <h2
+              className={`text-[clamp(17px,4.5vw,20px)] font-extrabold leading-snug ${
+                isArabic ? "text-right" : "text-left"
+              } ${clamp3}`}
+            >
               {questionText}
             </h2>
           </div>
@@ -399,7 +474,10 @@ useEffect(() => {
                     💡
                   </div>
 
-                  <span className={`flex-1 text-[clamp(15px,4vw,17px)] font-semibold text-gray-900 leading-snug ${clamp2}`}>
+                  {/* ✅ PROBLEM 1 FIX: no truncation, wraps cleanly on mobile */}
+                  <span
+                    className={`flex-1 text-[clamp(15px,4vw,17px)] font-semibold text-gray-900 leading-snug whitespace-normal break-words`}
+                  >
                     {option.text}
                   </span>
                 </div>
