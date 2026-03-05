@@ -9,6 +9,22 @@ const nextConfig = {
       "/api/generate-pdf": ["./node_modules/@sparticuz/chromium/**"],
     },
   },
+
+  async redirects() {
+    return [
+      // Legacy slugs -> new slugs
+      {
+        source: "/scan",
+        destination: "/outdoor-scan",
+        permanent: true,
+      },
+      {
+        source: "/mri",
+        destination: "/outdoor-mri",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
