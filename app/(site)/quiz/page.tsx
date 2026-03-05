@@ -238,42 +238,56 @@ export default function QuizPage() {
     fetchQuestions();
   }, [assessmentId, questionLimit, isArabic, attemptId, timeLimitSeconds]);
 
-  // ✅ 3) Timer (deadline-based, survives leaving the page)
-  useEffect(() => {
-    if (!timerStarted || loading || isSubmitting) return;
-    if (!attemptId) return;
+// ✅ 3) Timer (deadline-based, survives leaving the page)
+useEffect(() => {
+  if (!timerStarted || loading || isSubmitting) return;
+  if (!attemptId) return;
 
-    const key = deadlineKey(attemptId);
+  const key = deadlineKey(attemptId);
 
-    const tick = () => {
-      const now = Date.now();
+  const tick = () => {
+    const now = Date.now();
 
-      // Refresh deadline from storage in case another tab writes it,
-      // or if the page refreshed and ref wasn’t set yet.
-      const stored = window.localStorage.getItem(key);
-      const deadlineMs = Number(stored || "") || deadlineMsRef.current || 0;
+    // Refresh deadline from storage in case another tab writes it,
+    // or if the page refreshed and ref wasn’t set yet.
+    const stored = window.localStorage.getItem(key);
+    const deadlineMs = Number(stored || "") || deadlineMsRef.current || 0;
 
-      if (!deadlineMs) {
-        // If something cleared it unexpectedly, recreate using current remaining.
-        const recreated = now + Math.max(0, timeRemaining) * 1000;
-        window.localStorage.setItem(key, String(recreated));
-        deadlineMsRef.current = recreated;
-        return;
-      }
+    if (!deadlineMs) {
+      // If something cleared it unexpectedly, recreate using current remaining.
+      const recreated = now + Math.max(0, timeRemaining) * 1000;
+      window.localStorage.setItem(key, String(recreated));
+      deadlineMsRef.current = recreated;
+      return;
+    }
 
-      deadlineMsRef.current = deadlineMs;
+    deadlineMsRef.current = deadlineMs;
 
-      const remaining = Math.max(0, Math.ceil((deadlineMs - now) / 1000));
-      setTimeRemaining(remaining);
-    };
+    const remaining = Math.max(0, Math.ceil((deadlineMs - now) / 1000));
+    setTimeRemaining(remaining);
+  };
 
-    // Run immediately so UI is correct after tab refocus
-    tick();
+  // ✅ NEW: When user returns to the tab, sync immediately (fixes "timer stops" perception)
+  const onVisibility = () => {
+    if (document.visibilityState === "visible") tick();
+  };
 
-    const interval = window.setInterval(tick, 500); // smoother + resilient
-    return () => window.clearInterval(interval);
-  }, [timerStarted, loading, isSubmitting, attemptId]);
+  // Run immediately so UI is correct now
+  tick();
 
+  // Interval can be throttled in background tabs, but deadline math stays correct.
+  const interval = window.setInterval(tick, 500); // smoother + resilient
+
+  // ✅ NEW: force refresh on tab focus/visibility restore
+  window.addEventListener("focus", tick);
+  document.addEventListener("visibilitychange", onVisibility);
+
+  return () => {
+    window.clearInterval(interval);
+    window.removeEventListener("focus", tick);
+    document.removeEventListener("visibilitychange", onVisibility);
+  };
+}, [timerStarted, loading, isSubmitting, attemptId, timeRemaining]);
   // 4) Time up -> finish (submit once)
   useEffect(() => {
     if (timeRemaining !== 0) return;
@@ -466,8 +480,8 @@ export default function QuizPage() {
                 key={index}
                 onClick={() => handleOptionSelect(option.score)}
                 disabled={isTransitioning || isSubmitting}
-                className={`w-full px-5 py-4 rounded-xl border border-white/40 bg-white/60 backdrop-blur-xl shadow-md
-                  hover:bg-white/80 hover:shadow-lg active:scale-[0.98] transition-all duration-200`}
+     className={`w-full px-5 py-4 rounded-xl border border-white/40 bg-white/60 backdrop-blur-xl shadow-md
+hover:bg-white/80 hover:shadow-lg active:scale-[0.98] transition-all duration-200 focus:outline-none`}
               >
                 <div className={`flex items-start gap-4 ${isArabic ? "text-right" : "text-left"}`}>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-900 shadow-inner font-bold">

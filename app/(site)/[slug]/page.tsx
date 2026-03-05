@@ -2,12 +2,35 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAssessmentConfig } from "@/lib/actions";
 
+function safeSlug(x: any) {
+  return String(x || "").toLowerCase().trim();
+}
+
+function competencyCountFromConf(conf: any, slug: string) {
+  // 1) Best: competency_ids array length
+  if (Array.isArray(conf?.competency_ids)) return conf.competency_ids.length;
+
+  // 2) Sometimes stored inside config JSON
+  const cfg = conf?.config;
+  if (cfg && typeof cfg === "object") {
+    const ids = (cfg as any).competency_ids;
+    if (Array.isArray(ids)) return ids.length;
+    const n = (cfg as any).competency_count;
+    if (typeof n === "number" && Number.isFinite(n)) return n;
+  }
+
+  // 3) Fallback based on slug naming (your rule)
+  const s = safeSlug(slug);
+  if (s.endsWith("mri") || s === "mri") return 15;
+  return 7;
+}
+
 export default async function LanguageEntry({
   params,
 }: {
   params: { slug: string };
 }) {
-  const slug = String(params?.slug || "").toLowerCase().trim();
+  const slug = safeSlug(params?.slug);
 
   // ✅ Allow any slug that exists and is active in Supabase
   const conf: any = await getAssessmentConfig(slug);
@@ -15,14 +38,23 @@ export default async function LanguageEntry({
     notFound();
   }
 
-  const title = conf.title_en || conf.name_en || "Assessment";
+  const title =
+    conf.title_en ||
+    conf.name_en ||
+    conf.title_ar ||
+    conf.name_ar ||
+    "Assessment";
 
-  // Optional hints (safe fallbacks)
   const mins = Number(conf?.timer_minutes || 0);
   const qCount = Number(conf?.num_questions || 0);
 
+  const competencies = competencyCountFromConf(conf, slug);
+
   return (
-    <main dir="ltr" className="min-h-screen w-full flex items-center justify-center px-5 py-10 bg-gradient-to-br from-[#0b1220] via-[#0f1f3a] to-[#102a5a]">
+    <main
+      dir="ltr"
+      className="min-h-screen w-full flex items-center justify-center px-5 py-10 bg-gradient-to-br from-[#0b1220] via-[#0f1f3a] to-[#102a5a]"
+    >
       {/* soft glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-24 -left-24 h-72 w-72 sm:h-80 sm:w-80 rounded-full bg-indigo-500/20 blur-3xl" />
@@ -42,9 +74,11 @@ export default async function LanguageEntry({
               {title}
             </h1>
 
-            {/* ✅ Replace the repeated subtitle with your strong short description */}
+            {/* ✅ Dynamic competency count */}
             <p className="mt-3 text-[clamp(14px,3.8vw,18px)] font-medium text-white/80 leading-relaxed">
-              A powerful assessment to evaluate 7 core competencies of outdoor salespeople.
+              A powerful assessment to evaluate{" "}
+              <span className="text-white font-extrabold">{competencies}</span>{" "}
+              core competencies of outdoor salespeople.
             </p>
 
             {/* micro info row */}
@@ -71,7 +105,6 @@ export default async function LanguageEntry({
 
           {/* Buttons */}
           <div className="px-6 sm:px-8 pb-9 sm:pb-10">
-            {/* ✅ Mobile-first: stacked on mobile, two columns on desktop */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Link
                 href={`/${slug}/login?lang=en`}
@@ -94,14 +127,12 @@ export default async function LanguageEntry({
               </Link>
             </div>
 
-            {/* ✅ Tip line: no dot-before-tip and ends properly */}
             <div className="mt-6 text-center text-xs sm:text-sm text-white/60 leading-relaxed">
               Choose the language you want for the full experience (quiz + results).
             </div>
           </div>
         </div>
 
-        {/* Optional footer hint (you said you may change later) */}
         <div className="mt-4 text-center text-xs text-white/40">
           Powered by Level Up Business Consulting - Career Labs
         </div>

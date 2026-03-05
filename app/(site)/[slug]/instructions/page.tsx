@@ -2,18 +2,26 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { supabase } from "@/integrations/supabase/client";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Button } from "@/components/ui/button";
 
-const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
-const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
+type Lang = "en" | "ar";
 
-function safeLang(x: string | null) {
+function safeLang(x: string | null): Lang {
   return x === "ar" ? "ar" : "en";
 }
 
 function safeSlug(x: any) {
   return String(x || "").toLowerCase().trim();
+}
+
+// Fallback competency counts ONLY if config.competency_ids is missing.
+// You said: SCAN = 7 competencies, MRI = 15 competencies.
+function fallbackCompetencyCount(slug: string) {
+  const s = safeSlug(slug);
+  if (s.endsWith("mri") || s === "mri") return 15;
+  return 7;
 }
 
 export default function InstructionsPage() {
@@ -23,30 +31,77 @@ export default function InstructionsPage() {
   const { language, setLanguage } = useLocale();
 
   const slug = useMemo(() => safeSlug(params?.slug), [params]);
-  const urlLang = useMemo(() => safeLang(searchParams.get("lang")), [searchParams]);
+  const urlLang = useMemo<Lang>(() => safeLang(searchParams.get("lang")), [searchParams]);
   const attemptId = searchParams.get("attemptId");
 
   const [hydrated, setHydrated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [conf, setConf] = useState<any>(null);
+
+  useEffect(() => setHydrated(true), []);
 
   useEffect(() => {
-    setHydrated(true);
+    if (!hydrated) return;
     if (language !== urlLang) setLanguage(urlLang);
-  }, [language, urlLang, setLanguage]);
+  }, [hydrated, language, urlLang, setLanguage]);
+
+  // Load assessment config by slug (single source of truth)
+  useEffect(() => {
+    const load = async () => {
+      if (!slug) return;
+
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("assessments")
+          .select(
+            "id, slug, status, title_en, title_ar, name_en, name_ar, timer_minutes, num_questions, competency_ids"
+          )
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (error) {
+          console.warn("Instructions: config load error:", error);
+        }
+
+        if (!data || data.status !== "active") {
+          // Go back to the entry page if slug is invalid/inactive
+          router.replace(`/${encodeURIComponent(slug)}`);
+          return;
+        }
+
+        setConf(data);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [slug, router]);
 
   if (!hydrated) return null;
+  if (!slug) return null;
+  if (loading) return null;
+  if (!conf) return null;
 
-  // ✅ Correct classification for both old slugs (scan/mri) and new ones (outdoor-scan/outdoor-mri)
-  const isMRI = slug === "mri" || slug.endsWith("mri");
-  const isScan = slug === "scan" || slug.endsWith("scan");
+  const ar = (language || urlLang) === "ar";
+  const dir = ar ? "rtl" : "ltr";
 
-  // Safe default: if slug is unknown, treat it as scan (prevents breaking)
+  const assessmentId = String(conf.id);
+  const mins = Number(conf.timer_minutes || 0);
+  const qCount = Number(conf.num_questions || 0);
+
+  // Competency count: prefer competency_ids length if present, else fallback (SCAN=7, MRI=15)
+  const competencyCount = Array.isArray(conf.competency_ids)
+    ? conf.competency_ids.length
+    : fallbackCompetencyCount(slug);
+
+  // For copy styling only
+  const isMRI = slug.endsWith("mri") || slug === "mri";
+  const isScan = slug.endsWith("scan") || slug === "scan";
   const effectiveIsScan = !isMRI && isScan ? true : !isMRI;
 
-  const assessmentId = effectiveIsScan ? SCAN_ASSESSMENT_ID : MRI_ASSESSMENT_ID;
-  const ar = (language || urlLang) === "ar";
-
   const goToQuiz = () => {
-    // attemptId should exist, but we won't hard-crash if missing
     const a = attemptId ? `&attemptId=${encodeURIComponent(attemptId)}` : "";
     router.replace(
       `/${encodeURIComponent(slug)}/quiz?assessmentId=${encodeURIComponent(assessmentId)}${a}&lang=${encodeURIComponent(
@@ -57,13 +112,11 @@ export default function InstructionsPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-6
+      className="min-h-screen flex items-center justify-center px-6 py-10
                  bg-gradient-to-br from-[#0b1220] via-[#0f1f3a] to-[#102a5a]"
-      dir={ar ? "rtl" : "ltr"}
+      dir={dir}
     >
-      <div className="w-full max-w-2xl rounded-3xl bg-white/10 backdrop-blur-xl
-                      shadow-2xl p-8 sm:p-10 space-y-8 border border-white/15">
-
+      <div className="w-full max-w-2xl rounded-3xl bg-white/10 backdrop-blur-xl shadow-2xl p-8 sm:p-10 space-y-8 border border-white/15">
         {/* TITLE */}
         <div className="space-y-2 text-center">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
@@ -85,9 +138,27 @@ export default function InstructionsPage() {
           <div className="grid gap-4 sm:grid-cols-2 text-sm sm:text-base">
             <div>
               ⏱️ <strong>{ar ? "التقييم بزمن محدد:" : "Timed assessment:"}</strong>{" "}
-              {effectiveIsScan
-                ? ar ? "حوالي 20 دقيقة." : "About 20 minutes."
-                : ar ? "حوالي 90 دقيقة." : "About 90 minutes."}
+              {mins > 0
+                ? ar
+                  ? `حوالي ${mins} دقيقة.`
+                  : `About ${mins} minutes.`
+                : effectiveIsScan
+                ? ar
+                  ? "حوالي 20 دقيقة."
+                  : "About 20 minutes."
+                : ar
+                ? "حوالي 90 دقيقة."
+                : "About 90 minutes."}
+            </div>
+
+            <div>
+              ✅ <strong>{ar ? "عدد الأسئلة:" : "Questions:"}</strong>{" "}
+              {qCount > 0 ? qCount : effectiveIsScan ? 30 : 75}
+            </div>
+
+            <div>
+              🎯 <strong>{ar ? "عدد الكفاءات:" : "Competencies:"}</strong>{" "}
+              {competencyCount}
             </div>
 
             <div>
@@ -100,7 +171,7 @@ export default function InstructionsPage() {
             </div>
 
             <div>
-              🎯 <strong>{ar ? "يقيس سلوكك الحقيقي" : "Measures real behavior"}</strong>
+              👤 <strong>{ar ? "نتائج خاصة" : "Private results"}</strong>
             </div>
           </div>
         </div>
@@ -121,10 +192,7 @@ export default function InstructionsPage() {
 
           {!effectiveIsScan && (
             <p className="text-amber-200 font-semibold">
-              ⚠️{" "}
-              {ar
-                ? "لا يمكن إيقاف أو إعادة التقييم بعد البدء."
-                : "Once started, the assessment cannot be paused or restarted."}
+              ⚠️ {ar ? "لا يمكن إيقاف أو إعادة التقييم بعد البدء." : "Once started, the assessment cannot be paused or restarted."}
             </p>
           )}
         </div>
@@ -132,9 +200,7 @@ export default function InstructionsPage() {
         {/* CTA */}
         <div className="pt-4">
           <Button
-            className="w-full py-5 text-lg font-bold rounded-2xl
-                       bg-amber-400 text-slate-900
-                       hover:bg-amber-300 transition"
+            className="w-full py-5 text-lg font-bold rounded-2xl bg-amber-400 text-slate-900 hover:bg-amber-300 transition"
             onClick={goToQuiz}
           >
             {ar
@@ -149,9 +215,7 @@ export default function InstructionsPage() {
 
         {/* FOOTNOTE */}
         <div className="text-center text-xs text-white/50">
-          {ar
-            ? "ستظهر نتائجك فور الانتهاء مع تقرير مفصل."
-            : "Your results will appear immediately with a detailed report."}
+          {ar ? "ستظهر نتائجك فور الانتهاء مع تقرير مفصل." : "Your results will appear immediately with a detailed report."}
         </div>
       </div>
     </div>

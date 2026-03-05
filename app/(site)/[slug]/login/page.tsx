@@ -11,16 +11,21 @@ import { toast } from "sonner";
 
 type Lang = "en" | "ar";
 
-// DB truth (current)
+// DB truth (current IDs)
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 
-function assessmentIdFromSlug(slug: string) {
-  return slug === "mri" ? MRI_ASSESSMENT_ID : SCAN_ASSESSMENT_ID;
+function safeSlug(x: any) {
+  return String(x || "").toLowerCase().trim();
 }
 
 function safeLang(x: string | null): Lang {
   return x === "ar" ? "ar" : "en";
+}
+
+function isMRIFromSlug(slug: string) {
+  const s = safeSlug(slug);
+  return s === "mri" || s.endsWith("mri");
 }
 
 export default function LoginPage() {
@@ -28,7 +33,7 @@ export default function LoginPage() {
   const params = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
 
-  const slug = String(params?.slug || "scan").toLowerCase().trim();
+  const slug = useMemo(() => safeSlug(params?.slug), [params]);
   const urlLang = useMemo<Lang>(() => safeLang(searchParams.get("lang")), [searchParams]);
 
   const { language, setLanguage } = useLocale();
@@ -40,10 +45,10 @@ export default function LoginPage() {
   const [hydrated, setHydrated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // ✅ FIX: prevents "already logged in" flash after logout
+  // ✅ prevents "already logged in" flash after logout
   const [forceLoggedOut, setForceLoggedOut] = useState(false);
 
-  // Simple mode switch (no confusing hidden fields)
+  // Simple mode switch
   const [mode, setMode] = useState<"login" | "signup">("login");
 
   // Always-visible fields (for reports)
@@ -54,12 +59,51 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Assessment config (source of truth)
+  const [assessmentId, setAssessmentId] = useState<string>("");
+  const [totalQuestions, setTotalQuestions] = useState<number>(0);
+  const [timerMinutes, setTimerMinutes] = useState<number>(0);
+
   useEffect(() => setHydrated(true), []);
 
   useEffect(() => {
     if (!hydrated) return;
     if (language !== urlLang) setLanguage(urlLang);
   }, [hydrated, urlLang, language, setLanguage]);
+
+  // Load assessment config by slug (so MRI/SCAN is always correct)
+  useEffect(() => {
+    const load = async () => {
+      if (!slug) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("assessments")
+          .select("id, status, num_questions, timer_minutes")
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (error) console.warn("Login: assessment config load error:", error);
+
+        if (data && data.status === "active") {
+          setAssessmentId(String(data.id));
+          setTotalQuestions(Number(data.num_questions || 0));
+          setTimerMinutes(Number(data.timer_minutes || 0));
+          return;
+        }
+      } catch (e) {
+        console.warn("Login: assessment config load exception:", e);
+      }
+
+      // Fallback if config fetch fails
+      const isMRI = isMRIFromSlug(slug);
+      setAssessmentId(isMRI ? MRI_ASSESSMENT_ID : SCAN_ASSESSMENT_ID);
+      setTotalQuestions(isMRI ? 75 : 30);
+      setTimerMinutes(isMRI ? 90 : 20);
+    };
+
+    load();
+  }, [slug]);
 
   // Prefill from signed-in user (if exists)
   useEffect(() => {
@@ -72,7 +116,7 @@ export default function LoginPage() {
     setEmail(((user as any).email as string) || "");
   }, [hydrated, user]);
 
-  // ✅ FIX: if user becomes available again, allow signed-in UI
+  // If user becomes available again, allow signed-in UI
   useEffect(() => {
     if (user) setForceLoggedOut(false);
   }, [user]);
@@ -83,17 +127,18 @@ export default function LoginPage() {
     "focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-0";
 
   const title = ar ? "تسجيل الدخول" : "Sign In";
-  const subtitle =
-    slug === "mri"
-      ? ar
-        ? "ابدأ التقييم المتقدم خلال 90 دقيقة."
-        : "Start the advanced assessment (90 minutes)."
-      : ar
-      ? "ابدأ الفحص المجاني خلال 20 دقيقة."
-      : "Start the free scan (20 minutes).";
+
+  // subtitle based on config (fallback safe)
+  const mins = timerMinutes || (isMRIFromSlug(slug) ? 90 : 20);
+  const subtitle = ar
+    ? mins >= 60
+      ? `ابدأ التقييم المتقدم خلال حوالي ${mins} دقيقة.`
+      : `ابدأ الفحص المجاني خلال حوالي ${mins} دقيقة.`
+    : mins >= 60
+    ? `Start the advanced assessment (~${mins} minutes).`
+    : `Start the free scan (~${mins} minutes).`;
 
   const saveProfileToSupabaseUser = async () => {
-    // Save to auth metadata so it’s available later for reports
     if (!user) return;
 
     const name = fullName.trim();
@@ -107,17 +152,19 @@ export default function LoginPage() {
     });
 
     if (error) {
-      // Not fatal; attempt will still store name/company in quiz_attempts
       console.warn("updateUser metadata error:", error);
     }
   };
 
   const createAttempt = async () => {
-    const assessmentId = assessmentIdFromSlug(slug);
+    if (!assessmentId) throw new Error(ar ? "تعذر المتابعة: التقييم غير جاهز" : "Cannot continue: assessment not ready");
+
     const { data: auth } = await supabase.auth.getUser();
     if (!auth?.user?.id) throw new Error(ar ? "غير مسجل الدخول" : "Not authenticated");
 
     const meta: any = auth.user.user_metadata || {};
+    const questions = totalQuestions || (isMRIFromSlug(slug) ? 75 : 30);
+
     const payload = {
       assessment_id: assessmentId,
       language: urlLang,
@@ -128,18 +175,14 @@ export default function LoginPage() {
       user_id: auth.user.id,
 
       // required columns (match your schema)
-      total_questions: slug === "mri" ? 75 : 30,
+      total_questions: questions,
       score: 0,
       total_percentage: 0,
       answers: [],
       competency_results: [],
     };
 
-    const { data, error } = await supabase
-      .from("quiz_attempts")
-      .insert(payload)
-      .select("id")
-      .single();
+    const { data, error } = await supabase.from("quiz_attempts").insert(payload).select("id").single();
 
     if (error) throw error;
     return data.id as string;
@@ -148,13 +191,10 @@ export default function LoginPage() {
   const goNext = async () => {
     setSubmitting(true);
     try {
-      // keep profile updated for reports
       await saveProfileToSupabaseUser();
 
       const attemptId = await createAttempt();
-      router.replace(
-        `/${slug}/instructions?lang=${urlLang}&attemptId=${encodeURIComponent(attemptId)}`
-      );
+      router.replace(`/${slug}/instructions?lang=${urlLang}&attemptId=${encodeURIComponent(attemptId)}`);
     } catch (e: any) {
       toast.error(e?.message || (ar ? "فشل المتابعة" : "Failed to continue"));
     } finally {
@@ -208,7 +248,6 @@ export default function LoginPage() {
       return;
     }
 
-    // If email confirmations are ON, user may not be logged in yet
     const { data: auth } = await supabase.auth.getUser();
     if (!auth?.user) {
       toast.error(ar ? "تحقق من بريدك لتأكيد الحساب" : "Check your email to confirm your account");
@@ -219,9 +258,7 @@ export default function LoginPage() {
     await goNext();
   };
 
-  // ✅ FIXED: stable logout (no flicker, no loop)
   const handleSignOut = async () => {
-    // Immediately force logged-out UI to avoid flicker while SessionContext updates.
     setForceLoggedOut(true);
     setSubmitting(true);
 
@@ -235,11 +272,8 @@ export default function LoginPage() {
       }
 
       toast.success(ar ? "تم تسجيل الخروج" : "Signed out");
-
-      // Clear sensitive fields
       setPassword("");
 
-      // Replace to a clean login URL so the page is stable and doesn't bounce.
       router.replace(`/${slug}/login?lang=${urlLang}&t=${Date.now()}`);
       router.refresh();
     } finally {
@@ -249,7 +283,6 @@ export default function LoginPage() {
 
   if (!hydrated || isLoading) return null;
 
-  // ✅ FIX: respects forceLoggedOut so "Already signed in" never flashes after logout
   const alreadyLoggedIn = !!user && !forceLoggedOut;
 
   return (
@@ -264,16 +297,12 @@ export default function LoginPage() {
           <p className="text-white/80 text-sm sm:text-base">{subtitle}</p>
         </div>
 
-        {/* Session banner (NO auto redirect) */}
         {alreadyLoggedIn && (
           <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-white/90 text-sm">
-            {ar
-              ? "أنت مسجل الدخول بالفعل. يمكنك المتابعة أو تسجيل الخروج."
-              : "You’re already signed in. You can continue or sign out."}
+            {ar ? "أنت مسجل الدخول بالفعل. يمكنك المتابعة أو تسجيل الخروج." : "You’re already signed in. You can continue or sign out."}
           </div>
         )}
 
-        {/* Always visible (report fields) */}
         <div className="space-y-3">
           <Input
             className={inputClass}
@@ -291,15 +320,12 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Mode toggle */}
         {!alreadyLoggedIn && (
           <div className="grid grid-cols-2 gap-2 bg-white/10 p-1 rounded-2xl border border-white/10">
             <button
               type="button"
               onClick={() => setMode("login")}
-              className={`h-11 rounded-xl font-bold transition ${
-                mode === "login" ? "bg-white text-[#0b1b3a]" : "text-white/80 hover:text-white"
-              }`}
+              className={`h-11 rounded-xl font-bold transition ${mode === "login" ? "bg-white text-[#0b1b3a]" : "text-white/80 hover:text-white"}`}
             >
               {ar ? "دخول" : "Sign In"}
             </button>
@@ -307,16 +333,13 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setMode("signup")}
-              className={`h-11 rounded-xl font-bold transition ${
-                mode === "signup" ? "bg-white text-[#0b1b3a]" : "text-white/80 hover:text-white"
-              }`}
+              className={`h-11 rounded-xl font-bold transition ${mode === "signup" ? "bg-white text-[#0b1b3a]" : "text-white/80 hover:text-white"}`}
             >
               {ar ? "حساب جديد" : "Create Account"}
             </button>
           </div>
         )}
 
-        {/* Email/Password always visible (unless already logged in) */}
         {!alreadyLoggedIn && (
           <div className="space-y-3">
             <Input
@@ -338,7 +361,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Primary action */}
         {alreadyLoggedIn ? (
           <div className="space-y-3">
             <Button
@@ -349,11 +371,7 @@ export default function LoginPage() {
               {submitting ? "…" : ar ? "متابعة" : "Continue"}
             </Button>
 
-            <button
-              type="button"
-              className="w-full text-xs text-white/70 hover:text-white"
-              onClick={handleSignOut}
-            >
+            <button type="button" className="w-full text-xs text-white/70 hover:text-white" onClick={handleSignOut}>
               {ar ? "تسجيل الخروج" : "Sign out"}
             </button>
           </div>
@@ -364,21 +382,11 @@ export default function LoginPage() {
               className="w-full h-12 rounded-2xl bg-amber-400 text-slate-900 font-extrabold hover:bg-amber-300"
               onClick={mode === "login" ? handleEmailLogin : handleSignup}
             >
-              {submitting
-                ? "…"
-                : mode === "login"
-                ? ar
-                  ? "تسجيل الدخول"
-                  : "Sign In"
-                : ar
-                ? "إنشاء الحساب والمتابعة"
-                : "Create & Continue"}
+              {submitting ? "…" : mode === "login" ? (ar ? "تسجيل الدخول" : "Sign In") : ar ? "إنشاء الحساب والمتابعة" : "Create & Continue"}
             </Button>
 
             <div className="text-center text-xs text-white/55">
-              {ar
-                ? "لن نرسل رسائل مزعجة. هذا فقط لحفظ نتائجك."
-                : "No spam. This is only to save your results."}
+              {ar ? "لن نرسل رسائل مزعجة. هذا فقط لحفظ نتائجك." : "No spam. This is only to save your results."}
             </div>
           </>
         )}
