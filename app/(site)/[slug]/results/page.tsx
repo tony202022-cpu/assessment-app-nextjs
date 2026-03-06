@@ -121,16 +121,11 @@ function shortAttemptId(id: string) {
   return x ? x.slice(0, 8) : "";
 }
 
-function cleanRecommendationText(input: string) {
-  const text = String(input || "").trim();
-
-  return text
-    // remove wrapping quotes or decorative starters
+function cleanRecommendationText(text: string) {
+  return String(text || "")
     .replace(/^[“"'`]+/, "")
-    // remove leading emojis / symbols / bullets / checkmarks / stars
-    .replace(/^[\p{Extended_Pictographic}\u2600-\u27BF\uFE0F\s•●▪◦▪︎✔✓✅✦★☆▶►→➡️]+/u, "")
-    // remove leading numbering like 1. 1) 1- 01. ①
-    .replace(/^(?:\(?\d{1,2}\)?[.)\-:]\s*|\d{1,2}\s*[-–—]\s*|[①②③④⑤⑥⑦⑧⑨⑩]\s*)/u, "")
+    .replace(/^[\s•●▪◦✔✓✦★☆▶►→➡-]+/, "")
+    .replace(/^(?:\(?\d{1,2}\)?[.)\-:]\s*|\d{1,2}\s*[-–—]\s*|[①②③④⑤⑥⑦⑧⑨⑩]\s*)/, "")
     .trim();
 }
 
