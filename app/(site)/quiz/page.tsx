@@ -462,16 +462,16 @@ useEffect(() => {
       {/* CONTENT */}
       <div className="flex-1 flex items-center justify-center px-4 py-5">
         <div className="w-full max-w-md space-y-3">
-          {/* QUESTION */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-5">
-            <h2
-              className={`text-[clamp(17px,4.5vw,20px)] font-extrabold leading-snug ${
-                isArabic ? "text-right" : "text-left"
-              } ${clamp3}`}
-            >
-              {questionText}
-            </h2>
-          </div>
+{/* QUESTION */}
+<div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-5">
+  <h2
+    className={`text-[clamp(17px,4.5vw,20px)] font-extrabold ${
+      isArabic ? "text-right leading-loose" : "text-left leading-relaxed"
+    } whitespace-normal break-words`}
+  >
+    {questionText}
+  </h2>
+</div>
 
           {/* ANSWERS */}
           <div className="space-y-3">

@@ -121,6 +121,19 @@ function shortAttemptId(id: string) {
   return x ? x.slice(0, 8) : "";
 }
 
+function cleanRecommendationText(input: string) {
+  const text = String(input || "").trim();
+
+  return text
+    // remove wrapping quotes or decorative starters
+    .replace(/^[“"'`]+/, "")
+    // remove leading emojis / symbols / bullets / checkmarks / stars
+    .replace(/^[\p{Extended_Pictographic}\u2600-\u27BF\uFE0F\s•●▪◦▪︎✔✓✅✦★☆▶►→➡️]+/u, "")
+    // remove leading numbering like 1. 1) 1- 01. ①
+    .replace(/^(?:\(?\d{1,2}\)?[.)\-:]\s*|\d{1,2}\s*[-–—]\s*|[①②③④⑤⑥⑦⑧⑨⑩]\s*)/u, "")
+    .trim();
+}
+
 function tierBadgeColor(tier: Tier) {
   switch (tier) {
     case "Strength":
@@ -128,10 +141,10 @@ function tierBadgeColor(tier: Tier) {
     case "Opportunity":
       return "bg-blue-600 text-white";
     case "Threat":
-      return "bg-amber-500 text-white";
+      return "bg-rose-500 text-white";
     case "Weakness":
     default:
-      return "bg-rose-600 text-white";
+      return "bg-red-700 text-white";
   }
 }
 
@@ -142,10 +155,10 @@ function tierBarColor(tier: Tier) {
     case "Opportunity":
       return "from-blue-500 to-blue-600";
     case "Threat":
-      return "from-amber-400 to-amber-500";
+      return "from-rose-400 to-rose-500";
     case "Weakness":
     default:
-      return "from-rose-500 to-rose-600";
+      return "from-red-600 to-red-700";
   }
 }
 
@@ -634,17 +647,21 @@ function ResultsContent() {
 
       <Header />
  
-      {/* Download Controls */}
-      <div className="print-hide fixed top-4 right-4 z-50 flex items-center gap-2">
-        <PrintInstructions />
-        <button
-          onClick={handleDownload}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-lg flex items-center gap-2 font-semibold transition-all"
-        >
-          <Download size={20} />
-          {ar ? "تحميل PDF" : "Download PDF"}
-        </button>
-      </div>
+{/* Download Controls */}
+<div
+  className={`print-hide fixed top-4 z-50 flex items-center gap-2 ${
+    ar ? "left-4" : "right-4"
+  }`}
+>
+  <PrintInstructions />
+  <button
+    onClick={handleDownload}
+    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 shadow-lg flex items-center gap-2 font-semibold transition-all"
+  >
+    <Download size={20} />
+    {ar ? "تحميل PDF" : "Download PDF"}
+  </button>
+</div>
 
       <main className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
         {/* HERO */}
@@ -673,15 +690,7 @@ function ResultsContent() {
                 </p>
 
                 <div className="print-hide flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
-                  <Button
-                    onClick={handleDownload}
-                    disabled={downloading}
-                    className="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-900 font-black px-6 sm:px-8 py-6 sm:py-7 rounded-2xl flex gap-2 sm:gap-3 shadow-xl transition-all active:scale-95 text-sm sm:text-base min-h-[48px]"
-                  >
-                    {downloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
-                    {ar ? "تحميل PDF" : "Download PDF"}
-                  </Button>
-
+                  
                   <Button
                     variant="outline"
                     onClick={handleShare}
@@ -733,92 +742,104 @@ function ResultsContent() {
           attemptId={attemptId}
         />
 
-        {/* RADAR + BREAKDOWN */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          <div className="pdf-avoid-break lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8">
-            <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-              <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-                <Zap size={20} className="sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-900 rtl-text">
-                {ar ? "مخطط الكفاءات" : "Competency Profile"}
-              </h3>
-            </div>
-
-            <div className="h-[380px] sm:h-[460px] md:h-[540px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="65%"
-                  data={chartData}
-                  margin={{ top: 30, right: 30, bottom: 30, left: 30 }}
-                >
-                  <PolarGrid stroke="#cbd5e1" strokeWidth={2} />
-                  <PolarAngleAxis
-                    dataKey="subject"
-                    tickLine={false}
-                    tick={{
-                      fill: "#475569",
-                      fontSize: 10,
-                      fontWeight: 800,
-                    }}
-                    dy={8}
-                  />
-                  <Radar
-                    name="Score"
-                    dataKey="A"
-                    stroke="#3b82f6"
-                    strokeWidth={3}
-                    fill="#3b82f6"
-                    fillOpacity={0.6}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="pdf-avoid-break bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg">
-                <Target size={20} className="sm:w-6 sm:h-6" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-black text-slate-900 rtl-text">
-                {ar ? "التفصيل" : "Breakdown"}
-              </h3>
-            </div>
-
-            <div className="space-y-4 sm:space-y-5">
-              {competencyRows.map((res: any) => {
-                const tier = res.derivedTier;
-                return (
-                  <div key={String(res.competencyId)} className="space-y-2">
-                    <div className="flex justify-between items-center gap-2">
-                      <span className="font-bold text-slate-800 text-xs sm:text-sm rtl-text leading-tight">
-                        {getCompetencyLabel(res)}
-                      </span>
-                      <span
-                        className={`shrink-0 text-xs font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md force-ltr ${tierBadgeColor(
-                          tier
-                        )}`}
-                      >
-                        {safePct(res.percentage)}%
-                      </span>
-                    </div>
-                    <div className="h-2 sm:h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                      <div
-                        className={`h-full bg-gradient-to-r transition-all duration-1000 rounded-full ${tierBarColor(
-                          tier
-                        )}`}
-                        style={{ width: `${safePct(res.percentage)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+{/* RADAR + BREAKDOWN */}
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+  <div className="pdf-avoid-break lg:col-span-2 bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8">
+    <div className="flex items-center gap-2 sm:gap-3 mb-5 sm:mb-6">
+      <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+        <Zap size={20} className="sm:w-6 sm:h-6" />
+      </div>
+      <div>
+        <h3 className="text-xl sm:text-2xl font-black text-slate-900 rtl-text">
+          {ar ? "مخطط الكفاءات" : "Competency Profile"}
+        </h3>
+        <div className="text-xs sm:text-sm text-slate-500 mt-1 rtl-text">
+          {ar ? "لقطة مرئية للكفاءات السبع" : "A visual snapshot of your seven competencies"}
         </div>
+      </div>
+    </div>
+
+    <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 sm:p-4 md:p-5">
+      <div className="h-[360px] sm:h-[430px] md:h-[500px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart
+            cx="50%"
+            cy="50%"
+            outerRadius="72%"
+            data={chartData}
+            margin={{ top: 18, right: 22, bottom: 18, left: 22 }}
+          >
+            <PolarGrid stroke="#cbd5e1" strokeWidth={2} />
+            <PolarAngleAxis
+              dataKey="subject"
+              tickLine={false}
+              tick={{
+                fill: "#334155",
+                fontSize: 12,
+                fontWeight: 800,
+              }}
+              dy={6}
+            />
+            <Radar
+              name="Score"
+              dataKey="A"
+              stroke="#2563eb"
+              strokeWidth={3}
+              fill="#3b82f6"
+              fillOpacity={0.35}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  </div>
+
+  <div className="pdf-avoid-break bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
+    <div className="flex items-center gap-2 sm:gap-3">
+      <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-lg">
+        <Target size={20} className="sm:w-6 sm:h-6" />
+      </div>
+      <div>
+        <h3 className="text-lg sm:text-xl font-black text-slate-900 rtl-text">
+          {ar ? "التفصيل" : "Breakdown"}
+        </h3>
+        <div className="text-xs sm:text-sm text-slate-500 mt-1 rtl-text">
+          {ar ? "توزيع الكفاءات الحالية" : "Your current competency distribution"}
+        </div>
+      </div>
+    </div>
+
+    <div className="space-y-4 sm:space-y-5">
+      {competencyRows.map((res: any) => {
+        const tier = res.derivedTier;
+        return (
+          <div key={String(res.competencyId)} className="space-y-2.5">
+            <div className="flex justify-between items-start gap-3">
+              <span className="font-bold text-slate-800 text-sm rtl-text leading-snug">
+                {getCompetencyLabel(res)}
+              </span>
+              <span
+                className={`shrink-0 text-xs font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md force-ltr ${tierBadgeColor(
+                  tier
+                )}`}
+              >
+                {safePct(res.percentage)}%
+              </span>
+            </div>
+            <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+              <div
+                className={`h-full bg-gradient-to-r transition-all duration-1000 rounded-full ${tierBarColor(
+                  tier
+                )}`}
+                style={{ width: `${safePct(res.percentage)}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
 
         {/* SWOT */}
         <div className="space-y-5 sm:space-y-6">
@@ -964,82 +985,138 @@ function ResultsContent() {
           </div>
         )}
 
-        {/* MRI UPSELL - ONLY FOR SCAN */}
-        {showUpsell && (
-          <div className="print-hide space-y-16 mt-20">
-            <div className="relative overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-red-900 rounded-3xl shadow-2xl border border-red-500">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-red-600" />
-              
-              <div className="relative p-8 md:p-16 text-center text-white space-y-8">
-                <div className="inline-block bg-red-800 text-red-100 px-6 py-2 rounded-full text-sm font-black uppercase tracking-wider border-2 border-red-600">
-                  {ar ? "تحذير: هذا سيكشف الحمض النووي الحقيقي لمبيعاتك" : "WARNING: This Will Reveal Your True Sales DNA"}
-                </div>
-                
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
-                  {ar ? (
-                    <>
-                      التقييم المجاني كان مجرد{" "}
-                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
-                        المقبلات
-                      </span>
-                      <br />
-                      هذا هو{" "}
-                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
-                        فحص الدم المهني
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      The Free Assessment Was Just The{" "}
-                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
-                        Appetizer
-                      </span>
-                      <br />
-                      This Is Your{" "}
-                      <span className="text-orange-300 underline decoration-orange-300/50 decoration-4 underline-offset-4">
-                        Career Blood Test
-                      </span>
-                    </>
-                  )}
-                </h2>
-                
-                <p className="text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed text-red-100">
-                  {ar 
-                    ? "كشف تقريرك المجاني عن الأعراض. حان الوقت الآن لإجراء فحص MRI الكامل الذي يكشف بالضبط لماذا تنزلق بعض الصفقات من بين أصابعك - وكيف تضاعف مبيعاتك في 90 يومًا."
-                    : "Your free report exposed the symptoms. Now it's time for the full MRI scan that reveals exactly why some deals slip through your fingers—and how to double your sales in 90 days."}
-                </p>
-                
-                <div className="pt-4">
-                  {MRI_PAYMENT_URL ? (
-                    <Button
-                      asChild
-                      size="lg"
-                      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black text-lg px-10 py-8 rounded-2xl shadow-2xl transition-all hover:scale-105"
-                    >
-                      <a href={MRI_PAYMENT_URL} target="_blank" rel="noreferrer" className="flex items-center gap-3">
-                        {ar ? "احصل على MRI المبيعات المتقدم الآن" : "GET YOUR ADVANCED SALES MRI NOW"}
-                        <ArrowRight className="w-6 h-6" />
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button
-                      size="lg"
-                      disabled
-                      className="bg-white/20 text-red-200 font-black text-lg px-10 py-8 rounded-2xl shadow-2xl cursor-not-allowed"
-                    >
-                      {ar ? "قريباً" : "COMING SOON"}
-                    </Button>
-                  )}
-                </div>
-                
-                <p className="text-sm text-red-200 max-w-2xl mx-auto">
-                  {ar ? "47 مقعد MRI متقدم فقط متاح هذا الشهر. التقييم المجاني حددك كمرشح للنمو السريع." : "Only 47 advanced MRI slots available this month. The free assessment identified you as a candidate for rapid growth."}
-                </p>
-              </div>
+{/* MRI UPSELL - ONLY FOR SCAN */}
+{showUpsell && (
+  <div className="print-hide mt-20">
+    <div className="relative overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-red-900 rounded-3xl shadow-2xl border border-red-500">
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-red-600" />
+
+      <div className="relative p-6 md:p-10 text-white">
+        <div className="inline-block bg-red-800 text-red-100 px-5 py-2 rounded-full text-xs md:text-sm font-black uppercase tracking-wider border-2 border-red-600">
+          {ar ? "تشخيص المستوى التالي" : "NEXT LEVEL DIAGNOSIS"}
+        </div>
+
+        <h2 className="mt-5 text-[clamp(30px,5vw,58px)] font-black leading-[1.05] max-w-5xl">
+          {ar ? (
+            <>
+              كشف الـ SCAN الإشارات.
+              <br />
+              <span className="text-orange-300">Advanced Sales MRI</span> يكشف السبب.
+            </>
+          ) : (
+            <>
+              Your SCAN revealed the signals.
+              <br />
+              <span className="text-orange-300">The Advanced Sales MRI</span> reveals the cause.
+            </>
+          )}
+        </h2>
+
+        <p className="mt-5 text-[17px] md:text-[22px] max-w-4xl leading-[1.75] text-red-50 font-medium">
+          {ar
+            ? "الـ SCAN أظهر نمط الأداء على السطح عبر سبع كفاءات. أما الـ Advanced Outdoor Sales MRI فيقدّم تشخيصًا أعمق عبر خمس عشرة كفاءة باستخدام مواقف بيعية واقعية وضغط زمني حقيقي."
+            : "The SCAN shows surface performance patterns across seven competencies. The Advanced Outdoor Sales MRI performs a deeper diagnostic across fifteen competencies using real-world sales scenarios and strict time pressure."}
+        </p>
+
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="rounded-3xl border border-red-400/30 bg-red-900/35 p-6 shadow-xl">
+            <div className="text-[11px] md:text-xs font-black uppercase tracking-[0.22em] text-red-100/90">
+              {ar ? "ما الذي كشفه الـ SCAN" : "WHAT SCAN REVEALED"}
+            </div>
+
+            <ul className="mt-4 space-y-3 text-[17px] md:text-[20px] text-white font-bold leading-[1.65]">
+              <li>✓ {ar ? "لقطة سريعة لنقاط القوة والفجوات" : "Quick snapshot of strengths and gaps"}</li>
+              <li>✓ {ar ? "إشارات إنذار مبكرة" : "Early warning signals"}</li>
+              <li>✓ {ar ? "مؤشرات الأداء السطحية" : "Surface performance indicators"}</li>
+              <li>✓ {ar ? "نظرة استراتيجية أولية" : "Strategic preview"}</li>
+            </ul>
+          </div>
+
+          <div className="rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-300 via-amber-300 to-orange-300 p-6 shadow-xl">
+            <div className="text-[15px] md:text-[18px] font-black tracking-[0.08em] text-slate-900 leading-tight">
+              {ar ? "ما الذي يفتحه الـ MRI المتقدم" : "WHAT THE ADVANCED MRI UNLOCKS"}
+            </div>
+
+            <ul className="mt-4 space-y-3 text-[17px] md:text-[20px] text-slate-900 font-black leading-[1.65]">
+              <li>★ {ar ? "خريطة تشخيص كاملة عبر 15 كفاءة" : "Full 15-competency diagnostic map"}</li>
+              <li>★ {ar ? "اختبار قرار مبني على سيناريوهات واقعية" : "Scenario-based decision testing"}</li>
+              <li>★ {ar ? "ضغط أداء حقيقي لمدة 90 دقيقة" : "Strict 90-minute performance pressure"}</li>
+              <li>★ {ar ? "تحليل جذور الصفقات المفقودة" : "Root-cause analysis of lost deals"}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-2xl border border-white/15 bg-white/8 p-5 shadow-lg">
+            <div className="text-[26px] md:text-[32px] font-black text-white leading-tight">
+              {ar ? "خطة 90 يوم" : "90-Day Plan"}
+            </div>
+            <div className="mt-2 text-[15px] md:text-[18px] text-red-50 leading-[1.65] font-medium">
+              {ar ? "خارطة عملية لإصلاح أضعف كفاءاتك." : "A practical roadmap to repair your weakest competencies."}
             </div>
           </div>
-        )}
 
+          <div className="rounded-2xl border border-white/15 bg-white/8 p-5 shadow-lg">
+            <div className="text-[26px] md:text-[32px] font-black text-white leading-tight">
+              {ar ? "5 أدوات إضافية" : "5 Bonus Tools"}
+            </div>
+            <div className="mt-2 text-[14px] md:text-[16px] text-red-100 leading-relaxed">
+              {ar ? "أدوات احترافية للاعتراضات والإقناع وإدارة الوقت." : "Professional tools for objections, persuasion and time mastery."}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/15 bg-white/8 p-5 shadow-lg">
+            <div className="text-[26px] md:text-[32px] font-black text-white leading-tight">
+              {ar ? "تحليل عميق 25 صفحة" : "25-Page Deep Analysis"}
+            </div>
+            <div className="mt-2 text-[14px] md:text-[16px] text-red-100 leading-relaxed">
+              {ar ? "تقرير تشخيصي مفصل يحلل كل كفاءة من الكفاءات الخمس عشرة." : "A detailed 25-page diagnostic report analyzing every core score across all 15 competencies."}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-white/15 bg-black/15 px-5 py-5 text-center">
+          <p className="text-[17px] md:text-[22px] font-bold text-white leading-[1.75] max-w-4xl mx-auto">
+            {ar
+              ? "نتائجك أظهرت بالفعل أين قد يتسرّب الإيراد. الـ Advanced MRI يوضح بالضبط لماذا تنهار الصفقات — وما الذي يجب إصلاحه أولًا."
+              : "Your results already show where revenue may be leaking. The Advanced MRI shows exactly why deals break down — and what to fix first."}
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col md:flex-row md:items-center gap-4">
+          <div className="w-full md:w-auto">
+            {MRI_PAYMENT_URL ? (
+              <Button
+                asChild
+                size="lg"
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black text-base md:text-lg px-8 py-7 rounded-2xl shadow-2xl transition-all hover:scale-[1.02]"
+              >
+                <a href={MRI_PAYMENT_URL} target="_blank" rel="noreferrer" className="flex items-center gap-3">
+                  {ar ? "اذهب لصفحة الـ MRI الكاملة" : "OPEN THE FULL MRI PAGE"}
+                  <ArrowRight className="w-5 h-5" />
+                </a>
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                disabled
+                className="bg-white/15 text-red-100 font-black text-base md:text-lg px-8 py-7 rounded-2xl shadow-2xl cursor-not-allowed"
+              >
+                {ar ? "قريباً" : "COMING SOON"}
+              </Button>
+            )}
+          </div>
+
+          <p className="text-sm md:text-base text-red-100/90 max-w-2xl leading-relaxed">
+            {ar
+              ? "المقاعد محدودة كل شهر. تجاهل ما كشفه الـ SCAN يعني الاستمرار في خسارة الصفقات دون أن تعرف السبب الحقيقي."
+              : "Seats are limited each month. Ignoring what your SCAN revealed means continuing to lose deals without knowing why."}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </main>
     </div>
   );
@@ -1119,53 +1196,75 @@ function ExecutionCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="pdf-avoid-break rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 sm:p-6 md:p-8 shadow-lg hover:shadow-xl transition-shadow">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-5 sm:mb-6">
-        <div className="space-y-2 flex-1">
-          <div className="flex items-center gap-2 sm:gap-3">
-            {icon && <div className="text-slate-700">{icon}</div>}
-            <h4 className="font-black text-slate-900 text-lg sm:text-xl rtl-text">
-              {ar ? titleAr : titleEn}
-            </h4>
+    <div className="pdf-avoid-break rounded-3xl border border-slate-200 bg-white p-6 sm:p-7 md:p-8 shadow-lg">
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3">
+              {icon && (
+                <div className="shrink-0 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                  {icon}
+                </div>
+              )}
+
+              <div className="min-w-0 flex-1">
+                <h4 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight rtl-text">
+                  {ar ? titleAr : titleEn}
+                </h4>
+
+                {(descAr || descEn) && (
+                  <p className="mt-2 text-sm sm:text-base text-slate-500 leading-relaxed rtl-text">
+                    {ar ? descAr : descEn}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-          {(descAr || descEn) && (
-            <p className="text-xs sm:text-sm text-slate-600 rtl-text leading-relaxed">
-              {ar ? descAr : descEn}
-            </p>
-          )}
+
+          <span
+            className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-black shadow-sm ${tierBadgeColor(
+              tier
+            )}`}
+          >
+            <Target size={13} className="sm:w-3.5 sm:h-3.5" />
+            {ar ? tierShortLabel(tier, ar) : tier}
+          </span>
         </div>
 
-        <span
-          className={`shrink-0 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-black shadow-md ${tierBadgeColor(
-            tier
-          )} self-start md:self-auto`}
-        >
-          <Target size={12} className="sm:w-3.5 sm:h-3.5" />
-          {ar ? tierShortLabel(tier, ar) : tier}
-        </span>
-      </div>
+        <div className="h-px bg-slate-200" />
 
-      {ar ? (
-        <ol className="rtl-ol space-y-3 sm:space-y-4 list-decimal">
+        <div className="space-y-3">
           {recommendations.slice(0, 3).map((r, i) => (
-            <li key={i} className="text-slate-700 text-sm sm:text-base leading-relaxed rtl-text font-medium">
-              {r}
-            </li>
+            <div
+              key={i}
+              className={`flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 ${
+                ar ? "flex-row-reverse text-right" : ""
+              }`}
+            >
+              <div
+                className={`mt-0.5 shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white text-xs font-black ${
+                  ar ? "order-2" : ""
+                }`}
+              >
+                {i + 1}
+              </div>
+
+              <p
+                className={`flex-1 text-sm sm:text-base text-slate-700 leading-relaxed font-medium ${
+                  ar ? "rtl-text order-1" : ""
+                }`}
+              >
+                {String(cleanRecommendationText(r) || "")
+                  .replace(/^[\s•*\-★✓\d\.\)\(]+/, "")
+                  .trim()}
+              </p>
+            </div>
           ))}
-        </ol>
-      ) : (
-        <ol className="ltr-ol space-y-3 sm:space-y-4 list-decimal">
-          {recommendations.slice(0, 3).map((r, i) => (
-            <li key={i} className="text-slate-700 text-sm sm:text-base leading-relaxed font-medium">
-              {r}
-            </li>
-          ))}
-        </ol>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
-
 export default function DynamicResultsPage() {
   return (
     <Suspense
