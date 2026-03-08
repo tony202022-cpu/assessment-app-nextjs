@@ -127,16 +127,17 @@ function cleanRecommendationText(input: string) {
   // remove markdown bold markers everywhere
   text = text.replace(/\*\*/g, "");
 
-  // repeatedly strip leading numbering / bullets / emoji noise
+  // strip leading numbering / bullets / common symbols repeatedly
   let previous = "";
   while (text !== previous) {
     previous = text;
 
     text = text
       .replace(/^[“"'`]+/, "")
-      .replace(/^(?:\(?\d{1,2}\)?[.)\-:]\s*|\d{1,2}\s*[-–—]\s*|[①②③④⑤⑥⑦⑧⑨⑩]\s*)/u, "")
-      .replace(/^[•●▪◦✔✓✅✦★☆▶►→➡️⚡📊📋🧠🔍🎯💡📞🛡️📝📌🧩🧭🧪📈🧠🔬\s]+/gu, "")
-      .replace(/^[\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F\s]+/gu, "")
+      .replace(/^\(?\d{1,2}\)?[.)\-:]\s*/, "")
+      .replace(/^\d{1,2}\s*[-–—]\s*/, "")
+      .replace(/^[①②③④⑤⑥⑦⑧⑨⑩]\s*/, "")
+      .replace(/^[•●▪◦✔✓✅✦★☆▶►→⚡📊📋🧠🔍🎯💡📞🛡️📝📌🧩🧭🧪📈🔬\s]+/, "")
       .trim();
   }
 
