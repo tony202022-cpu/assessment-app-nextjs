@@ -88,7 +88,7 @@ export default function QuizPage() {
   const [shuffledOptions, setShuffledOptions] = useState<
     Array<{ text: string; score: number; index: number }>
   >([]);
-
+const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   // ✅ NEW: holds the deadline timestamp (ms)
   const deadlineMsRef = useRef<number | null>(null);
 
@@ -379,9 +379,9 @@ useEffect(() => {
   };
 
   // 7) Option select
-  const handleOptionSelect = (score: number) => {
+  const handleOptionSelect = (score: number, optionIndex?: number) => {
     if (isTransitioning || isSubmitting) return;
-
+setSelectedOptionIndex(optionIndex ?? null);
     const copy = [...selectedAnswers];
     copy[currentQuestionIndex] = {
       questionId: (currentQuestion as any).id,
@@ -393,13 +393,16 @@ useEffect(() => {
     const isLast = currentQuestionIndex === questions.length - 1;
 
     setIsTransitioning(true);
-    setTimeout(() => {
-      if (isLast) handleFinish();
-      else {
-        setCurrentQuestionIndex((i) => i + 1);
-        setIsTransitioning(false);
-      }
-    }, 250);
+setTimeout(() => {
+  if (isLast) {
+    setSelectedOptionIndex(null);
+    handleFinish();
+  } else {
+    setCurrentQuestionIndex((i) => i + 1);
+    setSelectedOptionIndex(null);
+    setIsTransitioning(false);
+  }
+}, 250);
   };
 
   // UI helpers
@@ -460,44 +463,59 @@ useEffect(() => {
       </div>
 
       {/* CONTENT */}
-      <div className="flex-1 flex items-center justify-center px-4 py-5">
-        <div className="w-full max-w-md space-y-3">
-{/* QUESTION */}
-<div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-5">
-  <h2
-    className={`text-[clamp(17px,4.5vw,20px)] font-extrabold ${
-      isArabic ? "text-right leading-loose" : "text-left leading-relaxed"
-    } whitespace-normal break-words`}
-  >
-    {questionText}
-  </h2>
-</div>
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+        <div className="w-full max-w-md mx-auto space-y-3">
+
+          {/* QUESTION */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-5">
+            <h2
+              className={`text-[clamp(17px,4.5vw,20px)] font-extrabold ${
+                isArabic ? "text-right leading-loose" : "text-left leading-relaxed"
+              } whitespace-normal break-words`}
+            >
+              {questionText}
+            </h2>
+          </div>
 
           {/* ANSWERS */}
-          <div className="space-y-3">
+          <div className="space-y-3 pb-4">
             {shuffledOptions.map((option, index) => (
               <button
                 key={index}
-                onClick={() => handleOptionSelect(option.score)}
+                onClick={() => handleOptionSelect(option.score, index)}
                 disabled={isTransitioning || isSubmitting}
-     className={`w-full px-5 py-4 rounded-xl border border-white/40 bg-white/60 backdrop-blur-xl shadow-md
-hover:bg-white/80 hover:shadow-lg active:scale-[0.98] transition-all duration-200 focus:outline-none`}
+                className={`relative w-full px-5 py-4 rounded-xl border backdrop-blur-xl shadow-md hover:bg-white/90 hover:shadow-lg active:scale-[0.98] transition-all duration-200 focus:outline-none ${
+                  selectedOptionIndex === index
+                    ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200"
+                    : "border-white/40 bg-white/70"
+                }`}
               >
-                <div className={`flex items-start gap-4 ${isArabic ? "text-right" : "text-left"}`}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-900 shadow-inner font-bold">
-                    💡
-                  </div>
-
-                  {/* ✅ PROBLEM 1 FIX: no truncation, wraps cleanly on mobile */}
-                  <span
-                    className={`flex-1 text-[clamp(15px,4vw,17px)] font-semibold text-gray-900 leading-snug whitespace-normal break-words`}
+                <div
+                  className={`absolute top-1/2 -translate-y-1/2 ${
+                    isArabic ? "right-4" : "left-4"
+                  }`}
+                >
+                  <div
+                    className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-200 to-blue-200 text-indigo-900 shadow-sm font-extrabold text-base"
+                    dir="ltr"
                   >
+                    {String.fromCharCode(65 + index)}
+                  </div>
+                </div>
+
+                <div
+                  className={`${
+                    isArabic ? "pr-16 text-right" : "pl-16 text-left"
+                  }`}
+                >
+                  <span className="block text-[clamp(15px,4vw,17px)] font-semibold text-gray-900 leading-snug whitespace-normal break-words">
                     {option.text}
                   </span>
                 </div>
               </button>
             ))}
           </div>
+
         </div>
       </div>
     </div>

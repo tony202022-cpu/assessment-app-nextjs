@@ -121,12 +121,29 @@ function shortAttemptId(id: string) {
   return x ? x.slice(0, 8) : "";
 }
 
-function cleanRecommendationText(text: string) {
-  return String(text || "")
-    .replace(/^[“"'`]+/, "")
-    .replace(/^[\s•●▪◦✔✓✦★☆▶►→➡-]+/, "")
-    .replace(/^(?:\(?\d{1,2}\)?[.)\-:]\s*|\d{1,2}\s*[-–—]\s*|[①②③④⑤⑥⑦⑧⑨⑩]\s*)/, "")
-    .trim();
+function cleanRecommendationText(input: string) {
+  let text = String(input || "").trim();
+
+  // remove markdown bold markers everywhere
+  text = text.replace(/\*\*/g, "");
+
+  // repeatedly strip leading numbering / bullets / emoji noise
+  let previous = "";
+  while (text !== previous) {
+    previous = text;
+
+    text = text
+      .replace(/^[“"'`]+/, "")
+      .replace(/^(?:\(?\d{1,2}\)?[.)\-:]\s*|\d{1,2}\s*[-–—]\s*|[①②③④⑤⑥⑦⑧⑨⑩]\s*)/u, "")
+      .replace(/^[•●▪◦✔✓✅✦★☆▶►→➡️⚡📊📋🧠🔍🎯💡📞🛡️📝📌🧩🧭🧪📈🧠🔬\s]+/gu, "")
+      .replace(/^[\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F\s]+/gu, "")
+      .trim();
+  }
+
+  // normalize spaces
+  text = text.replace(/\s+/g, " ").trim();
+
+  return text;
 }
 
 function tierBadgeColor(tier: Tier) {
@@ -754,38 +771,94 @@ function ResultsContent() {
       </div>
     </div>
 
-    <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 sm:p-4 md:p-5">
-      <div className="h-[360px] sm:h-[430px] md:h-[500px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart
-            cx="50%"
-            cy="50%"
-            outerRadius="72%"
-            data={chartData}
-            margin={{ top: 18, right: 22, bottom: 18, left: 22 }}
-          >
-            <PolarGrid stroke="#cbd5e1" strokeWidth={2} />
-            <PolarAngleAxis
-              dataKey="subject"
-              tickLine={false}
-              tick={{
-                fill: "#334155",
-                fontSize: 12,
-                fontWeight: 800,
-              }}
-              dy={6}
-            />
-            <Radar
-              name="Score"
-              dataKey="A"
-              stroke="#2563eb"
-              strokeWidth={3}
-              fill="#3b82f6"
-              fillOpacity={0.35}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 sm:mb-6">
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700 rtl-text">
+          {ar ? "القوة" : "Strengths"}
+        </div>
+        <div className="mt-1 text-2xl font-black text-emerald-800">
+          {swotData.strengths.length}
+        </div>
       </div>
+
+      <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3">
+        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-blue-700 rtl-text">
+          {ar ? "الفرص" : "Opportunities"}
+        </div>
+        <div className="mt-1 text-2xl font-black text-blue-800">
+          {swotData.opportunities.length}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
+        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-rose-700 rtl-text">
+          {ar ? "التهديدات" : "Threats"}
+        </div>
+        <div className="mt-1 text-2xl font-black text-rose-800">
+          {swotData.threats.length}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-red-700 rtl-text">
+          {ar ? "الضعف" : "Weaknesses"}
+        </div>
+        <div className="mt-1 text-2xl font-black text-red-800">
+          {swotData.weaknesses.length}
+        </div>
+      </div>
+    </div>
+
+    <div className="space-y-3 sm:space-y-4">
+      {[...competencyRows]
+        .sort((a: any, b: any) => safePct(b.percentage) - safePct(a.percentage))
+        .map((res: any, index: number) => {
+          const tier = res.derivedTier;
+          return (
+            <div
+              key={String(res.competencyId)}
+              className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white px-4 py-4 sm:px-5 sm:py-5"
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white text-xs font-black">
+                    {index + 1}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm sm:text-base font-black text-slate-900 rtl-text leading-snug">
+                      {getCompetencyLabel(res)}
+                    </div>
+                    <div className="mt-1 text-xs sm:text-sm text-slate-500 rtl-text">
+                      {ar ? "الكفاءة الحالية" : "Current competency level"}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <span
+                    className={`text-xs font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-sm force-ltr ${tierBadgeColor(
+                      tier
+                    )}`}
+                  >
+                    {safePct(res.percentage)}%
+                  </span>
+
+                  <span className="text-[11px] sm:text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+                    {ar ? tierShortLabel(tier, ar) : tier}
+                  </span>
+                </div>
+              </div>
+
+              <div className="h-2.5 sm:h-3 bg-slate-200/70 rounded-full overflow-hidden">
+                <div
+                  className={`h-full bg-gradient-to-r rounded-full ${tierBarColor(tier)}`}
+                  style={{ width: `${safePct(res.percentage)}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
     </div>
   </div>
 
@@ -799,43 +872,117 @@ function ResultsContent() {
           {ar ? "التفصيل" : "Breakdown"}
         </h3>
         <div className="text-xs sm:text-sm text-slate-500 mt-1 rtl-text">
-          {ar ? "توزيع الكفاءات الحالية" : "Your current competency distribution"}
+          {ar ? "ملخص تنفيذي للكفاءات" : "Executive competency summary"}
         </div>
       </div>
     </div>
 
-    <div className="space-y-4 sm:space-y-5">
-      {competencyRows.map((res: any) => {
-        const tier = res.derivedTier;
-        return (
-          <div key={String(res.competencyId)} className="space-y-2.5">
-            <div className="flex justify-between items-start gap-3">
-              <span className="font-bold text-slate-800 text-sm rtl-text leading-snug">
-                {getCompetencyLabel(res)}
-              </span>
-              <span
-                className={`shrink-0 text-xs font-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md force-ltr ${tierBadgeColor(
-                  tier
-                )}`}
-              >
-                {safePct(res.percentage)}%
-              </span>
+    {(() => {
+      const sorted = [...competencyRows].sort(
+        (a: any, b: any) => safePct(b.percentage) - safePct(a.percentage)
+      );
+      const strongest = sorted[0];
+      const weakest = sorted[sorted.length - 1];
+      const avg =
+        sorted.length > 0
+          ? Math.round(
+              sorted.reduce((sum: number, r: any) => sum + safePct(r.percentage), 0) / sorted.length
+            )
+          : 0;
+
+      return (
+        <>
+          <div className="grid grid-cols-1 gap-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500 rtl-text">
+                {ar ? "أعلى كفاءة" : "Strongest Area"}
+              </div>
+              <div className="mt-2 text-sm sm:text-base font-black text-slate-900 rtl-text leading-snug">
+                {strongest ? getCompetencyLabel(strongest) : "—"}
+              </div>
+              {strongest && (
+                <div className="mt-2">
+                  <span
+                    className={`inline-flex text-xs font-black px-2.5 py-1 rounded-full force-ltr ${tierBadgeColor(
+                      strongest.derivedTier
+                    )}`}
+                  >
+                    {safePct(strongest.percentage)}%
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-              <div
-                className={`h-full bg-gradient-to-r transition-all duration-1000 rounded-full ${tierBarColor(
-                  tier
-                )}`}
-                style={{ width: `${safePct(res.percentage)}%` }}
-              />
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500 rtl-text">
+                {ar ? "أضعف كفاءة" : "Weakest Area"}
+              </div>
+              <div className="mt-2 text-sm sm:text-base font-black text-slate-900 rtl-text leading-snug">
+                {weakest ? getCompetencyLabel(weakest) : "—"}
+              </div>
+              {weakest && (
+                <div className="mt-2">
+                  <span
+                    className={`inline-flex text-xs font-black px-2.5 py-1 rounded-full force-ltr ${tierBadgeColor(
+                      weakest.derivedTier
+                    )}`}
+                  >
+                    {safePct(weakest.percentage)}%
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500 rtl-text">
+                {ar ? "المتوسط العام" : "Average Score"}
+              </div>
+              <div className="mt-2 text-3xl font-black text-slate-900 force-ltr">
+                {avg}%
+              </div>
             </div>
           </div>
-        );
-      })}
-    </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white px-4 py-4">
+            <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500 mb-3 rtl-text">
+              {ar ? "التوزيع الكامل" : "Full Distribution"}
+            </div>
+
+            <div className="space-y-3">
+              {[...competencyRows]
+                .sort((a: any, b: any) => safePct(b.percentage) - safePct(a.percentage))
+                .map((res: any) => {
+                  const tier = res.derivedTier;
+                  return (
+                    <div key={`summary-${String(res.competencyId)}`} className="space-y-1.5">
+                      <div className="flex justify-between items-center gap-3">
+                        <span className="text-xs sm:text-sm font-bold text-slate-700 rtl-text leading-snug">
+                          {getCompetencyLabel(res)}
+                        </span>
+                        <span
+                          className={`shrink-0 text-[11px] font-black px-2 py-1 rounded-full force-ltr ${tierBadgeColor(
+                            tier
+                          )}`}
+                        >
+                          {safePct(res.percentage)}%
+                        </span>
+                      </div>
+                      <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full bg-gradient-to-r rounded-full ${tierBarColor(tier)}`}
+                          style={{ width: `${safePct(res.percentage)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </>
+      );
+    })()}
   </div>
 </div>
-
         {/* SWOT */}
         <div className="space-y-5 sm:space-y-6">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -982,131 +1129,218 @@ function ResultsContent() {
 
 {/* MRI UPSELL - ONLY FOR SCAN */}
 {showUpsell && (
-  <div className="print-hide mt-20">
-    <div className="relative overflow-hidden bg-gradient-to-br from-red-600 via-red-700 to-red-900 rounded-3xl shadow-2xl border border-red-500">
-      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-red-600" />
+  <div className="print-hide mt-10 sm:mt-12">
+    <div className="relative overflow-hidden rounded-3xl border border-red-500/30 bg-gradient-to-br from-red-700 via-red-800 to-red-950 shadow-2xl">
+      <div className="absolute top-0 left-0 h-2 w-full bg-gradient-to-r from-orange-500 to-red-600" />
 
-      <div className="relative p-6 md:p-10 text-white">
-        <div className="inline-block bg-red-800 text-red-100 px-5 py-2 rounded-full text-xs md:text-sm font-black uppercase tracking-wider border-2 border-red-600">
-          {ar ? "تشخيص المستوى التالي" : "NEXT LEVEL DIAGNOSIS"}
-        </div>
+      <div className="pointer-events-none absolute inset-0 opacity-25">
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-orange-400 blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-red-500 blur-3xl" />
+      </div>
 
-        <h2 className="mt-5 text-[clamp(30px,5vw,58px)] font-black leading-[1.05] max-w-5xl">
-          {ar ? (
-            <>
-              كشف الـ SCAN الإشارات.
-              <br />
-              <span className="text-orange-300">Advanced Sales MRI</span> يكشف السبب.
-            </>
-          ) : (
-            <>
-              Your SCAN revealed the signals.
-              <br />
-              <span className="text-orange-300">The Advanced Sales MRI</span> reveals the cause.
-            </>
-          )}
-        </h2>
-
-        <p className="mt-5 text-[17px] md:text-[22px] max-w-4xl leading-[1.75] text-red-50 font-medium">
-          {ar
-            ? "الـ SCAN أظهر نمط الأداء على السطح عبر سبع كفاءات. أما الـ Advanced Outdoor Sales MRI فيقدّم تشخيصًا أعمق عبر خمس عشرة كفاءة باستخدام مواقف بيعية واقعية وضغط زمني حقيقي."
-            : "The SCAN shows surface performance patterns across seven competencies. The Advanced Outdoor Sales MRI performs a deeper diagnostic across fifteen competencies using real-world sales scenarios and strict time pressure."}
-        </p>
-
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-3xl border border-red-400/30 bg-red-900/35 p-6 shadow-xl">
-            <div className="text-[11px] md:text-xs font-black uppercase tracking-[0.22em] text-red-100/90">
-              {ar ? "ما الذي كشفه الـ SCAN" : "WHAT SCAN REVEALED"}
-            </div>
-
-            <ul className="mt-4 space-y-3 text-[17px] md:text-[20px] text-white font-bold leading-[1.65]">
-              <li>✓ {ar ? "لقطة سريعة لنقاط القوة والفجوات" : "Quick snapshot of strengths and gaps"}</li>
-              <li>✓ {ar ? "إشارات إنذار مبكرة" : "Early warning signals"}</li>
-              <li>✓ {ar ? "مؤشرات الأداء السطحية" : "Surface performance indicators"}</li>
-              <li>✓ {ar ? "نظرة استراتيجية أولية" : "Strategic preview"}</li>
-            </ul>
+      <div className="relative p-6 sm:p-8 md:p-10 text-white space-y-8">
+        <div className="space-y-4">
+          <div className="text-xs font-black uppercase tracking-[0.2em] text-white/70 rtl-text">
+            {ar ? "المرحلة التالية من التشخيص" : "NEXT LEVEL DIAGNOSIS"}
           </div>
 
-          <div className="rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-300 via-amber-300 to-orange-300 p-6 shadow-xl">
-            <div className="text-[15px] md:text-[18px] font-black tracking-[0.08em] text-slate-900 leading-tight">
-              {ar ? "ما الذي يفتحه الـ MRI المتقدم" : "WHAT THE ADVANCED MRI UNLOCKS"}
-            </div>
+          <h2 className="text-[clamp(30px,5vw,46px)] leading-[1.12] sm:leading-[1.08] font-black rtl-text">
+            {ar ? (
+              <>
+                الفحص المجاني كشف <span className="text-orange-300">الإشارات</span> فقط.
+                <br />
+                أما <span className="text-orange-300">Advanced MRI</span> فيكشف السبب الحقيقي.
+              </>
+            ) : (
+              <>
+                Your SCAN revealed the signals.
+                <br />
+                The <span className="text-orange-300">Advanced Sales MRI</span> reveals the cause.
+              </>
+            )}
+          </h2>
 
-            <ul className="mt-4 space-y-3 text-[17px] md:text-[20px] text-slate-900 font-black leading-[1.65]">
-              <li>★ {ar ? "خريطة تشخيص كاملة عبر 15 كفاءة" : "Full 15-competency diagnostic map"}</li>
-              <li>★ {ar ? "اختبار قرار مبني على سيناريوهات واقعية" : "Scenario-based decision testing"}</li>
-              <li>★ {ar ? "ضغط أداء حقيقي لمدة 90 دقيقة" : "Strict 90-minute performance pressure"}</li>
-              <li>★ {ar ? "تحليل جذور الصفقات المفقودة" : "Root-cause analysis of lost deals"}</li>
-            </ul>
-          </div>
+          <p className="max-w-3xl text-[15px] sm:text-[17px] text-white/90 leading-relaxed rtl-text">
+            {ar
+              ? "يعرض الفحص المجاني نمط الأداء عبر ٧ كفاءات. أما Advanced Outdoor Sales MRI فيجري تشخيصًا عميقًا عبر ١٥ كفاءة باستخدام مواقف بيع حقيقية تحت ضغط زمني."
+              : "The SCAN shows surface performance patterns across seven competencies. The Advanced Outdoor Sales MRI performs a deeper diagnostic across fifteen competencies using real-world sales scenarios and strict time pressure."}
+          </p>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="rounded-2xl border border-white/15 bg-white/8 p-5 shadow-lg">
-            <div className="text-[26px] md:text-[32px] font-black text-white leading-tight">
+        {/* compare */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+  {/* SCAN */}
+  <div className="rounded-3xl border border-white/15 bg-black/20 p-6 sm:p-7">
+    
+    <div className="text-xl sm:text-2xl font-black tracking-[0.06em] text-white rtl-text">
+      {ar ? "ما كشفه الفحص المجاني" : "What SCAN revealed"}
+    </div>
+
+    <ul className="mt-5 space-y-4 text-white rtl-text">
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-black text-white">
+          ✓
+        </span>
+        <span className="text-base sm:text-lg font-semibold leading-relaxed">
+          {ar ? "لقطة سريعة لنقاط القوة والفجوات" : "Quick snapshot of strengths and gaps"}
+        </span>
+      </li>
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-black text-white">
+          ✓
+        </span>
+        <span className="text-base sm:text-lg font-semibold leading-relaxed">
+          {ar ? "إشارات إنذار مبكرة" : "Early warning signals"}
+        </span>
+      </li>
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-black text-white">
+          ✓
+        </span>
+        <span className="text-base sm:text-lg font-semibold leading-relaxed">
+          {ar ? "مؤشرات أداء سطحية" : "Surface performance indicators"}
+        </span>
+      </li>
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-black text-white">
+          ✓
+        </span>
+        <span className="text-base sm:text-lg font-semibold leading-relaxed">
+          {ar ? "نظرة استراتيجية أولية" : "Strategic preview"}
+        </span>
+      </li>
+
+    </ul>
+  </div>
+
+
+  {/* MRI */}
+  <div className="rounded-3xl border border-yellow-300/40 bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-500 text-slate-900 p-6 sm:p-7">
+
+    <div className="text-xl sm:text-2xl font-black tracking-[0.06em] text-slate-900 rtl-text">
+      {ar ? "ما الذي يفتحه لك الـ MRI المتقدم" : "What the Advanced MRI unlocks"}
+    </div>
+
+    <ul className="mt-5 space-y-4 rtl-text">
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/70 text-sm font-black text-slate-900">
+          ★
+        </span>
+        <span className="text-base sm:text-lg font-bold leading-relaxed">
+          {ar ? "خريطة تشخيص كاملة عبر 15 كفاءة" : "Full 15-competency diagnostic map"}
+        </span>
+      </li>
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/70 text-sm font-black text-slate-900">
+          ★
+        </span>
+        <span className="text-base sm:text-lg font-bold leading-relaxed">
+          {ar ? "اختبار قرار مبني على سيناريوهات واقعية" : "Scenario-based decision testing"}
+        </span>
+      </li>
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/70 text-sm font-black text-slate-900">
+          ★
+        </span>
+        <span className="text-base sm:text-lg font-bold leading-relaxed">
+          {ar ? "ضغط أداء صارم لمدة 90 دقيقة" : "Strict 90-minute performance pressure"}
+        </span>
+      </li>
+
+      <li className="flex items-start gap-3">
+        <span className="mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/70 text-sm font-black text-slate-900">
+          ★
+        </span>
+        <span className="text-base sm:text-lg font-bold leading-relaxed">
+          {ar ? "تشخيص السبب الجذري للصفقات الضائعة" : "Root-cause analysis of lost deals"}
+        </span>
+      </li>
+
+    </ul>
+  </div>
+
+</div>
+
+        {/* value stack */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-3xl border border-white/15 bg-white/10 p-5 sm:p-6">
+            <div className="text-xl font-black rtl-text">
               {ar ? "خطة 90 يوم" : "90-Day Plan"}
             </div>
-            <div className="mt-2 text-[15px] md:text-[18px] text-red-50 leading-[1.65] font-medium">
-              {ar ? "خارطة عملية لإصلاح أضعف كفاءاتك." : "A practical roadmap to repair your weakest competencies."}
-            </div>
+            <p className="mt-3 text-sm sm:text-base text-white/85 leading-relaxed rtl-text">
+              {ar
+                ? "خارطة تنفيذ مركزة يمكنك البدء بها مباشرة بعد تشخيص الـ MRI."
+                : "A focused execution roadmap you can implement immediately after the MRI diagnosis."}
+            </p>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-white/8 p-5 shadow-lg">
-            <div className="text-[26px] md:text-[32px] font-black text-white leading-tight">
-              {ar ? "5 أدوات إضافية" : "5 Bonus Tools"}
+          <div className="rounded-3xl border border-white/15 bg-white/10 p-5 sm:p-6">
+            <div className="text-xl font-black rtl-text">
+              {ar ? "5 بونصات" : "5 Bonus Tools"}
             </div>
-            <div className="mt-2 text-[14px] md:text-[16px] text-red-100 leading-relaxed">
-              {ar ? "أدوات احترافية للاعتراضات والإقناع وإدارة الوقت." : "Professional tools for objections, persuasion and time mastery."}
-            </div>
+            <ul className="mt-3 space-y-2 text-sm sm:text-base text-white/85 leading-relaxed rtl-text">
+              <li>{ar ? "1- أفضل 50 إجابة على أصعب 50 اعتراضًا" : "1- The 50 Best Answers to the 50 Hardest Objections"}</li>
+              <li>{ar ? "2- كيف تزيد مبيعاتك 40% باستخدام الذكاء الاصطناعي" : "2- How to increase your sales by 40% using AI"}</li>
+              <li>{ar ? "3- كيف تحفّز نفسك تحت الضغط" : "3- How to Motivate Yourself Under Pressure"}</li>
+              <li>{ar ? "4- كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار" : "4- How to Book Appointments With VIPs and decision makers"}</li>
+              <li>{ar ? "5- إتقان إدارة الوقت للمبيعات الخارجية" : "5- Time-Management Mastery for Outdoor Sales"}</li>
+            </ul>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-white/8 p-5 shadow-lg">
-            <div className="text-[26px] md:text-[32px] font-black text-white leading-tight">
-              {ar ? "تحليل عميق 25 صفحة" : "25-Page Deep Analysis"}
+          <div className="rounded-3xl border border-white/15 bg-white/10 p-5 sm:p-6">
+            <div className="text-xl font-black rtl-text">
+              {ar ? "تقرير تحليل 25 صفحة" : "25-Page Deep Analysis"}
             </div>
-            <div className="mt-2 text-[14px] md:text-[16px] text-red-100 leading-relaxed">
-              {ar ? "تقرير تشخيصي مفصل يحلل كل كفاءة من الكفاءات الخمس عشرة." : "A detailed 25-page diagnostic report analyzing every core score across all 15 competencies."}
-            </div>
+            <p className="mt-3 text-sm sm:text-base text-white/85 leading-relaxed rtl-text">
+              {ar
+                ? "تحليل تفصيلي لكل نتيجة عبر 15 كفاءة."
+                : "A detailed 25-page diagnostic report analyzing every score across all 15 competencies."}
+            </p>
           </div>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-white/15 bg-black/15 px-5 py-5 text-center">
-          <p className="text-[17px] md:text-[22px] font-bold text-white leading-[1.75] max-w-4xl mx-auto">
-            {ar
-              ? "نتائجك أظهرت بالفعل أين قد يتسرّب الإيراد. الـ Advanced MRI يوضح بالضبط لماذا تنهار الصفقات — وما الذي يجب إصلاحه أولًا."
-              : "Your results already show where revenue may be leaking. The Advanced MRI shows exactly why deals break down — and what to fix first."}
-          </p>
+        <div className="rounded-2xl border border-white/10 bg-black/20 px-4 sm:px-5 py-3 text-sm sm:text-base font-semibold text-white/90 rtl-text">
+          {ar
+            ? "كل يوم تؤجل فيه التشخيص الحقيقي، قد تخسر صفقات لا تعرف أصلًا لماذا ضاعت."
+            : "Every day you delay the real diagnosis, you may be losing deals without knowing why."}
         </div>
 
-        <div className="mt-6 flex flex-col md:flex-row md:items-center gap-4">
-          <div className="w-full md:w-auto">
-            {MRI_PAYMENT_URL ? (
-              <Button
-                asChild
-                size="lg"
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black text-base md:text-lg px-8 py-7 rounded-2xl shadow-2xl transition-all hover:scale-[1.02]"
-              >
-                <a href={MRI_PAYMENT_URL} target="_blank" rel="noreferrer" className="flex items-center gap-3">
-                  {ar ? "اذهب لصفحة الـ MRI الكاملة" : "OPEN THE FULL MRI PAGE"}
-                  <ArrowRight className="w-5 h-5" />
-                </a>
-              </Button>
-            ) : (
-              <Button
-                size="lg"
-                disabled
-                className="bg-white/15 text-red-100 font-black text-base md:text-lg px-8 py-7 rounded-2xl shadow-2xl cursor-not-allowed"
-              >
-                {ar ? "قريباً" : "COMING SOON"}
-              </Button>
-            )}
-          </div>
+        {/* CTA */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+          {MRI_PAYMENT_URL ? (
+            <Button
+              asChild
+              size="lg"
+              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-black text-base sm:text-lg px-8 py-7 rounded-2xl shadow-2xl transition-all active:scale-[0.98]"
+            >
+              <a href={MRI_PAYMENT_URL} target="_blank" rel="noreferrer" className="flex items-center gap-3">
+                {ar ? "افتح الـ MRI المتقدم الآن" : "Unlock the Advanced MRI Now"}
+                <ArrowRight className="w-5 h-5" />
+              </a>
+            </Button>
+          ) : (
+            <Button
+              size="lg"
+              disabled
+              className="w-full sm:w-auto bg-white/20 text-white/70 font-black text-base sm:text-lg px-8 py-7 rounded-2xl shadow-2xl cursor-not-allowed"
+            >
+              {ar ? "قريباً" : "COMING SOON"}
+            </Button>
+          )}
 
-          <p className="text-sm md:text-base text-red-100/90 max-w-2xl leading-relaxed">
+          <div className="max-w-xl text-xs sm:text-sm text-white/75 leading-relaxed rtl-text">
             {ar
-              ? "المقاعد محدودة كل شهر. تجاهل ما كشفه الـ SCAN يعني الاستمرار في خسارة الصفقات دون أن تعرف السبب الحقيقي."
-              : "Seats are limited each month. Ignoring what your SCAN revealed means continuing to lose deals without knowing why."}
-          </p>
+              ? "عدد المقاعد محدود شهرياً. تجاهل ما كشفه الـ SCAN يعني الاستمرار في دفع ضريبة خفية على شكل صفقات ضائعة وفرص مهدورة."
+              : "Monthly seats are limited. Ignoring what your SCAN revealed means continuing to pay a hidden tax in lost deals and wasted opportunities."}
+          </div>
         </div>
       </div>
     </div>
