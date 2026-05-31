@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 // SLUG-COMPATIBLE OUTDOOR SALES REPORT
 // Safe replacement for: app/(site)/[slug]/report/page.tsx
 // Uses: params.slug + searchParams.attemptId
+// Keeps scan and MRI in same route, but renders MRI-only premium sections when mri === true.
 // Does NOT touch quiz, scoring, login, Supabase schema, timer, or randomization.
 // ======================================================
 
@@ -511,6 +512,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const overallTier: Tier = tierFromPercentage(overall);
   const identity = extractIdentity(attempt);
 
+  const topThreeRisks = [...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 3);
+  const topThreeStrengths = [...rows].sort((a, b) => b.percentage - a.percentage).slice(0, 3);
+
   const reportTitle =
     (ar
       ? (assessment as any)?.title_ar || (assessment as any)?.name_ar || ""
@@ -540,22 +544,23 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     en: {
       back: "Back to Results",
       printNote: "For best PDF export: choose Save as PDF, turn on background graphics, and turn off browser headers and footers.",
-      badge: mri ? "Advanced Diagnostic Report" : "Sales Performance Blood Test",
+      badge: mri ? "Full Diagnostic & Treatment Tool" : "Sales Performance Blood Test",
       subtitle: mri
-        ? "A full diagnostic and treatment tool for your sales performance body."
+        ? "A personalized Sales MRI designed to diagnose the full sales performance body and turn the findings into a practical treatment plan."
         : "A fast diagnostic scan of your sales performance body — like a blood test for field sales.",
       overall: "Overall Sales Health Score",
       overallMarker: "Overall Sales Health Index",
       participant: "Participant Identity",
       health: "Sales Health Zone",
-      bloodPanel: mri ? "Competency Diagnostic Panel" : "Sales Health Panel: Overall Score + 7 Core Markers",
-      bloodPanelSub:
-        "This panel combines your overall sales health score with the seven core markers that reveal where performance is strong, where it is leaking, and what needs treatment.",
+      bloodPanel: mri ? "15-Competency Sales MRI Panel" : "Sales Health Panel: Overall Score + 7 Core Markers",
+      bloodPanelSub: mri
+        ? "This is your deep diagnostic panel. It examines the wider sales performance body across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
+        : "This panel combines your overall sales health score with the seven core markers that reveal where performance is strong, where it is leaking, and what needs treatment.",
       strongest: "Strongest Signal",
       weakest: "Biggest Hidden Revenue Leak",
       commercial: "Commercial Interpretation",
       swot: "Strategic SWOT Analysis",
-      actions: "Priority Execution Plan",
+      actions: mri ? "Personal Treatment Priorities" : "Priority Execution Plan",
       prescriptionHeadline: "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
       prescriptionSubhead: "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
       prescriptionCta: "Get My Full Sales MRI & 90-Day Prescription",
@@ -565,22 +570,23 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     ar: {
       back: "العودة إلى النتائج",
       printNote: "لأفضل تصدير PDF: اختر Save as PDF، فعّل Background graphics، وألغِ ترويسات وتذييلات المتصفح.",
-      badge: mri ? "تقرير تشخيصي متقدم" : "فحص دم لأداء المبيعات",
+      badge: mri ? "أداة تشخيص وعلاج كاملة" : "فحص دم لأداء المبيعات",
       subtitle: mri
-        ? "أداة تشخيص وعلاج كاملة لجسم أدائك البيعي."
+        ? "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
         : "فحص تشخيصي سريع لجسم أدائك البيعي — كأنه تحليل دم مهني للمبيعات الميدانية.",
       overall: "مؤشر الصحة البيعية العام",
       overallMarker: "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
       health: "منطقة الصحة البيعية",
-      bloodPanel: mri ? "لوحة التشخيص المتقدمة" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
-      bloodPanelSub:
-        "تجمع هذه اللوحة بين مؤشر الصحة البيعية العام والسبعة مؤشرات الأساسية التي تكشف أين يقوى الأداء، أين يحدث التسريب، وما الذي يحتاج إلى علاج.",
+      bloodPanel: mri ? "لوحة MRI التشخيصية عبر ١٥ كفاءة" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
+      bloodPanelSub: mri
+        ? "هذه هي لوحة التشخيص العميق. تفحص الجسم البيعي الكامل عبر ١٥ كفاءة لتكشف نقاط القوة والتسريب والأنماط الجذرية وأولويات العلاج."
+        : "تجمع هذه اللوحة بين مؤشر الصحة البيعية العام والسبعة مؤشرات الأساسية التي تكشف أين يقوى الأداء، أين يحدث التسريب، وما الذي يحتاج إلى علاج.",
       strongest: "أقوى مؤشر",
       weakest: "أكبر تسريب مخفي للفرص",
       commercial: "التفسير التجاري",
       swot: "تحليل SWOT الاستراتيجي",
-      actions: "خطة التنفيذ ذات الأولوية",
+      actions: mri ? "أولويات العلاج الشخصية" : "خطة التنفيذ ذات الأولوية",
       prescriptionHeadline: "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
       prescriptionSubhead: "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
       prescriptionCta: "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
@@ -625,7 +631,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_.7fr] gap-8 lg:gap-12 items-center">
               <div className="space-y-5 sm:space-y-6">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs sm:text-sm font-black text-blue-100 uppercase tracking-widest">
-                  🧪 {t.badge}
+                  {mri ? "🔬" : "🧪"} {t.badge}
                 </div>
 
                 <div>
@@ -668,6 +674,56 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
+        {/* MRI VALUE POSITIONING */}
+        {mri && (
+          <section className="pdf-avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
+            <div className="bg-gradient-to-br from-indigo-950 via-slate-950 to-blue-950 text-white p-7 sm:p-10">
+              <div className="inline-flex rounded-full bg-amber-400/20 border border-amber-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-amber-100">
+                {ar ? "تقرير مدفوع متقدم" : "Premium Advanced Report"}
+              </div>
+
+              <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
+                {ar
+                  ? "هذا ليس تقرير نتائج. هذه أداة تشخيص وعلاج كاملة."
+                  : "This Is Not a Score Report. It Is a Full Diagnostic and Treatment Tool."}
+              </h2>
+
+              <p className="mt-5 text-base sm:text-xl text-blue-100 leading-relaxed max-w-4xl rtl-text">
+                {ar
+                  ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لجسم أدائك البيعي. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم الأنماط الجذرية، المخاطر التجارية، وأولويات العلاج التي يجب التعامل معها أولًا."
+                  : "This personalized report gives you a deeper view of your sales performance body. It does not simply tell you where the score is low; it helps you understand root patterns, commercial risks, and the treatment priorities that should be corrected first."}
+              </p>
+
+              <div className="mt-7 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <DarkInsight
+                  title={ar ? "تشخيص أعمق" : "Deeper diagnosis"}
+                  body={
+                    ar
+                      ? "يفحص التقرير ١٥ كفاءة بيعية بدل الاكتفاء بالمؤشرات الأساسية."
+                      : "The report examines 15 sales competencies instead of stopping at basic markers."
+                  }
+                />
+                <DarkInsight
+                  title={ar ? "خطة علاج شخصية" : "Personal treatment plan"}
+                  body={
+                    ar
+                      ? "ترتيب أولويات العلاج مبني على إجاباتك ودرجاتك، وليس على نصائح عامة."
+                      : "The treatment priorities are built from your answers and scores, not from generic advice."
+                  }
+                />
+                <DarkInsight
+                  title={ar ? "وصفة ٩٠ يومًا" : "90-day prescription"}
+                  body={
+                    ar
+                      ? "الخطة تساعدك على معرفة ماذا تصلح أولًا، ماذا تتدرب عليه، وماذا تتوقف عن فعله."
+                      : "The plan helps you know what to fix first, what to practice, and what to stop doing."
+                  }
+                />
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* OVERALL DIAGNOSIS */}
         <section className="pdf-avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
           {sectionTitle(t.overall, ar ? "قراءة تشخيصية سريعة لما تكشفه النتيجة العامة." : "A quick diagnostic reading of what the overall score reveals.")}
@@ -694,7 +750,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* SALES HEALTH PANEL */}
+        {/* SALES HEALTH / MRI PANEL */}
         <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
           {sectionTitle(t.bloodPanel, t.bloodPanelSub)}
 
@@ -760,6 +816,39 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             ))}
           </div>
         </section>
+
+        {/* MRI ROOT-CAUSE SNAPSHOT */}
+        {mri && (
+          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+            {sectionTitle(
+              ar ? "خريطة الأسباب الجذرية" : "Root-Cause Priority Map",
+              ar
+                ? "هذه الخريطة تختار أقل المناطق أداءً وتحوّلها إلى أولويات علاجية واضحة."
+                : "This map selects the lowest-performing areas and turns them into clear treatment priorities."
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {topThreeRisks.map((row, index) => (
+                <div key={`risk-${row.competencyId}`} className={`rounded-3xl border-2 ${tierSoftClass(row.tier)} p-5 shadow-sm`}>
+                  <div className="text-xs font-black uppercase tracking-widest text-slate-500 rtl-text">
+                    {ar ? `أولوية علاج ${index + 1}` : `Treatment Priority ${index + 1}`}
+                  </div>
+                  <h3 className="mt-2 text-xl font-black text-slate-950 rtl-text">{row.label}</h3>
+                  <div className="mt-3">
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(row.tier)}`}>
+                      {row.percentage}% · {getTierLabel(row.tier, lang)}
+                    </span>
+                  </div>
+                  <p className="mt-4 text-sm text-slate-700 leading-relaxed rtl-text">
+                    {ar
+                      ? "هذه المنطقة قد تكون سببًا جذريًا في تسريب الفرص أو ضعف الزخم أو تراجع الثقة أثناء البيع. ابدأ علاجها قبل محاولة إصلاح كل شيء."
+                      : "This area may be a root contributor to opportunity leakage, weak momentum, or loss of confidence during the sale. Treat it before trying to fix everything."}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* STRONGEST / WEAKEST */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -895,7 +984,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* PRIORITY ACTIONS */}
+        {/* PRIORITY ACTIONS / TREATMENT PRIORITIES */}
         <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
           {sectionTitle(
             t.actions,
@@ -928,7 +1017,84 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* MRI PRESCRIPTION UPSELL */}
+        {/* MRI 90-DAY PRESCRIPTION */}
+        {mri && (
+          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+            {sectionTitle(
+              ar ? "وصفة الأداء البيعي خلال ٩٠ يومًا" : "90-Day Sales Performance Prescription",
+              ar
+                ? "هذه ليست دورة تدريبية. إنها خطة علاج تنفيذية مبنية على ترتيب أولوياتك الحالية."
+                : "This is not a training course. It is an execution treatment plan based on your current priority order."
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <PrescriptionPhase
+                ar={ar}
+                phase="1"
+                titleEn="Days 1–30: Stop the Leakage"
+                titleAr="الأيام ١–٣٠: أوقف التسريب"
+                bodyEn={`Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the behavior that is most likely leaking opportunities, then build a simple correction routine you can repeat daily.`}
+                bodyAr={`ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر تسريب للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`}
+              />
+
+              <PrescriptionPhase
+                ar={ar}
+                phase="2"
+                titleEn="Days 31–60: Build New Selling Behavior"
+                titleAr="الأيام ٣١–٦٠: ابنِ سلوكًا بيعيًا جديدًا"
+                bodyEn={`Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support the weaker behaviors and create a more stable sales rhythm.`}
+                bodyAr={`استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الأضعف وبناء إيقاع بيعي أكثر ثباتًا.`}
+              />
+
+              <PrescriptionPhase
+                ar={ar}
+                phase="3"
+                titleEn="Days 61–90: Sharpen and Repeat"
+                titleAr="الأيام ٦١–٩٠: صقِل وكرّر"
+                bodyEn="Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."
+                bodyAr="حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."
+              />
+            </div>
+          </section>
+        )}
+
+        {/* MRI BONUS REMEDY TOOLS */}
+        {mri && (
+          <section className="rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white shadow-2xl p-6 sm:p-8">
+            <div className="mb-6">
+              <div className="inline-flex rounded-full bg-amber-400/20 border border-amber-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-amber-100">
+                {ar ? "أدوات العلاج المرافقة" : "Included Remedy Tools"}
+              </div>
+              <h2 className="mt-4 text-3xl sm:text-4xl font-black leading-tight rtl-text">
+                {ar ? "٥ مكافآت عملية تساعدك على التطبيق وليس القراءة فقط" : "5 Practical Bonuses to Help You Apply the Remedy, Not Just Read the Report"}
+              </h2>
+              <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
+                {ar
+                  ? "هذه الموارد تعمل كأدوات مساعدة بجانب التقرير. استخدمها لعلاج الاعتراضات، الضغط، الوقت، المواعيد، وتحويل التفكير إلى تنفيذ."
+                  : "These resources work as practical remedy tools alongside the report. Use them to treat objections, pressure, time, appointments, and execution gaps."}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                ar ? "أفضل 50 إجابة لأصعب 50 اعتراض بيعي" : "The 50 Best Answers to the 50 Hardest Objections",
+                ar ? "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي" : "How to Increase Your Sales Using AI",
+                ar ? "كيف تحفّز نفسك تحت الضغط" : "How to Motivate Yourself Under Pressure",
+                ar ? "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار" : "How to Book Appointments with VIPs and Decision Makers",
+                ar ? "إتقان إدارة الوقت للمبيعات الخارجية" : "Time-Management Mastery for Outdoor Sales",
+              ].map((bonus, idx) => (
+                <div key={bonus} className="rounded-3xl bg-white/10 border border-white/15 p-5">
+                  <div className="text-sm font-black text-amber-200 uppercase tracking-widest">
+                    {ar ? `مكافأة ${idx + 1}` : `Bonus ${idx + 1}`}
+                  </div>
+                  <div className="mt-2 text-lg font-black rtl-text">{bonus}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* SCAN-ONLY MRI PRESCRIPTION UPSELL */}
         {!mri && (
           <section className="pdf-avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
@@ -1063,13 +1229,13 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               <p>
                 {ar
                   ? "إذا كان هذا الفحص مفيدًا لفرد واحد، فقيمته الحقيقية تظهر عندما يستخدمه المدير مع الفريق بالكامل. عندها لا يرى المدير آراء عامة، بل خريطة واضحة لمناطق القوة والتسريب والتدريب المطلوب."
-                  : "If this scan is useful for one person, its real value appears when a manager uses it across the whole team. The manager no longer sees opinions — they see a diagnostic map of strengths, leakage areas, and training priorities."}
+                  : "If this diagnostic is useful for one person, its real value appears when a manager uses it across the whole team. The manager no longer sees opinions — they see a diagnostic map of strengths, leakage areas, and development priorities."}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {(ar
-                  ? ["خريطة حرارة للفريق", "أقوى ٣ مناطق", "أخطر ٣ فجوات", "أولويات تدريب واضحة"]
-                  : ["Team heatmap", "Top 3 strengths", "Top 3 risk gaps", "Clear training priorities"]
+                  ? ["خريطة حرارة للفريق", "أقوى ٣ مناطق", "أخطر ٣ فجوات", "أولويات تطوير واضحة"]
+                  : ["Team heatmap", "Top 3 strengths", "Top 3 risk gaps", "Clear development priorities"]
                 ).map((x) => (
                   <div key={x} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 font-bold">
                     ✓ {x}
@@ -1241,6 +1407,36 @@ function ActionBlock({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function PrescriptionPhase({
+  ar,
+  phase,
+  titleEn,
+  titleAr,
+  bodyEn,
+  bodyAr,
+}: {
+  ar: boolean;
+  phase: string;
+  titleEn: string;
+  titleAr: string;
+  bodyEn: string;
+  bodyAr: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-white font-black">
+        {phase}
+      </div>
+      <h3 className="mt-4 text-xl font-black text-slate-950 rtl-text">
+        {ar ? titleAr : titleEn}
+      </h3>
+      <p className="mt-3 text-sm sm:text-base text-slate-700 leading-relaxed rtl-text">
+        {ar ? bodyAr : bodyEn}
+      </p>
     </div>
   );
 }
