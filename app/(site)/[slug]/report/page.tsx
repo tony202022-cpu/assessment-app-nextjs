@@ -17,7 +17,6 @@ export const dynamic = "force-dynamic";
 // SLUG-COMPATIBLE OUTDOOR SALES REPORT
 // Safe replacement for: app/(site)/[slug]/report/page.tsx
 // Uses: params.slug + searchParams.attemptId
-// Keeps scan and MRI in same route, but renders MRI-only premium sections when mri === true.
 // Does NOT touch quiz, scoring, login, Supabase schema, timer, or randomization.
 // ======================================================
 
@@ -42,6 +41,7 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
   identifying_real_needs: { en: "Identifying Real Needs", ar: "تحديد الاحتياجات الحقيقية" },
   handling_objections: { en: "Handling Objections", ar: "التعامل مع الاعتراضات" },
+  destroying_objections: { en: "Destroying Objections", ar: "تدمير الاعتراضات من الجذور" },
   creating_irresistible_offers: { en: "Creating Irresistible Offers", ar: "إنشاء عروض لا تُقاوَم" },
   mastering_closing: { en: "Mastering Closing", ar: "إتقان الإغلاق" },
   follow_up_discipline: { en: "Follow-Up Discipline", ar: "انضباط المتابعة" },
@@ -75,9 +75,7 @@ function getSupabaseAdmin() {
 }
 
 function normalizeCompetencySafe(raw: any) {
-  const id = normalizeCompetencyId(String(raw || ""));
-  if (id === "destroying_objections") return "handling_objections";
-  return id;
+  return normalizeCompetencyId(String(raw || ""));
 }
 
 function pct(n: any) {
@@ -724,6 +722,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </section>
         )}
 
+
         {/* OVERALL DIAGNOSIS */}
         <section className="pdf-avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
           {sectionTitle(t.overall, ar ? "قراءة تشخيصية سريعة لما تكشفه النتيجة العامة." : "A quick diagnostic reading of what the overall score reveals.")}
@@ -849,6 +848,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             </div>
           </section>
         )}
+
 
         {/* STRONGEST / WEAKEST */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -984,7 +984,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* PRIORITY ACTIONS / TREATMENT PRIORITIES */}
+        {/* PRIORITY ACTIONS */}
         <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
           {sectionTitle(
             t.actions,
@@ -1066,12 +1066,12 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 {ar ? "أدوات العلاج المرافقة" : "Included Remedy Tools"}
               </div>
               <h2 className="mt-4 text-3xl sm:text-4xl font-black leading-tight rtl-text">
-                {ar ? "٥ مكافآت عملية تساعدك على التطبيق وليس القراءة فقط" : "5 Practical Bonuses to Help You Apply the Remedy, Not Just Read the Report"}
+                {ar ? "٦ مكافآت علاجية عملية تساعدك على التطبيق وليس القراءة فقط" : "6 Practical Remedy Bonuses to Help You Apply the Treatment, Not Just Read the Report"}
               </h2>
               <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
                 {ar
-                  ? "هذه الموارد تعمل كأدوات مساعدة بجانب التقرير. استخدمها لعلاج الاعتراضات، الضغط، الوقت، المواعيد، وتحويل التفكير إلى تنفيذ."
-                  : "These resources work as practical remedy tools alongside the report. Use them to treat objections, pressure, time, appointments, and execution gaps."}
+                  ? "هذه الموارد تعمل كأدوات علاجية مرافقة للتقرير. استخدمها لعلاج الاعتراضات، ضغط العملاء، الوقت، المواعيد، الذكاء الاصطناعي، وتحويل التشخيص إلى تنفيذ."
+                  : "These resources work as practical remedy tools alongside the report. Use them to treat objections, difficult customers, pressure, time leaks, decision-maker access, AI execution, and follow-up gaps."}
               </p>
             </div>
 
@@ -1082,6 +1082,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 ar ? "كيف تحفّز نفسك تحت الضغط" : "How to Motivate Yourself Under Pressure",
                 ar ? "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار" : "How to Book Appointments with VIPs and Decision Makers",
                 ar ? "إتقان إدارة الوقت للمبيعات الخارجية" : "Time-Management Mastery for Outdoor Sales",
+                ar ? "كيف تتعامل مع العملاء الصعبين دون خسارة السيطرة" : "How to Deal with Difficult Customers Without Losing Control",
               ].map((bonus, idx) => (
                 <div key={bonus} className="rounded-3xl bg-white/10 border border-white/15 p-5">
                   <div className="text-sm font-black text-amber-200 uppercase tracking-widest">
@@ -1155,7 +1156,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                           "ترتيب واضح لما يجب إصلاحه أولًا بدل التخمين",
                           "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
                           "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
-                          "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
+                          "٦ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
                         ]
                       : [
                           "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
@@ -1164,7 +1165,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                           "A clear priority order of what to correct first instead of guessing",
                           "A practical 90-day performance prescription without sitting through a long training course",
                           "A day-by-day correction path showing what to do and what to stop doing",
-                          "5 implementation bonuses that help you act, not just read",
+                          "6 implementation bonuses that help you act, not just read",
                         ]
                     ).map((x) => (
                       <div key={x} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
@@ -1229,13 +1230,13 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               <p>
                 {ar
                   ? "إذا كان هذا الفحص مفيدًا لفرد واحد، فقيمته الحقيقية تظهر عندما يستخدمه المدير مع الفريق بالكامل. عندها لا يرى المدير آراء عامة، بل خريطة واضحة لمناطق القوة والتسريب والتدريب المطلوب."
-                  : "If this diagnostic is useful for one person, its real value appears when a manager uses it across the whole team. The manager no longer sees opinions — they see a diagnostic map of strengths, leakage areas, and development priorities."}
+                  : "If this scan is useful for one person, its real value appears when a manager uses it across the whole team. The manager no longer sees opinions — they see a diagnostic map of strengths, leakage areas, and training priorities."}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {(ar
-                  ? ["خريطة حرارة للفريق", "أقوى ٣ مناطق", "أخطر ٣ فجوات", "أولويات تطوير واضحة"]
-                  : ["Team heatmap", "Top 3 strengths", "Top 3 risk gaps", "Clear development priorities"]
+                  ? ["خريطة حرارة للفريق", "أقوى ٣ مناطق", "أخطر ٣ فجوات", "أولويات تدريب واضحة"]
+                  : ["Team heatmap", "Top 3 strengths", "Top 3 risk gaps", "Clear training priorities"]
                 ).map((x) => (
                   <div key={x} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 font-bold">
                     ✓ {x}
