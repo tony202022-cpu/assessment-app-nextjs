@@ -35,6 +35,20 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     metricAr: "إكمال سلوك التصحيح المختار يوميًا",
   },
 
+  prospecting_finding_new_clients: {
+    id: "prospecting_finding_new_clients",
+    en: "Prospecting & Finding New Clients",
+    ar: "البحث عن عملاء جدد",
+    leakageEn: "a shrinking pipeline, overdependence on familiar lead sources, and weak creation of fresh opportunities",
+    leakageAr: "انكماش البايبلاين، الاعتماد الزائد على مصادر العملاء المعتادة، وضعف صناعة فرص جديدة",
+    treatmentEn: "build new opportunity channels through referrals, adjacent markets, lookalike clients, and problem-based outreach",
+    treatmentAr: "بناء قنوات فرص جديدة عبر الإحالات والأسواق المجاورة والعملاء المشابهين والتواصل المبني على المشكلة",
+    drillEn: "identify 10 new prospects from three different sources before working your usual pipeline for 7 days",
+    drillAr: "حدد 10 عملاء محتملين جدد من ثلاثة مصادر مختلفة قبل العمل على البايبلاين المعتاد لمدة 7 أيام",
+    metricEn: "new qualified conversations created each week",
+    metricAr: "عدد المحادثات المؤهلة الجديدة التي يتم إنشاؤها أسبوعيًا",
+  },
+
   mental_toughness: {
     id: "mental_toughness",
     en: "Mental Toughness",
@@ -205,7 +219,7 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
 
   attitude_motivation_mindset: {
     id: "attitude_motivation_mindset",
-    en: "Attitude & Motivation",
+    en: "Attitude & Motivation Mindset",
     ar: "العقلية والتحفيز",
     leakageEn: "depending on mood, external praise, or short-term wins to maintain effort",
     leakageAr: "الاعتماد على المزاج أو الثناء الخارجي أو المكاسب السريعة للحفاظ على الجهد",
@@ -265,6 +279,12 @@ const ALIASES: Record<string, string> = {
   total: "overall_score",
   total_score: "overall_score",
   overall_score: "overall_score",
+
+  prospecting_finding_new_clients: "prospecting_finding_new_clients",
+  prospecting_and_finding_new_clients: "prospecting_finding_new_clients",
+  prospecting: "prospecting_finding_new_clients",
+  finding_new_clients: "prospecting_finding_new_clients",
+  lead_generation: "prospecting_finding_new_clients",
 
   mental_toughness: "mental_toughness",
   opening_conversations: "opening_conversations",

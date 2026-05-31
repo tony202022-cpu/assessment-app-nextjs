@@ -43,6 +43,7 @@ const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 const MRI_PAYMENT_URL = "PASTE_NEW_ZENLER_MRI_LINK_HERE";
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
+  prospecting_finding_new_clients: { en: "Prospecting & Finding New Clients", ar: "البحث عن عملاء جدد" },
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
   identifying_real_needs: { en: "Identifying Real Needs", ar: "تحديد الاحتياجات الحقيقية" },
@@ -54,7 +55,7 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
   product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
   negotiation_skills: { en: "Negotiation Skills", ar: "مهارات التفاوض" },
-  attitude_motivation_mindset: { en: "Attitude & Motivation", ar: "العقلية والتحفيز" },
+  attitude_motivation_mindset: { en: "Attitude & Motivation Mindset", ar: "العقلية والتحفيز" },
   dealing_with_boss: { en: "Dealing with Boss", ar: "التعامل مع المدير" },
   handling_difficult_customers: { en: "Handling Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
   handling_difficult_colleagues: { en: "Handling Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
@@ -70,9 +71,7 @@ type ResultRow = {
 };
 
 function normalizeCompetencySafe(raw: any) {
-  const id = normalizeCompetencyId(String(raw || ""));
-  if (id === "destroying_objections") return "handling_objections";
-  return id;
+  return normalizeCompetencyId(String(raw || ""));
 }
 
 function isProbablyMRI(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {

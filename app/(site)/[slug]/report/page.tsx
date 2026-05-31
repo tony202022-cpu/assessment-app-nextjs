@@ -37,6 +37,7 @@ type CompetencyRow = {
 };
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
+  prospecting_finding_new_clients: { en: "Prospecting & Finding New Clients", ar: "البحث عن عملاء جدد" },
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
   identifying_real_needs: { en: "Identifying Real Needs", ar: "تحديد الاحتياجات الحقيقية" },
@@ -50,7 +51,7 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
   product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
   negotiation_skills: { en: "Negotiation Skills", ar: "مهارات التفاوض" },
-  attitude_motivation_mindset: { en: "Attitude & Motivation", ar: "العقلية والتحفيز" },
+  attitude_motivation_mindset: { en: "Attitude & Motivation Mindset", ar: "العقلية والتحفيز" },
   dealing_with_boss: { en: "Dealing with Boss", ar: "التعامل مع المدير" },
   handling_difficult_customers: { en: "Handling Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
   handling_difficult_colleagues: { en: "Handling Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
@@ -418,6 +419,7 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
   const id = row.competencyId;
 
   const en: Record<string, string> = {
+    prospecting_finding_new_clients: "Pipeline creation",
     mental_toughness: "Mindset & pressure control",
     attitude_motivation_mindset: "Mindset & pressure control",
     opening_conversations: "Access & first impression",
@@ -437,6 +439,7 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
   };
 
   const ar: Record<string, string> = {
+    prospecting_finding_new_clients: "صناعة الفرص والعملاء الجدد",
     mental_toughness: "العقلية والتحكم تحت الضغط",
     attitude_motivation_mindset: "العقلية والتحكم تحت الضغط",
     opening_conversations: "الوصول والانطباع الأول",
@@ -462,6 +465,15 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
   const id = row.competencyId;
 
   const en: Record<string, any> = {
+    prospecting_finding_new_clients: {
+      leakage: "New opportunities may dry up because the seller depends too heavily on familiar lead sources, old contacts, or manager-provided pipeline.",
+      root: "The root pattern is weak market creation: the seller works existing demand but does not consistently create fresh demand.",
+      stop: "Stop waiting for old lead sources to recover before building new opportunity channels.",
+      start: "Start opening new prospecting lanes through referrals, adjacent industries, client lookalikes, and problem-based outreach.",
+      drill: "For 7 days, create 10 fresh prospect names from three different sources before touching your usual pipeline.",
+      metric: "New qualified conversations created per week.",
+      bonus: "How to Book Appointments with VIPs and Decision Makers",
+    },
     mental_toughness: {
       leakage: "Rejection, silence, and pressure may interrupt activity before the pipeline has enough repetition to recover.",
       root: "The root pattern is often emotional recovery speed: the skill may exist, but pressure changes the seller’s state before the next action.",
@@ -609,6 +621,15 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
   };
 
   const ar: Record<string, any> = {
+    prospecting_finding_new_clients: {
+      leakage: "قد يجف تدفق الفرص الجديدة بسبب الاعتماد الزائد على مصادر العملاء المعتادة أو العلاقات القديمة أو العملاء الذين يقدّمهم المدير.",
+      root: "النمط الجذري هو ضعف صناعة السوق: يعمل البائع على الطلب الموجود، لكنه لا يصنع طلبًا جديدًا باستمرار.",
+      stop: "توقف عن انتظار عودة مصادر العملاء القديمة قبل بناء قنوات فرص جديدة.",
+      start: "ابدأ بفتح مسارات تنقيب جديدة عبر الإحالات، الصناعات المجاورة، العملاء المشابهين، والتواصل المبني على المشكلة.",
+      drill: "لمدة 7 أيام، أنشئ 10 أسماء عملاء محتملين جدد من ثلاثة مصادر مختلفة قبل لمس البايبلاين المعتاد.",
+      metric: "عدد المحادثات المؤهلة الجديدة التي يتم إنشاؤها أسبوعيًا.",
+      bonus: "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار",
+    },
     mental_toughness: {
       leakage: "قد يقطع الرفض أو الصمت أو الضغط نشاطك قبل أن يحصل البايبلاين على تكرار كافٍ للتعافي.",
       root: "النمط الجذري غالبًا هو سرعة التعافي العاطفي: المهارة موجودة، لكن الضغط يغيّر الحالة قبل الإجراء التالي.",
