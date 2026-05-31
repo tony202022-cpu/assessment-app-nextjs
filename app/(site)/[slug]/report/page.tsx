@@ -856,11 +856,60 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     [data-rtl="true"] .force-ltr { direction: ltr !important; text-align: left !important; unicode-bidi: isolate !important; }
     [data-rtl="true"] .rtl-text { text-align: right !important; unicode-bidi: plaintext !important; }
     [data-rtl="false"] .rtl-text { text-align: left !important; }
+
+    .print-toolbar-button {
+      cursor: pointer;
+    }
+
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+
     @media print {
-      .print-hide { display: none !important; }
-      .pdf-avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
-      .pdf-page-break { break-before: page !important; page-break-before: always !important; }
-      body { background: white !important; }
+      html, body {
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .print-hide {
+        display: none !important;
+      }
+
+      .scan-pdf-container {
+        background: #ffffff !important;
+      }
+
+      main {
+        max-width: none !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      section {
+        box-shadow: none !important;
+      }
+
+      .pdf-avoid-break {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      .pdf-page-break {
+        break-before: page !important;
+        page-break-before: always !important;
+      }
+
+      .pdf-soft-page-break {
+        break-before: auto !important;
+        page-break-before: auto !important;
+      }
+
+      a {
+        text-decoration: none !important;
+      }
     }
   `;
 
@@ -926,22 +975,68 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       className="scan-pdf-container min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-slate-900"
     >
       <style dangerouslySetInnerHTML={{ __html: hardRtlCss }} />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            document.addEventListener("DOMContentLoaded", function () {
+              var btn = document.getElementById("print-save-pdf-button");
+              if (btn) {
+                btn.addEventListener("click", function () {
+                  window.print();
+                });
+              }
+            });
+          `,
+        }}
+      />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10">
         {/* TOP BAR */}
-        <div className="print-hide flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/85 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-md p-4">
+        <div className="print-hide flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 bg-white/85 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-md p-4">
           <div className="text-xs sm:text-sm text-slate-600 font-bold rtl-text">
             {ar ? "معرّف التقرير" : "Report ID"}:{" "}
             <span className="font-mono text-blue-700 force-ltr">{shortAttemptId(attemptId)}</span>
           </div>
 
-          <Link
-            href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
-            className="inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-5 py-3 transition-all shadow-lg text-sm min-h-[44px]"
-          >
-            {t.back}
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+            <button
+              id="print-save-pdf-button"
+              type="button"
+              className="print-toolbar-button inline-flex items-center justify-center rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black px-5 py-3 transition-all shadow-lg text-sm min-h-[44px] w-full sm:w-auto"
+            >
+              {ar ? "🖨️ طباعة / حفظ PDF" : "🖨️ Print / Save PDF"}
+            </button>
+
+            <Link
+              href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-5 py-3 transition-all shadow-lg text-sm min-h-[44px] w-full sm:w-auto"
+            >
+              {t.back}
+            </Link>
+          </div>
         </div>
+
+        {/* PRINT INSTRUCTIONS */}
+        <section className="print-hide rounded-3xl bg-white border border-emerald-200 shadow-md p-5 sm:p-6">
+          <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-950 rtl-text">
+                {ar ? "نسخة قابلة للطباعة والحفظ" : "Printable / PDF-Friendly Version"}
+              </h2>
+              <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed rtl-text">
+                {ar
+                  ? "للحصول على نسخة نظيفة: اضغط طباعة / حفظ PDF، اختر Save as PDF، فعّل Background graphics، وأوقف Headers and footers من إعدادات الطباعة."
+                  : "For a clean copy: click Print / Save PDF, choose Save as PDF, turn on Background graphics, and turn off Headers and footers in the print settings."}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-sm font-bold text-emerald-900 rtl-text max-w-xl">
+              {ar
+                ? "ملاحظة مهمة: المتصفح هو الذي يتحكم في ترويسة وتذييل الطباعة. الكود يحسّن شكل التقرير ويخفي الأزرار، لكن إلغاء الترويسة والتذييل يتم من نافذة الطباعة نفسها."
+                : "Important: the browser controls printed headers and footers. The code improves the report and hides web buttons, but the user must turn off Headers and footers in the print dialog."}
+            </div>
+          </div>
+        </section>
 
         {/* COVER */}
         <section className="pdf-avoid-break relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800/10">
@@ -1347,20 +1442,22 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
         {/* MRI PATTERN-BASED TREATMENT PAGES */}
         {mri && (
-          <MriDetailedTreatmentSection
-            rows={rows}
-            weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)}
-            compactRows={[...rows].sort((a, b) => a.percentage - b.percentage).slice(6)}
-            strongestRows={topThreeStrengths}
-            overall={overall}
-            lang={lang}
-            ar={ar}
-          />
+          <div className="pdf-page-break">
+            <MriDetailedTreatmentSection
+              rows={rows}
+              weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)}
+              compactRows={[...rows].sort((a, b) => a.percentage - b.percentage).slice(6)}
+              strongestRows={topThreeStrengths}
+              overall={overall}
+              lang={lang}
+              ar={ar}
+            />
+          </div>
         )}
 
         {/* MRI 90-DAY PRESCRIPTION */}
         {mri && (
-          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+          <section className="pdf-page-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
             {sectionTitle(
               ar ? "وصفة الأداء البيعي خلال ٩٠ يومًا" : "90-Day Sales Performance Prescription",
               ar
@@ -1401,7 +1498,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
         {/* MRI BONUS REMEDY TOOLS */}
         {mri && (
-          <section className="rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white shadow-2xl p-6 sm:p-8">
+          <section className="pdf-page-break rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white shadow-2xl p-6 sm:p-8">
             <div className="mb-6">
               <div className="inline-flex rounded-full bg-amber-400/20 border border-amber-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-amber-100">
                 {ar ? "أدوات العلاج المرافقة" : "Included Remedy Tools"}
