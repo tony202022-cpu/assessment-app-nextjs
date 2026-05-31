@@ -308,7 +308,7 @@ export function normalizeCompetencyId(id: string): string {
   const clean = String(id || "")
     .trim()
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s_-]/gu, "")
+    .replace(/[^a-z0-9\s_-]/g, "")
     .replace(/\s+/g, "_")
     .replace(/-/g, "_");
 
