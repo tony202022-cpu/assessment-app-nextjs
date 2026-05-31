@@ -234,6 +234,23 @@ function cleanRecommendation(input: string) {
   return text;
 }
 
+
+function compactText(input: string, max = 190) {
+  const text = cleanRecommendation(input);
+  if (text.length <= max) return text;
+  return text.slice(0, max).replace(/\s+\S*$/, "").trim() + "…";
+}
+
+function treatmentFocusFromRow(row: CompetencyRow, lang: Language) {
+  const recs = getRecommendations(row.competencyId, row.tier, lang);
+  return compactText(recs?.[0] || "", 210);
+}
+
+function firstActionFromRow(row: CompetencyRow, lang: Language) {
+  const recs = getRecommendations(row.competencyId, row.tier, lang);
+  return compactText(recs?.[1] || recs?.[0] || "", 210);
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function isEmailLike(s: string) {
@@ -850,6 +867,76 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
 
 
+
+        {/* MRI FULL TREATMENT MATRIX */}
+        {mri && (
+          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+            {sectionTitle(
+              ar ? "مصفوفة العلاج الكاملة لكل الكفاءات" : "Full Competency Treatment Matrix",
+              ar
+                ? "هذه المصفوفة تحوّل كل نتيجة إلى معنى عملي: الخطر، محور العلاج، وأول إجراء يجب اتخاذه."
+                : "This matrix turns every score into practical meaning: risk level, treatment focus, and the first action to take."
+            )}
+
+            <div className="overflow-hidden rounded-3xl border border-slate-200">
+              <div className="hidden lg:grid grid-cols-[1.2fr_.55fr_.7fr_1.5fr_1.5fr] gap-0 bg-slate-950 text-white text-xs font-black uppercase tracking-widest">
+                <div className="p-4 rtl-text">{ar ? "الكفاءة" : "Competency"}</div>
+                <div className="p-4 force-ltr">{ar ? "النتيجة" : "Score"}</div>
+                <div className="p-4 rtl-text">{ar ? "المنطقة" : "Zone"}</div>
+                <div className="p-4 rtl-text">{ar ? "محور العلاج" : "Treatment Focus"}</div>
+                <div className="p-4 rtl-text">{ar ? "أول إجراء" : "First Action"}</div>
+              </div>
+
+              <div className="divide-y divide-slate-200">
+                {[...rows].sort((a, b) => a.percentage - b.percentage).map((row, idx) => (
+                  <div key={`treatment-${row.competencyId}-${idx}`} className="grid grid-cols-1 lg:grid-cols-[1.2fr_.55fr_.7fr_1.5fr_1.5fr] bg-white">
+                    <div className="p-4">
+                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
+                        {ar ? "الكفاءة" : "Competency"}
+                      </div>
+                      <div className="font-black text-slate-950 rtl-text">{row.label}</div>
+                    </div>
+
+                    <div className="p-4 force-ltr">
+                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
+                        {ar ? "النتيجة" : "Score"}
+                      </div>
+                      <span className="text-2xl font-black text-slate-950">{row.percentage}%</span>
+                    </div>
+
+                    <div className="p-4">
+                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
+                        {ar ? "المنطقة" : "Zone"}
+                      </div>
+                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(row.tier)}`}>
+                        {getTierLabel(row.tier, lang)}
+                      </span>
+                    </div>
+
+                    <div className="p-4">
+                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
+                        {ar ? "محور العلاج" : "Treatment Focus"}
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed rtl-text">
+                        {treatmentFocusFromRow(row, lang)}
+                      </p>
+                    </div>
+
+                    <div className="p-4">
+                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
+                        {ar ? "أول إجراء" : "First Action"}
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed rtl-text">
+                        {firstActionFromRow(row, lang)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* STRONGEST / WEAKEST */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <SignalCard
@@ -1054,6 +1141,123 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 bodyEn="Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."
                 bodyAr="حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."
               />
+            </div>
+          </section>
+        )}
+
+
+        {/* MRI 12-WEEK TREATMENT ROADMAP */}
+        {mri && (
+          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+            {sectionTitle(
+              ar ? "خارطة العلاج الأسبوعية لمدة ١٢ أسبوعًا" : "12-Week Treatment Roadmap",
+              ar
+                ? "هذه الخطة تجعل وصفة الـ٩٠ يومًا عملية أكثر: كل أسبوع له تركيز واضح، سلوك يومي، ومؤشر متابعة."
+                : "This makes the 90-day prescription more practical: each week has a clear focus, daily behavior, and tracking signal."
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[
+                {
+                  w: "1",
+                  en: "Stop the biggest leak",
+                  ar: "إيقاف أكبر تسريب",
+                  focusEn: `Focus on ${topThreeRisks[0]?.label || "your lowest competency"} and remove one repeating mistake.`,
+                  focusAr: `ركّز على ${topThreeRisks[0]?.label || "أضعف كفاءة لديك"} وأزل خطأ واحدًا يتكرر.`,
+                },
+                {
+                  w: "2",
+                  en: "Install one fixed routine",
+                  ar: "تركيب روتين ثابت",
+                  focusEn: "Turn the first correction into a daily non-negotiable routine before any sales activity.",
+                  focusAr: "حوّل أول تصحيح إلى روتين يومي غير قابل للتفاوض قبل أي نشاط بيعي.",
+                },
+                {
+                  w: "3",
+                  en: "Strengthen discovery",
+                  ar: "تقوية الاكتشاف",
+                  focusEn: "Use deeper questions to uncover urgency, impact, and the real business consequence.",
+                  focusAr: "استخدم أسئلة أعمق لكشف الإلحاح والأثر والنتيجة التجارية الحقيقية.",
+                },
+                {
+                  w: "4",
+                  en: "Prevent objections early",
+                  ar: "منع الاعتراضات مبكرًا",
+                  focusEn: "Predict the top two objections before the proposal and plant proof before they appear.",
+                  focusAr: "توقع أهم اعتراضين قبل العرض وازرع الدليل قبل ظهورهما.",
+                },
+                {
+                  w: "5",
+                  en: "Rebuild the offer",
+                  ar: "إعادة بناء العرض",
+                  focusEn: "Rewrite offers around pain, outcome, proof, and the cost of delay.",
+                  focusAr: "أعد صياغة العروض حول الألم والنتيجة والدليل وتكلفة التأجيل.",
+                },
+                {
+                  w: "6",
+                  en: "Control the next step",
+                  ar: "التحكم في الخطوة التالية",
+                  focusEn: "End every serious conversation with a dated next action, not a vague promise.",
+                  focusAr: "أنهِ كل محادثة جادة بخطوة تالية بتاريخ محدد، لا بوعد غامض.",
+                },
+                {
+                  w: "7",
+                  en: "Fix follow-up leakage",
+                  ar: "إصلاح تسريب المتابعة",
+                  focusEn: "Schedule every follow-up with purpose, timing, and expected buyer movement.",
+                  focusAr: "جدول كل متابعة بهدف ووقت وحركة متوقعة من العميل.",
+                },
+                {
+                  w: "8",
+                  en: "Improve negotiation control",
+                  ar: "تحسين التحكم في التفاوض",
+                  focusEn: "Do not discount without receiving a real commitment in return.",
+                  focusAr: "لا تقدم خصمًا دون الحصول على التزام حقيقي في المقابل.",
+                },
+                {
+                  w: "9",
+                  en: "Use your strongest competency",
+                  ar: "استخدام أقوى كفاءة لديك",
+                  focusEn: `Use ${topThreeStrengths[0]?.label || "your strongest area"} to support your weakest behavior.`,
+                  focusAr: `استخدم ${topThreeStrengths[0]?.label || "أقوى منطقة لديك"} لدعم أضعف سلوك.`,
+                },
+                {
+                  w: "10",
+                  en: "Build pressure discipline",
+                  ar: "بناء الانضباط تحت الضغط",
+                  focusEn: "Practice the correction behavior when tired, busy, or under rejection pressure.",
+                  focusAr: "تدرّب على سلوك التصحيح عند التعب أو الانشغال أو ضغط الرفض.",
+                },
+                {
+                  w: "11",
+                  en: "Review the full pattern",
+                  ar: "مراجعة النمط الكامل",
+                  focusEn: "Compare week 1 behavior with current behavior and identify what changed visibly.",
+                  focusAr: "قارن سلوك الأسبوع الأول بالسلوك الحالي وحدد ما تغيّر بشكل واضح.",
+                },
+                {
+                  w: "12",
+                  en: "Lock the new operating system",
+                  ar: "تثبيت نظام التشغيل الجديد",
+                  focusEn: "Choose the three habits that must continue after the 90-day prescription ends.",
+                  focusAr: "اختر العادات الثلاث التي يجب أن تستمر بعد انتهاء وصفة الـ٩٠ يومًا.",
+                },
+              ].map((item) => (
+                <div key={`week-${item.w}`} className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-white font-black force-ltr">
+                    {item.w}
+                  </div>
+                  <h3 className="mt-4 text-lg font-black text-slate-950 rtl-text">
+                    {ar ? item.ar : item.en}
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-700 leading-relaxed rtl-text">
+                    {ar ? item.focusAr : item.focusEn}
+                  </p>
+                  <div className="mt-4 rounded-2xl bg-white border border-slate-200 p-3 text-xs font-bold text-slate-600 rtl-text">
+                    {ar ? "مؤشر المتابعة: تنفيذ السلوك يوميًا وتسجيل النتيجة." : "Tracking signal: execute the behavior daily and record the result."}
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         )}
