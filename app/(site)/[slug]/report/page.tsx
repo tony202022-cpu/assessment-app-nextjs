@@ -234,23 +234,6 @@ function cleanRecommendation(input: string) {
   return text;
 }
 
-
-function compactText(input: string, max = 190) {
-  const text = cleanRecommendation(input);
-  if (text.length <= max) return text;
-  return text.slice(0, max).replace(/\s+\S*$/, "").trim() + "…";
-}
-
-function treatmentFocusFromRow(row: CompetencyRow, lang: Language) {
-  const recs = getRecommendations(row.competencyId, row.tier, lang);
-  return compactText(recs?.[0] || "", 210);
-}
-
-function firstActionFromRow(row: CompetencyRow, lang: Language) {
-  const recs = getRecommendations(row.competencyId, row.tier, lang);
-  return compactText(recs?.[1] || recs?.[0] || "", 210);
-}
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function isEmailLike(s: string) {
@@ -428,6 +411,332 @@ function sectionTitle(text: string, sub?: string) {
       {sub && <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed rtl-text">{sub}</p>}
     </div>
   );
+}
+
+
+function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
+  const id = row.competencyId;
+
+  const en: Record<string, string> = {
+    mental_toughness: "Mindset & pressure control",
+    attitude_motivation_mindset: "Mindset & pressure control",
+    opening_conversations: "Access & first impression",
+    identifying_real_needs: "Diagnosis & discovery",
+    consultative_selling: "Diagnosis & discovery",
+    product_expertise: "Value translation",
+    handling_objections: "Objection response",
+    destroying_objections: "Objection prevention",
+    creating_irresistible_offers: "Offer architecture",
+    mastering_closing: "Decision control",
+    follow_up_discipline: "Pipeline discipline",
+    time_territory_management: "Execution discipline",
+    negotiation_skills: "Value protection",
+    dealing_with_boss: "Internal alignment",
+    handling_difficult_customers: "Emotional control",
+    handling_difficult_colleagues: "Internal coordination",
+  };
+
+  const ar: Record<string, string> = {
+    mental_toughness: "العقلية والتحكم تحت الضغط",
+    attitude_motivation_mindset: "العقلية والتحكم تحت الضغط",
+    opening_conversations: "الوصول والانطباع الأول",
+    identifying_real_needs: "التشخيص والاكتشاف",
+    consultative_selling: "التشخيص والاكتشاف",
+    product_expertise: "ترجمة القيمة",
+    handling_objections: "التعامل مع الاعتراضات",
+    destroying_objections: "منع الاعتراضات من الجذور",
+    creating_irresistible_offers: "هندسة العرض",
+    mastering_closing: "التحكم في القرار",
+    follow_up_discipline: "انضباط البايبلاين",
+    time_territory_management: "انضباط التنفيذ",
+    negotiation_skills: "حماية القيمة",
+    dealing_with_boss: "التوافق الداخلي",
+    handling_difficult_customers: "التحكم العاطفي",
+    handling_difficult_colleagues: "التنسيق الداخلي",
+  };
+
+  return lang === "ar" ? ar[id] || row.label : en[id] || row.label;
+}
+
+function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: string, strongestLabel?: string) {
+  const id = row.competencyId;
+
+  const en: Record<string, any> = {
+    mental_toughness: {
+      leakage: "Rejection, silence, and pressure may interrupt activity before the pipeline has enough repetition to recover.",
+      root: "The root pattern is often emotional recovery speed: the skill may exist, but pressure changes the seller’s state before the next action.",
+      stop: "Stop waiting to feel confident before acting.",
+      start: "Start using a 60-second reset after every rejection, then execute the next sales action immediately.",
+      drill: "For 7 days, record every rejection and the time it took to return to productive action.",
+      metric: "Minutes between rejection and next productive action.",
+      bonus: "How to Motivate Yourself Under Pressure",
+    },
+    opening_conversations: {
+      leakage: "The buyer may disconnect before discovery begins because the opening does not earn enough attention or relevance.",
+      root: "The root pattern is usually weak first-frame control: the conversation starts like a pitch instead of a relevant business interruption.",
+      stop: "Stop opening with long context, generic introductions, or product language.",
+      start: "Start with a permission-based business question tied to a real commercial issue.",
+      drill: "Use one 10-second opener for 20 prospects and track which ones continue into discovery.",
+      metric: "Openings that become real discovery conversations.",
+      bonus: "How to Book Appointments with VIPs and Decision Makers",
+    },
+    identifying_real_needs: {
+      leakage: "Deals may look active but remain shallow because the real pain, consequence, or decision reason was not uncovered.",
+      root: "The root pattern may be moving to solution too early before the buyer has fully described cost, urgency, and impact.",
+      stop: "Stop accepting the first answer as the real need.",
+      start: "Start asking: why this, why now, and what happens if nothing changes?",
+      drill: "In every serious opportunity, capture one quantified pain and one consequence of inaction.",
+      metric: "Opportunities with quantified pain and clear consequence.",
+      bonus: "How to Increase Your Sales Using AI",
+    },
+    handling_objections: {
+      leakage: "Objections may slow momentum because the response becomes defensive, too long, or disconnected from the buyer’s real fear.",
+      root: "The root pattern is reacting to the words instead of diagnosing the concern behind the words.",
+      stop: "Stop answering objections immediately.",
+      start: "Start classifying the objection first: price fear, trust gap, urgency gap, or authority gap.",
+      drill: "For 7 days, write every objection under one of the four categories before responding.",
+      metric: "Objections that end with a clear next step.",
+      bonus: "The 50 Best Answers to the 50 Hardest Objections",
+    },
+    destroying_objections: {
+      leakage: "Objections may appear late because proof, urgency, risk, or value was not planted early enough.",
+      root: "The root pattern is waiting until the buyer raises resistance instead of neutralizing resistance before it becomes powerful.",
+      stop: "Stop treating objections as something that only happens at the end.",
+      start: "Start pre-framing the two most likely objections before presenting the offer.",
+      drill: "Before every proposal, write the two objections likely to appear and plant proof against both before the buyer raises them.",
+      metric: "Objections prevented before proposal or closing.",
+      bonus: "The 50 Best Answers to the 50 Hardest Objections",
+    },
+    creating_irresistible_offers: {
+      leakage: "The offer may sound reasonable but not urgent enough to move the buyer into action.",
+      root: "The root pattern is presenting features without enough consequence, contrast, proof, or next-step clarity.",
+      stop: "Stop presenting the offer as a list of inclusions.",
+      start: "Start building the offer around pain, cost of delay, outcome, proof, and next step.",
+      drill: "Rewrite three offers using: current pain → cost of delay → desired outcome → proof → next step.",
+      metric: "Offers that generate dated next-step commitment.",
+      bonus: "How to Increase Your Sales Using AI",
+    },
+    mastering_closing: {
+      leakage: "Conversations may end politely but without decision movement, leaving the pipeline full of maybes.",
+      root: "The root pattern is often decision discomfort: the seller avoids the moment where the buyer must commit to the next step.",
+      stop: "Stop ending conversations with vague follow-up language.",
+      start: "Start using one of three closes: decision close, calendar close, or next-information close.",
+      drill: "For 7 days, no serious conversation may end without a dated next step or a clear no.",
+      metric: "Conversations ending with a dated next step.",
+      bonus: "The 50 Best Answers to the 50 Hardest Objections",
+    },
+    follow_up_discipline: {
+      leakage: "Warm opportunities may cool down because follow-up depends on memory, mood, or spare time.",
+      root: "The root pattern is weak pipeline operating rhythm: interest is created but not protected.",
+      stop: "Stop promising follow-up without scheduling it.",
+      start: "Start booking the follow-up action before the current interaction ends.",
+      drill: "Every follow-up must have a date, purpose, and message angle before it enters your calendar.",
+      metric: "Follow-ups completed on the promised date.",
+      bonus: "Time-Management Mastery for Outdoor Sales",
+    },
+    consultative_selling: {
+      leakage: "The buyer may experience the conversation as selling, not diagnosis, even when the intention is helpful.",
+      root: "The root pattern is product gravity: the conversation gets pulled toward features before the business problem is fully framed.",
+      stop: "Stop proving product knowledge before proving business understanding.",
+      start: "Start diagnosing decision friction, internal pressure, and business impact before suggesting options.",
+      drill: "Replace one product statement per call with one business diagnosis question.",
+      metric: "Buyer statements revealing impact, urgency, or internal pressure.",
+      bonus: "How to Increase Your Sales Using AI",
+    },
+    time_territory_management: {
+      leakage: "High-value selling hours may be consumed by low-probability visits, admin, travel, and reactive work.",
+      root: "The root pattern is territory without triage: activity exists, but commercial probability does not control the day.",
+      stop: "Stop treating all accounts and tasks as equal.",
+      start: "Start ranking accounts by probability, value, urgency, and next-step clarity.",
+      drill: "Plan tomorrow before leaving today: top 5 accounts, route order, reason for visit, desired next step.",
+      metric: "Selling hours spent with high-probability accounts.",
+      bonus: "Time-Management Mastery for Outdoor Sales",
+    },
+    product_expertise: {
+      leakage: "Product knowledge may not convert if the buyer cannot translate it into their own business outcome.",
+      root: "The root pattern is feature fluency without outcome translation.",
+      stop: "Stop explaining features in isolation.",
+      start: "Start translating each feature into problem solved, measurable outcome, proof, and best-fit buyer.",
+      drill: "Pick three features and rewrite each into a buyer-outcome statement.",
+      metric: "Product claims tied to measurable customer outcomes.",
+      bonus: "How to Increase Your Sales Using AI",
+    },
+    negotiation_skills: {
+      leakage: "Value may be lost through early discounting, reactive concessions, or pressure-based decision making.",
+      root: "The root pattern is trading price for approval instead of trading concessions for commitments.",
+      stop: "Stop giving concessions without receiving something commercially meaningful.",
+      start: "Start preparing tradeables before every negotiation.",
+      drill: "Before each negotiation, define three tradeables: timing, volume, payment, decision date, or stakeholder access.",
+      metric: "Concessions exchanged for real buyer commitments.",
+      bonus: "The 50 Best Answers to the 50 Hardest Objections",
+    },
+    attitude_motivation_mindset: {
+      leakage: "Effort may rise and fall depending on mood, wins, praise, or recent disappointment.",
+      root: "The root pattern is motivation dependency: performance is tied to emotion instead of process.",
+      stop: "Stop using mood as the permission to act.",
+      start: "Start anchoring the day to process completion, not emotional state.",
+      drill: "Every morning, write one controllable process target and complete it before judging the day.",
+      metric: "Process completion on difficult days.",
+      bonus: "How to Motivate Yourself Under Pressure",
+    },
+    dealing_with_boss: {
+      leakage: "Internal trust may weaken when managers receive surprises instead of early signals and clear plans.",
+      root: "The root pattern is under-communication upward: problems are reported late or without options.",
+      stop: "Stop hiding risk until it becomes urgent.",
+      start: "Start sending early-warning updates with options and next actions.",
+      drill: "Send a weekly 5-line update: wins, pipeline risk, support needed, next actions, forecast confidence.",
+      metric: "Manager conversations ending with clarity and support.",
+      bonus: "Time-Management Mastery for Outdoor Sales",
+    },
+    handling_difficult_customers: {
+      leakage: "Difficult customers may consume emotional energy and pull the seller away from commercial control.",
+      root: "The root pattern is emotional contagion: the customer’s intensity becomes the seller’s intensity.",
+      stop: "Stop matching the customer’s emotional temperature.",
+      start: "Start using calm-control sequence: acknowledge, clarify, boundary, next step.",
+      drill: "In every difficult interaction, write the customer issue, the boundary, and the next step before replying.",
+      metric: "Difficult conversations ending with a clear next action.",
+      bonus: "How to Deal with Difficult Customers Without Losing Control",
+    },
+    handling_difficult_colleagues: {
+      leakage: "Internal friction may delay customer responses, weaken coordination, and distract from selling priorities.",
+      root: "The root pattern is unclear ownership: issues remain emotional because decisions, owners, and deadlines are vague.",
+      stop: "Stop discussing internal friction without converting it into an agreement.",
+      start: "Start asking: what must be decided, who owns it, and by when?",
+      drill: "For 7 days, every internal issue must end with owner, deadline, and next step.",
+      metric: "Internal issues resolved with owner, deadline, and next step.",
+      bonus: "Time-Management Mastery for Outdoor Sales",
+    },
+  };
+
+  const ar: Record<string, any> = {
+    mental_toughness: {
+      leakage: "قد يقطع الرفض أو الصمت أو الضغط نشاطك قبل أن يحصل البايبلاين على تكرار كافٍ للتعافي.",
+      root: "النمط الجذري غالبًا هو سرعة التعافي العاطفي: المهارة موجودة، لكن الضغط يغيّر الحالة قبل الإجراء التالي.",
+      stop: "توقف عن انتظار الشعور بالثقة قبل التحرك.",
+      start: "ابدأ بروتين إعادة ضبط لمدة 60 ثانية بعد كل رفض، ثم نفّذ الإجراء البيعي التالي فورًا.",
+      drill: "لمدة 7 أيام، سجّل كل رفض والوقت الذي استغرقته للعودة إلى إجراء منتج.",
+      metric: "الدقائق بين الرفض وأول إجراء منتج بعده.",
+      bonus: "كيف تحفّز نفسك تحت الضغط",
+    },
+    opening_conversations: {
+      leakage: "قد ينفصل العميل قبل بدء الاكتشاف لأن الافتتاح لم يكسب انتباهًا أو صلة كافية.",
+      root: "النمط الجذري عادة هو ضعف التحكم في الإطار الأول: تبدأ المحادثة كعرض بدل أن تكون مقاطعة تجارية ذات صلة.",
+      stop: "توقف عن الافتتاح بسياق طويل أو مقدمات عامة أو لغة منتج.",
+      start: "ابدأ بسؤال تجاري مبني على الإذن ومرتبط بقضية حقيقية.",
+      drill: "استخدم افتتاحًا واحدًا من 10 ثوانٍ مع 20 عميلًا محتملًا وتتبع من يتحول إلى اكتشاف.",
+      metric: "الافتتاحات التي تتحول إلى محادثات اكتشاف حقيقية.",
+      bonus: "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار",
+    },
+    identifying_real_needs: {
+      leakage: "قد تبدو الصفقات نشطة لكنها تبقى سطحية لأن الألم الحقيقي أو العاقبة أو سبب القرار لم يُكشف.",
+      root: "النمط الجذري قد يكون الانتقال إلى الحل مبكرًا قبل أن يصف العميل التكلفة والإلحاح والأثر.",
+      stop: "توقف عن قبول أول إجابة كأنها الاحتياج الحقيقي.",
+      start: "ابدأ بالسؤال: لماذا هذا؟ لماذا الآن؟ ماذا يحدث إذا لم يتغير شيء؟",
+      drill: "في كل فرصة جادة، التقط ألمًا مقاسًا ونتيجة واحدة لعدم التحرك.",
+      metric: "الفرص التي تحتوي على ألم مقاس ونتيجة واضحة.",
+      bonus: "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي",
+    },
+    handling_objections: {
+      leakage: "قد تبطئ الاعتراضات الزخم لأن الرد يصبح دفاعيًا أو طويلًا أو بعيدًا عن خوف العميل الحقيقي.",
+      root: "النمط الجذري هو الرد على الكلمات بدل تشخيص القلق خلف الكلمات.",
+      stop: "توقف عن الرد على الاعتراض فورًا.",
+      start: "ابدأ بتصنيف الاعتراض: خوف سعر، فجوة ثقة، فجوة إلحاح، أو فجوة صلاحية.",
+      drill: "لمدة 7 أيام، اكتب كل اعتراض تحت إحدى الفئات الأربع قبل الرد.",
+      metric: "الاعتراضات التي تنتهي بخطوة تالية واضحة.",
+      bonus: "أفضل 50 إجابة لأصعب 50 اعتراض بيعي",
+    },
+    destroying_objections: {
+      leakage: "قد تظهر الاعتراضات متأخرة لأن الدليل أو الإلحاح أو المخاطر أو القيمة لم تُزرع مبكرًا.",
+      root: "النمط الجذري هو الانتظار حتى يطرح العميل المقاومة بدل تحييدها قبل أن تصبح قوية.",
+      stop: "توقف عن اعتبار الاعتراض شيئًا يحدث في النهاية فقط.",
+      start: "ابدأ بتأطير الاعتراضين المتوقعين قبل تقديم العرض.",
+      drill: "قبل كل عرض، اكتب الاعتراضين المتوقعين وازرع دليلًا ضد كل واحد قبل أن يطرحه العميل.",
+      metric: "الاعتراضات التي تم منعها قبل العرض أو الإغلاق.",
+      bonus: "أفضل 50 إجابة لأصعب 50 اعتراض بيعي",
+    },
+  };
+
+  const fallbackEn = {
+    leakage: `${row.label} may be creating hidden friction in the sales process, especially when pressure rises or the buyer becomes less responsive.`,
+    root: `The likely root pattern is inconsistency: the behavior may appear sometimes, but not reliably enough to protect the deal.`,
+    stop: `Stop treating ${row.label} as a general skill. Treat it as a measurable behavior.`,
+    start: `Start choosing one repeatable behavior connected to ${row.label} and apply it in every relevant interaction.`,
+    drill: `For 7 days, write one correction action before every situation where ${row.label} matters.`,
+    metric: `Daily execution of the selected ${row.label} correction behavior.`,
+    bonus: "How to Increase Your Sales Using AI",
+  };
+
+  const fallbackAr = {
+    leakage: `قد تسبب ${row.label} احتكاكًا خفيًا في عملية البيع، خصوصًا عندما يرتفع الضغط أو تقل استجابة العميل.`,
+    root: `النمط الجذري المحتمل هو عدم الثبات: قد يظهر السلوك أحيانًا، لكنه ليس ثابتًا بما يكفي لحماية الصفقة.`,
+    stop: `توقف عن التعامل مع ${row.label} كمهارة عامة. تعامل معها كسلوك قابل للقياس.`,
+    start: `ابدأ باختيار سلوك واحد متكرر مرتبط بـ ${row.label} وطبقه في كل تفاعل مناسب.`,
+    drill: `لمدة 7 أيام، اكتب إجراء تصحيح واحد قبل كل موقف تكون فيه ${row.label} مهمة.`,
+    metric: `التنفيذ اليومي لسلوك التصحيح المختار في ${row.label}.`,
+    bonus: "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي",
+  };
+
+  const meta = lang === "ar" ? ar[id] || fallbackAr : en[id] || fallbackEn;
+
+  const patternNote =
+    lang === "ar"
+      ? `في هذا التقرير، تتم قراءة ${row.label} بجانب أضعف إشارة لديك (${weakestLabel || row.label}) وأقوى رافعة لديك (${strongestLabel || row.label}) حتى لا يكون العلاج معزولًا عن بقية نمطك.`
+      : `In this report, ${row.label} is read alongside your weakest signal (${weakestLabel || row.label}) and your strongest leverage point (${strongestLabel || row.label}), so the treatment is not isolated from the rest of your pattern.`;
+
+  return { ...meta, patternNote };
+}
+
+function getPatternArchetype(overall: number, weakest: CompetencyRow[], strongest: CompetencyRow[], lang: Language) {
+  const weakestNames = weakest.map((x) => x.label).join(", ");
+  const strongestNames = strongest.map((x) => x.label).join(", ");
+
+  if (lang === "ar") {
+    if (overall < 30) {
+      return {
+        title: "نمط تسريب حاد يحتاج إلى علاج من الجذور",
+        body: `الصورة الحالية تشير إلى أن المشكلة ليست في نقطة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة تسريب تبدأ من السلوك اليومي وتنتهي بفرص أقل أو صفقات أبطأ. لا تبدأ بكل شيء. ابدأ بأول تسريب ثم ابنِ روتين علاج حوله.`,
+      };
+    }
+    if (overall < 50) {
+      return {
+        title: "نمط إنذار تجاري يحتاج إلى ضبط الإيقاع",
+        body: `هناك قدرة موجودة، لكنها غير ثابتة تحت الضغط. أضعف المناطق (${weakestNames}) تحتاج إلى علاج مبكر، بينما يمكن استخدام أقوى المناطق (${strongestNames}) كرافعة لتسريع التحسن.`,
+      };
+    }
+    if (overall < 75) {
+      return {
+        title: "نمط فرصة غير مكتملة يحتاج إلى تحويل السلوك إلى نظام",
+        body: `الأداء ليس ضعيفًا، لكنه ليس محميًا بما يكفي. المطلوب هو تحويل أقوى المناطق (${strongestNames}) إلى نظام يومي، واستخدامها لدعم أضعف المناطق (${weakestNames}).`,
+      };
+    }
+    return {
+      title: "نمط قوة يحتاج إلى حماية وتوسيع",
+      body: `الأداء العام قوي. الخطر ليس الفشل، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير تشغيل يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تصبح تسريبًا لاحقًا.`,
+    };
+  }
+
+  if (overall < 30) {
+    return {
+      title: "High-Leakage Pattern Requiring Root Treatment",
+      body: `The current pattern suggests the issue is not one isolated skill. The weakest areas (${weakestNames}) may be creating a leakage chain that begins in daily behavior and ends in fewer opportunities or slower deals. Do not start everywhere. Start with the first leak and build treatment around it.`,
+    };
+  }
+  if (overall < 50) {
+    return {
+      title: "Commercial Warning Pattern Requiring Rhythm Correction",
+      body: `There is ability in the system, but it is not stable under pressure. The weakest areas (${weakestNames}) need early treatment, while the strongest areas (${strongestNames}) can be used as leverage to accelerate improvement.`,
+    };
+  }
+  if (overall < 75) {
+    return {
+      title: "Unfinished Opportunity Pattern Requiring Systemization",
+      body: `Performance is not broken, but it is not protected enough. The treatment is to turn the strongest areas (${strongestNames}) into a daily operating system and use them to support the weakest areas (${weakestNames}).`,
+    };
+  }
+  return {
+    title: "Strength Pattern Requiring Protection and Expansion",
+    body: `Overall performance is strong. The danger is not failure; it is drift. Use the strongest areas (${strongestNames}) as daily operating standards and monitor the weakest areas (${weakestNames}) so they do not become future leakage.`,
+  };
 }
 
 export default async function ReportPage({ params, searchParams }: PageProps) {
@@ -867,76 +1176,6 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
 
 
-
-        {/* MRI FULL TREATMENT MATRIX */}
-        {mri && (
-          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
-            {sectionTitle(
-              ar ? "مصفوفة العلاج الكاملة لكل الكفاءات" : "Full Competency Treatment Matrix",
-              ar
-                ? "هذه المصفوفة تحوّل كل نتيجة إلى معنى عملي: الخطر، محور العلاج، وأول إجراء يجب اتخاذه."
-                : "This matrix turns every score into practical meaning: risk level, treatment focus, and the first action to take."
-            )}
-
-            <div className="overflow-hidden rounded-3xl border border-slate-200">
-              <div className="hidden lg:grid grid-cols-[1.2fr_.55fr_.7fr_1.5fr_1.5fr] gap-0 bg-slate-950 text-white text-xs font-black uppercase tracking-widest">
-                <div className="p-4 rtl-text">{ar ? "الكفاءة" : "Competency"}</div>
-                <div className="p-4 force-ltr">{ar ? "النتيجة" : "Score"}</div>
-                <div className="p-4 rtl-text">{ar ? "المنطقة" : "Zone"}</div>
-                <div className="p-4 rtl-text">{ar ? "محور العلاج" : "Treatment Focus"}</div>
-                <div className="p-4 rtl-text">{ar ? "أول إجراء" : "First Action"}</div>
-              </div>
-
-              <div className="divide-y divide-slate-200">
-                {[...rows].sort((a, b) => a.percentage - b.percentage).map((row, idx) => (
-                  <div key={`treatment-${row.competencyId}-${idx}`} className="grid grid-cols-1 lg:grid-cols-[1.2fr_.55fr_.7fr_1.5fr_1.5fr] bg-white">
-                    <div className="p-4">
-                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
-                        {ar ? "الكفاءة" : "Competency"}
-                      </div>
-                      <div className="font-black text-slate-950 rtl-text">{row.label}</div>
-                    </div>
-
-                    <div className="p-4 force-ltr">
-                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
-                        {ar ? "النتيجة" : "Score"}
-                      </div>
-                      <span className="text-2xl font-black text-slate-950">{row.percentage}%</span>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
-                        {ar ? "المنطقة" : "Zone"}
-                      </div>
-                      <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(row.tier)}`}>
-                        {getTierLabel(row.tier, lang)}
-                      </span>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
-                        {ar ? "محور العلاج" : "Treatment Focus"}
-                      </div>
-                      <p className="text-sm text-slate-700 leading-relaxed rtl-text">
-                        {treatmentFocusFromRow(row, lang)}
-                      </p>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="lg:hidden text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
-                        {ar ? "أول إجراء" : "First Action"}
-                      </div>
-                      <p className="text-sm text-slate-700 leading-relaxed rtl-text">
-                        {firstActionFromRow(row, lang)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* STRONGEST / WEAKEST */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <SignalCard
@@ -1071,38 +1310,53 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* PRIORITY ACTIONS */}
-        <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
-          {sectionTitle(
-            t.actions,
-            ar
-              ? "اخترنا لك التوصيات حسب المناطق الأضعف والأكثر خطورة، وليس بصورة عامة."
-              : "These recommendations are selected from your weakest and highest-risk areas, not from generic advice."
-          )}
+        {/* SCAN-ONLY PRIORITY ACTIONS */}
+        {!mri && (
+          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+            {sectionTitle(
+              t.actions,
+              ar
+                ? "اخترنا لك التوصيات حسب المناطق الأضعف والأكثر خطورة، وليس بصورة عامة."
+                : "These recommendations are selected from your weakest and highest-risk areas, not from generic advice."
+            )}
 
-          <div className="space-y-5">
-            <ActionBlock
-              index={1}
-              title={ar ? "أولوية عامة" : "Overall Priority"}
-              tier={overallTier}
-              percentage={overall}
-              recommendations={getRecommendations("overall_score", overallTier, lang)}
-              lang={lang}
-            />
-
-            {priorityRows.map((row, idx) => (
+            <div className="space-y-5">
               <ActionBlock
-                key={row.competencyId}
-                index={idx + 2}
-                title={row.label}
-                tier={row.tier}
-                percentage={row.percentage}
-                recommendations={getRecommendations(row.competencyId, row.tier, lang)}
+                index={1}
+                title={ar ? "أولوية عامة" : "Overall Priority"}
+                tier={overallTier}
+                percentage={overall}
+                recommendations={getRecommendations("overall_score", overallTier, lang)}
                 lang={lang}
               />
-            ))}
-          </div>
-        </section>
+
+              {priorityRows.map((row, idx) => (
+                <ActionBlock
+                  key={row.competencyId}
+                  index={idx + 2}
+                  title={row.label}
+                  tier={row.tier}
+                  percentage={row.percentage}
+                  recommendations={getRecommendations(row.competencyId, row.tier, lang)}
+                  lang={lang}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* MRI PATTERN-BASED TREATMENT PAGES */}
+        {mri && (
+          <MriDetailedTreatmentSection
+            rows={rows}
+            weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)}
+            compactRows={[...rows].sort((a, b) => a.percentage - b.percentage).slice(6)}
+            strongestRows={topThreeStrengths}
+            overall={overall}
+            lang={lang}
+            ar={ar}
+          />
+        )}
 
         {/* MRI 90-DAY PRESCRIPTION */}
         {mri && (
@@ -1141,123 +1395,6 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 bodyEn="Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."
                 bodyAr="حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."
               />
-            </div>
-          </section>
-        )}
-
-
-        {/* MRI 12-WEEK TREATMENT ROADMAP */}
-        {mri && (
-          <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
-            {sectionTitle(
-              ar ? "خارطة العلاج الأسبوعية لمدة ١٢ أسبوعًا" : "12-Week Treatment Roadmap",
-              ar
-                ? "هذه الخطة تجعل وصفة الـ٩٠ يومًا عملية أكثر: كل أسبوع له تركيز واضح، سلوك يومي، ومؤشر متابعة."
-                : "This makes the 90-day prescription more practical: each week has a clear focus, daily behavior, and tracking signal."
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {[
-                {
-                  w: "1",
-                  en: "Stop the biggest leak",
-                  ar: "إيقاف أكبر تسريب",
-                  focusEn: `Focus on ${topThreeRisks[0]?.label || "your lowest competency"} and remove one repeating mistake.`,
-                  focusAr: `ركّز على ${topThreeRisks[0]?.label || "أضعف كفاءة لديك"} وأزل خطأ واحدًا يتكرر.`,
-                },
-                {
-                  w: "2",
-                  en: "Install one fixed routine",
-                  ar: "تركيب روتين ثابت",
-                  focusEn: "Turn the first correction into a daily non-negotiable routine before any sales activity.",
-                  focusAr: "حوّل أول تصحيح إلى روتين يومي غير قابل للتفاوض قبل أي نشاط بيعي.",
-                },
-                {
-                  w: "3",
-                  en: "Strengthen discovery",
-                  ar: "تقوية الاكتشاف",
-                  focusEn: "Use deeper questions to uncover urgency, impact, and the real business consequence.",
-                  focusAr: "استخدم أسئلة أعمق لكشف الإلحاح والأثر والنتيجة التجارية الحقيقية.",
-                },
-                {
-                  w: "4",
-                  en: "Prevent objections early",
-                  ar: "منع الاعتراضات مبكرًا",
-                  focusEn: "Predict the top two objections before the proposal and plant proof before they appear.",
-                  focusAr: "توقع أهم اعتراضين قبل العرض وازرع الدليل قبل ظهورهما.",
-                },
-                {
-                  w: "5",
-                  en: "Rebuild the offer",
-                  ar: "إعادة بناء العرض",
-                  focusEn: "Rewrite offers around pain, outcome, proof, and the cost of delay.",
-                  focusAr: "أعد صياغة العروض حول الألم والنتيجة والدليل وتكلفة التأجيل.",
-                },
-                {
-                  w: "6",
-                  en: "Control the next step",
-                  ar: "التحكم في الخطوة التالية",
-                  focusEn: "End every serious conversation with a dated next action, not a vague promise.",
-                  focusAr: "أنهِ كل محادثة جادة بخطوة تالية بتاريخ محدد، لا بوعد غامض.",
-                },
-                {
-                  w: "7",
-                  en: "Fix follow-up leakage",
-                  ar: "إصلاح تسريب المتابعة",
-                  focusEn: "Schedule every follow-up with purpose, timing, and expected buyer movement.",
-                  focusAr: "جدول كل متابعة بهدف ووقت وحركة متوقعة من العميل.",
-                },
-                {
-                  w: "8",
-                  en: "Improve negotiation control",
-                  ar: "تحسين التحكم في التفاوض",
-                  focusEn: "Do not discount without receiving a real commitment in return.",
-                  focusAr: "لا تقدم خصمًا دون الحصول على التزام حقيقي في المقابل.",
-                },
-                {
-                  w: "9",
-                  en: "Use your strongest competency",
-                  ar: "استخدام أقوى كفاءة لديك",
-                  focusEn: `Use ${topThreeStrengths[0]?.label || "your strongest area"} to support your weakest behavior.`,
-                  focusAr: `استخدم ${topThreeStrengths[0]?.label || "أقوى منطقة لديك"} لدعم أضعف سلوك.`,
-                },
-                {
-                  w: "10",
-                  en: "Build pressure discipline",
-                  ar: "بناء الانضباط تحت الضغط",
-                  focusEn: "Practice the correction behavior when tired, busy, or under rejection pressure.",
-                  focusAr: "تدرّب على سلوك التصحيح عند التعب أو الانشغال أو ضغط الرفض.",
-                },
-                {
-                  w: "11",
-                  en: "Review the full pattern",
-                  ar: "مراجعة النمط الكامل",
-                  focusEn: "Compare week 1 behavior with current behavior and identify what changed visibly.",
-                  focusAr: "قارن سلوك الأسبوع الأول بالسلوك الحالي وحدد ما تغيّر بشكل واضح.",
-                },
-                {
-                  w: "12",
-                  en: "Lock the new operating system",
-                  ar: "تثبيت نظام التشغيل الجديد",
-                  focusEn: "Choose the three habits that must continue after the 90-day prescription ends.",
-                  focusAr: "اختر العادات الثلاث التي يجب أن تستمر بعد انتهاء وصفة الـ٩٠ يومًا.",
-                },
-              ].map((item) => (
-                <div key={`week-${item.w}`} className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm">
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-white font-black force-ltr">
-                    {item.w}
-                  </div>
-                  <h3 className="mt-4 text-lg font-black text-slate-950 rtl-text">
-                    {ar ? item.ar : item.en}
-                  </h3>
-                  <p className="mt-2 text-sm text-slate-700 leading-relaxed rtl-text">
-                    {ar ? item.focusAr : item.focusEn}
-                  </p>
-                  <div className="mt-4 rounded-2xl bg-white border border-slate-200 p-3 text-xs font-bold text-slate-600 rtl-text">
-                    {ar ? "مؤشر المتابعة: تنفيذ السلوك يوميًا وتسجيل النتيجة." : "Tracking signal: execute the behavior daily and record the result."}
-                  </div>
-                </div>
-              ))}
             </div>
           </section>
         )}
@@ -1615,6 +1752,346 @@ function ActionBlock({
     </div>
   );
 }
+
+
+function MriDetailedTreatmentSection({
+  rows,
+  weakestSix,
+  compactRows,
+  strongestRows,
+  overall,
+  lang,
+  ar,
+}: {
+  rows: CompetencyRow[];
+  weakestSix: CompetencyRow[];
+  compactRows: CompetencyRow[];
+  strongestRows: CompetencyRow[];
+  overall: number;
+  lang: Language;
+  ar: boolean;
+}) {
+  const pattern = getPatternArchetype(overall, weakestSix.slice(0, 3), strongestRows.slice(0, 2), lang);
+  const weakestLabel = weakestSix[0]?.label || "";
+  const strongestLabel = strongestRows[0]?.label || "";
+
+  return (
+    <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+      {sectionTitle(
+        ar ? "صفحات العلاج التفصيلية حسب نمطك" : "Detailed Treatment Pages Based on Your Pattern",
+        ar
+          ? "التقرير لا يكرر نفس النص لكل شخص. يتم توسيع أضعف ٦ مناطق لديك، بينما تظهر بقية الكفاءات كملخصات حماية أو رافعة."
+          : "This report does not repeat the same advice for every person. Your weakest 6 areas are expanded into treatment pages, while the remaining competencies appear as compact leverage or protection summaries."
+      )}
+
+      <div className="pdf-avoid-break rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-7 shadow-xl mb-6">
+        <div className="inline-flex rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
+          {ar ? "نمط الأداء العام" : "Overall Performance Pattern"}
+        </div>
+        <h3 className="mt-4 text-2xl sm:text-3xl font-black leading-tight rtl-text">
+          {pattern.title}
+        </h3>
+        <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
+          {pattern.body}
+        </p>
+
+        <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <MiniPatternBox
+            ar={ar}
+            labelEn="Primary leakage"
+            labelAr="التسريب الأساسي"
+            value={weakestSix[0]?.label || "—"}
+            value2={weakestSix[0] ? `${weakestSix[0].percentage}% · ${getTierLabel(weakestSix[0].tier, lang)}` : ""}
+          />
+          <MiniPatternBox
+            ar={ar}
+            labelEn="Secondary risk"
+            labelAr="الخطر الثاني"
+            value={weakestSix[1]?.label || "—"}
+            value2={weakestSix[1] ? `${weakestSix[1].percentage}% · ${getTierLabel(weakestSix[1].tier, lang)}` : ""}
+          />
+          <MiniPatternBox
+            ar={ar}
+            labelEn="Best leverage"
+            labelAr="أفضل رافعة"
+            value={strongestRows[0]?.label || "—"}
+            value2={strongestRows[0] ? `${strongestRows[0].percentage}% · ${getTierLabel(strongestRows[0].tier, lang)}` : ""}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {weakestSix.map((row, index) => (
+          <MriDeepTreatmentPage
+            key={`deep-${row.competencyId}-${index}`}
+            row={row}
+            index={index}
+            lang={lang}
+            ar={ar}
+            weakestLabel={weakestLabel}
+            strongestLabel={strongestLabel}
+          />
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <h3 className="text-2xl sm:text-3xl font-black text-slate-950 rtl-text">
+          {ar ? "ملخص الكفاءات المتبقية: حماية ورافعة" : "Remaining Competencies: Protection and Leverage Summary"}
+        </h3>
+        <p className="mt-2 text-slate-600 leading-relaxed rtl-text">
+          {ar
+            ? "هذه المناطق لا تحتاج إلى نفس عمق العلاج الآن. لكنها مهمة لأنها قد تعمل كرافعات تدعم خطة العلاج أو كمناطق يجب حمايتها من التراجع."
+            : "These areas do not need the same treatment depth right now. They matter because they can work as leverage points for the treatment plan or as areas that must be protected from drift."}
+        </p>
+
+        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {compactRows.map((row, index) => (
+            <MriCompactSummaryCard
+              key={`compact-${row.competencyId}-${index}`}
+              row={row}
+              lang={lang}
+              ar={ar}
+              weakestLabel={weakestLabel}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MiniPatternBox({
+  ar,
+  labelEn,
+  labelAr,
+  value,
+  value2,
+}: {
+  ar: boolean;
+  labelEn: string;
+  labelAr: string;
+  value: string;
+  value2?: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-white/10 border border-white/15 p-4">
+      <div className="text-[11px] font-black uppercase tracking-widest text-blue-100 rtl-text">
+        {ar ? labelAr : labelEn}
+      </div>
+      <div className="mt-2 text-base sm:text-lg font-black text-white rtl-text">
+        {value}
+      </div>
+      {value2 && <div className="mt-1 text-xs text-blue-100 force-ltr">{value2}</div>}
+    </div>
+  );
+}
+
+function MriDeepTreatmentPage({
+  row,
+  index,
+  lang,
+  ar,
+  weakestLabel,
+  strongestLabel,
+}: {
+  row: CompetencyRow;
+  index: number;
+  lang: Language;
+  ar: boolean;
+  weakestLabel: string;
+  strongestLabel: string;
+}) {
+  const meta = getMriTreatmentMeta(row, lang, weakestLabel, strongestLabel);
+  const recommendations = getRecommendations(row.competencyId, row.tier, lang)
+    .map(cleanRecommendation)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  return (
+    <article className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(row.tier)} shadow-xl overflow-hidden`}>
+      <div className="bg-white p-6 sm:p-7">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+          <div>
+            <div className="text-xs font-black text-slate-500 uppercase tracking-widest rtl-text">
+              {ar ? `صفحة علاج تفصيلية ${index + 1}` : `Detailed Treatment Page ${index + 1}`}
+            </div>
+            <h3 className="mt-2 text-2xl sm:text-4xl font-black text-slate-950 rtl-text">
+              {row.label}
+            </h3>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(row.tier)}`}>
+                {row.percentage}% · {getTierLabel(row.tier, lang)}
+              </span>
+              <span className="inline-flex rounded-full px-3 py-1 text-xs font-black bg-slate-100 text-slate-700">
+                {mriBehaviorFamily(row, lang)}
+              </span>
+            </div>
+          </div>
+
+          <div className="force-ltr text-left lg:text-right">
+            <div className="text-5xl font-black text-slate-950">{row.percentage}%</div>
+            <div className="mt-1 text-xs font-black uppercase tracking-widest text-slate-500">
+              {ar ? "درجة الكفاءة" : "Competency Score"}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5 h-3 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+          <div className="h-full rounded-full bg-slate-950" style={{ width: `${row.percentage}%` }} />
+        </div>
+      </div>
+
+      <div className="p-6 sm:p-7 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <TreatmentInsight
+          title={ar ? "ما الذي تكشفه هذه النتيجة؟" : "What this score reveals"}
+          body={commercialMeaning(row.tier, row.label, lang)}
+        />
+        <TreatmentInsight
+          title={ar ? "أين يحدث التسريب؟" : "Where leakage may happen"}
+          body={meta.leakage}
+        />
+        <TreatmentInsight
+          title={ar ? "الفرضية الجذرية" : "Root-cause hypothesis"}
+          body={meta.root}
+        />
+        <TreatmentInsight
+          title={ar ? "قراءة النمط الشخصي" : "Pattern-based reading"}
+          body={meta.patternNote}
+        />
+      </div>
+
+      <div className="px-6 sm:px-7 pb-6 sm:pb-7">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="rounded-3xl bg-rose-50 border-2 border-rose-200 p-5">
+            <div className="text-sm font-black text-rose-700 uppercase tracking-widest rtl-text">
+              {ar ? "توقف عن هذا" : "Stop doing this"}
+            </div>
+            <p className="mt-2 text-slate-800 font-bold leading-relaxed rtl-text">
+              {meta.stop}
+            </p>
+          </div>
+
+          <div className="rounded-3xl bg-emerald-50 border-2 border-emerald-200 p-5">
+            <div className="text-sm font-black text-emerald-700 uppercase tracking-widest rtl-text">
+              {ar ? "ابدأ بهذا" : "Start doing this"}
+            </div>
+            <p className="mt-2 text-slate-800 font-bold leading-relaxed rtl-text">
+              {meta.start}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-3xl bg-slate-950 text-white p-5 sm:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div>
+              <div className="text-xs font-black uppercase tracking-widest text-amber-200 rtl-text">
+                {ar ? "وصفة ٧ أيام" : "7-Day Field Prescription"}
+              </div>
+              <p className="mt-2 text-blue-100 leading-relaxed rtl-text">{meta.drill}</p>
+            </div>
+            <div>
+              <div className="text-xs font-black uppercase tracking-widest text-amber-200 rtl-text">
+                {ar ? "مؤشر القياس" : "Metric to Track"}
+              </div>
+              <p className="mt-2 text-blue-100 leading-relaxed rtl-text">{meta.metric}</p>
+            </div>
+            <div>
+              <div className="text-xs font-black uppercase tracking-widest text-amber-200 rtl-text">
+                {ar ? "أداة العلاج المناسبة" : "Recommended Remedy Tool"}
+              </div>
+              <p className="mt-2 text-white font-black leading-relaxed rtl-text">{meta.bonus}</p>
+            </div>
+          </div>
+        </div>
+
+        {recommendations.length > 0 && (
+          <div className="mt-4 rounded-3xl bg-white border border-slate-200 p-5">
+            <div className="text-sm font-black text-slate-500 uppercase tracking-widest rtl-text">
+              {ar ? "ملاحظة علاج إضافية" : "Additional Treatment Note"}
+            </div>
+            <div className="mt-3 space-y-3">
+              {recommendations.map((rec, i) => (
+                <p key={i} className="text-sm sm:text-base text-slate-700 leading-relaxed rtl-text">
+                  <span className="font-black text-slate-950">{i + 1}. </span>
+                  {rec}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function TreatmentInsight({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-3xl bg-white/80 border border-white p-5 shadow-sm">
+      <div className="text-sm font-black text-slate-500 uppercase tracking-widest rtl-text">{title}</div>
+      <p className="mt-2 text-slate-700 leading-relaxed rtl-text">{body}</p>
+    </div>
+  );
+}
+
+function MriCompactSummaryCard({
+  row,
+  lang,
+  ar,
+  weakestLabel,
+}: {
+  row: CompetencyRow;
+  lang: Language;
+  ar: boolean;
+  weakestLabel: string;
+}) {
+  const meta = getMriTreatmentMeta(row, lang, weakestLabel, row.label);
+
+  const note =
+    row.tier === "Strength"
+      ? ar
+        ? `هذه رافعة قوة. استخدمها لدعم منطقة ${weakestLabel || "الضعف الأساسية"} دون تحويلها إلى مشروع علاج طويل.`
+        : `This is a leverage strength. Use it to support ${weakestLabel || "your main weak area"} without turning it into a long treatment project.`
+      : row.tier === "Opportunity"
+      ? ar
+        ? "هذه فرصة تحسين. تحتاج إلى عادة صغيرة وثابتة، وليس تدخلًا كاملًا."
+        : "This is an improvement opportunity. It needs a small consistent habit, not full intervention."
+      : ar
+      ? "راقب هذه المنطقة. ليست ضمن أضعف ٦ الآن، لكنها قد تتحول إلى تسريب إذا أهملت."
+      : "Monitor this area. It is not in the weakest 6 right now, but it can become leakage if ignored.";
+
+  return (
+    <div className={`rounded-3xl border-2 ${tierSoftClass(row.tier)} p-5 shadow-sm`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-xs font-black uppercase tracking-widest text-slate-500 rtl-text">
+            {ar ? "ملخص حماية" : "Protection Summary"}
+          </div>
+          <h4 className="mt-1 text-lg sm:text-xl font-black text-slate-950 rtl-text">{row.label}</h4>
+        </div>
+        <div className="force-ltr text-right">
+          <div className="text-2xl font-black text-slate-950">{row.percentage}%</div>
+          <span className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(row.tier)}`}>
+            {getTierLabel(row.tier, lang)}
+          </span>
+        </div>
+      </div>
+
+      <p className="mt-4 text-sm text-slate-700 leading-relaxed rtl-text">
+        {note}
+      </p>
+
+      <div className="mt-4 rounded-2xl bg-white/75 border border-white p-3">
+        <div className="text-xs font-black uppercase tracking-widest text-slate-500 rtl-text">
+          {ar ? "إجراء حماية واحد" : "One protection action"}
+        </div>
+        <p className="mt-1 text-sm font-bold text-slate-700 leading-relaxed rtl-text">
+          {meta.start}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 
 function PrescriptionPhase({
   ar,
