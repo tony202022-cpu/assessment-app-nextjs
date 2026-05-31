@@ -186,6 +186,32 @@ function commercialMeaning(tier: Tier, label: string, lang: Language) {
   return `${label} is showing a clear gap. This area may be affecting conversations, deal movement, or buyer confidence more than you realize.`;
 }
 
+function overallCommercialMeaning(overall: number, tier: Tier, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") {
+      return "الصورة العامة قوية، لكن القوة لا تعني التوقف. المطلوب الآن هو تحويل السلوك القوي إلى نظام يومي ثابت.";
+    }
+    if (tier === "Opportunity") {
+      return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس يمكن البناء عليه، لكن بعض التسريبات قد تمنع الأداء من الوصول إلى مستوى أعلى.";
+    }
+    if (tier === "Threat") {
+      return "الصورة العامة تُظهر إشارات إنذار. هناك تسريب محتمل في بعض السلوكيات البيعية يحتاج إلى علاج قبل أن يتحول إلى نمط ثابت.";
+    }
+    return "الصورة العامة تُظهر فجوة واضحة. هذا لا يعني الفشل، لكنه يعني أن الأداء يحتاج إلى خطة علاج عملية ومنظمة بدل الاعتماد على المحاولة والتخمين.";
+  }
+
+  if (tier === "Strength") {
+    return "Your overall sales health is strong, but strength is not the finish line. The next step is turning strong behaviors into a repeatable system.";
+  }
+  if (tier === "Opportunity") {
+    return "Your overall sales health has a useful base, but it is not yet fully protected. Some hidden leakage may still be limiting your results.";
+  }
+  if (tier === "Threat") {
+    return "Your overall sales health is showing warning signals. Some sales behaviors may be leaking momentum and need correction before they become permanent habits.";
+  }
+  return "Your overall sales health is showing a clear performance gap. This is not failure, but it does mean you need a practical treatment plan instead of more guessing.";
+}
+
 function shortDiagnosis(tier: Tier, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return "مؤشر صحي قوي يمكن البناء عليه.";
@@ -516,20 +542,22 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       printNote: "For best PDF export: choose Save as PDF, turn on background graphics, and turn off browser headers and footers.",
       badge: mri ? "Advanced Diagnostic Report" : "Sales Performance Blood Test",
       subtitle: mri
-        ? "A deeper diagnostic view of your field sales performance patterns, hidden risks, and execution priorities."
-        : "A fast diagnostic scan of your seven core field sales signals — like a blood test for sales performance.",
+        ? "A full diagnostic and treatment tool for your sales performance body."
+        : "A fast diagnostic scan of your sales performance body — like a blood test for field sales.",
       overall: "Overall Sales Health Score",
+      overallMarker: "Overall Sales Health Index",
       participant: "Participant Identity",
       health: "Sales Health Zone",
-      bloodPanel: mri ? "Competency Diagnostic Panel" : "7-Marker Sales Blood Panel",
-      bloodPanelSub: "Each score is a signal. The value is not the number alone, but what the number reveals about behavior in real selling situations.",
+      bloodPanel: mri ? "Competency Diagnostic Panel" : "Sales Health Panel: Overall Score + 7 Core Markers",
+      bloodPanelSub:
+        "This panel combines your overall sales health score with the seven core markers that reveal where performance is strong, where it is leaking, and what needs treatment.",
       strongest: "Strongest Signal",
       weakest: "Biggest Hidden Revenue Leak",
       commercial: "Commercial Interpretation",
       swot: "Strategic SWOT Analysis",
       actions: "Priority Execution Plan",
       prescriptionHeadline: "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
-      prescriptionSubhead: "Do not leave this report as an interesting result. Turn the warning signs into a practical sales performance remedy.",
+      prescriptionSubhead: "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
       prescriptionCta: "Get My Full Sales MRI & 90-Day Prescription",
       enterpriseTitle: "For Sales Managers & Business Owners",
       enterpriseCta: "Diagnose the Team Before You Train the Team",
@@ -539,20 +567,22 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       printNote: "لأفضل تصدير PDF: اختر Save as PDF، فعّل Background graphics، وألغِ ترويسات وتذييلات المتصفح.",
       badge: mri ? "تقرير تشخيصي متقدم" : "فحص دم لأداء المبيعات",
       subtitle: mri
-        ? "تشخيص أعمق لأنماط الأداء البيعي والمخاطر المخفية وأولويات التنفيذ."
-        : "فحص تشخيصي سريع لسبعة مؤشرات أساسية في أداء المبيعات الميدانية — كأنه فحص دم مهني للأداء.",
+        ? "أداة تشخيص وعلاج كاملة لجسم أدائك البيعي."
+        : "فحص تشخيصي سريع لجسم أدائك البيعي — كأنه تحليل دم مهني للمبيعات الميدانية.",
       overall: "مؤشر الصحة البيعية العام",
+      overallMarker: "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
       health: "منطقة الصحة البيعية",
-      bloodPanel: mri ? "لوحة التشخيص المتقدمة" : "لوحة المؤشرات السبعة",
-      bloodPanelSub: "كل نتيجة هي إشارة. القيمة ليست في الرقم وحده، بل في ما يكشفه الرقم عن السلوك أثناء البيع الحقيقي.",
+      bloodPanel: mri ? "لوحة التشخيص المتقدمة" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
+      bloodPanelSub:
+        "تجمع هذه اللوحة بين مؤشر الصحة البيعية العام والسبعة مؤشرات الأساسية التي تكشف أين يقوى الأداء، أين يحدث التسريب، وما الذي يحتاج إلى علاج.",
       strongest: "أقوى مؤشر",
       weakest: "أكبر تسريب مخفي للفرص",
       commercial: "التفسير التجاري",
       swot: "تحليل SWOT الاستراتيجي",
       actions: "خطة التنفيذ ذات الأولوية",
       prescriptionHeadline: "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: "لا تترك هذا التقرير كنتيجة مثيرة للاهتمام فقط. حوّل علامات الإنذار إلى علاج عملي لأدائك البيعي.",
+      prescriptionSubhead: "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
       prescriptionCta: "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
       enterpriseTitle: "لمديري المبيعات وأصحاب الشركات",
       enterpriseCta: "شخّص الفريق قبل أن تدرّبه",
@@ -658,25 +688,46 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 {ar ? "ما الذي يعنيه هذا تجاريًا؟" : "What this means commercially"}
               </h3>
               <p className="mt-3 text-slate-700 leading-relaxed rtl-text">
-                {ar
-                  ? `هذه النتيجة لا تعني أنك جيد أو سيئ بصورة عامة. إنها تكشف نمطًا سلوكيًا يظهر تحت ضغط البيع الحقيقي. عندما تكون النتيجة في منطقة ${getTierLabel(
-                      overallTier,
-                      lang
-                    )}، فهذا يعني أن هناك إشارات واضحة يجب قراءتها قبل محاولة إصلاح الأداء بالتخمين.`
-                  : `This score does not simply say whether you are “good” or “bad.” It reveals a behavioral pattern that appears under real sales pressure. When the result sits in the ${getTierLabel(
-                      overallTier,
-                      lang
-                    )} zone, it means there are visible signals that should be diagnosed before performance is improved by guesswork.`}
+                {overallCommercialMeaning(overall, overallTier, lang)}
               </p>
             </div>
           </div>
         </section>
 
-        {/* BLOOD PANEL */}
+        {/* SALES HEALTH PANEL */}
         <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
           {sectionTitle(t.bloodPanel, t.bloodPanelSub)}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(overallTier)} p-5 shadow-sm`}>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                    {ar ? "المؤشر العام" : "Overall Marker"}
+                  </div>
+                  <h3 className="mt-1 text-xl font-black text-slate-950 rtl-text">{t.overallMarker}</h3>
+                </div>
+
+                <div className="text-right force-ltr">
+                  <div className="text-3xl font-black text-slate-950">{overall}%</div>
+                  <span className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(overallTier)}`}>
+                    {getTierLabel(overallTier, lang)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 h-3 rounded-full bg-white/80 overflow-hidden border border-slate-200">
+                <div className="h-full rounded-full bg-slate-900" style={{ width: `${overall}%` }} />
+              </div>
+
+              <p className="mt-4 text-sm font-semibold text-slate-700 leading-relaxed rtl-text">
+                {ar ? "القراءة المجمعة لكل مؤشرات أدائك البيعي." : "The combined reading of your full sales performance scan."}
+              </p>
+              <p className="mt-2 text-sm text-slate-600 leading-relaxed rtl-text">
+                {overallCommercialMeaning(overall, overallTier, lang)}
+              </p>
+            </div>
+
             {sortedRows.map((row, idx) => (
               <div key={`${row.competencyId}-${idx}`} className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(row.tier)} p-5 shadow-sm`}>
                 <div className="flex items-start justify-between gap-4">
@@ -737,7 +788,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
         {/* COMMERCIAL INTERPRETATION */}
         <section className="pdf-avoid-break rounded-3xl bg-gradient-to-br from-slate-950 to-blue-950 text-white shadow-2xl p-6 sm:p-8">
-          {sectionTitle(t.commercial)}
+          <div className="mb-5">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight rtl-text">
+              {t.commercial}
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-blue-100 leading-relaxed rtl-text">
+              {ar ? "قراءة تجارية مختصرة لما قد يحدث في الميدان." : "A practical commercial reading of what may be happening in the field."}
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <DarkInsight
@@ -896,7 +954,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     <p>
                       {ar
                         ? "الفحص يشبه تحليل الدم: يكشف لك أن هناك مؤشرات يجب الانتباه لها. لكنه لا يمنحك الفحص الكامل، ولا الوصفة العلاجية، ولا خطة التصحيح اليومية."
-                        : "The scan is like a blood test: it reveals that there are signals you must not ignore. But it does not give you the full examination, the prescription, or the day-by-day correction path."}
+                        : "The scan is like a blood test: it reveals signals you must not ignore. But it does not give you the full examination, the treatment prescription, or the day-by-day correction path."}
                     </p>
 
                     <p>
@@ -907,8 +965,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
                     <p className="font-black text-white">
                       {ar
-                        ? "إذا كشف الفحص تسريبًا، فالخطوة الذكية ليست تجاهله. الخطوة الذكية هي معرفة الجذر ثم اتباع الوصفة."
-                        : "If the scan exposed a leak, the smart move is not to ignore it. The smart move is to find the root pattern and follow the prescription."}
+                        ? "إذا كشف الفحص تسريبًا، فالخطوة الذكية ليست تجاهله. الخطوة الذكية هي فحص الجسم المهني كاملًا، معرفة الجذر، ثم اتباع الوصفة."
+                        : "If the scan exposed a leak, the smart move is not to ignore it. The smart move is to examine the full career body, identify the root pattern, and follow the prescription."}
                     </p>
                   </div>
                 </div>
@@ -919,23 +977,27 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   </div>
 
                   <h3 className="mt-4 text-2xl font-black rtl-text">
-                    {ar ? "MRI كامل للجسم المهني البيعي" : "A full MRI of your sales performance body"}
+                    {ar ? "تقرير شخصي مفصل وخطة علاج كاملة" : "A personalized detailed report and full treatment plan"}
                   </h3>
 
                   <div className="mt-5 space-y-3">
                     {(ar
                       ? [
-                          "تشخيص أعمق عبر ١٥ كفاءة بيعية بدل ٧ مؤشرات فقط",
+                          "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
+                          "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
                           "كشف الأنماط الجذرية خلف تعثّر الصفقات وضعف الزخم",
                           "ترتيب واضح لما يجب إصلاحه أولًا بدل التخمين",
                           "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
+                          "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
                           "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
                         ]
                       : [
-                          "A deeper 15-competency diagnosis instead of only 7 markers",
+                          "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
+                          "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
                           "The root patterns behind stalled deals, weak momentum, and hidden leakage",
                           "A clear priority order of what to correct first instead of guessing",
-                          "A practical 90-day performance prescription without sitting through a long course",
+                          "A practical 90-day performance prescription without sitting through a long training course",
+                          "A day-by-day correction path showing what to do and what to stop doing",
                           "5 implementation bonuses that help you act, not just read",
                         ]
                     ).map((x) => (
@@ -958,8 +1020,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
                   <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
                     {ar
-                      ? "لا فيديوهات طويلة. لا تكديس نظري. لا نصائح عامة. إنها وصفة تصحيح عملية مبنية على نتائجك، لتعرف ماذا تعمل عليه، ماذا تتوقف عن فعله، وما الذي يجب إصلاحه أولًا."
-                      : "No long videos. No theory overload. No generic sales advice. It is a practical correction prescription built from your results, showing what to work on, what to stop doing, and what to fix first."}
+                      ? "لا فيديوهات طويلة. لا تكديس نظري. لا نصائح عامة. إنها وصفة علاج عملية ومفصلة مبنية على نتائجك، لتعرف ماذا تعمل عليه، ماذا تتوقف عن فعله، وما الذي يجب إصلاحه أولًا."
+                      : "No long videos. No theory overload. No generic sales advice. It is a practical, detailed treatment prescription built from your results, showing what to work on, what to stop doing, and what to fix first."}
                   </p>
 
                   <a
