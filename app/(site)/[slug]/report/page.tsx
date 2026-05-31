@@ -10,7 +10,34 @@ import {
   tierFromPercentage,
 } from "@/lib/pdf-recommendations";
 
-// ✅ local fallback (safe)
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// ======================================================
+// SLUG-COMPATIBLE OUTDOOR SALES REPORT
+// Safe replacement for: app/(site)/[slug]/report/page.tsx
+// Uses: params.slug + searchParams.attemptId
+// Does NOT touch quiz, scoring, login, Supabase schema, timer, or randomization.
+// ======================================================
+
+const MRI_CHECKOUT_URL = "PASTE_NEW_ZENLER_MRI_LINK_HERE";
+const MRI_REGULAR_PRICE = 297;
+const MRI_LAUNCH_PRICE = 149;
+
+type PageProps = {
+  params: { slug: string };
+  searchParams?: { attemptId?: string; lang?: string; v?: string };
+};
+
+type CompetencyRow = {
+  competencyId: string;
+  label: string;
+  percentage: number;
+  tier: Tier;
+  score?: number;
+  maxScore?: number;
+};
+
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
@@ -19,17 +46,34 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   creating_irresistible_offers: { en: "Creating Irresistible Offers", ar: "إنشاء عروض لا تُقاوَم" },
   mastering_closing: { en: "Mastering Closing", ar: "إتقان الإغلاق" },
   follow_up_discipline: { en: "Follow-Up Discipline", ar: "انضباط المتابعة" },
-  // MRI extras
+
   consultative_selling: { en: "Consultative Selling", ar: "المبيعات الاستشارية" },
   time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
   product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
   negotiation_skills: { en: "Negotiation Skills", ar: "مهارات التفاوض" },
-  attitude_motivation_mindset: { en: "Attitude & Motivation", ar: "عقلية التحفيز والموقف" },
+  attitude_motivation_mindset: { en: "Attitude & Motivation", ar: "العقلية والتحفيز" },
   dealing_with_boss: { en: "Dealing with Boss", ar: "التعامل مع المدير" },
-  handling_difficult_customers: { en: "Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
-  handling_difficult_colleagues: { en: "Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
-
+  handling_difficult_customers: { en: "Handling Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
+  handling_difficult_colleagues: { en: "Handling Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
 };
+
+const TIER_LABELS: Record<Tier, { en: string; ar: string }> = {
+  Strength: { en: "Strength", ar: "نقطة قوة" },
+  Opportunity: { en: "Opportunity", ar: "فرصة تطوير" },
+  Threat: { en: "Threat", ar: "منطقة خطر" },
+  Weakness: { en: "Weakness", ar: "نقطة ضعف" },
+};
+
+function getSupabaseAdmin() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !key) {
+    throw new Error("Missing Supabase env vars");
+  }
+
+  return createClient(url, key, { auth: { persistSession: false } });
+}
 
 function normalizeCompetencySafe(raw: any) {
   const id = normalizeCompetencyId(String(raw || ""));
@@ -37,70 +81,8 @@ function normalizeCompetencySafe(raw: any) {
   return id;
 }
 
-const TIER_LABELS: Record<Tier, { en: string; ar: string }> = {
-  Strength: { en: "Strength", ar: "نقطة قوة" },
-  Opportunity: { en: "Opportunity", ar: "فرصة" },
-  Weakness: { en: "Weakness", ar: "نقطة ضعف" },
-  Threat: { en: "Threat", ar: "تهديد" },
-};
-
-function getTierLabel(tier: Tier, lang: Language) {
-  const meta = TIER_LABELS[tier] || { en: String(tier), ar: String(tier) };
-  return lang === "ar" ? meta.ar : meta.en;
-}
-
-function tierCardBgClass(tier: Tier) {
-  switch (tier) {
-    case "Strength":
-      return "bg-gradient-to-br from-emerald-500 to-green-600";
-    case "Opportunity":
-      return "bg-gradient-to-br from-blue-500 to-cyan-600";
-    case "Weakness":
-      return "bg-gradient-to-br from-rose-500 to-red-600";
-    case "Threat":
-    default:
-      return "bg-gradient-to-br from-amber-400 to-orange-500";
-  }
-}
-
-function tierBadgeClass(tier: Tier) {
-  switch (tier) {
-    case "Strength":
-      return "bg-emerald-600 text-white";
-    case "Opportunity":
-      return "bg-blue-600 text-white";
-    case "Weakness":
-      return "bg-rose-600 text-white";
-    case "Threat":
-    default:
-      return "bg-amber-500 text-white";
-  }
-}
-
-function tierSoftBg(tier: Tier) {
-  switch (tier) {
-    case "Strength":
-      return "bg-gradient-to-br from-emerald-50 to-green-50";
-    case "Opportunity":
-      return "bg-gradient-to-br from-blue-50 to-cyan-50";
-    case "Weakness":
-      return "bg-gradient-to-br from-rose-50 to-red-50";
-    case "Threat":
-    default:
-      return "bg-gradient-to-br from-amber-50 to-orange-50";
-  }
-}
-
-type PageProps = {
-  params: { slug: string };
-  searchParams?: { attemptId?: string; lang?: string };
-};
-
-function getSupabaseAdmin() {
-  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Missing Supabase env vars");
-  return createClient(url, key, { auth: { persistSession: false } });
+function pct(n: any) {
+  return Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
 }
 
 function pickLang(attemptLang?: string | null, urlLang?: string | null): Language {
@@ -111,11 +93,7 @@ function pickLang(attemptLang?: string | null, urlLang?: string | null): Languag
 function isMriReport(slug: string, attemptAssessmentId?: string | null) {
   const s = String(slug || "").toLowerCase();
   const a = String(attemptAssessmentId || "").toLowerCase();
-  return s === "mri" || a.includes("mri");
-}
-
-function pct(n: any) {
-  return Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+  return s.includes("mri") || a.includes("mri");
 }
 
 function shortAttemptId(id: string) {
@@ -123,10 +101,122 @@ function shortAttemptId(id: string) {
   return x ? x.slice(0, 8) : "";
 }
 
+function getTierLabel(tier: Tier, lang: Language) {
+  const meta = TIER_LABELS[tier] || { en: String(tier), ar: String(tier) };
+  return lang === "ar" ? meta.ar : meta.en;
+}
+
+function tierBadgeClass(tier: Tier) {
+  switch (tier) {
+    case "Strength":
+      return "bg-emerald-600 text-white";
+    case "Opportunity":
+      return "bg-blue-600 text-white";
+    case "Threat":
+      return "bg-amber-500 text-white";
+    case "Weakness":
+    default:
+      return "bg-rose-600 text-white";
+  }
+}
+
+function tierSoftClass(tier: Tier) {
+  switch (tier) {
+    case "Strength":
+      return "border-emerald-200 bg-emerald-50";
+    case "Opportunity":
+      return "border-blue-200 bg-blue-50";
+    case "Threat":
+      return "border-amber-200 bg-amber-50";
+    case "Weakness":
+    default:
+      return "border-rose-200 bg-rose-50";
+  }
+}
+
+function tierTextClass(tier: Tier) {
+  switch (tier) {
+    case "Strength":
+      return "text-emerald-700";
+    case "Opportunity":
+      return "text-blue-700";
+    case "Threat":
+      return "text-amber-700";
+    case "Weakness":
+    default:
+      return "text-rose-700";
+  }
+}
+
+function healthLabel(overall: number, lang: Language) {
+  if (lang === "ar") {
+    if (overall >= 75) return "منطقة أداء قوية";
+    if (overall >= 50) return "منطقة فرصة واضحة";
+    if (overall >= 30) return "منطقة إنذار تجاري";
+    return "منطقة تسريب حاد";
+  }
+
+  if (overall >= 75) return "Strong Performance Zone";
+  if (overall >= 50) return "Clear Opportunity Zone";
+  if (overall >= 30) return "Commercial Warning Zone";
+  return "High Leakage Zone";
+}
+
+function commercialMeaning(tier: Tier, label: string, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") {
+      return `تشير نتيجة ${label} إلى أن هذا الجانب يدعم أداءك الحالي ويمكن استخدامه كنقطة ارتكاز لرفع بقية النتائج.`;
+    }
+    if (tier === "Opportunity") {
+      return `تشير نتيجة ${label} إلى وجود أساس جيد، لكن الأداء ما زال غير ثابت بما يكفي لحماية كل فرصة تجارية.`;
+    }
+    if (tier === "Threat") {
+      return `تشير نتيجة ${label} إلى منطقة قد تُسبب تسريبًا في الفرص إذا لم يتم التعامل معها بسرعة وبشكل منظم.`;
+    }
+    return `تشير نتيجة ${label} إلى فجوة واضحة قد تؤثر على المحادثات والصفقات والمتابعة إذا بقيت دون علاج.`;
+  }
+
+  if (tier === "Strength") {
+    return `${label} is currently supporting your performance. It can become an anchor strength that helps lift the rest of your sales behavior.`;
+  }
+  if (tier === "Opportunity") {
+    return `${label} has a useful foundation, but it is not yet consistent enough to protect every commercial opportunity.`;
+  }
+  if (tier === "Threat") {
+    return `${label} is creating a warning signal. If left untreated, it may quietly leak opportunities, momentum, or follow-up discipline.`;
+  }
+  return `${label} is showing a clear gap. This area may be affecting conversations, deal movement, or buyer confidence more than you realize.`;
+}
+
+function shortDiagnosis(tier: Tier, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") return "مؤشر صحي قوي يمكن البناء عليه.";
+    if (tier === "Opportunity") return "مؤشر قابل للتحسين بسرعة مع تدريب مركز.";
+    if (tier === "Threat") return "إشارة إنذار تحتاج إلى تدخل عملي سريع.";
+    return "فجوة أداء واضحة تحتاج إلى إعادة بناء منهجية.";
+  }
+
+  if (tier === "Strength") return "A healthy signal that can be protected and used as leverage.";
+  if (tier === "Opportunity") return "A workable signal that can improve quickly with focused practice.";
+  if (tier === "Threat") return "A warning signal that needs immediate practical correction.";
+  return "A clear performance gap that needs structured rebuilding.";
+}
+
+function cleanRecommendation(input: string) {
+  let text = String(input || "").trim();
+  text = text.replace(/\*\*/g, "");
+  text = text.replace(/^[•●▪◦✔✓✅✦★☆▶►→⚡📊📋🧠🔍🎯💡📞🛡️📝📌🧩🧭🧪📈🔬🚨⏸️🎙️🤝🔧\s]+/, "");
+  text = text.replace(/^\d{1,2}[.)\-:]\s*/, "");
+  text = text.replace(/\s+/g, " ").trim();
+  return text;
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function isEmailLike(s: string) {
   return EMAIL_RE.test(String(s || "").trim());
 }
+
 function pickFirstNonEmpty(...vals: any[]) {
   for (const v of vals) {
     const s = String(v ?? "").trim();
@@ -134,6 +224,7 @@ function pickFirstNonEmpty(...vals: any[]) {
   }
   return "";
 }
+
 function dig(obj: any, path: string) {
   try {
     return path.split(".").reduce((acc: any, k: string) => (acc ? acc[k] : undefined), obj);
@@ -141,6 +232,7 @@ function dig(obj: any, path: string) {
     return undefined;
   }
 }
+
 function extractIdentity(attempt: any) {
   const blocks = [
     attempt,
@@ -204,46 +296,47 @@ function extractIdentity(attempt: any) {
     );
   }
 
-  const deepName = pickFirstNonEmpty(
+  const rawName = pickFirstNonEmpty(
+    ...nameCandidates,
     dig(attempt, "participant.full_name"),
-    dig(attempt, "participant.name"),
     dig(attempt, "registration.full_name"),
-    dig(attempt, "registration.name"),
     dig(attempt, "contact.name")
   );
-  const deepEmail = pickFirstNonEmpty(
+
+  const rawEmail = pickFirstNonEmpty(
+    ...emailCandidates,
     dig(attempt, "participant.email"),
     dig(attempt, "registration.email"),
     dig(attempt, "contact.email")
   );
-  const deepCompany = pickFirstNonEmpty(
+
+  const rawCompany = pickFirstNonEmpty(
+    ...companyCandidates,
     dig(attempt, "participant.company"),
     dig(attempt, "registration.company"),
-    dig(attempt, "contact.company"),
     dig(attempt, "organization.name")
   );
-
-  const rawName = pickFirstNonEmpty(...nameCandidates, deepName);
-  const rawEmail = pickFirstNonEmpty(...emailCandidates, deepEmail);
-  const rawCompany = pickFirstNonEmpty(...companyCandidates, deepCompany);
 
   const email = isEmailLike(rawEmail) ? rawEmail.trim() : "—";
 
   let fullName = rawName.trim() || "—";
   if ((fullName === "—" || !fullName) && email !== "—") {
     const m = email.match(/^([^@]+)/);
-    if (m) fullName = m[1].replace(/[._-]/g, " ").replace(/\d+/g, "").trim() || "—";
+    if (m) {
+      fullName = m[1].replace(/[._-]/g, " ").replace(/\d+/g, "").trim() || "—";
+    }
   }
 
-  const company = rawCompany.trim() || "—";
-  return { fullName, email, company };
+  return {
+    fullName,
+    email,
+    company: rawCompany.trim() || "—",
+  };
 }
 
-// ✅ Server-side assessment config fetch (slug-first)
 async function getAssessmentConfigServer(supabase: any, slug: string) {
   const routeSlug = String(slug || "").toLowerCase();
 
-  // 1) try by slug column
   const bySlug = await supabase
     .from("assessments")
     .select("*")
@@ -252,10 +345,11 @@ async function getAssessmentConfigServer(supabase: any, slug: string) {
 
   if (bySlug?.data) return bySlug.data;
 
-  // 2) fallback mapping (keeps old behavior safe)
   const ROUTE_TO_ID: Record<string, string> = {
     scan: "outdoor_sales_scan",
     mri: "outdoor_sales_mri",
+    "outdoor-scan": "outdoor_sales_scan",
+    "outdoor-mri": "outdoor_sales_mri",
   };
 
   const assessmentId = ROUTE_TO_ID[routeSlug] || routeSlug;
@@ -269,35 +363,41 @@ async function getAssessmentConfigServer(supabase: any, slug: string) {
   return byId?.data ?? null;
 }
 
-const T = {
-  en: {
-    notFound: "Report not found",
-    backToResults: "Back to Results",
-    overall: "Overall Score",
-    recommendations: "Execution Roadmap",
-    top3: "Top 3 Priority Actions:",
-    score: "Score",
-    mriFallbackTitle: "Full MRI Report",
-    mriFallbackSubtitle: "Comprehensive assessment with detailed insights and strategic recommendations.",
-  },
-  ar: {
-    notFound: "التقرير غير موجود",
-    backToResults: "العودة إلى النتائج",
-    overall: "النتيجة الإجمالية",
-    recommendations: "خارطة الطريق التنفيذية",
-    top3: "أفضل 3 إجراءات ذات أولوية:",
-    score: "النتيجة",
-    mriFallbackTitle: "التقرير المتقدم",
-    mriFallbackSubtitle: "تقييم شامل مع رؤى تفصيلية وتوصيات استراتيجية.",
-  },
-};
+function sortRows(rows: CompetencyRow[]) {
+  return [...rows].sort((a, b) => b.percentage - a.percentage);
+}
+
+function getWeakest(rows: CompetencyRow[]) {
+  return [...rows].sort((a, b) => a.percentage - b.percentage)[0] || null;
+}
+
+function getStrongest(rows: CompetencyRow[]) {
+  return [...rows].sort((a, b) => b.percentage - a.percentage)[0] || null;
+}
+
+function getPriorityRows(rows: CompetencyRow[]) {
+  return [...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 3);
+}
+
+function sectionTitle(text: string, sub?: string) {
+  return (
+    <div className="pdf-avoid-break mb-5">
+      <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight rtl-text">
+        {text}
+      </h2>
+      {sub && <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed rtl-text">{sub}</p>}
+    </div>
+  );
+}
 
 export default async function ReportPage({ params, searchParams }: PageProps) {
   const slug = params.slug;
   const attemptId = searchParams?.attemptId?.trim() || "";
   const urlLang = (searchParams?.lang || "").trim();
 
-  if (!attemptId) return <div className="p-10 text-center">Missing attemptId</div>;
+  if (!attemptId) {
+    return <div className="p-10 text-center">Missing attemptId</div>;
+  }
 
   const supabase = getSupabaseAdmin();
 
@@ -309,434 +409,728 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
   const lang: Language = pickLang((attempt as any)?.language, urlLang);
   const ar = lang === "ar";
-  const t = ar ? T.ar : T.en;
-
-  const hardRtlCss = `
-    [data-rtl="true"] * { direction: rtl !important; }
-    [data-rtl="true"] .force-ltr { direction: ltr !important; text-align: left !important; }
-    [data-rtl="true"] .rtl-text { text-align: right !important; unicode-bidi: plaintext !important; }
-    [data-rtl="true"] ol.rtl-ol { direction: rtl !important; unicode-bidi: plaintext !important; list-style-position: inside !important; padding-right: 1.25rem !important; padding-left: 0 !important; }
-    [data-rtl="false"] ol.ltr-ol { direction: ltr !important; unicode-bidi: plaintext !important; list-style-position: inside !important; padding-left: 1.25rem !important; padding-right: 0 !important; }
-  `;
 
   if (error || !attempt) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 sm:p-10" data-rtl={ar ? "true" : "false"}>
-        <style dangerouslySetInnerHTML={{ __html: hardRtlCss }} />
-        <div className="max-w-3xl mx-auto bg-white border-2 border-slate-200 rounded-2xl md:rounded-3xl p-6 sm:p-10 text-center shadow-xl">
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 mb-4 sm:mb-6">{t.notFound}</div>
+      <div className="min-h-screen bg-slate-50 p-8 text-center" data-rtl={ar ? "true" : "false"}>
+        <div className="max-w-2xl mx-auto bg-white border rounded-3xl shadow-xl p-8">
+          <h1 className="text-3xl font-black text-slate-900">
+            {ar ? "التقرير غير موجود" : "Report not found"}
+          </h1>
           <Link
-            className="inline-flex items-center justify-center rounded-2xl bg-slate-900 text-white font-black px-6 sm:px-8 py-3 sm:py-4 hover:bg-slate-800 transition-all shadow-lg min-h-[48px]"
+            className="mt-6 inline-flex rounded-2xl bg-slate-900 text-white px-6 py-3 font-black"
             href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
           >
-            {t.backToResults}
+            {ar ? "العودة إلى النتائج" : "Back to Results"}
           </Link>
         </div>
       </div>
     );
   }
 
-  // ✅ load assessment config by slug (menu-driven)
   const assessment = await getAssessmentConfigServer(supabase, slug);
+  const mri = isMriReport(slug, (attempt as any).assessment_id);
 
-  // ✅ build competency label registry from DB config (menu-driven)
   const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
   const comps = Array.isArray((assessment as any)?.config?.competencies)
     ? (assessment as any).config.competencies
     : [];
+
   for (const c of comps) {
     const id = normalizeCompetencySafe(c?.id);
     if (!id) continue;
-    labelsFromConfig[id] = { en: String(c?.en || ""), ar: String(c?.ar || "") };
+    labelsFromConfig[id] = {
+      en: String(c?.en || ""),
+      ar: String(c?.ar || ""),
+    };
   }
 
-  function getCompetencyLabel(competencyId: string, lang: Language): string {
+  function getCompetencyLabel(competencyId: string): string {
     const key = normalizeCompetencySafe(competencyId);
-    const meta =
-      labelsFromConfig[key] ||
-      COMPETENCY_LABELS[key] ||
-      null;
+    const meta = labelsFromConfig[key] || COMPETENCY_LABELS[key] || null;
 
     if (meta) {
-      return lang === "ar" ? (meta.ar || meta.en || key) : (meta.en || meta.ar || key);
+      return ar ? meta.ar || meta.en || key : meta.en || meta.ar || key;
     }
-    return key;
+
+    return key.replace(/_/g, " ");
   }
 
-  // ✅ menu-driven titles/subtitles
-  const reportTitle =
-    (lang === "ar"
-      ? ((assessment as any)?.title_ar || (assessment as any)?.name_ar || "")
-      : ((assessment as any)?.title_en || (assessment as any)?.name_en || "")) || "";
-
-  const reportSubtitle =
-    (lang === "ar"
-      ? String((assessment as any)?.config?.subtitle_ar || "")
-      : String((assessment as any)?.config?.subtitle_en || "")) || "";
-
-  const mri = isMriReport(slug, (attempt as any).assessment_id);
-
-  const competencyResults: any[] = Array.isArray((attempt as any).competency_results)
+  const competencyResults = Array.isArray((attempt as any).competency_results)
     ? (attempt as any).competency_results
     : [];
+
+  const rows: CompetencyRow[] = competencyResults.map((raw: any) => {
+    const competencyId = normalizeCompetencySafe(raw?.competencyId || raw?.key);
+    const percentage = pct(raw?.percentage);
+    return {
+      competencyId,
+      label: getCompetencyLabel(competencyId),
+      percentage,
+      tier: tierFromPercentage(percentage),
+      score: Number(raw?.score || 0),
+      maxScore: Number(raw?.maxScore || 0),
+    };
+  });
+
+  const sortedRows = sortRows(rows);
+  const strongest = getStrongest(rows);
+  const weakest = getWeakest(rows);
+  const priorityRows = getPriorityRows(rows);
+
+  const strengths = rows.filter((r) => r.tier === "Strength");
+  const opportunities = rows.filter((r) => r.tier === "Opportunity");
+  const threats = rows.filter((r) => r.tier === "Threat");
+  const weaknesses = rows.filter((r) => r.tier === "Weakness");
 
   const overall = pct((attempt as any).total_percentage);
   const overallTier: Tier = tierFromPercentage(overall);
   const identity = extractIdentity(attempt);
 
-  // ✅ fallback titles if DB missing
-  const heroTitle = reportTitle || (mri ? t.mriFallbackTitle : (ar ? "تقرير كفاءات المبيعات" : "Sales Competency Report"));
-  const heroSubtitle =
-    reportSubtitle ||
-    (mri ? t.mriFallbackSubtitle : (ar ? "خارطة طريق تنفيذية كاملة مع خطوات قابلة للتنفيذ." : "Your complete execution roadmap with actionable next steps."));
+  const reportTitle =
+    (ar
+      ? (assessment as any)?.title_ar || (assessment as any)?.name_ar || ""
+      : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
+    (mri
+      ? ar
+        ? "تقرير Outdoor Sales MRI المتقدم"
+        : "Advanced Outdoor Sales MRI Report"
+      : ar
+      ? "فحص المبيعات الميدانية"
+      : "Outdoor Sales Scan");
+
+  const hardRtlCss = `
+    [data-rtl="true"] * { direction: rtl !important; }
+    [data-rtl="true"] .force-ltr { direction: ltr !important; text-align: left !important; unicode-bidi: isolate !important; }
+    [data-rtl="true"] .rtl-text { text-align: right !important; unicode-bidi: plaintext !important; }
+    [data-rtl="false"] .rtl-text { text-align: left !important; }
+    @media print {
+      .print-hide { display: none !important; }
+      .pdf-avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
+      .pdf-page-break { break-before: page !important; page-break-before: always !important; }
+      body { background: white !important; }
+    }
+  `;
+
+  const t = {
+    en: {
+      back: "Back to Results",
+      printNote: "For best PDF export: choose Save as PDF, turn on background graphics, and turn off browser headers and footers.",
+      badge: mri ? "Advanced Diagnostic Report" : "Sales Performance Blood Test",
+      subtitle: mri
+        ? "A deeper diagnostic view of your field sales performance patterns, hidden risks, and execution priorities."
+        : "A fast diagnostic scan of your seven core field sales signals — like a blood test for sales performance.",
+      overall: "Overall Sales Health Score",
+      participant: "Participant Identity",
+      health: "Sales Health Zone",
+      bloodPanel: mri ? "Competency Diagnostic Panel" : "7-Marker Sales Blood Panel",
+      bloodPanelSub: "Each score is a signal. The value is not the number alone, but what the number reveals about behavior in real selling situations.",
+      strongest: "Strongest Signal",
+      weakest: "Biggest Hidden Revenue Leak",
+      commercial: "Commercial Interpretation",
+      swot: "Strategic SWOT Analysis",
+      actions: "Priority Execution Plan",
+      mriUpsellTitle: "Your Scan Shows the Signal. The MRI Reveals the Cause.",
+      mriCta: `Unlock My Advanced Outdoor Sales MRI — $${MRI_LAUNCH_PRICE}`,
+      enterpriseTitle: "For Sales Managers & Business Owners",
+      enterpriseCta: "Diagnose the Team Before You Train the Team",
+    },
+    ar: {
+      back: "العودة إلى النتائج",
+      printNote: "لأفضل تصدير PDF: اختر Save as PDF، فعّل Background graphics، وألغِ ترويسات وتذييلات المتصفح.",
+      badge: mri ? "تقرير تشخيصي متقدم" : "فحص دم لأداء المبيعات",
+      subtitle: mri
+        ? "تشخيص أعمق لأنماط الأداء البيعي والمخاطر المخفية وأولويات التنفيذ."
+        : "فحص تشخيصي سريع لسبعة مؤشرات أساسية في أداء المبيعات الميدانية — كأنه فحص دم مهني للأداء.",
+      overall: "مؤشر الصحة البيعية العام",
+      participant: "هوية المشارك",
+      health: "منطقة الصحة البيعية",
+      bloodPanel: mri ? "لوحة التشخيص المتقدمة" : "لوحة المؤشرات السبعة",
+      bloodPanelSub: "كل نتيجة هي إشارة. القيمة ليست في الرقم وحده، بل في ما يكشفه الرقم عن السلوك أثناء البيع الحقيقي.",
+      strongest: "أقوى مؤشر",
+      weakest: "أكبر تسريب مخفي للفرص",
+      commercial: "التفسير التجاري",
+      swot: "تحليل SWOT الاستراتيجي",
+      actions: "خطة التنفيذ ذات الأولوية",
+      mriUpsellTitle: "الفحص كشف الإشارة. أما الـ MRI فيكشف السبب.",
+      mriCta: `افتح تقرير Outdoor Sales MRI المتقدم — $${MRI_LAUNCH_PRICE}`,
+      enterpriseTitle: "لمديري المبيعات وأصحاب الشركات",
+      enterpriseCta: "شخّص الفريق قبل أن تدرّبه",
+    },
+  }[lang];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" data-rtl={ar ? "true" : "false"}>
+    <div
+      dir={ar ? "rtl" : "ltr"}
+      data-rtl={ar ? "true" : "false"}
+      className="scan-pdf-container min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-slate-900"
+    >
       <style dangerouslySetInnerHTML={{ __html: hardRtlCss }} />
 
-      <main className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
-        {/* Top Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md border border-slate-200">
-          <div className="text-xs sm:text-sm text-slate-600 rtl-text font-bold">
-            {ar ? "معرّف المحاولة" : "Attempt ID"}:{" "}
-            <span className="font-mono text-blue-600 force-ltr">{shortAttemptId(attemptId)}</span>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 sm:space-y-10">
+        {/* TOP BAR */}
+        <div className="print-hide flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/85 backdrop-blur-sm rounded-2xl border border-slate-200 shadow-md p-4">
+          <div className="text-xs sm:text-sm text-slate-600 font-bold rtl-text">
+            {ar ? "معرّف التقرير" : "Report ID"}:{" "}
+            <span className="font-mono text-blue-700 force-ltr">{shortAttemptId(attemptId)}</span>
           </div>
 
           <Link
-            className="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-5 sm:px-6 py-2.5 sm:py-3 transition-all shadow-lg active:scale-95 text-sm sm:text-base min-h-[44px]"
             href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
+            className="inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-5 py-3 transition-all shadow-lg text-sm min-h-[44px]"
           >
-            {t.backToResults}
+            {t.back}
           </Link>
         </div>
 
-        {!mri && (
-          <>
-            {/* HERO */}
-            <section className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-slate-200">
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900" />
+        {/* COVER */}
+        <section className="pdf-avoid-break relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800/10">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900" />
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-blue-400 blur-3xl" />
+            <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-indigo-400 blur-3xl" />
+          </div>
 
-              <div className="absolute inset-0 overflow-hidden opacity-30">
-                <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-blue-400 blur-3xl animate-pulse" />
-                <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-indigo-400 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-purple-400 blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+          <div className="relative p-7 sm:p-10 md:p-14">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_.7fr] gap-8 lg:gap-12 items-center">
+              <div className="space-y-5 sm:space-y-6">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs sm:text-sm font-black text-blue-100 uppercase tracking-widest">
+                  🧪 {t.badge}
+                </div>
+
+                <div>
+                  <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white leading-tight rtl-text">
+                    {reportTitle}
+                  </h1>
+                  <p className="mt-4 text-base sm:text-xl text-blue-100 leading-relaxed max-w-3xl rtl-text">
+                    {t.subtitle}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <InfoChip label={ar ? "الاسم" : "Name"} value={identity.fullName} />
+                  <InfoChip label={ar ? "الشركة" : "Company"} value={identity.company} />
+                  <InfoChip label={ar ? "البريد" : "Email"} value={identity.email} forceLtr />
+                </div>
               </div>
 
-              <div className="relative p-6 sm:p-10 md:p-12 lg:p-16">
-                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-                  <div className="flex-1 space-y-4 sm:space-y-6 text-center lg:text-start">
-                    <div className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-blue-500/20 border-2 border-blue-400/30 text-blue-200 text-xs sm:text-sm font-black uppercase tracking-wider backdrop-blur-sm">
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {ar ? "تقرير ويب احترافي" : "Professional Web Report"}
+              <div className="relative flex justify-center">
+                <div className="relative h-64 w-64 sm:h-72 sm:w-72 rounded-full border-[12px] border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-2xl">
+                  <div className="absolute inset-6 rounded-full border border-white/10" />
+                  <div className="text-center">
+                    <div className="text-6xl sm:text-7xl font-black text-white">{overall}%</div>
+                    <div className="mt-2 text-xs font-black uppercase tracking-widest text-blue-100">
+                      {t.overall}
                     </div>
-
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight rtl-text drop-shadow-lg">
-                      {heroTitle}
-                    </h1>
-
-                    <p className="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed rtl-text max-w-2xl">
-                      {heroSubtitle}
-                    </p>
-                  </div>
-
-                  <div className="w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[340px] aspect-square relative flex items-center justify-center">
-                    <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-white/10 backdrop-blur-md" />
-                    <div className="absolute inset-2 sm:inset-4 rounded-full border-2 sm:border-4 border-white/5" />
-                    <div className="absolute inset-4 sm:inset-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 blur-2xl opacity-60 animate-pulse" />
-
-                    <div className="relative z-10 text-center space-y-2 sm:space-y-4">
-                      <div className="text-6xl sm:text-7xl lg:text-8xl font-black text-white drop-shadow-2xl">
-                        {overall}%
-                      </div>
-                      <div className="text-xs sm:text-sm font-black text-blue-200 uppercase tracking-widest px-2 sm:px-4">
-                        {t.overall}
-                      </div>
-
-                      <div className="flex items-center justify-center pt-1 sm:pt-2">
-                        <span className={`inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-black shadow-xl ${tierBadgeClass(overallTier)}`}>
-                          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                          {getTierLabel(overallTier, lang)}
-                        </span>
-                      </div>
+                    <div className="mt-4">
+                      <span className={`inline-flex rounded-full px-4 py-2 text-sm font-black ${tierBadgeClass(overallTier)}`}>
+                        {getTierLabel(overallTier, lang)}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
-            </section>
+            </div>
 
-            {/* IDENTITY CARD */}
-            <section className="relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl">
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-gradient-to-br from-blue-200 to-indigo-300 blur-3xl opacity-40" />
-                <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-gradient-to-br from-purple-200 to-blue-300 blur-3xl opacity-30" />
+            <p className="print-hide mt-7 text-xs sm:text-sm text-blue-100/80 rtl-text">
+              {t.printNote}
+            </p>
+          </div>
+        </section>
+
+        {/* OVERALL DIAGNOSIS */}
+        <section className="pdf-avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+          {sectionTitle(t.overall, ar ? "قراءة تشخيصية سريعة لما تكشفه النتيجة العامة." : "A quick diagnostic reading of what the overall score reveals.")}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="rounded-3xl bg-slate-950 text-white p-6 shadow-xl">
+              <div className="text-sm font-black text-blue-200 uppercase tracking-widest">{t.health}</div>
+              <div className="mt-3 text-3xl font-black rtl-text">{healthLabel(overall, lang)}</div>
+              <div className="mt-4">
+                <span className={`inline-flex rounded-full px-4 py-2 text-sm font-black ${tierBadgeClass(overallTier)}`}>
+                  {overall}% · {getTierLabel(overallTier, lang)}
+                </span>
               </div>
+            </div>
 
-              <div className="relative p-5 sm:p-6 md:p-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5 md:mb-6">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                      <div className="text-base sm:text-lg font-black text-slate-900">
-                        {ar ? "بطاقة هوية المشارك" : "Participant Identity Card"}
-                      </div>
+            <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+              <h3 className="text-xl font-black text-slate-950 rtl-text">
+                {ar ? "ما الذي يعنيه هذا تجاريًا؟" : "What this means commercially"}
+              </h3>
+              <p className="mt-3 text-slate-700 leading-relaxed rtl-text">
+                {ar
+                  ? `هذه النتيجة لا تعني أنك جيد أو سيئ بصورة عامة. إنها تكشف نمطًا سلوكيًا يظهر تحت ضغط البيع الحقيقي. عندما تكون النتيجة في منطقة ${getTierLabel(
+                      overallTier,
+                      lang
+                    )}، فهذا يعني أن هناك إشارات واضحة يجب قراءتها قبل محاولة إصلاح الأداء بالتخمين.`
+                  : `This score does not simply say whether you are “good” or “bad.” It reveals a behavioral pattern that appears under real sales pressure. When the result sits in the ${getTierLabel(
+                      overallTier,
+                      lang
+                    )} zone, it means there are visible signals that should be diagnosed before performance is improved by guesswork.`}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* BLOOD PANEL */}
+        <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+          {sectionTitle(t.bloodPanel, t.bloodPanelSub)}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {sortedRows.map((row, idx) => (
+              <div key={`${row.competencyId}-${idx}`} className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(row.tier)} p-5 shadow-sm`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                      {ar ? "المؤشر" : `Marker ${idx + 1}`}
                     </div>
-                    <div className="text-xs sm:text-sm text-slate-600">
-                      {ar ? "هوية احترافية عالمية المستوى — جاهزة للمشاركة والأرشفة." : "World-class professional identity — ready for sharing and archiving."}
-                    </div>
+                    <h3 className="mt-1 text-xl font-black text-slate-950 rtl-text">{row.label}</h3>
                   </div>
 
-                  <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-slate-300 px-3 sm:px-4 py-2 sm:py-2.5 bg-white shadow-sm self-start sm:self-auto">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-                    </svg>
-                    <span className="text-xs sm:text-sm font-black text-slate-700">
-                      ID: <span className="font-mono text-blue-600 force-ltr">{shortAttemptId(attemptId) || "—"}</span>
+                  <div className="text-right force-ltr">
+                    <div className="text-3xl font-black text-slate-950">{row.percentage}%</div>
+                    <span className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(row.tier)}`}>
+                      {getTierLabel(row.tier, lang)}
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-                  <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-start gap-3 md:gap-4">
-                      <div className="shrink-0 inline-flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
-                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 rtl-text">
-                          {ar ? "الاسم الكامل" : "Full Name"}
-                        </div>
-                        <div className="text-sm sm:text-base font-bold text-slate-900 break-words leading-tight rtl-text">
-                          {identity.fullName || "—"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-start gap-3 md:gap-4">
-                      <div className="shrink-0 inline-flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md">
-                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 rtl-text">
-                          {ar ? "البريد الإلكتروني" : "Email"}
-                        </div>
-                        <div className="text-sm sm:text-base font-bold text-slate-900 break-words leading-tight force-ltr">
-                          {identity.email || "—"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-start gap-3 md:gap-4">
-                      <div className="shrink-0 inline-flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
-                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 rtl-text">
-                          {ar ? "الشركة" : "Company"}
-                        </div>
-                        <div className="text-sm sm:text-base font-bold text-slate-900 break-words leading-tight rtl-text">
-                          {identity.company || "—"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="mt-4 h-3 rounded-full bg-white/80 overflow-hidden border border-slate-200">
+                  <div className="h-full rounded-full bg-slate-900" style={{ width: `${row.percentage}%` }} />
                 </div>
-              </div>
-            </section>
 
-            {/* EXECUTION ROADMAP */}
-            <section className="space-y-6 sm:space-y-8">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
-                  <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">{t.recommendations}</h2>
+                <p className="mt-4 text-sm font-semibold text-slate-700 leading-relaxed rtl-text">
+                  {shortDiagnosis(row.tier, lang)}
+                </p>
+                <p className="mt-2 text-sm text-slate-600 leading-relaxed rtl-text">
+                  {commercialMeaning(row.tier, row.label, lang)}
+                </p>
               </div>
+            ))}
+          </div>
+        </section>
 
-              <ActionableExecutionCard
-                ar={ar}
-                titleAr="النتيجة الإجمالية"
-                titleEn="Overall Score"
-                descAr="هذا يلخص نمطك الكامل تحت الضغط — ما يختبره العميل فعليًا."
-                descEn="Your complete pattern under pressure — what prospects actually experience."
-                tier={overallTier}
-                percentage={overall}
-                recommendations={getRecommendations("overall_score", overallTier, lang)}
-                t={t}
+        {/* STRONGEST / WEAKEST */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <SignalCard
+            title={t.strongest}
+            row={strongest}
+            lang={lang}
+            description={
+              ar
+                ? "هذه هي المنطقة التي يمكن استخدامها كرافعة للأداء، لأنها تكشف سلوكًا يدعم الثقة والتحكم في المحادثة."
+                : "This is the area you can use as leverage because it reveals a behavior that supports confidence and sales control."
+            }
+          />
+
+          <SignalCard
+            title={t.weakest}
+            row={weakest}
+            lang={lang}
+            description={
+              ar
+                ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه تسريب الفرص دون أن يكون واضحًا في البداية."
+                : "This is not just a low score. It is often where opportunity leakage begins before it becomes obvious."
+            }
+          />
+        </section>
+
+        {/* COMMERCIAL INTERPRETATION */}
+        <section className="pdf-avoid-break rounded-3xl bg-gradient-to-br from-slate-950 to-blue-950 text-white shadow-2xl p-6 sm:p-8">
+          {sectionTitle(t.commercial)}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <DarkInsight
+              title={ar ? "ما يشعر به العميل" : "What prospects experience"}
+              body={
+                ar
+                  ? "العميل لا يرى درجاتك. هو يشعر بطريقة افتتاحك، عمق أسئلتك، صبرك مع الاعتراضات، وقدرتك على المتابعة."
+                  : "Prospects do not see your score. They experience your opening, question depth, patience with objections, and follow-up discipline."
+              }
+            />
+
+            <DarkInsight
+              title={ar ? "أين يحدث التسريب" : "Where leakage happens"}
+              body={
+                weakest
+                  ? ar
+                    ? `أكبر تسريب ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
+                    : `The clearest leakage signal is currently connected to ${weakest.label}. This area may stall or weaken opportunities before the real reason is visible.`
+                  : ar
+                  ? "لا توجد بيانات كافية لتحديد منطقة التسريب."
+                  : "There is not enough data to identify the leakage area."
+              }
+            />
+
+            <DarkInsight
+              title={ar ? "ما يجب إصلاحه أولًا" : "What to fix first"}
+              body={
+                ar
+                  ? "لا تبدأ بإصلاح كل شيء. ابدأ بالمؤشر الأضعف، ثم المؤشر الواقع في منطقة الخطر، ثم حوّل نقاط القوة إلى روتين يومي."
+                  : "Do not try to fix everything first. Start with the weakest marker, then the warning-zone marker, then turn your strengths into daily routines."
+              }
+            />
+          </div>
+        </section>
+
+        {/* SWOT */}
+        <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+          {sectionTitle(
+            t.swot,
+            ar
+              ? "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج في الأداء البيعي الحقيقي."
+              : "Not just a category list — a practical reading of what the results mean in real sales performance."
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SwotBox
+              title={ar ? "نقاط القوة" : "Strengths"}
+              tier="Strength"
+              rows={strengths}
+              empty={ar ? "لا توجد نقاط قوة واضحة حتى الآن." : "No clear strengths yet."}
+              explanation={
+                ar
+                  ? "هذه المناطق يمكن تحويلها إلى عادات ثابتة تدعم بقية الأداء."
+                  : "These areas can be turned into repeatable habits that support the rest of the performance."
+              }
+              lang={lang}
+            />
+
+            <SwotBox
+              title={ar ? "الفرص" : "Opportunities"}
+              tier="Opportunity"
+              rows={opportunities}
+              empty={ar ? "لا توجد فرص مصنفة هنا." : "No opportunities listed here."}
+              explanation={
+                ar
+                  ? "هذه المناطق ليست ضعيفة، لكنها تحتاج إلى تنظيم وممارسة حتى تصبح مصدر قوة."
+                  : "These areas are not broken, but they need structure and practice before they become strengths."
+              }
+              lang={lang}
+            />
+
+            <SwotBox
+              title={ar ? "التهديدات" : "Threats"}
+              tier="Threat"
+              rows={threats}
+              empty={ar ? "لا توجد مناطق خطر واضحة." : "No clear threats listed."}
+              explanation={
+                ar
+                  ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في البايبلاين والمتابعة والثقة."
+                  : "These are warning signals. If left untreated, they may create leakage in pipeline movement, follow-up, or confidence."
+              }
+              lang={lang}
+            />
+
+            <SwotBox
+              title={ar ? "نقاط الضعف" : "Weaknesses"}
+              tier="Weakness"
+              rows={weaknesses}
+              empty={ar ? "لا توجد نقاط ضعف مصنفة هنا." : "No weaknesses listed here."}
+              explanation={
+                ar
+                  ? "هذه المناطق تحتاج إلى تدخل مباشر، لأنها غالبًا تؤثر على الانطباع الأول أو تقدم الصفقة."
+                  : "These areas need direct intervention because they often affect first impressions or deal progression."
+              }
+              lang={lang}
+            />
+          </div>
+        </section>
+
+        {/* PRIORITY ACTIONS */}
+        <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+          {sectionTitle(
+            t.actions,
+            ar
+              ? "اخترنا لك التوصيات حسب المناطق الأضعف والأكثر خطورة، وليس بصورة عامة."
+              : "These recommendations are selected from your weakest and highest-risk areas, not from generic advice."
+          )}
+
+          <div className="space-y-5">
+            <ActionBlock
+              index={1}
+              title={ar ? "أولوية عامة" : "Overall Priority"}
+              tier={overallTier}
+              percentage={overall}
+              recommendations={getRecommendations("overall_score", overallTier, lang)}
+              lang={lang}
+            />
+
+            {priorityRows.map((row, idx) => (
+              <ActionBlock
+                key={row.competencyId}
+                index={idx + 2}
+                title={row.label}
+                tier={row.tier}
+                percentage={row.percentage}
+                recommendations={getRecommendations(row.competencyId, row.tier, lang)}
+                lang={lang}
               />
+            ))}
+          </div>
+        </section>
 
-              {competencyResults.map((raw: any) => {
-                const competencyId = normalizeCompetencySafe(raw?.competencyId);
-                const percentage = pct(raw?.percentage);
-                const tier: Tier = tierFromPercentage(percentage);
-                const recs = getRecommendations(competencyId, tier, lang);
-
-                return (
-                  <ActionableExecutionCard
-                    key={competencyId}
-                    ar={ar}
-                    titleAr={getCompetencyLabel(competencyId, lang)}
-                    titleEn={getCompetencyLabel(competencyId, lang)}
-                    tier={tier}
-                    percentage={percentage}
-                    recommendations={recs}
-                    t={t}
-                  />
-                );
-              })}
-            </section>
-          </>
-        )}
-
-        {mri && (
-          <section className="bg-white border-2 border-slate-200 rounded-2xl md:rounded-3xl p-8 sm:p-10 md:p-12 shadow-xl">
-            <div className="text-center space-y-3 sm:space-y-4">
-              <div className="inline-block p-3 sm:p-4 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl mb-3 sm:mb-4">
-                <svg className="w-10 h-10 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+        {/* MRI UPSELL */}
+        {!mri && (
+          <section className="pdf-avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
+            <div className="bg-gradient-to-br from-indigo-950 via-blue-950 to-slate-950 text-white p-7 sm:p-10">
+              <div className="inline-flex rounded-full bg-white/10 border border-white/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
+                {ar ? "الخطوة التالية" : "Next Diagnostic Step"}
               </div>
-              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 rtl-text">{heroTitle}</h1>
-              <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto rtl-text">{heroSubtitle}</p>
+
+              <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
+                {t.mriUpsellTitle}
+              </h2>
+
+              <p className="mt-5 text-base sm:text-xl leading-relaxed text-blue-100 max-w-4xl rtl-text">
+                {ar
+                  ? "الفحص المجاني كشف الإشارات الظاهرة عبر ٧ مناطق بيعية أساسية. لكنه لا يكشف كل الأسباب. تقرير Outdoor Sales MRI المتقدم يدخل بعمق عبر ١٥ كفاءة ليكشف السبب، الخطر التجاري، ترتيب الأولويات، وخارطة طريق عملية لمدة ٩٠ يومًا."
+                  : "Your free scan has identified the visible signals across 7 core sales areas. But a signal is not the full diagnosis. The Advanced Outdoor Sales MRI goes deeper across 15 competencies to reveal the cause, the commercial risk, the priority order, and a practical 90-day roadmap."}
+              </p>
+
+              <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  ar ? "١٥ كفاءة بدل ٧" : "15 competencies instead of 7",
+                  ar ? "تحليل SWOT أعمق" : "Deeper SWOT analysis",
+                  ar ? "تشخيص تسريب الفرص" : "Revenue leakage diagnosis",
+                  ar ? "تحذيرات المخاطر غير المعالجة" : "Untreated risk warnings",
+                  ar ? "ترتيب أولويات التطوير" : "Priority development order",
+                  ar ? "خارطة طريق ٩٠ يومًا" : "90-day action roadmap",
+                ].map((x) => (
+                  <div key={x} className="rounded-2xl bg-white/10 border border-white/15 p-4 text-sm font-bold text-white/95 rtl-text">
+                    ✓ {x}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 rounded-3xl bg-white text-slate-950 p-6 sm:p-8 max-w-xl shadow-2xl">
+                <div className="text-sm font-black text-slate-500 line-through">
+                  {ar ? "السعر الرسمي" : "Regular Price"} ${MRI_REGULAR_PRICE}
+                </div>
+
+                <div className="mt-2 text-5xl font-black">
+                  ${MRI_LAUNCH_PRICE}
+                </div>
+
+                <div className="mt-2 inline-flex rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-black">
+                  {ar ? "سعر الإطلاق لفترة محدودة" : "Limited Launch Price"}
+                </div>
+
+                <a
+                  href={MRI_CHECKOUT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="print-hide mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 px-6 py-4 font-black shadow-xl hover:from-amber-300 hover:to-orange-400 transition"
+                >
+                  🚀 {t.mriCta}
+                </a>
+
+                <p className="mt-3 text-xs text-slate-500 rtl-text">
+                  {ar
+                    ? "سيتم ربط هذا الزر لاحقًا برابط الدفع في New Zenler."
+                    : "This button will be connected to your New Zenler checkout link."}
+                </p>
+              </div>
             </div>
           </section>
         )}
+
+        {/* ENTERPRISE CTA */}
+        <section className="pdf-avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-6 items-center">
+            <div>
+              <div className="inline-flex rounded-full bg-amber-100 text-amber-800 px-4 py-2 text-xs font-black uppercase tracking-widest">
+                B2B / Team Diagnostic
+              </div>
+              <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-950 rtl-text">
+                {t.enterpriseTitle}
+              </h2>
+              <p className="mt-3 text-lg font-black text-blue-800 rtl-text">
+                {t.enterpriseCta}
+              </p>
+            </div>
+
+            <div className="space-y-3 text-slate-700 leading-relaxed rtl-text">
+              <p>
+                {ar
+                  ? "إذا كان هذا الفحص مفيدًا لفرد واحد، فقيمته الحقيقية تظهر عندما يستخدمه المدير مع الفريق بالكامل. عندها لا يرى المدير آراء عامة، بل خريطة واضحة لمناطق القوة والتسريب والتدريب المطلوب."
+                  : "If this scan is useful for one person, its real value appears when a manager uses it across the whole team. The manager no longer sees opinions — they see a diagnostic map of strengths, leakage areas, and training priorities."}
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(ar
+                  ? ["خريطة حرارة للفريق", "أقوى ٣ مناطق", "أخطر ٣ فجوات", "أولويات تدريب واضحة"]
+                  : ["Team heatmap", "Top 3 strengths", "Top 3 risk gaps", "Clear training priorities"]
+                ).map((x) => (
+                  <div key={x} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 font-bold">
+                    ✓ {x}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
 }
 
-function ActionableExecutionCard({
-  ar,
-  titleAr,
-  titleEn,
-  descAr,
-  descEn,
+function InfoChip({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
+  return (
+    <div className="rounded-2xl bg-white/10 border border-white/15 p-4 backdrop-blur-md">
+      <div className="text-[10px] font-black uppercase tracking-widest text-blue-100">{label}</div>
+      <div className={`mt-1 text-sm font-bold text-white break-words ${forceLtr ? "force-ltr" : "rtl-text"}`}>
+        {value || "—"}
+      </div>
+    </div>
+  );
+}
+
+function SignalCard({
+  title,
+  row,
+  lang,
+  description,
+}: {
+  title: string;
+  row: CompetencyRow | null;
+  lang: Language;
+  description: string;
+}) {
+  if (!row) {
+    return (
+      <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6">
+        <h2 className="text-2xl font-black text-slate-950 rtl-text">{title}</h2>
+        <p className="mt-3 text-slate-600 rtl-text">{lang === "ar" ? "لا توجد بيانات كافية." : "Not enough data."}</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(row.tier)} shadow-xl p-6`}>
+      <h2 className="text-2xl font-black text-slate-950 rtl-text">{title}</h2>
+
+      <div className="mt-4 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-black text-slate-900 rtl-text">{row.label}</h3>
+          <p className="mt-2 text-slate-700 leading-relaxed rtl-text">{description}</p>
+        </div>
+
+        <div className="force-ltr text-right">
+          <div className="text-4xl font-black text-slate-950">{row.percentage}%</div>
+          <span className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(row.tier)}`}>
+            {getTierLabel(row.tier, lang)}
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DarkInsight({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-3xl bg-white/10 border border-white/15 p-5">
+      <h3 className="text-lg font-black text-white rtl-text">{title}</h3>
+      <p className="mt-3 text-sm leading-relaxed text-blue-100 rtl-text">{body}</p>
+    </div>
+  );
+}
+
+function SwotBox({
+  title,
+  tier,
+  rows,
+  empty,
+  explanation,
+  lang,
+}: {
+  title: string;
+  tier: Tier;
+  rows: CompetencyRow[];
+  empty: string;
+  explanation: string;
+  lang: Language;
+}) {
+  return (
+    <div className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(tier)} p-5`}>
+      <div className="flex items-center justify-between gap-4">
+        <h3 className={`text-xl font-black rtl-text ${tierTextClass(tier)}`}>{title}</h3>
+        <span className={`rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(tier)}`}>
+          {rows.length}
+        </span>
+      </div>
+
+      <p className="mt-3 text-sm text-slate-700 leading-relaxed rtl-text">{explanation}</p>
+
+      <div className="mt-4 space-y-2">
+        {rows.length ? (
+          rows.map((r) => (
+            <div key={r.competencyId} className="rounded-2xl bg-white/70 border border-white p-3 flex items-center justify-between gap-3">
+              <span className="text-sm font-bold text-slate-800 rtl-text">{r.label}</span>
+              <span className="text-sm font-black text-slate-950 force-ltr">{r.percentage}%</span>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-2xl bg-white/70 border border-white p-3 text-sm italic text-slate-600 rtl-text">
+            {empty}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ActionBlock({
+  index,
+  title,
   tier,
   percentage,
   recommendations,
-  t,
+  lang,
 }: {
-  ar: boolean;
-  titleAr: string;
-  titleEn: string;
-  descAr?: string;
-  descEn?: string;
+  index: number;
+  title: string;
   tier: Tier;
-  percentage?: number;
+  percentage: number;
   recommendations: string[];
-  t: any;
+  lang: Language;
 }) {
-  const parseTimeframe = (rec: string): string => {
-    const s = String(rec || "");
-    const low = s.toLowerCase();
-    if (low.includes("today")) return ar ? "اليوم" : "Today";
-    if (low.includes("7 days") || low.includes("for 7 days")) return ar ? "7 أيام" : "7 Days";
-    return ar ? "هذا الأسبوع" : "This Week";
-  };
+  const clean = recommendations.map(cleanRecommendation).filter(Boolean).slice(0, 3);
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-white/20 ${tierCardBgClass(tier)}`}>
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 right-0 h-60 w-60 rounded-full bg-white blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-60 w-60 rounded-full bg-white blur-3xl" />
+    <div className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(tier)} p-5 sm:p-6`}>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <div className="text-xs font-black text-slate-500 uppercase tracking-widest">
+            {lang === "ar" ? `أولوية ${index}` : `Priority ${index}`}
+          </div>
+          <h3 className="mt-1 text-2xl font-black text-slate-950 rtl-text">{title}</h3>
+        </div>
+
+        <div className="force-ltr">
+          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(tier)}`}>
+            {percentage}% · {getTierLabel(tier, lang)}
+          </span>
+        </div>
       </div>
 
-      <div className="relative p-5 sm:p-6 md:p-8 lg:p-10">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="flex-1 space-y-1.5 sm:space-y-2">
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white drop-shadow-lg rtl-text">
-              {ar ? titleAr : titleEn}
-            </h3>
-            {(descAr || descEn) && (
-              <p className="text-sm sm:text-base text-white/90 leading-relaxed rtl-text">
-                {ar ? descAr : descEn}
-              </p>
-            )}
-          </div>
-
-          {percentage !== undefined && (
-            <div className="shrink-0 text-center bg-white/20 backdrop-blur-md rounded-2xl md:rounded-3xl border-2 border-white/30 p-4 sm:p-5 md:p-6 min-w-[120px] sm:min-w-[140px] shadow-xl self-start md:self-auto">
-              <div className="text-3xl sm:text-4xl font-black text-white drop-shadow-md">{percentage}%</div>
-              <div className="text-[10px] sm:text-xs font-black text-white/80 uppercase tracking-widest mt-1.5 sm:mt-2">{t.score}</div>
-            </div>
-          )}
-        </div>
-
-        <div className="mb-5 sm:mb-6">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-black text-xs sm:text-sm">
-            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            {t.top3}
-          </div>
-        </div>
-
-        <div className="space-y-4 sm:space-y-5">
-          {recommendations.length ? (
-            recommendations.slice(0, 3).map((rec, idx) => {
-              const timeframe = parseTimeframe(rec);
-
-              return (
-                <div
-                  key={idx}
-                  className={`group rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg hover:shadow-xl transition-all border-2 border-white/50 hover:scale-[1.02] ${tierSoftBg(
-                    tier
-                  )}`}
-                >
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="shrink-0 flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white font-black text-base sm:text-lg shadow-md">
-                      {idx + 1}
-                    </div>
-
-                    <div className="flex-1 space-y-2.5 sm:space-y-3">
-                      <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-white border-2 border-slate-200 text-slate-700 text-xs font-black shadow-sm">
-                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {timeframe}
-                      </div>
-
-                      <p className="text-slate-800 text-sm sm:text-base font-medium leading-relaxed rtl-text">
-                        {rec}
-                      </p>
-                    </div>
-                  </div>
+      <div className="mt-5 grid grid-cols-1 gap-3">
+        {clean.length ? (
+          clean.map((rec, i) => (
+            <div key={i} className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+              <div className="flex gap-3">
+                <div className="shrink-0 h-8 w-8 rounded-xl bg-slate-950 text-white flex items-center justify-center font-black">
+                  {i + 1}
                 </div>
-              );
-            })
-          ) : (
-            <div className="bg-white/90 rounded-2xl p-5 sm:p-6 text-center">
-              <p className="text-slate-600 text-sm sm:text-base italic rtl-text">
-                {ar ? "لا توجد توصيات متاحة." : "No recommendations available."}
-              </p>
+                <p className="text-sm sm:text-base text-slate-700 leading-relaxed rtl-text">{rec}</p>
+              </div>
             </div>
-          )}
-        </div>
+          ))
+        ) : (
+          <div className="rounded-2xl bg-white border border-slate-200 p-4 text-slate-600 italic rtl-text">
+            {lang === "ar" ? "لا توجد توصيات متاحة لهذه المنطقة." : "No recommendations available for this area."}
+          </div>
+        )}
       </div>
     </div>
   );
