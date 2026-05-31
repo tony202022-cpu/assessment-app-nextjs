@@ -1,1006 +1,743 @@
+// FILE: app/(site)/[slug]/report/page.tsx
+import "server-only";
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import { getRecommendations as getPdfRecommendations } from "@/lib/pdf-recommendations";
+import {
+  getRecommendations,
+  Tier,
+  Language,
+  normalizeCompetencyId,
+  tierFromPercentage,
+} from "@/lib/pdf-recommendations";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// ✅ local fallback (safe)
+const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
+  mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
+  opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
+  identifying_real_needs: { en: "Identifying Real Needs", ar: "تحديد الاحتياجات الحقيقية" },
+  handling_objections: { en: "Handling Objections", ar: "التعامل مع الاعتراضات" },
+  creating_irresistible_offers: { en: "Creating Irresistible Offers", ar: "إنشاء عروض لا تُقاوَم" },
+  mastering_closing: { en: "Mastering Closing", ar: "إتقان الإغلاق" },
+  follow_up_discipline: { en: "Follow-Up Discipline", ar: "انضباط المتابعة" },
+  // MRI extras
+  consultative_selling: { en: "Consultative Selling", ar: "المبيعات الاستشارية" },
+  time_territory_management: { en: "Time & Territory Management", ar: "إدارة الوقت والمنطقة" },
+  product_expertise: { en: "Product Expertise", ar: "الخبرة في المنتج" },
+  negotiation_skills: { en: "Negotiation Skills", ar: "مهارات التفاوض" },
+  attitude_motivation_mindset: { en: "Attitude & Motivation", ar: "عقلية التحفيز والموقف" },
+  dealing_with_boss: { en: "Dealing with Boss", ar: "التعامل مع المدير" },
+  handling_difficult_customers: { en: "Difficult Customers", ar: "التعامل مع العملاء الصعبين" },
+  handling_difficult_colleagues: { en: "Difficult Colleagues", ar: "التعامل مع الزملاء الصعبين" },
 
-// ======================================================
-// OUTDOOR SALES SCAN PDF REPORT
-// Safe full-file replacement.
-// Does not touch Supabase schema, quiz logic, scoring, login, timer, or randomization.
-// ======================================================
-
-const MRI_CHECKOUT_URL = "PASTE_NEW_ZENLER_MRI_LINK_HERE";
-const MRI_REGULAR_PRICE = 297;
-const MRI_LAUNCH_PRICE = 149;
-
-type Lang = "en" | "ar";
-type Tier = "Strength" | "Opportunity" | "Weakness" | "Threat";
-
-type CompetencyKey =
-  | "mental_toughness"
-  | "opening_conversations"
-  | "identifying_real_needs"
-  | "handling_objections"
-  | "creating_irresistible_offers"
-  | "mastering_closing"
-  | "follow_up_discipline"
-  | "consultative_selling"
-  | "time_territory_management"
-  | "product_expertise"
-  | "negotiation_skills"
-  | "attitude_motivation_mindset"
-  | "dealing_with_boss"
-  | "handling_difficult_customers"
-  | "handling_difficult_colleagues";
-
-const COMPETENCIES: { key: CompetencyKey; labelEn: string; labelAr: string }[] = [
-  { key: "mental_toughness", labelEn: "Mental Toughness", labelAr: "الصلابة الذهنية" },
-  { key: "opening_conversations", labelEn: "Opening Conversations", labelAr: "فتح المحادثات" },
-  { key: "identifying_real_needs", labelEn: "Identifying Real Needs", labelAr: "تحديد الاحتياجات الحقيقية" },
-  { key: "handling_objections", labelEn: "Handling Objections", labelAr: "التعامل مع الاعتراضات" },
-  { key: "creating_irresistible_offers", labelEn: "Creating Irresistible Offers", labelAr: "إنشاء عروض لا تُقاوَم" },
-  { key: "mastering_closing", labelEn: "Mastering Closing", labelAr: "إتقان الإغلاق" },
-  { key: "follow_up_discipline", labelEn: "Follow-Up Discipline", labelAr: "انضباط المتابعة" },
-];
-
-const COMPETENCY_ALIASES: Record<string, CompetencyKey> = {
-  mental_toughness: "mental_toughness",
-  opening_conversations: "opening_conversations",
-  identifying_real_needs: "identifying_real_needs",
-  handling_objections: "handling_objections",
-  destroying_objections: "handling_objections",
-  creating_irresistible_offers: "creating_irresistible_offers",
-  mastering_closing: "mastering_closing",
-  follow_up_discipline: "follow_up_discipline",
-
-  "mental toughness": "mental_toughness",
-  "opening conversations": "opening_conversations",
-  "identifying real needs": "identifying_real_needs",
-  "handling objections": "handling_objections",
-  "destroying objections": "handling_objections",
-  "creating irresistible offers": "creating_irresistible_offers",
-  "mastering closing": "mastering_closing",
-  "follow-up discipline": "follow_up_discipline",
 };
 
-function normalizeCompetencyKey(input: any): CompetencyKey | null {
-  const raw = String(input ?? "").trim().toLowerCase().replace(/[\s-]+/g, "_");
-  return COMPETENCY_ALIASES[raw] ?? null;
+function normalizeCompetencySafe(raw: any) {
+  const id = normalizeCompetencyId(String(raw || ""));
+  if (id === "destroying_objections") return "handling_objections";
+  return id;
 }
 
-function clamp(n: any, min = 0, max = 100): number {
-  const x = Math.round(Number(n) || 0);
-  return Math.max(min, Math.min(max, x));
+const TIER_LABELS: Record<Tier, { en: string; ar: string }> = {
+  Strength: { en: "Strength", ar: "نقطة قوة" },
+  Opportunity: { en: "Opportunity", ar: "فرصة" },
+  Weakness: { en: "Weakness", ar: "نقطة ضعف" },
+  Threat: { en: "Threat", ar: "تهديد" },
+};
+
+function getTierLabel(tier: Tier, lang: Language) {
+  const meta = TIER_LABELS[tier] || { en: String(tier), ar: String(tier) };
+  return lang === "ar" ? meta.ar : meta.en;
 }
 
-function formatDate(iso: any, lang: Lang): string {
-  try {
-    const d = new Date(String(iso));
-    if (isNaN(d.getTime())) return "—";
-
-    const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-
-    const day = d.getUTCDate();
-    const month = d.getUTCMonth();
-    const year = d.getUTCFullYear();
-
-    return lang === "ar" ? `${day} ${monthsAr[month]} ${year}` : `${monthsEn[month]} ${day}, ${year}`;
-  } catch {
-    return "—";
+function tierCardBgClass(tier: Tier) {
+  switch (tier) {
+    case "Strength":
+      return "bg-gradient-to-br from-emerald-500 to-green-600";
+    case "Opportunity":
+      return "bg-gradient-to-br from-blue-500 to-cyan-600";
+    case "Weakness":
+      return "bg-gradient-to-br from-rose-500 to-red-600";
+    case "Threat":
+    default:
+      return "bg-gradient-to-br from-amber-400 to-orange-500";
   }
 }
 
-// IMPORTANT: Standardized tier logic.
-// Strength: 75+
-// Opportunity: 50–74
-// Threat: 30–49
-// Weakness: 0–29
-function tierFromPct(pct: number): Tier {
-  if (pct >= 75) return "Strength";
-  if (pct >= 50) return "Opportunity";
-  if (pct >= 30) return "Threat";
-  return "Weakness";
+function tierBadgeClass(tier: Tier) {
+  switch (tier) {
+    case "Strength":
+      return "bg-emerald-600 text-white";
+    case "Opportunity":
+      return "bg-blue-600 text-white";
+    case "Weakness":
+      return "bg-rose-600 text-white";
+    case "Threat":
+    default:
+      return "bg-amber-500 text-white";
+  }
 }
 
-function tierLabel(tier: Tier, lang: Lang): string {
-  const labels: Record<Tier, { en: string; ar: string }> = {
-    Strength: { en: "Strength", ar: "قوة" },
-    Opportunity: { en: "Opportunity", ar: "فرصة" },
-    Threat: { en: "Threat", ar: "تهديد" },
-    Weakness: { en: "Weakness", ar: "ضعف" },
-  };
-  return labels[tier][lang];
+function tierSoftBg(tier: Tier) {
+  switch (tier) {
+    case "Strength":
+      return "bg-gradient-to-br from-emerald-50 to-green-50";
+    case "Opportunity":
+      return "bg-gradient-to-br from-blue-50 to-cyan-50";
+    case "Weakness":
+      return "bg-gradient-to-br from-rose-50 to-red-50";
+    case "Threat":
+    default:
+      return "bg-gradient-to-br from-amber-50 to-orange-50";
+  }
 }
 
-function tierColor(tier: Tier): string {
-  const colors: Record<Tier, string> = {
-    Strength: "#059669",
-    Opportunity: "#0284c7",
-    Threat: "#d97706",
-    Weakness: "#dc2626",
-  };
-  return colors[tier];
-}
+type PageProps = {
+  params: { slug: string };
+  searchParams?: { attemptId?: string; lang?: string };
+};
 
-function tierBg(tier: Tier): string {
-  const colors: Record<Tier, string> = {
-    Strength: "#ecfdf5",
-    Opportunity: "#f0f9ff",
-    Threat: "#fffbeb",
-    Weakness: "#fef2f2",
-  };
-  return colors[tier];
-}
-
-function getSupabaseAdminClient() {
+function getSupabaseAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !key) throw new Error("Missing Supabase credentials");
-
+  if (!url || !key) throw new Error("Missing Supabase env vars");
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-async function fetchReportRow(attemptId: string) {
-  const supabase = getSupabaseAdminClient();
+function pickLang(attemptLang?: string | null, urlLang?: string | null): Language {
+  const l = (urlLang || attemptLang || "en").toLowerCase();
+  return l === "ar" ? "ar" : "en";
+}
 
-  const { data: row, error } = await supabase
+function isMriReport(slug: string, attemptAssessmentId?: string | null) {
+  const s = String(slug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  return s === "mri" || a.includes("mri");
+}
+
+function pct(n: any) {
+  return Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+}
+
+function shortAttemptId(id: string) {
+  const x = String(id || "");
+  return x ? x.slice(0, 8) : "";
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isEmailLike(s: string) {
+  return EMAIL_RE.test(String(s || "").trim());
+}
+function pickFirstNonEmpty(...vals: any[]) {
+  for (const v of vals) {
+    const s = String(v ?? "").trim();
+    if (s) return s;
+  }
+  return "";
+}
+function dig(obj: any, path: string) {
+  try {
+    return path.split(".").reduce((acc: any, k: string) => (acc ? acc[k] : undefined), obj);
+  } catch {
+    return undefined;
+  }
+}
+function extractIdentity(attempt: any) {
+  const blocks = [
+    attempt,
+    attempt?.participant,
+    attempt?.candidate,
+    attempt?.user,
+    attempt?.profile,
+    attempt?.registration,
+    attempt?.contact,
+    attempt?.meta,
+    attempt?.metadata,
+    attempt?.data,
+    attempt?.payload,
+    attempt?.details,
+    attempt?.info,
+    attempt?.user_info,
+    attempt?.userInfo,
+  ].filter(Boolean);
+
+  const nameCandidates: string[] = [];
+  const emailCandidates: string[] = [];
+  const companyCandidates: string[] = [];
+
+  for (const b of blocks) {
+    nameCandidates.push(
+      pickFirstNonEmpty(
+        b?.full_name,
+        b?.fullname,
+        b?.fullName,
+        b?.name,
+        b?.participant_name,
+        b?.candidate_name,
+        b?.display_name,
+        b?.displayName,
+        b?.first_name && b?.last_name ? `${b.first_name} ${b.last_name}` : "",
+        b?.firstName && b?.lastName ? `${b.firstName} ${b.lastName}` : ""
+      )
+    );
+
+    emailCandidates.push(
+      pickFirstNonEmpty(
+        b?.user_email,
+        b?.email,
+        b?.participant_email,
+        b?.candidate_email,
+        b?.work_email,
+        b?.workEmail
+      )
+    );
+
+    companyCandidates.push(
+      pickFirstNonEmpty(
+        b?.company,
+        b?.company_name,
+        b?.companyName,
+        b?.organization,
+        b?.organization_name,
+        b?.org,
+        b?.employer
+      )
+    );
+  }
+
+  const deepName = pickFirstNonEmpty(
+    dig(attempt, "participant.full_name"),
+    dig(attempt, "participant.name"),
+    dig(attempt, "registration.full_name"),
+    dig(attempt, "registration.name"),
+    dig(attempt, "contact.name")
+  );
+  const deepEmail = pickFirstNonEmpty(
+    dig(attempt, "participant.email"),
+    dig(attempt, "registration.email"),
+    dig(attempt, "contact.email")
+  );
+  const deepCompany = pickFirstNonEmpty(
+    dig(attempt, "participant.company"),
+    dig(attempt, "registration.company"),
+    dig(attempt, "contact.company"),
+    dig(attempt, "organization.name")
+  );
+
+  const rawName = pickFirstNonEmpty(...nameCandidates, deepName);
+  const rawEmail = pickFirstNonEmpty(...emailCandidates, deepEmail);
+  const rawCompany = pickFirstNonEmpty(...companyCandidates, deepCompany);
+
+  const email = isEmailLike(rawEmail) ? rawEmail.trim() : "—";
+
+  let fullName = rawName.trim() || "—";
+  if ((fullName === "—" || !fullName) && email !== "—") {
+    const m = email.match(/^([^@]+)/);
+    if (m) fullName = m[1].replace(/[._-]/g, " ").replace(/\d+/g, "").trim() || "—";
+  }
+
+  const company = rawCompany.trim() || "—";
+  return { fullName, email, company };
+}
+
+// ✅ Server-side assessment config fetch (slug-first)
+async function getAssessmentConfigServer(supabase: any, slug: string) {
+  const routeSlug = String(slug || "").toLowerCase();
+
+  // 1) try by slug column
+  const bySlug = await supabase
+    .from("assessments")
+    .select("*")
+    .eq("slug", routeSlug)
+    .maybeSingle();
+
+  if (bySlug?.data) return bySlug.data;
+
+  // 2) fallback mapping (keeps old behavior safe)
+  const ROUTE_TO_ID: Record<string, string> = {
+    scan: "outdoor_sales_scan",
+    mri: "outdoor_sales_mri",
+  };
+
+  const assessmentId = ROUTE_TO_ID[routeSlug] || routeSlug;
+
+  const byId = await supabase
+    .from("assessments")
+    .select("*")
+    .eq("id", assessmentId)
+    .maybeSingle();
+
+  return byId?.data ?? null;
+}
+
+const T = {
+  en: {
+    notFound: "Report not found",
+    backToResults: "Back to Results",
+    overall: "Overall Score",
+    recommendations: "Execution Roadmap",
+    top3: "Top 3 Priority Actions:",
+    score: "Score",
+    mriFallbackTitle: "Full MRI Report",
+    mriFallbackSubtitle: "Comprehensive assessment with detailed insights and strategic recommendations.",
+  },
+  ar: {
+    notFound: "التقرير غير موجود",
+    backToResults: "العودة إلى النتائج",
+    overall: "النتيجة الإجمالية",
+    recommendations: "خارطة الطريق التنفيذية",
+    top3: "أفضل 3 إجراءات ذات أولوية:",
+    score: "النتيجة",
+    mriFallbackTitle: "التقرير المتقدم",
+    mriFallbackSubtitle: "تقييم شامل مع رؤى تفصيلية وتوصيات استراتيجية.",
+  },
+};
+
+export default async function ReportPage({ params, searchParams }: PageProps) {
+  const slug = params.slug;
+  const attemptId = searchParams?.attemptId?.trim() || "";
+  const urlLang = (searchParams?.lang || "").trim();
+
+  if (!attemptId) return <div className="p-10 text-center">Missing attemptId</div>;
+
+  const supabase = getSupabaseAdmin();
+
+  const { data: attempt, error } = await supabase
     .from("quiz_attempts")
     .select("*")
     .eq("id", attemptId)
     .maybeSingle();
 
-  if (error || !row) return null;
+  const lang: Language = pickLang((attempt as any)?.language, urlLang);
+  const ar = lang === "ar";
+  const t = ar ? T.ar : T.en;
 
-  if (row.user_id) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name,company")
-      .eq("id", row.user_id)
-      .maybeSingle();
+  const hardRtlCss = `
+    [data-rtl="true"] * { direction: rtl !important; }
+    [data-rtl="true"] .force-ltr { direction: ltr !important; text-align: left !important; }
+    [data-rtl="true"] .rtl-text { text-align: right !important; unicode-bidi: plaintext !important; }
+    [data-rtl="true"] ol.rtl-ol { direction: rtl !important; unicode-bidi: plaintext !important; list-style-position: inside !important; padding-right: 1.25rem !important; padding-left: 0 !important; }
+    [data-rtl="false"] ol.ltr-ol { direction: ltr !important; unicode-bidi: plaintext !important; list-style-position: inside !important; padding-left: 1.25rem !important; padding-right: 0 !important; }
+  `;
 
-    if (profile) {
-      row.full_name = row.full_name || profile.full_name;
-      row.company = row.company || profile.company;
+  if (error || !attempt) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 sm:p-10" data-rtl={ar ? "true" : "false"}>
+        <style dangerouslySetInnerHTML={{ __html: hardRtlCss }} />
+        <div className="max-w-3xl mx-auto bg-white border-2 border-slate-200 rounded-2xl md:rounded-3xl p-6 sm:p-10 text-center shadow-xl">
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 mb-4 sm:mb-6">{t.notFound}</div>
+          <Link
+            className="inline-flex items-center justify-center rounded-2xl bg-slate-900 text-white font-black px-6 sm:px-8 py-3 sm:py-4 hover:bg-slate-800 transition-all shadow-lg min-h-[48px]"
+            href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
+          >
+            {t.backToResults}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ load assessment config by slug (menu-driven)
+  const assessment = await getAssessmentConfigServer(supabase, slug);
+
+  // ✅ build competency label registry from DB config (menu-driven)
+  const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
+  const comps = Array.isArray((assessment as any)?.config?.competencies)
+    ? (assessment as any).config.competencies
+    : [];
+  for (const c of comps) {
+    const id = normalizeCompetencySafe(c?.id);
+    if (!id) continue;
+    labelsFromConfig[id] = { en: String(c?.en || ""), ar: String(c?.ar || "") };
+  }
+
+  function getCompetencyLabel(competencyId: string, lang: Language): string {
+    const key = normalizeCompetencySafe(competencyId);
+    const meta =
+      labelsFromConfig[key] ||
+      COMPETENCY_LABELS[key] ||
+      null;
+
+    if (meta) {
+      return lang === "ar" ? (meta.ar || meta.en || key) : (meta.en || meta.ar || key);
     }
+    return key;
   }
 
-  row.user_email = row.user_email || row.email || null;
+  // ✅ menu-driven titles/subtitles
+  const reportTitle =
+    (lang === "ar"
+      ? ((assessment as any)?.title_ar || (assessment as any)?.name_ar || "")
+      : ((assessment as any)?.title_en || (assessment as any)?.name_en || "")) || "";
 
-  return row;
-}
+  const reportSubtitle =
+    (lang === "ar"
+      ? String((assessment as any)?.config?.subtitle_ar || "")
+      : String((assessment as any)?.config?.subtitle_en || "")) || "";
 
-function getTranslations(lang: Lang) {
-  return {
-    title: lang === "ar" ? "فحص كفاءات المبيعات الميدانية" : "Outdoor Sales Competency Scan",
-    subtitle:
-      lang === "ar"
-        ? "فحص دم مهني سريع يكشف مؤشرات القوة والتسريب والخطر في الأداء البيعي"
-        : "A professional sales blood test revealing strength signals, leakage points, and commercial risks",
+  const mri = isMriReport(slug, (attempt as any).assessment_id);
 
-    name: lang === "ar" ? "الاسم" : "Name",
-    email: lang === "ar" ? "البريد الإلكتروني" : "Email",
-    company: lang === "ar" ? "الشركة" : "Company",
-    date: lang === "ar" ? "تاريخ الفحص" : "Scan Date",
+  const competencyResults: any[] = Array.isArray((attempt as any).competency_results)
+    ? (attempt as any).competency_results
+    : [];
 
-    overallScore: lang === "ar" ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Index",
-    confidential: lang === "ar" ? "سري • للاستخدام الشخصي أو الإداري فقط" : "Confidential • For personal or managerial use only",
+  const overall = pct((attempt as any).total_percentage);
+  const overallTier: Tier = tierFromPercentage(overall);
+  const identity = extractIdentity(attempt);
 
-    performanceSummary: lang === "ar" ? "لوحة المؤشرات السبعة" : "Seven-Marker Sales Blood Panel",
-    performanceSummarySub:
-      lang === "ar"
-        ? "كل نتيجة ليست رقمًا فقط؛ إنها إشارة لسلوك يظهر تحت ضغط البيع الحقيقي."
-        : "Each score is not just a number; it is a signal of behavior under real sales pressure.",
-
-    actionRecs: lang === "ar" ? "بروتوكولات العمل للأيام السبعة القادمة" : "Next 7 Days Action Protocols",
-    swot: lang === "ar" ? "مصفوفة SWOT الاستراتيجية" : "Strategic SWOT Matrix",
-
-    strengths: lang === "ar" ? "عوامل القوة الحالية" : "Current Strengths",
-    opportunities: lang === "ar" ? "فرص التحسين السريعة" : "Rapid Improvement Opportunities",
-    threats: lang === "ar" ? "مخاطر تهدد الإيرادات" : "Revenue-Threatening Risks",
-    weaknesses: lang === "ar" ? "نقاط الضعف المؤثرة" : "Performance-Limiting Weaknesses",
-
-    page: lang === "ar" ? "الصفحة" : "Page",
-    of: lang === "ar" ? "من" : "of",
-
-    mriWarning:
-      lang === "ar"
-        ? "⚠️ هذا الفحص كشف الإشارات وليس التشخيص الكامل"
-        : "⚠️ THIS SCAN REVEALED THE SIGNALS, NOT THE FULL DIAGNOSIS",
-
-    mriHeadline:
-      lang === "ar"
-        ? "الفحص كشف الإشارة. أما الـ MRI فيكشف السبب."
-        : "Your Scan Shows the Signal. The MRI Reveals the Cause.",
-
-    mriSubheadline:
-      lang === "ar"
-        ? "حان وقت التشخيص المهني الكامل"
-        : "This Is the Complete Professional Diagnostic",
-
-    mriBody:
-      lang === "ar"
-        ? "تقريرك المجاني كشف مؤشرات الأداء الظاهرة عبر 7 مناطق بيعية أساسية. لكن الإشارة ليست التشخيص الكامل. تقرير Outdoor Sales MRI المتقدم يدخل بعمق عبر 15 كفاءة ليكشف الأسباب المخفية خلف ضعف المتابعة، تعثر الصفقات، فقدان الزخم، وعدم ثبات الإغلاق — ثم يمنحك خارطة طريق تنفيذية لمدة 90 يومًا."
-        : "Your free scan exposed visible performance signals across 7 core sales areas. But a signal is not the full diagnosis. The Advanced Outdoor Sales MRI goes deeper across 15 competencies to reveal the hidden causes behind weak follow-up, stalled deals, lost momentum, and inconsistent closing — then gives you a 90-day execution roadmap.",
-
-    regularPrice: lang === "ar" ? "السعر الرسمي" : "Regular Price",
-    launchPrice: lang === "ar" ? "سعر الإطلاق لفترة محدودة" : "Limited Launch Price",
-    oneTime: lang === "ar" ? "دفعة واحدة • لا رسوم خفية" : "One-time payment • No hidden fees",
-    cta: lang === "ar" ? `افتح تقرير MRI المتقدم — $${MRI_LAUNCH_PRICE}` : `UNLOCK THE ADVANCED MRI — $${MRI_LAUNCH_PRICE}`,
-    placeholderNote:
-      lang === "ar"
-        ? "👉 سيتم ربط هذا الزر لاحقًا برابط الدفع في New Zenler"
-        : "👉 This button will be connected to your New Zenler checkout link",
-
-    freeScan: lang === "ar" ? "الفحص المجاني" : "FREE SCAN",
-    advancedMri: lang === "ar" ? "MRI المتقدم" : "ADVANCED MRI",
-  };
-}
-
-function getCompetencyLabel(key: CompetencyKey | null, lang: Lang) {
-  if (!key) return "—";
-  const meta = COMPETENCIES.find((c) => c.key === key);
-  if (!meta) return key.replace(/_/g, " ");
-  return lang === "ar" ? meta.labelAr : meta.labelEn;
-}
-
-function cleanTip(tip: string) {
-  return String(tip || "")
-    .replace(/\*\*/g, "")
-    .replace(/^[•●▪◦✔✓✅✦★☆▶►→⚡📊📋🧠🔍🎯💡📞🛡️📝📌🧩🧭🧪📈🔬🚨⏸️🎙️🤝🔧\s]+/, "")
-    .replace(/^\d{1,2}[.)\-:]\s*/, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function ScoreRing({ percentage, color, size = 120 }: { percentage: number; color: string; size?: number }) {
-  const strokeWidth = 9;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  // ✅ fallback titles if DB missing
+  const heroTitle = reportTitle || (mri ? t.mriFallbackTitle : (ar ? "تقرير كفاءات المبيعات" : "Sales Competency Report"));
+  const heroSubtitle =
+    reportSubtitle ||
+    (mri ? t.mriFallbackSubtitle : (ar ? "خارطة طريق تنفيذية كاملة مع خطوات قابلة للتنفيذ." : "Your complete execution roadmap with actionable next steps."));
 
   return (
-    <div style={{ position: "relative", width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-        />
-      </svg>
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: 30, fontWeight: 900, color: "#0f172a" }}>{percentage}%</span>
-      </div>
-    </div>
-  );
-}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50" data-rtl={ar ? "true" : "false"}>
+      <style dangerouslySetInnerHTML={{ __html: hardRtlCss }} />
 
-export default async function ScanPdfReport({
-  params,
-  searchParams,
-}: {
-  params: { attemptId: string };
-  searchParams?: { lang?: string };
-}) {
-  const row = await fetchReportRow(params.attemptId);
-
-  if (!row) {
-    return <div style={{ padding: 40, textAlign: "center" }}>Report not found</div>;
-  }
-
-  const lang: Lang = searchParams?.lang === "ar" || row.language === "ar" ? "ar" : "en";
-  const dir = lang === "ar" ? "rtl" : "ltr";
-  const t = getTranslations(lang);
-
-  const results = (row.competency_results || [])
-    .map((r: any) => {
-      const key = normalizeCompetencyKey(r.competencyId || r.key);
-      const percentage = clamp(r.percentage);
-      return { key, percentage, tier: tierFromPct(percentage) };
-    })
-    .filter((r: { key: CompetencyKey | null; percentage: number; tier: Tier }) => r.key !== null) as {
-    key: CompetencyKey;
-    percentage: number;
-    tier: Tier;
-  }[];
-
-  const sortedResults = [...results].sort((a, b) => b.percentage - a.percentage);
-
-  const overallPct = clamp(row.total_percentage);
-  const overallTier = tierFromPct(overallPct);
-  const overallColor = tierColor(overallTier);
-
-  const strengths = results.filter((r) => r.tier === "Strength");
-  const opportunities = results.filter((r) => r.tier === "Opportunity");
-  const threats = results.filter((r) => r.tier === "Threat");
-  const weaknesses = results.filter((r) => r.tier === "Weakness");
-
-  const priorityResults = [...results]
-    .sort((a, b) => a.percentage - b.percentage)
-    .slice(0, 6);
-
-  return (
-    <div className="pdf-root" dir={dir} lang={lang}>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap");
-
-            :root {
-              --ink: #0f172a;
-              --muted: #64748b;
-              --border: #e2e8f0;
-              --bg: #f8fafc;
-              --pad: 16mm;
-              --pageW: 210mm;
-            }
-
-            * {
-              box-sizing: border-box;
-              margin: 0;
-              padding: 0;
-            }
-
-            html, body {
-              background: var(--bg);
-              color: var(--ink);
-              font-family: "Cairo", Arial, sans-serif;
-            }
-
-            @page {
-              size: A4;
-              margin: 0;
-            }
-
-            @media print {
-              * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-            }
-
-            .page {
-              width: var(--pageW);
-              min-height: 296mm;
-              background: #fff;
-              margin: 0 auto;
-              padding: var(--pad);
-              position: relative;
-              display: flex;
-              flex-direction: column;
-              page-break-after: always;
-              break-after: page;
-            }
-
-            .topline {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              gap: 16px;
-              margin-bottom: 20px;
-            }
-
-            .logoWrap {
-              width: 44px;
-              height: 44px;
-              background: #0284c7;
-              border-radius: 10px;
-              display: grid;
-              place-items: center;
-              color: white;
-              font-weight: 900;
-              font-size: 16px;
-              flex-shrink: 0;
-            }
-
-            .footer {
-              margin-top: auto;
-              padding-top: 10px;
-              display: flex;
-              justify-content: space-between;
-              gap: 16px;
-              font-size: 11px;
-              border-top: 1px solid var(--border);
-              color: var(--muted);
-            }
-
-            .infoCard {
-              border: 1px solid var(--border);
-              border-radius: 16px;
-              padding: 22px;
-              background: #fff;
-              width: 100%;
-              box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-            }
-
-            .infoRow {
-              display: flex;
-              justify-content: space-between;
-              gap: 16px;
-              padding: 11px 0;
-              border-bottom: 1px dashed #e5e7eb;
-              font-size: 13px;
-            }
-
-            .infoRow:last-child {
-              border-bottom: 0;
-            }
-
-            .cardsGrid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 12px;
-              margin-top: 20px;
-            }
-
-            .recCard {
-              border: 1px solid var(--border);
-              border-radius: 14px;
-              padding: 15px;
-              background: #fff;
-              border-inline-start: 5px solid;
-              page-break-inside: avoid;
-              box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
-            }
-
-            .recList {
-              padding-inline-start: 20px;
-              font-size: 11px;
-              line-height: 1.55;
-              margin-top: 8px;
-            }
-
-            .recList li {
-              margin-bottom: 5px;
-            }
-
-            .swotGrid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 15px;
-              flex: 1;
-              margin-top: 20px;
-            }
-
-            .swotBox {
-              padding: 18px;
-              border-radius: 16px;
-              border: 1px solid var(--border);
-              font-size: 12px;
-              page-break-inside: avoid;
-            }
-
-            .swotTitle {
-              font-weight: 900;
-              font-size: 16px;
-              margin-bottom: 8px;
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            }
-
-            .swotExplain {
-              font-size: 11px;
-              line-height: 1.5;
-              color: #475569;
-              margin-bottom: 10px;
-            }
-
-            .swotItems {
-              list-style: none;
-              font-size: 12px;
-              line-height: 1.5;
-              padding: 0;
-            }
-
-            .swotItems li {
-              margin-bottom: 6px;
-              padding-inline-start: 12px;
-              position: relative;
-              font-weight: 700;
-            }
-
-            .swotItems li::before {
-              content: "•";
-              position: absolute;
-              inset-inline-start: 0;
-              color: var(--muted);
-            }
-
-            .comparisonRow {
-              display: flex;
-              margin-bottom: 7px;
-              gap: 8px;
-            }
-
-            .comparisonCell {
-              flex: 1;
-              text-align: center;
-              padding: 5px 6px;
-              border-radius: 6px;
-            }
-
-            a.ctaButton {
-              display: inline-block;
-              width: 100%;
-              max-width: 430px;
-              padding: 16px 30px;
-              background: linear-gradient(to right, #fbbf24, #f59e0b);
-              color: #0f172a;
-              border-radius: 12px;
-              font-weight: 900;
-              font-size: 14px;
-              text-align: center;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-              box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
-              text-decoration: none;
-            }
-          `,
-        }}
-      />
-
-      {/* PAGE 1: COVER */}
-      <section className="page">
-        <div className="topline">
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div className="logoWrap">LU</div>
-            <div>
-              <h1 style={{ fontSize: 19, fontWeight: 900 }}>{t.title}</h1>
-              <p style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.45 }}>{t.subtitle}</p>
-            </div>
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
+        {/* Top Bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-md border border-slate-200">
+          <div className="text-xs sm:text-sm text-slate-600 rtl-text font-bold">
+            {ar ? "معرّف المحاولة" : "Attempt ID"}:{" "}
+            <span className="font-mono text-blue-600 force-ltr">{shortAttemptId(attemptId)}</span>
           </div>
-          <div style={{ fontWeight: 900, fontSize: 12, color: "var(--muted)", textAlign: lang === "ar" ? "left" : "right" }}>
-            {t.confidential}
-          </div>
+
+          <Link
+            className="w-full sm:w-auto inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-5 sm:px-6 py-2.5 sm:py-3 transition-all shadow-lg active:scale-95 text-sm sm:text-base min-h-[44px]"
+            href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
+          >
+            {t.backToResults}
+          </Link>
         </div>
 
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 40 }}>
-          <div className="infoCard">
-            <div className="infoRow">
-              <span>{t.name}</span>
-              <span style={{ fontWeight: 900 }}>{row.full_name || "—"}</span>
-            </div>
-            <div className="infoRow">
-              <span>{t.email}</span>
-              <span style={{ fontWeight: 900, direction: "ltr", unicodeBidi: "isolate" }}>{row.user_email || row.email || "—"}</span>
-            </div>
-            <div className="infoRow">
-              <span>{t.company}</span>
-              <span style={{ fontWeight: 900 }}>{row.company || "—"}</span>
-            </div>
-            <div className="infoRow">
-              <span>{t.date}</span>
-              <span style={{ fontWeight: 900 }}>{formatDate(row.created_at, lang)}</span>
-            </div>
-          </div>
+        {!mri && (
+          <>
+            {/* HERO */}
+            <section className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-slate-200">
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900" />
 
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontWeight: 900, color: "var(--muted)", marginBottom: 15 }}>{t.overallScore}</p>
-            <ScoreRing percentage={overallPct} color={overallColor} size={180} />
+              <div className="absolute inset-0 overflow-hidden opacity-30">
+                <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-blue-400 blur-3xl animate-pulse" />
+                <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-indigo-400 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-purple-400 blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+              </div>
 
-            <div
-              style={{
-                marginTop: 18,
-                display: "inline-block",
-                padding: "8px 18px",
-                borderRadius: 999,
-                background: tierBg(overallTier),
-                color: overallColor,
-                fontWeight: 900,
-                border: `2px solid ${overallColor}`,
-                fontSize: 13,
-              }}
-            >
-              {tierLabel(overallTier, lang)}
-            </div>
-          </div>
-        </div>
+              <div className="relative p-6 sm:p-10 md:p-12 lg:p-16">
+                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+                  <div className="flex-1 space-y-4 sm:space-y-6 text-center lg:text-start">
+                    <div className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-blue-500/20 border-2 border-blue-400/30 text-blue-200 text-xs sm:text-sm font-black uppercase tracking-wider backdrop-blur-sm">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {ar ? "تقرير ويب احترافي" : "Professional Web Report"}
+                    </div>
 
-        <div className="footer">
-          <span>{t.confidential}</span>
-          <span>{t.page} 1 {t.of} 5</span>
-        </div>
-      </section>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight rtl-text drop-shadow-lg">
+                      {heroTitle}
+                    </h1>
 
-      {/* PAGE 2: SUMMARY */}
-      <section className="page">
-        <div className="topline">
-          <div>
-            <h2 style={{ fontWeight: 900, fontSize: 23 }}>{t.performanceSummary}</h2>
-            <p style={{ marginTop: 5, fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>{t.performanceSummarySub}</p>
-          </div>
-        </div>
+                    <p className="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed rtl-text max-w-2xl">
+                      {heroSubtitle}
+                    </p>
+                  </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-          {sortedResults.map((r) => {
-            const color = tierColor(r.tier);
-            const label = getCompetencyLabel(r.key, lang);
+                  <div className="w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[340px] aspect-square relative flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border-4 sm:border-8 border-white/10 backdrop-blur-md" />
+                    <div className="absolute inset-2 sm:inset-4 rounded-full border-2 sm:border-4 border-white/5" />
+                    <div className="absolute inset-4 sm:inset-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 blur-2xl opacity-60 animate-pulse" />
 
-            return (
-              <div
-                key={r.key}
-                style={{
-                  padding: 15,
-                  border: "1px solid var(--border)",
-                  borderRadius: 14,
-                  borderInlineStart: `5px solid ${color}`,
-                  background: tierBg(r.tier),
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
-                  <span style={{ fontWeight: 900, fontSize: 13 }}>{label}</span>
-                  <span style={{ fontWeight: 900, color, fontSize: 13 }}>
-                    {r.percentage}% • {tierLabel(r.tier, lang)}
-                  </span>
-                </div>
-                <div style={{ height: 9, background: "#f1f5f9", borderRadius: 99, overflow: "hidden", border: "1px solid #e2e8f0" }}>
-                  <div style={{ width: `${r.percentage}%`, background: color, height: "100%" }} />
+                    <div className="relative z-10 text-center space-y-2 sm:space-y-4">
+                      <div className="text-6xl sm:text-7xl lg:text-8xl font-black text-white drop-shadow-2xl">
+                        {overall}%
+                      </div>
+                      <div className="text-xs sm:text-sm font-black text-blue-200 uppercase tracking-widest px-2 sm:px-4">
+                        {t.overall}
+                      </div>
+
+                      <div className="flex items-center justify-center pt-1 sm:pt-2">
+                        <span className={`inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-black shadow-xl ${tierBadgeClass(overallTier)}`}>
+                          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          {getTierLabel(overallTier, lang)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </section>
 
-        <div className="footer">
-          <span>{t.performanceSummary}</span>
-          <span>{t.page} 2 {t.of} 5</span>
-        </div>
-      </section>
+            {/* IDENTITY CARD */}
+            <section className="relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-xl">
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-gradient-to-br from-blue-200 to-indigo-300 blur-3xl opacity-40" />
+                <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-gradient-to-br from-purple-200 to-blue-300 blur-3xl opacity-30" />
+              </div>
 
-      {/* PAGE 3: SWOT */}
-      <section className="page">
-        <div className="topline">
-          <h2 style={{ fontWeight: 900, fontSize: 23 }}>{t.swot}</h2>
-        </div>
+              <div className="relative p-5 sm:p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5 md:mb-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                      <div className="text-base sm:text-lg font-black text-slate-900">
+                        {ar ? "بطاقة هوية المشارك" : "Participant Identity Card"}
+                      </div>
+                    </div>
+                    <div className="text-xs sm:text-sm text-slate-600">
+                      {ar ? "هوية احترافية عالمية المستوى — جاهزة للمشاركة والأرشفة." : "World-class professional identity — ready for sharing and archiving."}
+                    </div>
+                  </div>
 
-        <div className="swotGrid">
-          <SwotBox
-            title={t.strengths}
-            icon="💪"
-            color="#059669"
-            bg="#ecfdf5"
-            rows={strengths}
-            lang={lang}
-            explanation={
-              lang === "ar"
-                ? "هذه المناطق يمكن استخدامها كرافعة لبناء أداء أكثر ثباتًا."
-                : "These areas can be used as leverage to build more consistent performance."
-            }
-          />
-
-          <SwotBox
-            title={t.opportunities}
-            icon="🚀"
-            color="#0284c7"
-            bg="#f0f9ff"
-            rows={opportunities}
-            lang={lang}
-            explanation={
-              lang === "ar"
-                ? "هذه المناطق فيها أساس جيد لكنها تحتاج إلى ممارسة منظمة حتى تتحول إلى قوة."
-                : "These areas have a useful foundation but need structured practice before they become strengths."
-            }
-          />
-
-          <SwotBox
-            title={t.threats}
-            icon="⚠"
-            color="#d97706"
-            bg="#fffbeb"
-            rows={threats}
-            lang={lang}
-            explanation={
-              lang === "ar"
-                ? "هذه إشارات إنذار قد تسبب تسريبًا في الفرص والمتابعة إذا تُركت دون علاج."
-                : "These are warning signals that may create opportunity and follow-up leakage if left untreated."
-            }
-          />
-
-          <SwotBox
-            title={t.weaknesses}
-            icon="🔥"
-            color="#dc2626"
-            bg="#fef2f2"
-            rows={weaknesses}
-            lang={lang}
-            explanation={
-              lang === "ar"
-                ? "هذه فجوات واضحة تحتاج إلى تدخل مباشر ومنهجي."
-                : "These are clear gaps that require direct and structured correction."
-            }
-          />
-        </div>
-
-        <div className="footer">
-          <span>{t.swot}</span>
-          <span>{t.page} 3 {t.of} 5</span>
-        </div>
-      </section>
-
-      {/* PAGE 4: RECOMMENDATIONS */}
-      <section className="page">
-        <div className="topline">
-          <h2 style={{ fontWeight: 900, fontSize: 23 }}>{t.actionRecs}</h2>
-        </div>
-
-        <div className="cardsGrid">
-          {priorityResults.map((r) => {
-            const label = getCompetencyLabel(r.key, lang);
-            const tips = getPdfRecommendations(r.key, r.tier, lang).map(cleanTip).filter(Boolean);
-            const color = tierColor(r.tier);
-
-            return (
-              <div key={r.key} className="recCard" style={{ borderInlineStartColor: color, background: tierBg(r.tier) }}>
-                <div style={{ fontWeight: 900, fontSize: 13, marginBottom: 6, color }}>
-                  {label} — {r.percentage}%
+                  <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-slate-300 px-3 sm:px-4 py-2 sm:py-2.5 bg-white shadow-sm self-start sm:self-auto">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                    </svg>
+                    <span className="text-xs sm:text-sm font-black text-slate-700">
+                      ID: <span className="font-mono text-blue-600 force-ltr">{shortAttemptId(attemptId) || "—"}</span>
+                    </span>
+                  </div>
                 </div>
-                <ul className="recList">
-                  {tips.slice(0, 2).map((tip, i) => (
-                    <li key={i}>{tip}</li>
-                  ))}
-                </ul>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                  <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative flex items-start gap-3 md:gap-4">
+                      <div className="shrink-0 inline-flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md">
+                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 rtl-text">
+                          {ar ? "الاسم الكامل" : "Full Name"}
+                        </div>
+                        <div className="text-sm sm:text-base font-bold text-slate-900 break-words leading-tight rtl-text">
+                          {identity.fullName || "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative flex items-start gap-3 md:gap-4">
+                      <div className="shrink-0 inline-flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md">
+                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 rtl-text">
+                          {ar ? "البريد الإلكتروني" : "Email"}
+                        </div>
+                        <div className="text-sm sm:text-base font-bold text-slate-900 break-words leading-tight force-ltr">
+                          {identity.email || "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="group relative overflow-hidden rounded-2xl md:rounded-3xl border-2 border-slate-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-lg transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative flex items-start gap-3 md:gap-4">
+                      <div className="shrink-0 inline-flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md">
+                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 rtl-text">
+                          {ar ? "الشركة" : "Company"}
+                        </div>
+                        <div className="text-sm sm:text-base font-bold text-slate-900 break-words leading-tight rtl-text">
+                          {identity.company || "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            </section>
 
-        <div className="footer">
-          <span>{t.actionRecs}</span>
-          <span>{t.page} 4 {t.of} 5</span>
-        </div>
-      </section>
-
-      {/* PAGE 5: MRI UPSELL */}
-      <section
-        className="page"
-        style={{
-          background: "#0f172a",
-          color: "white",
-          justifyContent: "center",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ marginBottom: "18px" }}>
-          <div
-            style={{
-              display: "inline-block",
-              background: "#dc2626",
-              color: "white",
-              padding: "8px 20px",
-              borderRadius: "25px",
-              fontWeight: 900,
-              fontSize: "10px",
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-            }}
-          >
-            {t.mriWarning}
-          </div>
-        </div>
-
-        <h1
-          style={{
-            fontSize: "26px",
-            fontWeight: 900,
-            lineHeight: 1.2,
-            marginBottom: "12px",
-            color: "white",
-          }}
-        >
-          {t.mriHeadline}
-        </h1>
-
-        <h2
-          style={{
-            fontSize: "18px",
-            fontWeight: 800,
-            marginBottom: "18px",
-            color: "#fbbf24",
-          }}
-        >
-          {t.mriSubheadline}
-        </h2>
-
-        <p
-          style={{
-            fontSize: "12px",
-            lineHeight: 1.55,
-            opacity: 0.92,
-            maxWidth: "520px",
-            margin: "0 auto 22px",
-          }}
-        >
-          {t.mriBody}
-        </p>
-
-        <div
-          style={{
-            maxWidth: "540px",
-            margin: "0 auto 22px",
-            background: "rgba(255,255,255,0.06)",
-            borderRadius: "12px",
-            padding: "16px",
-            fontSize: "11px",
-            textAlign: "left",
-            border: "1px solid rgba(255,255,255,0.12)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              marginBottom: "10px",
-              borderBottom: "1px solid rgba(255,255,255,0.2)",
-              paddingBottom: "8px",
-            }}
-          >
-            <div style={{ flex: 1, fontWeight: 900, color: "#94a3b8", textAlign: "center" }}>
-              {t.freeScan}
-            </div>
-            <div style={{ flex: 1, fontWeight: 900, color: "#fbbf24", textAlign: "center" }}>
-              {t.advancedMri}
-            </div>
-          </div>
-
-          {[
-            {
-              free: lang === "ar" ? "30 سؤال" : "30 Questions",
-              mri: lang === "ar" ? "75 سؤالًا دقيقًا" : "75 Precision Questions",
-            },
-            {
-              free: lang === "ar" ? "7 مؤشرات أساسية" : "7 Core Markers",
-              mri: lang === "ar" ? "15 كفاءة متقدمة" : "15 Advanced Competencies",
-            },
-            {
-              free: lang === "ar" ? "تقرير مختصر" : "Snapshot Report",
-              mri: lang === "ar" ? "تقرير تنفيذي متقدم" : "Advanced Executive Report",
-            },
-            {
-              free: lang === "ar" ? "مؤشرات أولية" : "Surface Signals",
-              mri: lang === "ar" ? "تشخيص الأسباب المخفية" : "Hidden Cause Diagnosis",
-            },
-            {
-              free: lang === "ar" ? "خطة سريعة" : "Fast Action Tips",
-              mri: lang === "ar" ? "خارطة طريق 90 يومًا" : "90-Day Execution Roadmap",
-            },
-          ].map((row, i) => (
-            <div key={i} className="comparisonRow">
-              <div className="comparisonCell" style={{ opacity: 0.72 }}>
-                {row.free}
+            {/* EXECUTION ROADMAP */}
+            <section className="space-y-6 sm:space-y-8">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-2 sm:p-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
+                  <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">{t.recommendations}</h2>
               </div>
-              <div className="comparisonCell" style={{ fontWeight: 800, color: "white" }}>
-                {row.mri}
-              </div>
-            </div>
-          ))}
-        </div>
 
-        <div style={{ marginBottom: "14px" }}>
-          <div
-            style={{
-              fontSize: "13px",
-              opacity: 0.65,
-              textDecoration: "line-through",
-              marginBottom: "4px",
-              fontWeight: 700,
-            }}
-          >
-            {t.regularPrice} ${MRI_REGULAR_PRICE}
-          </div>
+              <ActionableExecutionCard
+                ar={ar}
+                titleAr="النتيجة الإجمالية"
+                titleEn="Overall Score"
+                descAr="هذا يلخص نمطك الكامل تحت الضغط — ما يختبره العميل فعليًا."
+                descEn="Your complete pattern under pressure — what prospects actually experience."
+                tier={overallTier}
+                percentage={overall}
+                recommendations={getRecommendations("overall_score", overallTier, lang)}
+                t={t}
+              />
 
-          <div
-            style={{
-              fontSize: "46px",
-              fontWeight: 900,
-              color: "white",
-              lineHeight: 1,
-            }}
-          >
-            <span style={{ fontSize: "22px", verticalAlign: "top", opacity: 0.8 }}>$</span>
-            {MRI_LAUNCH_PRICE}
-          </div>
+              {competencyResults.map((raw: any) => {
+                const competencyId = normalizeCompetencySafe(raw?.competencyId);
+                const percentage = pct(raw?.percentage);
+                const tier: Tier = tierFromPercentage(percentage);
+                const recs = getRecommendations(competencyId, tier, lang);
 
-          <div
-            style={{
-              fontSize: "12px",
-              color: "#fbbf24",
-              fontWeight: 800,
-              marginTop: "6px",
-            }}
-          >
-            {t.launchPrice}
-          </div>
-        </div>
-
-        <p
-          style={{
-            fontSize: "10px",
-            opacity: 0.68,
-            marginBottom: "18px",
-          }}
-        >
-          {t.oneTime}
-        </p>
-
-        <a
-          href={MRI_CHECKOUT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ctaButton"
-        >
-          🚀 {t.cta}
-        </a>
-
-        <p
-          style={{
-            fontSize: "9px",
-            marginTop: "12px",
-            opacity: 0.55,
-          }}
-        >
-          {t.placeholderNote}
-        </p>
-
-        <div
-          className="footer"
-          style={{
-            color: "rgba(255,255,255,0.35)",
-            borderColor: "rgba(255,255,255,0.12)",
-          }}
-        >
-          <span>Outdoor Sales MRI</span>
-          <span>{t.page} 5 {t.of} 5</span>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function SwotBox({
-  title,
-  icon,
-  color,
-  bg,
-  rows,
-  lang,
-  explanation,
-}: {
-  title: string;
-  icon: string;
-  color: string;
-  bg: string;
-  rows: { key: CompetencyKey; percentage: number; tier: Tier }[];
-  lang: Lang;
-  explanation: string;
-}) {
-  return (
-    <div className="swotBox" style={{ background: bg, borderColor: color }}>
-      <div className="swotTitle" style={{ color }}>
-        <span>{icon}</span> {title}
-      </div>
-
-      <p className="swotExplain">{explanation}</p>
-
-      <ul className="swotItems">
-        {rows.length ? (
-          rows.map((r) => (
-            <li key={r.key}>
-              {getCompetencyLabel(r.key, lang)} <span style={{ fontWeight: 900 }}>({r.percentage}%)</span>
-            </li>
-          ))
-        ) : (
-          <li>{lang === "ar" ? "لا توجد نتائج في هذه الفئة" : "No results in this category"}</li>
+                return (
+                  <ActionableExecutionCard
+                    key={competencyId}
+                    ar={ar}
+                    titleAr={getCompetencyLabel(competencyId, lang)}
+                    titleEn={getCompetencyLabel(competencyId, lang)}
+                    tier={tier}
+                    percentage={percentage}
+                    recommendations={recs}
+                    t={t}
+                  />
+                );
+              })}
+            </section>
+          </>
         )}
-      </ul>
+
+        {mri && (
+          <section className="bg-white border-2 border-slate-200 rounded-2xl md:rounded-3xl p-8 sm:p-10 md:p-12 shadow-xl">
+            <div className="text-center space-y-3 sm:space-y-4">
+              <div className="inline-block p-3 sm:p-4 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl mb-3 sm:mb-4">
+                <svg className="w-10 h-10 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 rtl-text">{heroTitle}</h1>
+              <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto rtl-text">{heroSubtitle}</p>
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function ActionableExecutionCard({
+  ar,
+  titleAr,
+  titleEn,
+  descAr,
+  descEn,
+  tier,
+  percentage,
+  recommendations,
+  t,
+}: {
+  ar: boolean;
+  titleAr: string;
+  titleEn: string;
+  descAr?: string;
+  descEn?: string;
+  tier: Tier;
+  percentage?: number;
+  recommendations: string[];
+  t: any;
+}) {
+  const parseTimeframe = (rec: string): string => {
+    const s = String(rec || "");
+    const low = s.toLowerCase();
+    if (low.includes("today")) return ar ? "اليوم" : "Today";
+    if (low.includes("7 days") || low.includes("for 7 days")) return ar ? "7 أيام" : "7 Days";
+    return ar ? "هذا الأسبوع" : "This Week";
+  };
+
+  return (
+    <div className={`relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl border-2 border-white/20 ${tierCardBgClass(tier)}`}>
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 right-0 h-60 w-60 rounded-full bg-white blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-60 w-60 rounded-full bg-white blur-3xl" />
+      </div>
+
+      <div className="relative p-5 sm:p-6 md:p-8 lg:p-10">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="flex-1 space-y-1.5 sm:space-y-2">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white drop-shadow-lg rtl-text">
+              {ar ? titleAr : titleEn}
+            </h3>
+            {(descAr || descEn) && (
+              <p className="text-sm sm:text-base text-white/90 leading-relaxed rtl-text">
+                {ar ? descAr : descEn}
+              </p>
+            )}
+          </div>
+
+          {percentage !== undefined && (
+            <div className="shrink-0 text-center bg-white/20 backdrop-blur-md rounded-2xl md:rounded-3xl border-2 border-white/30 p-4 sm:p-5 md:p-6 min-w-[120px] sm:min-w-[140px] shadow-xl self-start md:self-auto">
+              <div className="text-3xl sm:text-4xl font-black text-white drop-shadow-md">{percentage}%</div>
+              <div className="text-[10px] sm:text-xs font-black text-white/80 uppercase tracking-widest mt-1.5 sm:mt-2">{t.score}</div>
+            </div>
+          )}
+        </div>
+
+        <div className="mb-5 sm:mb-6">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white font-black text-xs sm:text-sm">
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            {t.top3}
+          </div>
+        </div>
+
+        <div className="space-y-4 sm:space-y-5">
+          {recommendations.length ? (
+            recommendations.slice(0, 3).map((rec, idx) => {
+              const timeframe = parseTimeframe(rec);
+
+              return (
+                <div
+                  key={idx}
+                  className={`group rounded-xl md:rounded-2xl p-4 sm:p-5 md:p-6 shadow-lg hover:shadow-xl transition-all border-2 border-white/50 hover:scale-[1.02] ${tierSoftBg(
+                    tier
+                  )}`}
+                >
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="shrink-0 flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white font-black text-base sm:text-lg shadow-md">
+                      {idx + 1}
+                    </div>
+
+                    <div className="flex-1 space-y-2.5 sm:space-y-3">
+                      <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full bg-white border-2 border-slate-200 text-slate-700 text-xs font-black shadow-sm">
+                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {timeframe}
+                      </div>
+
+                      <p className="text-slate-800 text-sm sm:text-base font-medium leading-relaxed rtl-text">
+                        {rec}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="bg-white/90 rounded-2xl p-5 sm:p-6 text-center">
+              <p className="text-slate-600 text-sm sm:text-base italic rtl-text">
+                {ar ? "لا توجد توصيات متاحة." : "No recommendations available."}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
