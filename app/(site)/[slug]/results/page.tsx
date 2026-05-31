@@ -486,7 +486,7 @@ function ResultsContent() {
 
   const getCompetencyLabel = (res: any) => {
     const id = normalizeCompetencySafe(res?.competencyId || res?.key);
-    const meta = (id && labelsFromConfig[id]) || (id && COMPETENCY_LABELS[id]) || null;
+    const meta = (id && COMPETENCY_LABELS[id]) || (id && labelsFromConfig[id]) || null;
 
     if (meta) return ar ? meta.ar || meta.en : meta.en || meta.ar;
     return String(res?.name || id || "");
