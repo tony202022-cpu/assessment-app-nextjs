@@ -21,8 +21,6 @@ export const dynamic = "force-dynamic";
 // ======================================================
 
 const MRI_CHECKOUT_URL = "PASTE_NEW_ZENLER_MRI_LINK_HERE";
-const MRI_REGULAR_PRICE = 297;
-const MRI_LAUNCH_PRICE = 149;
 
 type PageProps = {
   params: { slug: string };
@@ -530,8 +528,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       commercial: "Commercial Interpretation",
       swot: "Strategic SWOT Analysis",
       actions: "Priority Execution Plan",
-      mriUpsellTitle: "Your Scan Shows the Signal. The MRI Reveals the Cause.",
-      mriCta: `Unlock My Advanced Outdoor Sales MRI — $${MRI_LAUNCH_PRICE}`,
+      prescriptionHeadline: "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
+      prescriptionSubhead: "Do not leave this report as an interesting result. Turn the warning signs into a practical sales performance remedy.",
+      prescriptionCta: "Get My Full Sales MRI & 90-Day Prescription",
       enterpriseTitle: "For Sales Managers & Business Owners",
       enterpriseCta: "Diagnose the Team Before You Train the Team",
     },
@@ -552,8 +551,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       commercial: "التفسير التجاري",
       swot: "تحليل SWOT الاستراتيجي",
       actions: "خطة التنفيذ ذات الأولوية",
-      mriUpsellTitle: "الفحص كشف الإشارة. أما الـ MRI فيكشف السبب.",
-      mriCta: `افتح تقرير Outdoor Sales MRI المتقدم — $${MRI_LAUNCH_PRICE}`,
+      prescriptionHeadline: "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
+      prescriptionSubhead: "لا تترك هذا التقرير كنتيجة مثيرة للاهتمام فقط. حوّل علامات الإنذار إلى علاج عملي لأدائك البيعي.",
+      prescriptionCta: "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
       enterpriseTitle: "لمديري المبيعات وأصحاب الشركات",
       enterpriseCta: "شخّص الفريق قبل أن تدرّبه",
     },
@@ -870,66 +870,113 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* MRI UPSELL */}
+        {/* MRI PRESCRIPTION UPSELL */}
         {!mri && (
           <section className="pdf-avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
-            <div className="bg-gradient-to-br from-indigo-950 via-blue-950 to-slate-950 text-white p-7 sm:p-10">
-              <div className="inline-flex rounded-full bg-white/10 border border-white/20 px-4 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
-                {ar ? "الخطوة التالية" : "Next Diagnostic Step"}
+            <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
+              <div className="inline-flex rounded-full bg-rose-500/20 border border-rose-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-rose-100">
+                {ar ? "لا تتوقف عند نتيجة الفحص" : "Do Not Stop at the Scan"}
               </div>
 
               <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
-                {t.mriUpsellTitle}
+                {t.prescriptionHeadline}
               </h2>
 
-              <p className="mt-5 text-base sm:text-xl leading-relaxed text-blue-100 max-w-4xl rtl-text">
-                {ar
-                  ? "الفحص المجاني كشف الإشارات الظاهرة عبر ٧ مناطق بيعية أساسية. لكنه لا يكشف كل الأسباب. تقرير Outdoor Sales MRI المتقدم يدخل بعمق عبر ١٥ كفاءة ليكشف السبب، الخطر التجاري، ترتيب الأولويات، وخارطة طريق عملية لمدة ٩٠ يومًا."
-                  : "Your free scan has identified the visible signals across 7 core sales areas. But a signal is not the full diagnosis. The Advanced Outdoor Sales MRI goes deeper across 15 competencies to reveal the cause, the commercial risk, the priority order, and a practical 90-day roadmap."}
+              <p className="mt-4 text-lg sm:text-2xl font-black leading-relaxed text-amber-200 max-w-4xl rtl-text">
+                {t.prescriptionSubhead}
               </p>
 
-              <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {[
-                  ar ? "١٥ كفاءة بدل ٧" : "15 competencies instead of 7",
-                  ar ? "تحليل SWOT أعمق" : "Deeper SWOT analysis",
-                  ar ? "تشخيص تسريب الفرص" : "Revenue leakage diagnosis",
-                  ar ? "تحذيرات المخاطر غير المعالجة" : "Untreated risk warnings",
-                  ar ? "ترتيب أولويات التطوير" : "Priority development order",
-                  ar ? "خارطة طريق ٩٠ يومًا" : "90-day action roadmap",
-                ].map((x) => (
-                  <div key={x} className="rounded-2xl bg-white/10 border border-white/15 p-4 text-sm font-bold text-white/95 rtl-text">
-                    ✓ {x}
+              <div className="mt-7 grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-6 items-stretch">
+                <div className="rounded-3xl bg-white/10 border border-white/15 p-6 sm:p-7 backdrop-blur-md">
+                  <h3 className="text-2xl font-black text-white rtl-text">
+                    {ar ? "لماذا لا يكفي الفحص وحده؟" : "Why the scan alone is not enough"}
+                  </h3>
+
+                  <div className="mt-4 space-y-4 text-blue-100 leading-relaxed rtl-text">
+                    <p>
+                      {ar
+                        ? "الفحص يشبه تحليل الدم: يكشف لك أن هناك مؤشرات يجب الانتباه لها. لكنه لا يمنحك الفحص الكامل، ولا الوصفة العلاجية، ولا خطة التصحيح اليومية."
+                        : "The scan is like a blood test: it reveals that there are signals you must not ignore. But it does not give you the full examination, the prescription, or the day-by-day correction path."}
+                    </p>
+
+                    <p>
+                      {ar
+                        ? "معظم الناس يقرؤون النتيجة، يشعرون بالاهتمام لدقائق، ثم يعودون إلى نفس العادات التي صنعت النتيجة. هنا يحدث الخطر: أن ترى علامة الإنذار ثم تتركها كما هي."
+                        : "Most people read the result, feel interested for a few minutes, then return to the same habits that created the result. That is the dangerous part: seeing the warning sign and leaving it untreated."}
+                    </p>
+
+                    <p className="font-black text-white">
+                      {ar
+                        ? "إذا كشف الفحص تسريبًا، فالخطوة الذكية ليست تجاهله. الخطوة الذكية هي معرفة الجذر ثم اتباع الوصفة."
+                        : "If the scan exposed a leak, the smart move is not to ignore it. The smart move is to find the root pattern and follow the prescription."}
+                    </p>
                   </div>
-                ))}
+                </div>
+
+                <div className="rounded-3xl bg-white text-slate-950 p-6 sm:p-7 shadow-2xl">
+                  <div className="inline-flex rounded-full bg-blue-100 text-blue-800 px-4 py-2 text-xs font-black uppercase tracking-widest">
+                    {ar ? "ما الذي ستحصل عليه؟" : "What you unlock"}
+                  </div>
+
+                  <h3 className="mt-4 text-2xl font-black rtl-text">
+                    {ar ? "MRI كامل للجسم المهني البيعي" : "A full MRI of your sales performance body"}
+                  </h3>
+
+                  <div className="mt-5 space-y-3">
+                    {(ar
+                      ? [
+                          "تشخيص أعمق عبر ١٥ كفاءة بيعية بدل ٧ مؤشرات فقط",
+                          "كشف الأنماط الجذرية خلف تعثّر الصفقات وضعف الزخم",
+                          "ترتيب واضح لما يجب إصلاحه أولًا بدل التخمين",
+                          "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
+                          "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
+                        ]
+                      : [
+                          "A deeper 15-competency diagnosis instead of only 7 markers",
+                          "The root patterns behind stalled deals, weak momentum, and hidden leakage",
+                          "A clear priority order of what to correct first instead of guessing",
+                          "A practical 90-day performance prescription without sitting through a long course",
+                          "5 implementation bonuses that help you act, not just read",
+                        ]
+                    ).map((x) => (
+                      <div key={x} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                        <div className="shrink-0 h-6 w-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-black">
+                          ✓
+                        </div>
+                        <div className="text-sm sm:text-base font-bold text-slate-700 rtl-text">{x}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-8 rounded-3xl bg-white text-slate-950 p-6 sm:p-8 max-w-xl shadow-2xl">
-                <div className="text-sm font-black text-slate-500 line-through">
-                  {ar ? "السعر الرسمي" : "Regular Price"} ${MRI_REGULAR_PRICE}
+              <div className="mt-7 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 p-1 shadow-2xl max-w-3xl">
+                <div className="rounded-[1.35rem] bg-slate-950/95 p-6 sm:p-7">
+                  <h3 className="text-2xl sm:text-3xl font-black text-white rtl-text">
+                    {ar ? "هذه ليست دورة تدريبية أخرى." : "This is not another training course."}
+                  </h3>
+
+                  <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
+                    {ar
+                      ? "لا فيديوهات طويلة. لا تكديس نظري. لا نصائح عامة. إنها وصفة تصحيح عملية مبنية على نتائجك، لتعرف ماذا تعمل عليه، ماذا تتوقف عن فعله، وما الذي يجب إصلاحه أولًا."
+                      : "No long videos. No theory overload. No generic sales advice. It is a practical correction prescription built from your results, showing what to work on, what to stop doing, and what to fix first."}
+                  </p>
+
+                  <a
+                    href={MRI_CHECKOUT_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="print-hide mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition"
+                  >
+                    🚀 {t.prescriptionCta}
+                  </a>
+
+                  <p className="mt-3 text-xs text-blue-100/70 rtl-text">
+                    {ar
+                      ? "سيتم ربط هذا الزر لاحقًا بصفحة New Zenler التي تعرض التفاصيل، المكافآت، والدفع."
+                      : "This button will connect to your New Zenler page with the full details, bonuses, and checkout."}
+                  </p>
                 </div>
-
-                <div className="mt-2 text-5xl font-black">
-                  ${MRI_LAUNCH_PRICE}
-                </div>
-
-                <div className="mt-2 inline-flex rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-black">
-                  {ar ? "سعر الإطلاق لفترة محدودة" : "Limited Launch Price"}
-                </div>
-
-                <a
-                  href={MRI_CHECKOUT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="print-hide mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 px-6 py-4 font-black shadow-xl hover:from-amber-300 hover:to-orange-400 transition"
-                >
-                  🚀 {t.mriCta}
-                </a>
-
-                <p className="mt-3 text-xs text-slate-500 rtl-text">
-                  {ar
-                    ? "سيتم ربط هذا الزر لاحقًا برابط الدفع في New Zenler."
-                    : "This button will be connected to your New Zenler checkout link."}
-                </p>
               </div>
             </div>
           </section>
