@@ -861,6 +861,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       cursor: pointer;
     }
 
+    .print-only {
+      display: none;
+    }
+
     @page {
       size: A4;
       margin: 12mm;
@@ -871,10 +875,19 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         background: #ffffff !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        font-size: 10.5pt !important;
       }
 
-      .print-hide {
+      .print-hide,
+      .web-cover-print-hide,
+      .web-diagnostic-panel-print-hide,
+      .web-bonus-print-hide,
+      .web-enterprise-print-hide {
         display: none !important;
+      }
+
+      .print-only {
+        display: block !important;
       }
 
       .scan-pdf-container {
@@ -886,9 +899,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         width: 100% !important;
         padding: 0 !important;
         margin: 0 !important;
+        display: block !important;
       }
 
-      section {
+      section, article {
         box-shadow: none !important;
       }
 
@@ -897,14 +911,97 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         page-break-inside: avoid !important;
       }
 
-      .pdf-page-break {
+      .pdf-page-break,
+      .pdf-cover-page,
+      .pdf-diagnostic-table-page,
+      .pdf-treatment-page,
+      .pdf-roadmap-page,
+      .pdf-bonus-page,
+      .pdf-final-page {
         break-before: page !important;
         page-break-before: always !important;
       }
 
-      .pdf-soft-page-break {
+      .pdf-cover-page:first-of-type {
         break-before: auto !important;
         page-break-before: auto !important;
+      }
+
+      .pdf-cover-page {
+        min-height: 270mm !important;
+        border-radius: 0 !important;
+        padding: 18mm 16mm !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
+
+      .pdf-print-card {
+        border-radius: 18px !important;
+        box-shadow: none !important;
+      }
+
+      .pdf-diagnostic-table-page,
+      .pdf-roadmap-page,
+      .pdf-bonus-page,
+      .pdf-final-page {
+        min-height: 260mm !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: #ffffff !important;
+      }
+
+      .pdf-diagnostic-table table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 9.5pt !important;
+      }
+
+      .pdf-diagnostic-table th,
+      .pdf-diagnostic-table td {
+        border: 1px solid #dbe3ef !important;
+        padding: 7px 8px !important;
+        vertical-align: top !important;
+      }
+
+      .pdf-diagnostic-table th {
+        background: #0f172a !important;
+        color: #ffffff !important;
+        text-transform: uppercase !important;
+        letter-spacing: .05em !important;
+        font-size: 8pt !important;
+      }
+
+      .pdf-treatment-page {
+        min-height: 258mm !important;
+        border-width: 1px !important;
+        border-radius: 18px !important;
+        overflow: hidden !important;
+      }
+
+      .pdf-treatment-page h3 {
+        font-size: 21pt !important;
+        line-height: 1.12 !important;
+      }
+
+      .pdf-treatment-page p {
+        font-size: 9.6pt !important;
+        line-height: 1.42 !important;
+      }
+
+      .pdf-treatment-page .treatment-insight {
+        padding: 10px 12px !important;
+        border-radius: 14px !important;
+      }
+
+      .pdf-treatment-page .pdf-extra-treatment-note {
+        display: none !important;
+      }
+
+      .pdf-compact-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
       }
 
       a {
@@ -1038,8 +1135,22 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
+        {/* PRINT-ONLY PROFESSIONAL COVER */}
+        {mri && (
+          <PrintCoverPage
+            ar={ar}
+            title={reportTitle}
+            subtitle={t.subtitle}
+            overall={overall}
+            tier={overallTier}
+            lang={lang}
+            identity={identity}
+            attemptId={attemptId}
+          />
+        )}
+
         {/* COVER */}
-        <section className="pdf-avoid-break relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800/10">
+        <section className={`${mri ? "web-cover-print-hide" : ""} pdf-avoid-break relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800/10`}>
           <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900" />
           <div className="absolute inset-0 opacity-30">
             <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-blue-400 blur-3xl" />
@@ -1170,8 +1281,19 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         </section>
 
+        {/* PRINT-ONLY DIAGNOSTIC TABLE */}
+        {mri && (
+          <PrintDiagnosticTable
+            ar={ar}
+            rows={sortedRows}
+            overall={overall}
+            overallTier={overallTier}
+            lang={lang}
+          />
+        )}
+
         {/* SALES HEALTH / MRI PANEL */}
-        <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+        <section className={`${mri ? "web-diagnostic-panel-print-hide" : ""} rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8`}>
           {sectionTitle(t.bloodPanel, t.bloodPanelSub)}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1496,6 +1618,17 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </section>
         )}
 
+        {/* PRINT-ONLY DETAILED 90-DAY ROADMAP */}
+        {mri && (
+          <PrintDetailedRoadmap
+            ar={ar}
+            primary={topThreeRisks[0]}
+            secondary={topThreeRisks[1]}
+            third={topThreeRisks[2]}
+            leverage={topThreeStrengths[0]}
+          />
+        )}
+
         {/* MRI BONUS REMEDY TOOLS */}
         {mri && (
           <section className="pdf-page-break rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white shadow-2xl p-6 sm:p-8">
@@ -1532,6 +1665,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             </div>
           </section>
         )}
+
+        {/* PRINT-ONLY BONUS REMEDY MAP */}
+        {mri && <PrintBonusRemedyMap ar={ar} weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)} />}
 
         {/* SCAN-ONLY MRI PRESCRIPTION UPSELL */}
         {!mri && (
@@ -1650,7 +1786,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
 
         {/* ENTERPRISE CTA */}
-        <section className="pdf-avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+        <section className="web-enterprise-print-hide pdf-avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-6 items-center">
             <div>
               <div className="inline-flex rounded-full bg-amber-100 text-amber-800 px-4 py-2 text-xs font-black uppercase tracking-widest">
@@ -1684,8 +1820,343 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             </div>
           </div>
         </section>
+
+        {mri && (
+          <PrintFinalPage
+            ar={ar}
+            overall={overall}
+            tier={overallTier}
+            lang={lang}
+            primary={topThreeRisks[0]}
+            leverage={topThreeStrengths[0]}
+          />
+        )}
       </main>
     </div>
+  );
+}
+
+
+function PrintCoverPage({
+  ar,
+  title,
+  subtitle,
+  overall,
+  tier,
+  lang,
+  identity,
+  attemptId,
+}: {
+  ar: boolean;
+  title: string;
+  subtitle: string;
+  overall: number;
+  tier: Tier;
+  lang: Language;
+  identity: { fullName: string; email: string; company: string };
+  attemptId: string;
+}) {
+  const generatedOn = new Date().toLocaleDateString("en-AU", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
+
+  return (
+    <section className="print-only pdf-cover-page bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white">
+      <div>
+        <div className="inline-flex rounded-full border border-white/20 bg-white/10 px-5 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
+          {ar ? "تقرير تشخيص وعلاج متقدم" : "Advanced Diagnostic & Treatment Report"}
+        </div>
+
+        <h1 className="mt-8 text-5xl font-black leading-tight rtl-text">{title}</h1>
+        <p className="mt-4 max-w-3xl text-xl leading-relaxed text-blue-100 rtl-text">{subtitle}</p>
+
+        <div className="mt-8 grid grid-cols-3 gap-4">
+          <PrintCoverInfo label={ar ? "الاسم" : "Name"} value={identity.fullName} />
+          <PrintCoverInfo label={ar ? "الشركة" : "Company"} value={identity.company} />
+          <PrintCoverInfo label={ar ? "البريد" : "Email"} value={identity.email} forceLtr />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-10">
+        <div className="max-w-lg">
+          <h2 className="text-3xl font-black rtl-text">
+            {ar ? "ملف أداء شخصي مبني على نتائجك" : "Personalized Sales Performance File"}
+          </h2>
+          <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
+            {ar
+              ? "صُمم هذا التقرير ليُقرأ كتشخيص مهني، ثم يُستخدم كخطة علاج عملية خلال 90 يومًا."
+              : "This report is designed to be read as a professional diagnosis, then used as a practical 90-day treatment plan."}
+          </p>
+          <div className="mt-6 text-sm text-blue-100/80 force-ltr">
+            Report ID: {shortAttemptId(attemptId)} · Generated: {generatedOn}
+          </div>
+        </div>
+
+        <div className="h-72 w-72 rounded-full border-[14px] border-white/15 bg-white/10 flex flex-col items-center justify-center text-center">
+          <div className="text-7xl font-black">{overall}%</div>
+          <div className="mt-2 text-xs font-black uppercase tracking-widest text-blue-100">
+            {ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score"}
+          </div>
+          <div className={`mt-5 inline-flex rounded-full px-5 py-2 text-sm font-black ${tierBadgeClass(tier)}`}>
+            {getTierLabel(tier, lang)}
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-white/20 pt-5 text-sm text-blue-100/80 rtl-text">
+        {ar
+          ? "Career Labs AI · Level Up Business Consulting · تقرير مخصص لاستخدام المشارك أو الشركة المالكة للتقرير."
+          : "Career Labs AI · Level Up Business Consulting · Prepared for the participant and the organization purchasing this report."}
+      </div>
+    </section>
+  );
+}
+
+function PrintCoverInfo({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
+  return (
+    <div className="pdf-print-card rounded-2xl border border-white/15 bg-white/10 p-4">
+      <div className="text-[10px] font-black uppercase tracking-widest text-blue-100">{label}</div>
+      <div className={`mt-2 text-base font-black text-white break-words ${forceLtr ? "force-ltr" : "rtl-text"}`}>{value || "—"}</div>
+    </div>
+  );
+}
+
+function PrintDiagnosticTable({
+  ar,
+  rows,
+  overall,
+  overallTier,
+  lang,
+}: {
+  ar: boolean;
+  rows: CompetencyRow[];
+  overall: number;
+  overallTier: Tier;
+  lang: Language;
+}) {
+  return (
+    <section className="print-only pdf-diagnostic-table-page">
+      <div className="mb-6">
+        <div className="inline-flex rounded-full bg-slate-950 text-white px-4 py-2 text-xs font-black uppercase tracking-widest">
+          {ar ? "لوحة التشخيص التنفيذية" : "Executive Diagnostic Table"}
+        </div>
+        <h2 className="mt-4 text-4xl font-black text-slate-950 rtl-text">
+          {ar ? "قراءة الـ 15 كفاءة في صفحة واحدة" : "15-Competency Reading on One Executive Page"}
+        </h2>
+        <p className="mt-2 text-slate-600 leading-relaxed rtl-text">
+          {ar
+            ? "هذه الصفحة مصممة للطباعة والمراجعة السريعة. الصفحات التالية تشرح أضعف المناطق بتفصيل علاجي."
+            : "This page is designed for print and executive review. The following pages expand the weakest areas into treatment detail."}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="rounded-2xl bg-slate-950 text-white p-5">
+          <div className="text-xs uppercase tracking-widest font-black text-blue-100">{ar ? "الصحة العامة" : "Overall Health"}</div>
+          <div className="mt-2 text-4xl font-black">{overall}%</div>
+          <div className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(overallTier)}`}>{getTierLabel(overallTier, lang)}</div>
+        </div>
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-5">
+          <div className="text-xs uppercase tracking-widest font-black text-rose-700">{ar ? "أضعف إشارة" : "Weakest Signal"}</div>
+          <div className="mt-2 text-xl font-black text-slate-950 rtl-text">{[...rows].sort((a,b)=>a.percentage-b.percentage)[0]?.label || "—"}</div>
+        </div>
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5">
+          <div className="text-xs uppercase tracking-widest font-black text-emerald-700">{ar ? "أقوى رافعة" : "Strongest Leverage"}</div>
+          <div className="mt-2 text-xl font-black text-slate-950 rtl-text">{[...rows].sort((a,b)=>b.percentage-a.percentage)[0]?.label || "—"}</div>
+        </div>
+      </div>
+
+      <div className="pdf-diagnostic-table">
+        <table>
+          <thead>
+            <tr>
+              <th>{ar ? "#" : "#"}</th>
+              <th>{ar ? "الكفاءة" : "Competency"}</th>
+              <th>{ar ? "الدرجة" : "Score"}</th>
+              <th>{ar ? "المنطقة" : "Zone"}</th>
+              <th>{ar ? "المعنى التنفيذي" : "Executive Meaning"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={`print-table-${row.competencyId}-${index}`}>
+                <td className="force-ltr">{index + 1}</td>
+                <td className="font-black rtl-text">{row.label}</td>
+                <td className="font-black force-ltr">{row.percentage}%</td>
+                <td>{getTierLabel(row.tier, lang)}</td>
+                <td className="rtl-text">{shortDiagnosis(row.tier, lang)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function PrintDetailedRoadmap({
+  ar,
+  primary,
+  secondary,
+  third,
+  leverage,
+}: {
+  ar: boolean;
+  primary?: CompetencyRow;
+  secondary?: CompetencyRow;
+  third?: CompetencyRow;
+  leverage?: CompetencyRow;
+}) {
+  const rows = ar
+    ? [
+        ["الأسبوع 1", `ابدأ بمنطقة ${primary?.label || "الأولوية الأولى"}. راقب السلوك الذي يسبب أكبر تسريب واكتب مثالًا يوميًا.`],
+        ["الأسبوع 2", "حوّل السلوك إلى إجراء ثابت: ماذا ستفعل قبل كل مكالمة أو زيارة أو متابعة؟"],
+        ["الأسبوع 3", `أدخل منطقة ${secondary?.label || "الخطر الثاني"} في العلاج حتى لا يبقى التسريب متكررًا.`],
+        ["الأسبوع 4", "راجع أول شهر: ما السلوك الذي تحسن؟ وما السلوك الذي ما زال يتكرر؟"],
+        ["الأسابيع 5–6", `استخدم ${leverage?.label || "أقوى منطقة لديك"} كرافعة لدعم أضعف المناطق.`],
+        ["الأسابيع 7–8", `أدخل منطقة ${third?.label || "الأولوية الثالثة"} في التمرين مع قياس أسبوعي واضح.`],
+        ["الأسابيع 9–10", "حوّل التصحيح إلى نظام تشغيل يومي: تحضير، سؤال، عرض، متابعة، إغلاق."],
+        ["الأسابيع 11–12", "اختبر ثبات السلوك تحت الضغط، ثم اختر ثلاث عادات تبقى معك بعد نهاية الخطة."],
+      ]
+    : [
+        ["Week 1", `Start with ${primary?.label || "the first priority"}. Observe the behavior creating the largest leak and write one example daily.`],
+        ["Week 2", "Turn the behavior into a fixed action: what will you do before each call, visit, proposal, or follow-up?"],
+        ["Week 3", `Bring ${secondary?.label || "the second risk"} into treatment so the same leakage pattern does not keep repeating.`],
+        ["Week 4", "Review month one: what behavior improved, and what behavior is still repeating under pressure?"],
+        ["Weeks 5–6", `Use ${leverage?.label || "your strongest area"} as leverage to support the weakest behaviors.`],
+        ["Weeks 7–8", `Bring ${third?.label || "the third priority"} into practice with one clear weekly metric.`],
+        ["Weeks 9–10", "Turn the correction into a daily operating system: prepare, ask, offer, follow up, close."],
+        ["Weeks 11–12", "Test the behavior under pressure, then choose the three habits that remain after the plan ends."],
+      ];
+
+  return (
+    <section className="print-only pdf-roadmap-page">
+      <div className="inline-flex rounded-full bg-slate-950 text-white px-4 py-2 text-xs font-black uppercase tracking-widest">
+        {ar ? "خطة علاج للطباعة" : "Printable Treatment Roadmap"}
+      </div>
+      <h2 className="mt-4 text-4xl font-black text-slate-950 rtl-text">
+        {ar ? "خطة الـ 90 يومًا: من التشخيص إلى السلوك" : "90-Day Roadmap: From Diagnosis to Behavior"}
+      </h2>
+      <p className="mt-3 text-slate-600 leading-relaxed rtl-text">
+        {ar
+          ? "هذه الصفحة تجعل الخطة قابلة للوضع في ملف أو المتابعة مع مدير مباشر."
+          : "This page makes the plan easy to file, review, and follow with a manager or coach."}
+      </p>
+      <div className="mt-8 grid grid-cols-2 gap-4">
+        {rows.map(([label, body]) => (
+          <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div className="text-sm font-black uppercase tracking-widest text-blue-700 rtl-text">{label}</div>
+            <p className="mt-2 text-slate-700 leading-relaxed rtl-text">{body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PrintBonusRemedyMap({ ar, weakestSix }: { ar: boolean; weakestSix: CompetencyRow[] }) {
+  const bonuses = ar
+    ? [
+        ["أفضل 50 إجابة لأصعب 50 اعتراض بيعي", "الاعتراضات، التفاوض، تدمير الاعتراضات", "اقرأ فئة واحدة يوميًا وابنِ مكتبة ردود عملية."],
+        ["كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي", "الاكتشاف، العروض، الإنتاجية", "استخدمه لتوليد أسئلة أفضل ورسائل متابعة وعروض أكثر وضوحًا."],
+        ["كيف تحفّز نفسك تحت الضغط", "الصلابة الذهنية والتحفيز", "طبّق تمرين التعافي بعد الرفض قبل متابعة البايبلاين."],
+        ["كيف تحجز مواعيد مع كبار الشخصيات", "فتح المحادثات والوصول لصناع القرار", "استخدمه لبناء افتتاحات ورسائل وصول أقوى."],
+        ["إتقان إدارة الوقت للمبيعات الخارجية", "الوقت، المتابعة، المنطقة", "اربطه بخطة الأسبوع وترتيب الحسابات حسب الأولوية."],
+        ["كيف تتعامل مع العملاء الصعبين دون خسارة السيطرة", "العملاء الصعبون والتحكم العاطفي", "استخدمه عندما ترتفع حرارة المحادثة أو يبدأ العميل بالضغط."],
+      ]
+    : [
+        ["The 50 Best Answers to the 50 Hardest Objections", "Objections, negotiation, objection prevention", "Read one objection category per day and build a practical response library."],
+        ["How to Increase Your Sales Using AI", "Discovery, offers, productivity", "Use it to generate sharper questions, follow-up messages, and clearer offers."],
+        ["How to Motivate Yourself Under Pressure", "Mental toughness and motivation", "Apply the rejection-recovery exercise before judging your pipeline."],
+        ["How to Book Appointments with VIPs and Decision Makers", "Opening conversations and executive access", "Use it to build stronger openings, outreach messages, and access angles."],
+        ["Time-Management Mastery for Outdoor Sales", "Time, follow-up, territory", "Connect it to weekly planning and account prioritization."],
+        ["How to Deal with Difficult Customers Without Losing Control", "Difficult customers and emotional control", "Use it when conversation temperature rises or the customer starts applying pressure."],
+      ];
+
+  return (
+    <section className="print-only pdf-bonus-page">
+      <div className="inline-flex rounded-full bg-slate-950 text-white px-4 py-2 text-xs font-black uppercase tracking-widest">
+        {ar ? "خريطة أدوات العلاج" : "Remedy Tools Map"}
+      </div>
+      <h2 className="mt-4 text-4xl font-black text-slate-950 rtl-text">
+        {ar ? "كيف تستخدم المكافآت كأدوات علاج" : "How to Use the Bonuses as Treatment Tools"}
+      </h2>
+      <p className="mt-3 text-slate-600 leading-relaxed rtl-text">
+        {ar
+          ? `ابدأ بالأدوات المرتبطة بأضعف مناطقك: ${weakestSix.slice(0, 3).map((x) => x.label).join(", ")}.`
+          : `Start with the tools connected to your weakest areas: ${weakestSix.slice(0, 3).map((x) => x.label).join(", ")}.`}
+      </p>
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        {bonuses.map(([title, bestFor, how], idx) => (
+          <div key={title} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div className="text-xs font-black uppercase tracking-widest text-amber-700">{ar ? `مكافأة ${idx + 1}` : `Bonus ${idx + 1}`}</div>
+            <h3 className="mt-2 text-lg font-black text-slate-950 rtl-text">{title}</h3>
+            <div className="mt-3 text-sm font-black text-blue-800 rtl-text">{ar ? "الأفضل لـ:" : "Best used for:"} {bestFor}</div>
+            <p className="mt-2 text-sm text-slate-700 leading-relaxed rtl-text">{how}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PrintFinalPage({
+  ar,
+  overall,
+  tier,
+  lang,
+  primary,
+  leverage,
+}: {
+  ar: boolean;
+  overall: number;
+  tier: Tier;
+  lang: Language;
+  primary?: CompetencyRow;
+  leverage?: CompetencyRow;
+}) {
+  return (
+    <section className="print-only pdf-final-page bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-10">
+      <div className="h-full flex flex-col justify-between min-h-[250mm]">
+        <div>
+          <div className="inline-flex rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
+            B2B / Team Diagnostic
+          </div>
+          <h2 className="mt-6 text-5xl font-black leading-tight rtl-text">
+            {ar ? "شخّص الفريق قبل أن تدرّب الفريق" : "Diagnose the Team Before You Train the Team"}
+          </h2>
+          <p className="mt-5 text-xl text-blue-100 leading-relaxed rtl-text max-w-3xl">
+            {ar
+              ? "القيمة الحقيقية لهذا التقرير تظهر عندما تستخدمه الشركة لفهم نمط الفريق كاملًا: أين القوة؟ أين التسريب؟ وما الذي يجب تطويره أولًا؟"
+              : "The real value of this report appears when an organization uses it to understand the team pattern: where the strengths are, where leakage happens, and what to develop first."}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div className="rounded-2xl bg-white/10 border border-white/15 p-5">
+            <div className="text-xs uppercase tracking-widest font-black text-blue-100">{ar ? "النتيجة العامة" : "Overall"}</div>
+            <div className="mt-2 text-4xl font-black">{overall}%</div>
+            <div className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black ${tierBadgeClass(tier)}`}>{getTierLabel(tier, lang)}</div>
+          </div>
+          <div className="rounded-2xl bg-white/10 border border-white/15 p-5">
+            <div className="text-xs uppercase tracking-widest font-black text-blue-100">{ar ? "أولوية العلاج" : "Treatment Priority"}</div>
+            <div className="mt-2 text-xl font-black rtl-text">{primary?.label || "—"}</div>
+          </div>
+          <div className="rounded-2xl bg-white/10 border border-white/15 p-5">
+            <div className="text-xs uppercase tracking-widest font-black text-blue-100">{ar ? "أفضل رافعة" : "Best Leverage"}</div>
+            <div className="mt-2 text-xl font-black rtl-text">{leverage?.label || "—"}</div>
+          </div>
+        </div>
+
+        <div className="border-t border-white/20 pt-6 text-blue-100 rtl-text">
+          {ar
+            ? "Career Labs AI · Level Up Business Consulting · التقرير مخصص للاستخدام المهني ولا يُعد بديلًا عن التقييم الإداري أو المقابلات المهنية."
+            : "Career Labs AI · Level Up Business Consulting · This report is designed for professional development and should be combined with management judgment, coaching, and performance conversations."}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1941,7 +2412,7 @@ function MriDetailedTreatmentSection({
             : "These areas do not need the same treatment depth right now. They matter because they can work as leverage points for the treatment plan or as areas that must be protected from drift."}
         </p>
 
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="pdf-compact-grid mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           {compactRows.map((row, index) => (
             <MriCompactSummaryCard
               key={`compact-${row.competencyId}-${index}`}
@@ -2005,7 +2476,7 @@ function MriDeepTreatmentPage({
     .slice(0, 2);
 
   return (
-    <article className={`pdf-avoid-break rounded-3xl border-2 ${tierSoftClass(row.tier)} shadow-xl overflow-hidden`}>
+    <article className={`pdf-treatment-page rounded-3xl border-2 ${tierSoftClass(row.tier)} shadow-xl overflow-hidden`}>
       <div className="bg-white p-6 sm:p-7">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
           <div>
@@ -2102,7 +2573,7 @@ function MriDeepTreatmentPage({
         </div>
 
         {recommendations.length > 0 && (
-          <div className="mt-4 rounded-3xl bg-white border border-slate-200 p-5">
+          <div className="pdf-extra-treatment-note mt-4 rounded-3xl bg-white border border-slate-200 p-5">
             <div className="text-sm font-black text-slate-500 uppercase tracking-widest rtl-text">
               {ar ? "ملاحظة علاج إضافية" : "Additional Treatment Note"}
             </div>
@@ -2123,7 +2594,7 @@ function MriDeepTreatmentPage({
 
 function TreatmentInsight({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-3xl bg-white/80 border border-white p-5 shadow-sm">
+    <div className="treatment-insight rounded-3xl bg-white/80 border border-white p-5 shadow-sm">
       <div className="text-sm font-black text-slate-500 uppercase tracking-widest rtl-text">{title}</div>
       <p className="mt-2 text-slate-700 leading-relaxed rtl-text">{body}</p>
     </div>
