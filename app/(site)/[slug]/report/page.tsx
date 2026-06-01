@@ -1850,7 +1850,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     </span>
                   </div>
                   <p className="mt-4 text-sm text-slate-700 leading-relaxed rtl-text">
-                    {ar
+                    {salesManager
+                      ? ar
+                        ? "هذه المنطقة قد تكون سببًا جذريًا في تسريب أداء الفريق أو ضعف الانضباط أو تراجع وضوح القيادة. ابدأ علاجها قبل محاولة إصلاح كل شيء."
+                        : "This area may be a root contributor to team-performance leakage, weak execution discipline, or loss of leadership clarity. Treat it before trying to fix everything."
+                      : ar
                       ? "هذه المنطقة قد تكون سببًا جذريًا في تسريب الفرص أو ضعف الزخم أو تراجع الثقة أثناء البيع. ابدأ علاجها قبل محاولة إصلاح كل شيء."
                       : "This area may be a root contributor to opportunity leakage, weak momentum, or loss of confidence during the sale. Treat it before trying to fix everything."}
                   </p>
@@ -1868,7 +1872,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             row={strongest}
             lang={lang}
             description={
-              ar
+              salesManager
+                ? ar
+                  ? "هذه هي المنطقة التي يمكن استخدامها كرافعة إدارية، لأنها تكشف سلوكًا قياديًا يدعم ثقة الفريق والانضباط والتنفيذ."
+                  : "This is the area you can use as management leverage because it reveals a leadership behavior that supports team confidence, discipline, and execution."
+                : ar
                 ? "هذه هي المنطقة التي يمكن استخدامها كرافعة للأداء، لأنها تكشف سلوكًا يدعم الثقة والتحكم في المحادثة."
                 : "This is the area you can use as leverage because it reveals a behavior that supports confidence and sales control."
             }
@@ -1879,7 +1887,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             row={weakest}
             lang={lang}
             description={
-              ar
+              salesManager
+                ? ar
+                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه تسريب أداء الفريق أو ضعف المساءلة أو اضطراب البايبلاين دون أن يكون واضحًا في البداية."
+                  : "This is not just a low score. It is often where team-performance leakage, weak accountability, or pipeline confusion begins before it becomes obvious."
+                : ar
                 ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه تسريب الفرص دون أن يكون واضحًا في البداية."
                 : "This is not just a low score. It is often where opportunity leakage begins before it becomes obvious."
             }
@@ -1985,7 +1997,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               rows={threats}
               empty={ar ? "لا توجد مناطق خطر واضحة." : "No clear threats listed."}
               explanation={
-                ar
+                salesManager
+                  ? ar
+                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في وضوح البايبلاين، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
+                    : "These are warning signals. If left untreated, they may create leakage in pipeline clarity, accountability, forecast quality, or team execution."
+                  : ar
                   ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في البايبلاين والمتابعة والثقة."
                   : "These are warning signals. If left untreated, they may create leakage in pipeline movement, follow-up, or confidence."
               }
@@ -1998,7 +2014,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               rows={weaknesses}
               empty={ar ? "لا توجد نقاط ضعف مصنفة هنا." : "No weaknesses listed here."}
               explanation={
-                ar
+                salesManager
+                  ? ar
+                    ? "هذه المناطق تحتاج إلى تدخل إداري مباشر، لأنها غالبًا تؤثر على التدريب، المساءلة، وضوح التوقعات، أو تنفيذ الفريق."
+                    : "These areas need direct management intervention because they often affect coaching, accountability, forecast clarity, or team execution."
+                  : ar
                   ? "هذه المناطق تحتاج إلى تدخل مباشر، لأنها غالبًا تؤثر على الانطباع الأول أو تقدم الصفقة."
                   : "These areas need direct intervention because they often affect first impressions or deal progression."
               }
@@ -2073,17 +2093,33 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 phase="1"
                 titleEn="Days 1–30: Stop the Leakage"
                 titleAr="الأيام ١–٣٠: أوقف التسريب"
-                bodyEn={`Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the behavior that is most likely leaking opportunities, then build a simple correction routine you can repeat daily.`}
-                bodyAr={`ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر تسريب للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`}
+                bodyEn={
+                  salesManager
+                    ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the management behavior most likely leaking team performance, then build a simple correction rhythm you can repeat weekly.`
+                    : `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the behavior that is most likely leaking opportunities, then build a simple correction routine you can repeat daily.`
+                }
+                bodyAr={
+                  salesManager
+                    ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الإداري الذي قد يسبب أكبر تسريب في أداء الفريق، ثم ابنِ إيقاع تصحيح بسيط يمكنك تكراره أسبوعيًا.`
+                    : `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر تسريب للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
+                }
               />
 
               <PrescriptionPhase
                 ar={ar}
                 phase="2"
-                titleEn="Days 31–60: Build New Selling Behavior"
-                titleAr="الأيام ٣١–٦٠: ابنِ سلوكًا بيعيًا جديدًا"
-                bodyEn={`Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support the weaker behaviors and create a more stable sales rhythm.`}
-                bodyAr={`استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الأضعف وبناء إيقاع بيعي أكثر ثباتًا.`}
+                titleEn={salesManager ? "Days 31–60: Build New Management Rhythm" : "Days 31–60: Build New Selling Behavior"}
+                titleAr={salesManager ? "الأيام ٣١–٦٠: ابنِ إيقاعًا إداريًا جديدًا" : "الأيام ٣١–٦٠: ابنِ سلوكًا بيعيًا جديدًا"}
+                bodyEn={
+                  salesManager
+                    ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker management behaviors and create a more stable team execution rhythm.`
+                    : `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support the weaker behaviors and create a more stable sales rhythm.`
+                }
+                bodyAr={
+                  salesManager
+                    ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الإدارية الأضعف وبناء إيقاع تنفيذ أكثر ثباتًا داخل الفريق.`
+                    : `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الأضعف وبناء إيقاع بيعي أكثر ثباتًا.`
+                }
               />
 
               <PrescriptionPhase
@@ -2091,8 +2127,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 phase="3"
                 titleEn="Days 61–90: Sharpen and Repeat"
                 titleAr="الأيام ٦١–٩٠: صقِل وكرّر"
-                bodyEn="Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."
-                bodyAr="حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."
+                bodyEn={salesManager ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity." : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."}
+                bodyAr={salesManager ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص البايبلاين أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر." : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."}
               />
             </div>
           </section>
@@ -2120,21 +2156,35 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 {ar ? "٦ مكافآت علاجية عملية تساعدك على التطبيق وليس القراءة فقط" : "6 Practical Remedy Bonuses to Help You Apply the Treatment, Not Just Read the Report"}
               </h2>
               <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
-                {ar
+                {salesManager
+                  ? ar
+                    ? "هذه الموارد تعمل كأدوات علاجية مرافقة للتقرير. استخدمها لتحسين التدريب، فحص البايبلاين، المساءلة، الاجتماعات الفردية، إدارة المندوبين الصعبين، والتقارير التنفيذية."
+                    : "These resources work as practical remedy tools alongside the report. Use them to improve coaching, pipeline inspection, accountability, one-on-ones, difficult-rep conversations, and executive reporting."
+                  : ar
                   ? "هذه الموارد تعمل كأدوات علاجية مرافقة للتقرير. استخدمها لعلاج الاعتراضات، ضغط العملاء، الوقت، المواعيد، الذكاء الاصطناعي، وتحويل التشخيص إلى تنفيذ."
                   : "These resources work as practical remedy tools alongside the report. Use them to treat objections, difficult customers, pressure, time leaks, decision-maker access, AI execution, and follow-up gaps."}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                ar ? "أفضل 50 إجابة لأصعب 50 اعتراض بيعي" : "The 50 Best Answers to the 50 Hardest Objections",
-                ar ? "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي" : "How to Increase Your Sales Using AI",
-                ar ? "كيف تحفّز نفسك تحت الضغط" : "How to Motivate Yourself Under Pressure",
-                ar ? "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار" : "How to Book Appointments with VIPs and Decision Makers",
-                ar ? "إتقان إدارة الوقت للمبيعات الخارجية" : "Time-Management Mastery for Outdoor Sales",
-                ar ? "كيف تتعامل مع العملاء الصعبين دون خسارة السيطرة" : "How to Deal with Difficult Customers Without Losing Control",
-              ].map((bonus, idx) => (
+              {(salesManager
+                ? [
+                    ar ? "دليل تدريب وتطوير مندوبي المبيعات" : "Sales Coaching & Rep Development Playbook",
+                    ar ? "قائمة فحص البايبلاين والتوقعات" : "Pipeline & Forecast Inspection Checklist",
+                    ar ? "إطار محادثات المساءلة ومعالجة ضعف الأداء" : "Accountability & Underperformance Conversation Framework",
+                    ar ? "قالب الاجتماع الفردي واجتماعات المبيعات" : "One-on-One & Sales Meeting Rhythm Templates",
+                    ar ? "نص إدارة مندوبي المبيعات الصعبين" : "Managing Difficult Salespeople Conversation Script",
+                    ar ? "قالب التقرير التنفيذي الأسبوعي" : "Executive Sales Update Template",
+                  ]
+                : [
+                    ar ? "أفضل 50 إجابة لأصعب 50 اعتراض بيعي" : "The 50 Best Answers to the 50 Hardest Objections",
+                    ar ? "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي" : "How to Increase Your Sales Using AI",
+                    ar ? "كيف تحفّز نفسك تحت الضغط" : "How to Motivate Yourself Under Pressure",
+                    ar ? "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار" : "How to Book Appointments with VIPs and Decision Makers",
+                    ar ? "إتقان إدارة الوقت للمبيعات الخارجية" : "Time-Management Mastery for Outdoor Sales",
+                    ar ? "كيف تتعامل مع العملاء الصعبين دون خسارة السيطرة" : "How to Deal with Difficult Customers Without Losing Control",
+                  ]
+              ).map((bonus, idx) => (
                 <div key={bonus} className="rounded-3xl bg-white/10 border border-white/15 p-5">
                   <div className="text-sm font-black text-amber-200 uppercase tracking-widest">
                     {ar ? `مكافأة ${idx + 1}` : `Bonus ${idx + 1}`}
@@ -2205,7 +2255,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     {(ar
                       ? [
                           "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
-                          "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
+                          salesManager ? "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم قيادتك لفريق المبيعات" : "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
                           "كشف الأنماط الجذرية خلف تعثّر الصفقات وضعف الزخم",
                           "ترتيب واضح لما يجب إصلاحه أولًا بدل التخمين",
                           "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
@@ -2224,7 +2274,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                           ]
                         : [
                             "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
-                            "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
+                            salesManager ? "A full diagnostic and treatment tool examining 15 competencies in your sales-management leadership body" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
                             "The root patterns behind stalled deals, weak momentum, and hidden leakage",
                             "A clear priority order of what to correct first instead of guessing",
                             "A practical 90-day performance prescription without sitting through a long training course",
