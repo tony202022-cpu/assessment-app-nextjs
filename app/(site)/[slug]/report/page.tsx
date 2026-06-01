@@ -758,7 +758,7 @@ function getBusinessHealthTreatmentMeta(row: CompetencyRow, lang: Language) {
     revenue_engine_sales_predictability: {
       leakage: "Revenue may depend on owner effort, random referrals, seasonal demand, or heroic sales activity instead of a predictable engine.",
       root: "The root pattern is revenue fragility: inquiries, conversion, follow-up, sales rhythm, and forecasting are not yet operating as one system.",
-      stop: "Stop judging revenue health only by this month’s sales number.",
+      stop: "Stop judging revenue health only by this month’s revenue number.",
       start: "Start measuring the full revenue engine: lead flow, conversion, follow-up, sales cycle, average deal value, and forecast confidence.",
       drill: "Map the last 20 customers and identify where each came from, how they converted, why they bought, and how long the decision took.",
       metric: "qualified inquiries converted into predictable revenue within a tracked sales cycle",
@@ -1546,9 +1546,22 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
   return { ...meta, patternNote };
 }
 
-function getPatternArchetype(overall: number, weakest: CompetencyRow[], strongest: CompetencyRow[], lang: Language, context: "lawyer" | "manager" | "sales" = "sales") {
+function getPatternArchetype(overall: number, weakest: CompetencyRow[], strongest: CompetencyRow[], lang: Language, context: "lawyer" | "business" | "manager" | "sales" = "sales") {
   const weakestNames = weakest.map((x) => x.label).join(", ");
   const strongestNames = strongest.map((x) => x.label).join(", ");
+
+  if (context === "business") {
+    if (lang === "ar") {
+      if (overall < 30) return { title: "نمط تسريب حاد في صحة الشركة", body: `الصورة الحالية تشير إلى أن المشكلة ليست في مجال واحد فقط. أضعف المجالات (${weakestNames}) قد تخلق سلسلة ضغط تبدأ من ضعف الرؤية وتنتهي بتسريب في النقد أو العملاء أو التشغيل أو وقت المالك. ابدأ بأكبر تسريب، ثم ابنِ خارطة علاج حوله.` };
+      if (overall < 50) return { title: "نمط إنذار في صحة الشركة يحتاج إلى تثبيت سريع", body: `الشركة تعمل، لكنها لا تعمل بقوة كافية. أضعف المجالات (${weakestNames}) تحتاج إلى تدخل مبكر، بينما يمكن استخدام أقوى المجالات (${strongestNames}) كرافعة لتثبيت الشركة وتقوية نظامها التشغيلي.` };
+      if (overall < 75) return { title: "نمط فرصة نمو غير مكتملة يحتاج إلى نظام تشغيل أوضح", body: `صحة الشركة ليست ضعيفة، لكنها غير محمية بما يكفي. المطلوب هو تحويل أقوى المجالات (${strongestNames}) إلى نظام مراجعة وتشغيل ثابت، واستخدامها لدعم أضعف المجالات (${weakestNames}).` };
+      return { title: "نمط صحة شركة قوي يحتاج إلى حماية وتوسيع", body: `الشركة تمتلك قاعدة صحية قوية. الخطر ليس الضعف، بل التراخي أو النمو غير المنظم. استخدم أقوى المجالات (${strongestNames}) كمعايير أسبوعية، وراقب أضعف المجالات (${weakestNames}) حتى لا تصبح تسريبًا لاحقًا.` };
+    }
+    if (overall < 30) return { title: "High-Leakage Business Health Pattern", body: `The current pattern suggests the problem is not one isolated area. The weakest areas (${weakestNames}) may create a pressure chain that starts with poor visibility and ends with leakage in cash, customers, operations, or owner time. Start with the biggest leak and build the roadmap around it.` };
+    if (overall < 50) return { title: "Business Health Warning Pattern Requiring Stabilization", body: `The business is operating, but not strongly enough. The weakest areas (${weakestNames}) need early treatment, while the strongest areas (${strongestNames}) can be used as leverage to stabilize the company and strengthen its operating system.` };
+    if (overall < 75) return { title: "Unfinished Growth Pattern Requiring a Clearer Operating System", body: `The business is not broken, but its health is not protected enough. The treatment is to turn the strongest areas (${strongestNames}) into a stable review and execution rhythm, and use them to support the weakest areas (${weakestNames}).` };
+    return { title: "Strong Business Health Pattern Requiring Protection and Scale Discipline", body: `The company has a strong health base. The danger is not failure; it is drift or unmanaged growth. Use the strongest areas (${strongestNames}) as weekly operating standards and monitor the weakest areas (${weakestNames}) so they do not become future leakage.` };
+  }
 
   if (context === "lawyer") {
     if (lang === "ar") {
@@ -2309,7 +2322,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
             <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50 p-6">
               <h3 className="text-xl font-black text-slate-950 rtl-text">
-                {ar ? "ما الذي يعنيه هذا تجاريًا؟" : "What this means commercially"}
+                {businessHealth ? (ar ? "ما الذي يعنيه هذا لصحة الشركة؟" : "What this means for the business") : ar ? "ما الذي يعنيه هذا تجاريًا؟" : "What this means commercially"}
               </h3>
               <p className="mt-3 text-slate-700 leading-relaxed rtl-text">
                 {overallMeaningText}
@@ -2634,6 +2647,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   ? ar
                     ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في وضوح البايبلاين، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
                     : "These are warning signals. If left untreated, they may create leakage in pipeline clarity, accountability, forecast quality, or team execution."
+                  : businessHealth
+                  ? ar
+                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في النقد والعملاء والتنفيذ ووقت المالك واستعداد الشركة للنمو."
+                    : "These are warning signals. If left untreated, they may create leakage in cash, customers, execution, owner time, or growth readiness."
                   : ar
                   ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في البايبلاين والمتابعة والثقة."
                   : "These are warning signals. If left untreated, they may create leakage in pipeline movement, follow-up, or confidence."
@@ -2655,6 +2672,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   ? ar
                     ? "هذه المناطق تحتاج إلى تدخل إداري مباشر، لأنها غالبًا تؤثر على التدريب، المساءلة، وضوح التوقعات، أو تنفيذ الفريق."
                     : "These areas need direct management intervention because they often affect coaching, accountability, forecast clarity, or team execution."
+                  : businessHealth
+                  ? ar
+                    ? "هذه المناطق تحتاج إلى تدخل مباشر، لأنها غالبًا تؤثر على وضوح الإدارة أو تدفق الإيرادات أو استقرار التشغيل أو ثقة العملاء."
+                    : "These areas need direct intervention because they often affect management visibility, revenue flow, operating stability, or customer confidence."
                   : ar
                   ? "هذه المناطق تحتاج إلى تدخل مباشر، لأنها غالبًا تؤثر على الانطباع الأول أو تقدم الصفقة."
                   : "These areas need direct intervention because they often affect first impressions or deal progression."
@@ -2712,6 +2733,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               ar={ar}
               lawyer={lawyer}
               salesManager={salesManager}
+              businessHealth={businessHealth}
             />
           </div>
         )}
@@ -2780,8 +2802,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 phase="3"
                 titleEn="Days 61–90: Sharpen and Repeat"
                 titleAr="الأيام ٦١–٩٠: صقِل وكرّر"
-                bodyEn={lawyer ? "Turn the corrected behaviors into a legal client-conversion operating system: open consultations better, diagnose needs better, explain legal value better, present professional fees better, and follow up with more confidence." : salesManager ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity." : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."}
-                bodyAr={lawyer ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتحويل العملاء للمحامين: افتح الاستشارة أفضل، شخّص الحاجة القانونية أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، وتابع العميل باحتراف." : salesManager ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص البايبلاين أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر." : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."}
+                bodyEn={lawyer ? "Turn the corrected behaviors into a legal client-conversion operating system: open consultations better, diagnose needs better, explain legal value better, present professional fees better, and follow up with more confidence." : businessHealth ? "Turn the corrected actions into a business operating system: review the right numbers, protect cash, strengthen customer flow, clarify roles, stabilize operations, and remove owner dependency." : salesManager ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity." : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."}
+                bodyAr={lawyer ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتحويل العملاء للمحامين: افتح الاستشارة أفضل، شخّص الحاجة القانونية أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، وتابع العميل باحتراف." : businessHealth ? "حوّل الإجراءات المصححة إلى نظام تشغيل للشركة: راجع الأرقام الصحيحة، احمِ النقد، قوِّ تدفق العملاء، وضّح الأدوار، ثبّت التشغيل، وقلّل اعتماد الشركة على المالك." : salesManager ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص البايبلاين أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر." : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."}
               />
             </div>
           </section>
@@ -2860,7 +2882,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
 
         {/* PRINT-ONLY BONUS REMEDY MAP */}
-        {mri && <PrintBonusRemedyMap ar={ar} lawyer={lawyer} weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)} />}
+        {mri && <PrintBonusRemedyMap ar={ar} lawyer={lawyer} businessHealth={businessHealth} weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)} />}
 
         {/* SCAN-ONLY MRI PRESCRIPTION UPSELL */}
         {!mri && (
@@ -3169,6 +3191,7 @@ function PrintDiagnosticTable({
   overallTier: Tier;
   lang: Language;
 }) {
+  const businessHealth = rows.some((row) => BUSINESS_HEALTH_AREA_IDS.has(row.competencyId));
   return (
     <section className="print-only pdf-diagnostic-table-page">
       <div className="mb-6">
@@ -3206,7 +3229,7 @@ function PrintDiagnosticTable({
           <thead>
             <tr>
               <th>{ar ? "#" : "#"}</th>
-              <th>{ar ? "الكفاءة" : "Competency"}</th>
+              <th>{businessHealth ? (ar ? "المجال" : "Area") : ar ? "الكفاءة" : "Competency"}</th>
               <th>{ar ? "الدرجة" : "Score"}</th>
               <th>{ar ? "المنطقة" : "Zone"}</th>
               <th>{ar ? "المعنى التنفيذي" : "Executive Meaning"}</th>
@@ -3232,6 +3255,7 @@ function PrintDiagnosticTable({
 function PrintDetailedRoadmap({
   ar,
   lawyer = false,
+  businessHealth = false,
   primary,
   secondary,
   third,
@@ -3239,6 +3263,7 @@ function PrintDetailedRoadmap({
 }: {
   ar: boolean;
   lawyer?: boolean;
+  businessHealth?: boolean;
   primary?: CompetencyRow;
   secondary?: CompetencyRow;
   third?: CompetencyRow;
@@ -3266,6 +3291,28 @@ function PrintDetailedRoadmap({
           ["Weeks 9–10", "Turn the correction into a daily consultation system: receive, diagnose, explain, present professional fees, follow up, and secure engagement."],
           ["Weeks 11–12", "Test the behavior under client pressure or comparison with another lawyer, then choose the three habits that remain after the plan ends."],
         ]
+    : businessHealth
+    ? ar
+      ? [
+          ["الأسبوع 1", `ابدأ بمجال ${primary?.label || "الأولوية الأولى"}. راقب أين يظهر أكبر تسريب في النقد أو العملاء أو التشغيل أو وقت المالك واكتب مثالًا يوميًا.`],
+          ["الأسبوع 2", "حوّل التسريب إلى إجراء تشغيل واضح: رقم يجب مراجعته، مسؤول يجب تحديده، أو خطوة يجب تثبيتها."],
+          ["الأسبوع 3", `أدخل مجال ${secondary?.label || "الخطر الثاني"} في العلاج حتى لا يبقى الضغط يتكرر داخل الشركة.`],
+          ["الأسبوع 4", "راجع أول شهر: ما الذي تحسن في وضوح الإدارة أو تدفق الإيرادات أو استقرار التشغيل؟"],
+          ["الأسابيع 5–6", `استخدم ${leverage?.label || "أقوى مجال لديك"} كرافعة لتقوية المجالات الأضعف في الشركة.`],
+          ["الأسابيع 7–8", `أدخل مجال ${third?.label || "الأولوية الثالثة"} في التطبيق مع مؤشر أسبوعي واضح.`],
+          ["الأسابيع 9–10", "حوّل التصحيح إلى نظام تشغيل أسبوعي: أرقام، أولويات، مسؤوليات، مراجعة، وقرارات."],
+          ["الأسابيع 11–12", "اختبر ثبات التحسين تحت ضغط السوق، ثم اختر ثلاث عادات إدارية وتشغيلية تبقى بعد نهاية الخطة."],
+        ]
+      : [
+          ["Week 1", `Start with ${primary?.label || "the first priority"}. Observe where the biggest leak appears in cash, customers, operations, or owner time and write one example daily.`],
+          ["Week 2", "Turn the leak into a clear operating action: a number to review, an owner to assign, or a step to stabilize."],
+          ["Week 3", `Bring ${secondary?.label || "the second risk"} into treatment so the pressure pattern does not keep repeating inside the business.`],
+          ["Week 4", "Review month one: what improved in management visibility, revenue flow, or operating stability?"],
+          ["Weeks 5–6", `Use ${leverage?.label || "your strongest area"} as leverage to strengthen weaker parts of the company.`],
+          ["Weeks 7–8", `Bring ${third?.label || "the third priority"} into practice with one clear weekly metric.`],
+          ["Weeks 9–10", "Turn the correction into a weekly operating system: numbers, priorities, owners, review, and decisions."],
+          ["Weeks 11–12", "Test the improvement under market pressure, then choose the three management and operating habits that remain after the plan ends."],
+        ]
     : ar
     ? [
         ["الأسبوع 1", `ابدأ بمنطقة ${primary?.label || "الأولوية الأولى"}. راقب السلوك الذي يسبب أكبر تسريب واكتب مثالًا يوميًا.`],
@@ -3291,16 +3338,20 @@ function PrintDetailedRoadmap({
   return (
     <section className="print-only pdf-roadmap-page">
       <div className="inline-flex rounded-full bg-slate-950 text-white px-4 py-2 text-xs font-black uppercase tracking-widest">
-        {lawyer ? (ar ? "خطة علاج للطباعة للمحامين" : "Printable Lawyer Treatment Roadmap") : (ar ? "خطة علاج للطباعة" : "Printable Treatment Roadmap")}
+        {lawyer ? (ar ? "خطة علاج للطباعة للمحامين" : "Printable Lawyer Treatment Roadmap") : businessHealth ? (ar ? "خارطة طريق صحة الشركة للطباعة" : "Printable Business Health Roadmap") : (ar ? "خطة علاج للطباعة" : "Printable Treatment Roadmap")}
       </div>
       <h2 className="mt-4 text-4xl font-black text-slate-950 rtl-text">
-        {lawyer ? (ar ? "خطة الـ 90 يومًا: من الاستشارة إلى التعاقد" : "90-Day Roadmap: From Consultation to Engagement") : (ar ? "خطة الـ 90 يومًا: من التشخيص إلى السلوك" : "90-Day Roadmap: From Diagnosis to Behavior")}
+        {lawyer ? (ar ? "خطة الـ 90 يومًا: من الاستشارة إلى التعاقد" : "90-Day Roadmap: From Consultation to Engagement") : businessHealth ? (ar ? "خطة الـ 90 يومًا: من التشخيص إلى تثبيت الشركة" : "90-Day Roadmap: From Diagnosis to Business Stabilization") : (ar ? "خطة الـ 90 يومًا: من التشخيص إلى السلوك" : "90-Day Roadmap: From Diagnosis to Behavior")}
       </h2>
       <p className="mt-3 text-slate-600 leading-relaxed rtl-text">
         {lawyer
           ? ar
             ? "هذه الصفحة تجعل خطة تحويل العملاء للمحامين قابلة للوضع في ملف أو المتابعة مع شريك أو مدير مكتب أو مدرب."
             : "This page makes the lawyer client-conversion plan easy to file, review, and follow with a partner, firm manager, or coach."
+          : businessHealth
+          ? ar
+            ? "هذه الصفحة تجعل خارطة صحة الشركة قابلة للمراجعة مع المالك، المدير العام، الشركاء، أو فريق الإدارة."
+            : "This page makes the business health roadmap easy to review with the owner, general manager, partners, or leadership team."
           : ar
           ? "هذه الصفحة تجعل الخطة قابلة للوضع في ملف أو المتابعة مع مدير مباشر."
           : "This page makes the plan easy to file, review, and follow with a manager or coach."}
@@ -3317,7 +3368,7 @@ function PrintDetailedRoadmap({
   );
 }
 
-function PrintBonusRemedyMap({ ar, lawyer, weakestSix }: { ar: boolean; lawyer: boolean; weakestSix: CompetencyRow[] }) {
+function PrintBonusRemedyMap({ ar, lawyer, businessHealth = false, weakestSix }: { ar: boolean; lawyer: boolean; businessHealth?: boolean; weakestSix: CompetencyRow[] }) {
   const bonuses = lawyer
     ? ar
       ? [
@@ -3335,6 +3386,24 @@ function PrintBonusRemedyMap({ ar, lawyer, weakestSix }: { ar: boolean; lawyer: 
           ["Post-Consultation Follow-Up Template", "Follow-up, documents, next step", "Use it so good consultations do not disappear because of silence after the meeting."],
           ["Legal Client Experience Map", "Satisfaction, expectations, referrals", "Connect it to how you explain the legal pathway and client updates, even when outcomes cannot be guaranteed."],
           ["Emotional Client Control Framework", "Difficult clients, professional boundaries, trust", "Use it when the client becomes emotional or asks for guarantees that cannot be professionally given."],
+        ]
+    : businessHealth
+    ? ar
+      ? [
+          ["لوحة مؤشرات صحة الشركة", "الأرقام، النقد، العملاء، التشغيل", "استخدمها لبناء مراجعة أسبوعية تكشف الواقع قبل أن يتحول إلى أزمة."],
+          ["خارطة تثبيت التدفق النقدي", "النقد، التحصيل، الهامش", "استخدمها لمعرفة أين يتسرب المال وكيف تُراجع النقد والربحية أسبوعيًا."],
+          ["قالب مراجعة التشغيل والمسؤوليات", "العمليات، الأدوار، المساءلة", "استخدمه لتقليل اعتماد الشركة على الذاكرة وتدخل المالك اليومي."],
+          ["خريطة تجربة العميل والاحتفاظ", "العملاء، الولاء، الإحالات", "استخدمها لاكتشاف أين يضعف رضا العملاء أو تتراجع الإحالات."],
+          ["قائمة مخاطر واستمرارية الأعمال", "المخاطر، الموردون، الموظفون، الامتثال", "استخدمها لاكتشاف الاعتمادات الخفية قبل أن تضغط على الشركة."],
+          ["خارطة جاهزية النمو", "النمو، الأنظمة، الفريق", "استخدمها لتحديد هل الشركة جاهزة للنمو أم تحتاج تثبيتًا أولًا."],
+        ]
+      : [
+          ["Business Health Dashboard", "Numbers, cash, customers, operations", "Use it to build a weekly review that reveals business reality before it becomes a crisis."],
+          ["Cash Flow Stabilization Map", "Cash, collections, margin", "Use it to identify where money leaks and how to review cash and profitability weekly."],
+          ["Operations & Accountability Review Template", "Operations, roles, accountability", "Use it to reduce dependence on memory and daily owner intervention."],
+          ["Customer Experience & Retention Map", "Customers, loyalty, referrals", "Use it to detect where customer satisfaction weakens or referrals decline."],
+          ["Risk & Continuity Checklist", "Risk, suppliers, staff, compliance", "Use it to identify hidden dependencies before they put pressure on the company."],
+          ["Growth Readiness Roadmap", "Growth, systems, team", "Use it to decide whether the company is ready to scale or must stabilize first."],
         ]
     : ar
     ? [
@@ -3611,6 +3680,7 @@ function MriDetailedTreatmentSection({
   ar,
   lawyer = false,
   salesManager = false,
+  businessHealth = false,
 }: {
   rows: CompetencyRow[];
   weakestSix: CompetencyRow[];
@@ -3621,8 +3691,9 @@ function MriDetailedTreatmentSection({
   ar: boolean;
   lawyer?: boolean;
   salesManager?: boolean;
+  businessHealth?: boolean;
 }) {
-  const pattern = getPatternArchetype(overall, weakestSix.slice(0, 3), strongestRows.slice(0, 2), lang, lawyer ? "lawyer" : salesManager ? "manager" : "sales");
+  const pattern = getPatternArchetype(overall, weakestSix.slice(0, 3), strongestRows.slice(0, 2), lang, lawyer ? "lawyer" : businessHealth ? "business" : salesManager ? "manager" : "sales");
   const weakestLabel = weakestSix[0]?.label || "";
   const strongestLabel = strongestRows[0]?.label || "";
 
@@ -3631,11 +3702,17 @@ function MriDetailedTreatmentSection({
       {sectionTitle(
         lawyer
           ? ar ? "صفحات علاج تحويل الاستشارة القانونية حسب نمطك" : "Legal Client Conversion Treatment Pages Based on Your Pattern"
+          : businessHealth
+          ? ar ? "صفحات علاج صحة الشركة حسب نمطك" : "Business Health Treatment Pages Based on Your Pattern"
           : ar ? "صفحات العلاج التفصيلية حسب نمطك" : "Detailed Treatment Pages Based on Your Pattern",
         lawyer
           ? ar
             ? "التقرير لا يكرر نفس النص لكل محامٍ. يتم توسيع أضعف ٦ مناطق لديك في رحلة الاستفسار والاستشارة وأتعاب المحاماة وقرار التعاقد، بينما تظهر بقية الكفاءات كملخصات حماية أو رافعة."
             : "This report does not repeat the same advice for every lawyer. Your weakest 6 areas in the inquiry, consultation, professional-fee, and engagement journey are expanded into treatment pages, while the remaining competencies appear as compact leverage or protection summaries."
+          : businessHealth
+          ? ar
+            ? "التقرير لا يكرر نفس النص لكل شركة. يتم توسيع أضعف ٦ مجالات في صحة الشركة إلى صفحات علاج، بينما تظهر بقية المجالات كملخصات حماية أو رافعة."
+            : "This report does not repeat the same advice for every business. Your weakest 6 business health areas are expanded into treatment pages, while the remaining areas appear as compact leverage or protection summaries."
           : ar
           ? "التقرير لا يكرر نفس النص لكل شخص. يتم توسيع أضعف ٦ مناطق لديك، بينما تظهر بقية الكفاءات كملخصات حماية أو رافعة."
           : "This report does not repeat the same advice for every person. Your weakest 6 areas are expanded into treatment pages, while the remaining competencies appear as compact leverage or protection summaries."
@@ -3643,7 +3720,7 @@ function MriDetailedTreatmentSection({
 
       <div className="pdf-avoid-break rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-7 shadow-xl mb-6">
         <div className="inline-flex rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
-          {lawyer ? (ar ? "نمط تحويل العملاء القانونيين" : "Legal Client Conversion Pattern") : (ar ? "نمط الأداء العام" : "Overall Performance Pattern")}
+          {lawyer ? (ar ? "نمط تحويل العملاء القانونيين" : "Legal Client Conversion Pattern") : businessHealth ? (ar ? "نمط صحة الشركة" : "Business Health Pattern") : (ar ? "نمط الأداء العام" : "Overall Performance Pattern")}
         </div>
         <h3 className="mt-4 text-2xl sm:text-3xl font-black leading-tight rtl-text">
           {pattern.title}
@@ -3655,22 +3732,22 @@ function MriDetailedTreatmentSection({
         <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
           <MiniPatternBox
             ar={ar}
-            labelEn={lawyer ? "Primary consultation leak" : "Primary leakage"}
-            labelAr={lawyer ? "تسريب الاستشارة الأساسي" : "التسريب الأساسي"}
+            labelEn={lawyer ? "Primary consultation leak" : businessHealth ? "Primary business leak" : "Primary leakage"}
+            labelAr={lawyer ? "تسريب الاستشارة الأساسي" : businessHealth ? "تسريب الشركة الأساسي" : "التسريب الأساسي"}
             value={weakestSix[0]?.label || "—"}
             value2={weakestSix[0] ? `${weakestSix[0].percentage}% · ${getTierLabel(weakestSix[0].tier, lang)}` : ""}
           />
           <MiniPatternBox
             ar={ar}
-            labelEn={lawyer ? "Secondary engagement risk" : "Secondary risk"}
-            labelAr={lawyer ? "خطر التعاقد الثاني" : "الخطر الثاني"}
+            labelEn={lawyer ? "Secondary engagement risk" : businessHealth ? "Secondary business risk" : "Secondary risk"}
+            labelAr={lawyer ? "خطر التعاقد الثاني" : businessHealth ? "خطر الشركة الثاني" : "الخطر الثاني"}
             value={weakestSix[1]?.label || "—"}
             value2={weakestSix[1] ? `${weakestSix[1].percentage}% · ${getTierLabel(weakestSix[1].tier, lang)}` : ""}
           />
           <MiniPatternBox
             ar={ar}
-            labelEn={lawyer ? "Best professional leverage" : "Best leverage"}
-            labelAr={lawyer ? "أفضل رافعة مهنية" : "أفضل رافعة"}
+            labelEn={lawyer ? "Best professional leverage" : businessHealth ? "Best business leverage" : "Best leverage"}
+            labelAr={lawyer ? "أفضل رافعة مهنية" : businessHealth ? "أفضل رافعة للشركة" : "أفضل رافعة"}
             value={strongestRows[0]?.label || "—"}
             value2={strongestRows[0] ? `${strongestRows[0].percentage}% · ${getTierLabel(strongestRows[0].tier, lang)}` : ""}
           />
@@ -3693,10 +3770,14 @@ function MriDetailedTreatmentSection({
 
       <div className="mt-8">
         <h3 className="text-2xl sm:text-3xl font-black text-slate-950 rtl-text">
-          {ar ? "ملخص الكفاءات المتبقية: حماية ورافعة" : "Remaining Competencies: Protection and Leverage Summary"}
+          {businessHealth ? (ar ? "ملخص المجالات المتبقية: حماية ورافعة" : "Remaining Business Areas: Protection and Leverage Summary") : ar ? "ملخص الكفاءات المتبقية: حماية ورافعة" : "Remaining Competencies: Protection and Leverage Summary"}
         </h3>
         <p className="mt-2 text-slate-600 leading-relaxed rtl-text">
-          {ar
+          {businessHealth
+            ? ar
+              ? "هذه المجالات لا تحتاج إلى نفس عمق العلاج الآن. لكنها مهمة لأنها قد تعمل كرافعات تدعم خارطة الطريق أو كمجالات يجب حمايتها من التراجع."
+              : "These areas do not need the same treatment depth right now. They matter because they can work as leverage points for the roadmap or as areas that must be protected from drift."
+            : ar
             ? "هذه المناطق لا تحتاج إلى نفس عمق العلاج الآن. لكنها مهمة لأنها قد تعمل كرافعات تدعم خطة العلاج أو كمناطق يجب حمايتها من التراجع."
             : "These areas do not need the same treatment depth right now. They matter because they can work as leverage points for the treatment plan or as areas that must be protected from drift."}
         </p>
@@ -3788,7 +3869,7 @@ function MriDeepTreatmentPage({
           <div className="force-ltr text-left lg:text-right">
             <div className="text-5xl font-black text-slate-950">{row.percentage}%</div>
             <div className="mt-1 text-xs font-black uppercase tracking-widest text-slate-500">
-              {BUSINESS_HEALTH_AREA_IDS.has(row.competencyId) ? (ar ? "درجة المنطقة" : "Area Score") : (ar ? "درجة الكفاءة" : "Competency Score")}
+              {BUSINESS_HEALTH_AREA_IDS.has(row.competencyId) ? (ar ? "درجة المجال" : "Area Score") : (ar ? "درجة الكفاءة" : "Competency Score")}
             </div>
           </div>
         </div>
@@ -3842,7 +3923,7 @@ function MriDeepTreatmentPage({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div>
               <div className="text-xs font-black uppercase tracking-widest text-amber-200 rtl-text">
-                {ar ? "وصفة ٧ أيام" : "7-Day Field Prescription"}
+                {BUSINESS_HEALTH_AREA_IDS.has(row.competencyId) ? (ar ? "وصفة عمل لمدة ٧ أيام" : "7-Day Business Prescription") : ar ? "وصفة ٧ أيام" : "7-Day Field Prescription"}
               </div>
               <p className="mt-2 text-blue-100 leading-relaxed rtl-text">{meta.drill}</p>
             </div>
