@@ -54,6 +54,20 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   emotional_difficult_clients: { en: "Managing Emotional, Difficult or Unrealistic Clients", ar: "إدارة العملاء الانفعاليين أو الصعبين أو غير الواقعيين" },
   client_experience_referral_growth: { en: "Client Experience, Satisfaction & Referral Growth", ar: "تجربة العميل والرضا ونمو الإحالات" },
 
+  // SME Business Health assessments
+  strategic_direction_business_clarity: { en: "Strategic Direction & Business Clarity", ar: "الاتجاه الاستراتيجي ووضوح الشركة" },
+  revenue_engine_sales_predictability: { en: "Revenue Engine & Sales Predictability", ar: "محرك الإيرادات واستقرار المبيعات" },
+  marketing_positioning_lead_quality: { en: "Marketing Positioning & Lead Quality", ar: "التموضع التسويقي وجودة العملاء المحتملين" },
+  customer_experience_retention: { en: "Customer Experience & Retention", ar: "تجربة العملاء والاحتفاظ بهم" },
+  cash_flow_margins_financial_control: { en: "Cash Flow, Margins & Financial Control", ar: "التدفق النقدي والهوامش والرقابة المالية" },
+  operations_systems_process_discipline: { en: "Operations, Systems & Process Discipline", ar: "العمليات والأنظمة وانضباط الإجراءات" },
+  people_roles_accountability: { en: "People, Roles & Accountability", ar: "الأفراد والأدوار والمساءلة" },
+  leadership_decision_making_rhythm: { en: "Leadership & Decision-Making Rhythm", ar: "القيادة وإيقاع اتخاذ القرار" },
+  products_services_value_proposition: { en: "Products, Services & Value Proposition", ar: "المنتجات والخدمات وعرض القيمة" },
+  technology_data_management_visibility: { en: "Technology, Data & Management Visibility", ar: "التقنية والبيانات ووضوح الإدارة" },
+  risk_compliance_business_continuity: { en: "Risk, Compliance & Business Continuity", ar: "المخاطر والامتثال واستمرارية الأعمال" },
+  growth_readiness_scalability: { en: "Growth Readiness & Scalability", ar: "جاهزية النمو وقابلية التوسع" },
+
   // Sales Manager assessments
   sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
   pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية البايبلاين وفحص الصفقات" },
@@ -142,6 +156,12 @@ function isLawyerAssessment(slug: string, attemptAssessmentId?: string | null) {
   return s.includes("lawyer-client-conversion") || a.includes("lawyer_client_conversion") || s.includes("lawyer") || a.includes("lawyer");
 }
 
+function isBusinessHealthAssessment(slug: string, attemptAssessmentId?: string | null) {
+  const s = String(slug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  return s.includes("sme-business-health") || a.includes("sme_business_health") || s.includes("business-health") || a.includes("business_health");
+}
+
 
 function shortAttemptId(id: string) {
   const x = String(id || "");
@@ -221,6 +241,21 @@ function lawyerHealthLabel(overall: number, lang: Language) {
   if (overall >= 50) return "Clear Client Conversion Opportunity Zone";
   if (overall >= 30) return "Client Conversion Warning Zone";
   return "High Consultation Leakage Zone";
+}
+
+
+function businessHealthLabel(overall: number, lang: Language) {
+  if (lang === "ar") {
+    if (overall >= 75) return "منطقة صحة أعمال قوية";
+    if (overall >= 50) return "منطقة فرصة واضحة لتقوية الشركة";
+    if (overall >= 30) return "منطقة إنذار في صحة الشركة";
+    return "منطقة تسريب حاد في الأعمال";
+  }
+
+  if (overall >= 75) return "Strong Business Health Zone";
+  if (overall >= 50) return "Clear Business Improvement Zone";
+  if (overall >= 30) return "Business Health Warning Zone";
+  return "High Business Leakage Zone";
 }
 
 function commercialMeaning(tier: Tier, label: string, lang: Language) {
@@ -343,6 +378,47 @@ const LAWYER_COMPETENCY_IDS = new Set([
   "client_experience_referral_growth",
 ]);
 
+const BUSINESS_HEALTH_AREA_IDS = new Set([
+  "strategic_direction_business_clarity",
+  "revenue_engine_sales_predictability",
+  "marketing_positioning_lead_quality",
+  "customer_experience_retention",
+  "cash_flow_margins_financial_control",
+  "operations_systems_process_discipline",
+  "people_roles_accountability",
+  "leadership_decision_making_rhythm",
+  "products_services_value_proposition",
+  "technology_data_management_visibility",
+  "risk_compliance_business_continuity",
+  "growth_readiness_scalability",
+]);
+
+function businessHealthOverallMeaning(overall: number, tier: Tier, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") return "الصورة العامة تشير إلى شركة لديها أساس صحي يمكن البناء عليه. المطلوب الآن هو تحويل القوة إلى نظام تشغيل واضح يحمي التدفق النقدي، العملاء، الفريق، والقدرة على النمو.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس عملي يمكن تقويته، لكن بعض التسريبات في الإيرادات أو العمليات أو الأفراد أو الرؤية الإدارية قد تمنع الشركة من الوصول إلى مستوى أعلى.";
+    if (tier === "Threat") return "الصورة العامة تظهر إنذارًا في صحة الشركة. بعض المناطق قد تستنزف النقد، العملاء، الوقت، أو طاقة المالك إذا لم تُعالج بخارطة طريق واضحة.";
+    return "الصورة العامة تظهر تسريبًا حادًا في صحة الشركة. هذا لا يعني أن الشركة انتهت، لكنه يعني أن النمو أو الاستمرار بالأسلوب الحالي قد يزيد الضغط بدل أن يعالج السبب الجذري.";
+  }
+  if (tier === "Strength") return "Your business health has a strong base. The next step is to turn that strength into a repeatable operating system that protects cash, customers, people, execution, and growth.";
+  if (tier === "Opportunity") return "Your business health has a workable base, but some leaks may still be limiting revenue stability, operational discipline, people accountability, or management visibility.";
+  if (tier === "Threat") return "Your business health is showing warning signals. Some areas may be quietly draining cash, customer trust, owner time, team energy, or growth readiness and need structured treatment.";
+  return "Your business health is showing a serious leakage pattern. This does not mean the business has failed; it means the company needs diagnosis, prioritization, and a practical revamp roadmap before pressure increases.";
+}
+
+function businessHealthCommercialMeaning(tier: Tier, label: string, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") return `تشير نتيجة ${label} إلى منطقة صحية داخل الشركة يمكن استخدامها كرافعة لتقوية بقية النظام التجاري والتشغيلي.`;
+    if (tier === "Opportunity") return `تشير نتيجة ${label} إلى أساس قابل للتطوير، لكنه يحتاج إلى وضوح وانضباط أعلى حتى لا يتحول إلى تسريب في النقد أو العملاء أو التنفيذ.`;
+    if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تُضعف صحة الشركة إذا لم تُعالج بخطة واضحة ومسؤولية تنفيذية.`;
+    return `تشير نتيجة ${label} إلى تسريب واضح قد يجعل الشركة تعمل بجهد كبير دون أن تشعر بقوة حقيقية في الربح أو العملاء أو الفريق أو النمو.`;
+  }
+  if (tier === "Strength") return `${label} is currently a healthy business area. Use it as leverage to strengthen weaker parts of the company’s commercial and operating system.`;
+  if (tier === "Opportunity") return `${label} has a workable base, but it needs clearer discipline before it becomes fully dependable under market pressure.`;
+  if (tier === "Threat") return `${label} is creating a business health warning signal. If left untreated, it may weaken cash flow, customer retention, team execution, or growth readiness.`;
+  return `${label} is showing a clear business leak. This area may be making the company work hard without becoming stronger, more profitable, more stable, or more scalable.`;
+}
+
 function lawyerOverallMeaning(overall: number, tier: Tier, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return "الصورة العامة تشير إلى قدرة قوية على تحويل الاستشارات القانونية إلى تعاقدات مهنية بثقة ووضوح. المطلوب الآن هو تحويل هذه القوة إلى نظام ثابت لا يعتمد على قوة القضية وحدها.";
@@ -370,6 +446,9 @@ function lawyerCommercialMeaning(tier: Tier, label: string, lang: Language) {
 }
 
 function detailedMeaningFor(row: CompetencyRow, lang: Language) {
+  if (BUSINESS_HEALTH_AREA_IDS.has(row.competencyId)) {
+    return businessHealthCommercialMeaning(row.tier, row.label, lang);
+  }
   if (LAWYER_COMPETENCY_IDS.has(row.competencyId)) {
     return lawyerCommercialMeaning(row.tier, row.label, lang);
   }
@@ -662,8 +741,241 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
   return lang === "ar" ? ar[id] || row.label : en[id] || row.label;
 }
 
+
+function getBusinessHealthTreatmentMeta(row: CompetencyRow, lang: Language) {
+  const id = row.competencyId;
+
+  const en: Record<string, any> = {
+    strategic_direction_business_clarity: {
+      leakage: "The business may be moving fast without a clear enough direction, focus, ideal customer, or strategic stop-list.",
+      root: "The root pattern is strategic blur: the company reacts to opportunities, pressure, and daily issues instead of operating from a small set of clear priorities.",
+      stop: "Stop treating every customer request, product idea, or urgent issue as equally strategic.",
+      start: "Start defining where the business will win, who it will serve best, what it will stop doing, and which priorities must guide the next 90 days.",
+      drill: "Write a one-page direction map: ideal customer, strongest offer, top 3 priorities, top 3 stop-doing items, and one weekly review rhythm.",
+      metric: "percentage of weekly decisions linked to the agreed strategic priorities",
+      bonus: "SME Strategic Direction Map",
+    },
+    revenue_engine_sales_predictability: {
+      leakage: "Revenue may depend on owner effort, random referrals, seasonal demand, or heroic sales activity instead of a predictable engine.",
+      root: "The root pattern is revenue fragility: inquiries, conversion, follow-up, sales rhythm, and forecasting are not yet operating as one system.",
+      stop: "Stop judging revenue health only by this month’s sales number.",
+      start: "Start measuring the full revenue engine: lead flow, conversion, follow-up, sales cycle, average deal value, and forecast confidence.",
+      drill: "Map the last 20 customers and identify where each came from, how they converted, why they bought, and how long the decision took.",
+      metric: "qualified inquiries converted into predictable revenue within a tracked sales cycle",
+      bonus: "SME Revenue Engine Map",
+    },
+    marketing_positioning_lead_quality: {
+      leakage: "Marketing may create activity, impressions, posts, or inquiries without attracting enough right-fit customers.",
+      root: "The root pattern is weak positioning: the market does not clearly understand why this business is the safer, better, faster, or more valuable choice.",
+      stop: "Stop increasing marketing noise before clarifying the message and target customer.",
+      start: "Start tightening the promise, audience, proof, offer clarity, and channel focus.",
+      drill: "Rewrite the main marketing message using: who we help, painful problem, outcome, proof, and next step.",
+      metric: "percentage of leads that match the ideal customer profile and have a clear buying reason",
+      bonus: "Positioning & Lead Quality Diagnostic",
+    },
+    customer_experience_retention: {
+      leakage: "The business may win customers but fail to retain, delight, reactivate, or turn them into referrals.",
+      root: "The root pattern is customer experience drift: delivery happens, but the company does not intentionally manage expectations, communication, recovery, and loyalty.",
+      stop: "Stop assuming a customer is satisfied just because they did not complain.",
+      start: "Start managing the customer journey before, during, and after delivery with clear touchpoints and recovery triggers.",
+      drill: "Choose 10 recent customers and identify one moment where trust increased, dropped, or could have been strengthened.",
+      metric: "repeat customers, referrals, reviews, complaints resolved, and reactivation rate",
+      bonus: "Customer Experience Retention Map",
+    },
+    cash_flow_margins_financial_control: {
+      leakage: "The business may be selling but still feel financially weak because cash, margins, costs, collections, and profitability are not visible enough.",
+      root: "The root pattern is financial fog: the owner sees revenue but not the real profit mechanics, cash timing, margin leaks, or cost behavior.",
+      stop: "Stop treating sales growth as proof of business strength.",
+      start: "Start reviewing cash flow, gross margin, net margin, overdue payments, cost creep, and profitability by product or service line.",
+      drill: "Review the last 90 days and identify the top three cash leaks and the top three profit contributors.",
+      metric: "weekly cash visibility, margin by offer, overdue receivables, and net profit trend",
+      bonus: "Cash Flow & Margin Control Sheet",
+    },
+    operations_systems_process_discipline: {
+      leakage: "The business may depend on memory, people, and daily owner intervention instead of repeatable operating systems.",
+      root: "The root pattern is operational dependency: work gets done, but the way it gets done is not documented, measured, or consistently followed.",
+      stop: "Stop allowing every experienced employee to run the same process differently.",
+      start: "Start documenting critical workflows, quality standards, handoffs, and escalation rules.",
+      drill: "Choose one recurring process and write the standard steps, owner, quality check, and failure trigger.",
+      metric: "critical processes documented, followed, measured, and improved",
+      bonus: "SME Process Discipline Checklist",
+    },
+    people_roles_accountability: {
+      leakage: "People may be busy but unclear about ownership, standards, decisions, and consequences.",
+      root: "The root pattern is role fog: the business has employees, but not enough clarity around who owns what result and how performance is reviewed.",
+      stop: "Stop using job titles as a replacement for ownership.",
+      start: "Start defining role outcomes, key responsibilities, decision rights, and review rhythm.",
+      drill: "For each key person, write: owns, measures, reports, decides, escalates.",
+      metric: "roles with clear ownership, measurable outcomes, and review dates",
+      bonus: "Roles & Accountability Map",
+    },
+    leadership_decision_making_rhythm: {
+      leakage: "The owner or GM may make decisions through urgency, pressure, emotion, or incomplete information.",
+      root: "The root pattern is leadership rhythm weakness: the business lacks a consistent operating cadence for priorities, decisions, numbers, and review.",
+      stop: "Stop letting the loudest problem decide the week.",
+      start: "Start using a weekly leadership rhythm: numbers, priorities, blockers, decisions, owners, deadlines.",
+      drill: "Run one 45-minute weekly business review with a fixed agenda and no vague action items.",
+      metric: "decisions made with owner, deadline, evidence, and follow-up review",
+      bonus: "Weekly Owner/GM Decision Rhythm",
+    },
+    products_services_value_proposition: {
+      leakage: "The business may sell too many unclear, low-margin, or poorly packaged products/services.",
+      root: "The root pattern is offer clutter: the company has activity but not enough clarity around what should be sold, to whom, why, and at what margin.",
+      stop: "Stop treating every product or service as equally worth selling.",
+      start: "Start ranking offers by demand, margin, strategic fit, delivery complexity, and customer value.",
+      drill: "List all offers and classify each as scale, fix, simplify, reposition, or stop.",
+      metric: "revenue and margin concentration in the strongest strategic offers",
+      bonus: "Offer Portfolio Health Map",
+    },
+    technology_data_management_visibility: {
+      leakage: "The owner may not see the business clearly enough because data is scattered, late, manual, or missing.",
+      root: "The root pattern is management blindness: the company has activity but not enough dashboard visibility over sales, cash, customers, operations, and people.",
+      stop: "Stop relying on verbal updates and scattered files to understand business health.",
+      start: "Start building a simple dashboard with the few numbers that show business reality every week.",
+      drill: "Choose 12 numbers the owner/GM must see weekly across revenue, cash, customers, operations, people, and risk.",
+      metric: "weekly visibility of the core business dashboard without chasing information",
+      bonus: "SME Management Dashboard Blueprint",
+    },
+    risk_compliance_business_continuity: {
+      leakage: "The business may be exposed to avoidable shocks through customer concentration, supplier dependency, compliance gaps, staff dependency, or weak continuity planning.",
+      root: "The root pattern is unpriced risk: the business runs normally until a hidden dependency breaks.",
+      stop: "Stop assuming the business is safe because nothing has gone wrong recently.",
+      start: "Start identifying the few risks that could hurt cash, reputation, delivery, legality, or continuity.",
+      drill: "Create a top-10 risk list and score each risk by likelihood, impact, owner, and prevention action.",
+      metric: "critical risks with owners, controls, contingency plans, and review dates",
+      bonus: "SME Risk & Continuity Register",
+    },
+    growth_readiness_scalability: {
+      leakage: "Growth may create chaos if the business adds customers, people, or locations before systems are ready.",
+      root: "The root pattern is scaling before strengthening: more demand enters a business that still relies on owner control, informal process, and fragile visibility.",
+      stop: "Stop chasing growth before checking whether the business can absorb it without breaking service, cash, or team capacity.",
+      start: "Start defining what must be systemized, delegated, measured, and protected before growth accelerates.",
+      drill: "Write a scale-readiness checklist covering sales, delivery, cash, people, systems, technology, and leadership rhythm.",
+      metric: "growth initiatives supported by capacity, process, cash, and management visibility",
+      bonus: "Growth Readiness Roadmap",
+    },
+  };
+
+  const ar: Record<string, any> = {
+    strategic_direction_business_clarity: {
+      leakage: "قد تتحرك الشركة بسرعة دون اتجاه واضح كفاية أو عميل مثالي أو قائمة واضحة بما يجب التوقف عنه.",
+      root: "النمط الجذري هو غموض استراتيجي: الشركة تتفاعل مع الفرص والضغط والمشكلات اليومية بدل أن تعمل من أولويات قليلة وواضحة.",
+      stop: "توقف عن التعامل مع كل طلب عميل أو فكرة منتج أو مشكلة عاجلة كأنها استراتيجية بنفس الدرجة.",
+      start: "ابدأ بتحديد أين ستفوز الشركة، من تخدمه بأفضل شكل، ماذا يجب أن تتوقف عنه، وما أولويات الـ 90 يومًا القادمة.",
+      drill: "اكتب خريطة اتجاه من صفحة واحدة: العميل المثالي، أقوى عرض، أهم 3 أولويات، أهم 3 أشياء يجب إيقافها، وإيقاع مراجعة أسبوعي.",
+      metric: "نسبة القرارات الأسبوعية المرتبطة بالأولويات الاستراتيجية المتفق عليها",
+      bonus: "خريطة الاتجاه الاستراتيجي للشركة",
+    },
+    revenue_engine_sales_predictability: {
+      leakage: "قد تعتمد الإيرادات على جهد المالك أو الإحالات العشوائية أو موسمية الطلب بدل محرك إيرادات قابل للتوقع.",
+      root: "النمط الجذري هو هشاشة الإيرادات: الاستفسارات والتحويل والمتابعة وإيقاع البيع والتوقعات لا تعمل كنظام واحد.",
+      stop: "توقف عن الحكم على صحة الإيرادات من رقم مبيعات هذا الشهر فقط.",
+      start: "ابدأ بقياس محرك الإيرادات كاملًا: تدفق العملاء المحتملين، التحويل، المتابعة، دورة البيع، متوسط قيمة الصفقة، وثقة التوقع.",
+      drill: "ارسم آخر 20 عميلًا وحدد من أين جاء كل عميل، كيف تحول، لماذا اشترى، وكم استغرق القرار.",
+      metric: "الاستفسارات المؤهلة التي تتحول إلى إيرادات متوقعة داخل دورة بيع واضحة",
+      bonus: "خريطة محرك الإيرادات للشركات الصغيرة والمتوسطة",
+    },
+    marketing_positioning_lead_quality: {
+      leakage: "قد يصنع التسويق نشاطًا ومنشورات واستفسارات دون جذب عدد كافٍ من العملاء المناسبين.",
+      root: "النمط الجذري هو ضعف التموضع: السوق لا يفهم بوضوح لماذا هذه الشركة هي الخيار الأكثر أمانًا أو قيمة أو ملاءمة.",
+      stop: "توقف عن زيادة الضجيج التسويقي قبل توضيح الرسالة والعميل المستهدف.",
+      start: "ابدأ بتقوية الوعد، الجمهور، الدليل، وضوح العرض، وتركيز القنوات.",
+      drill: "أعد صياغة الرسالة التسويقية الأساسية باستخدام: من نساعد، المشكلة المؤلمة، النتيجة، الدليل، والخطوة التالية.",
+      metric: "نسبة العملاء المحتملين المطابقين للعميل المثالي ولديهم سبب شراء واضح",
+      bonus: "تشخيص التموضع وجودة العملاء المحتملين",
+    },
+    customer_experience_retention: {
+      leakage: "قد تكسب الشركة عملاء لكنها لا تحتفظ بهم أو تحولهم إلى إحالات ومراجعات وولاء.",
+      root: "النمط الجذري هو انجراف تجربة العميل: يتم التسليم، لكن الشركة لا تدير التوقعات والتواصل والاسترجاع والولاء بوعي.",
+      stop: "توقف عن افتراض أن العميل راضٍ فقط لأنه لم يشتكِ.",
+      start: "ابدأ بإدارة رحلة العميل قبل وأثناء وبعد التسليم عبر نقاط تواصل واضحة ومؤشرات إنقاذ.",
+      drill: "اختر 10 عملاء حديثين وحدد لحظة زادت فيها الثقة، انخفضت، أو كان يمكن تقويتها.",
+      metric: "العملاء العائدون، الإحالات، التقييمات، الشكاوى المعالجة، ومعدل إعادة التفعيل",
+      bonus: "خريطة تجربة العملاء والاحتفاظ بهم",
+    },
+    cash_flow_margins_financial_control: {
+      leakage: "قد تبيع الشركة لكنها تبقى ضعيفة ماليًا لأن النقد والهوامش والتكاليف والتحصيل والربحية ليست واضحة كفاية.",
+      root: "النمط الجذري هو ضباب مالي: يرى المالك الإيرادات لكنه لا يرى آليات الربح الحقيقية، توقيت النقد، تسريبات الهامش، أو سلوك التكلفة.",
+      stop: "توقف عن اعتبار نمو المبيعات دليلًا كافيًا على قوة الشركة.",
+      start: "ابدأ بمراجعة التدفق النقدي، الهامش الإجمالي، صافي الهامش، المتأخرات، زحف التكاليف، والربحية حسب المنتج أو الخدمة.",
+      drill: "راجع آخر 90 يومًا وحدد أكبر 3 تسريبات نقدية وأكبر 3 مصادر ربح.",
+      metric: "وضوح النقد الأسبوعي، الهامش حسب العرض، المتأخرات، واتجاه صافي الربح",
+      bonus: "ورقة التحكم في التدفق النقدي والهوامش",
+    },
+    operations_systems_process_discipline: {
+      leakage: "قد تعتمد الشركة على الذاكرة والأشخاص وتدخل المالك اليومي بدل أنظمة تشغيل قابلة للتكرار.",
+      root: "النمط الجذري هو اعتماد تشغيلي: العمل يتم، لكن طريقة تنفيذه غير موثقة أو مقاسة أو متبعة بثبات.",
+      stop: "توقف عن السماح لكل موظف خبير بأن يدير نفس العملية بطريقة مختلفة.",
+      start: "ابدأ بتوثيق العمليات الحرجة، معايير الجودة، نقاط التسليم، وقواعد التصعيد.",
+      drill: "اختر عملية متكررة واحدة واكتب خطواتها القياسية، المالك، فحص الجودة، ومؤشر الفشل.",
+      metric: "العمليات الحرجة الموثقة والمتبعة والمقاسة والمحسنة",
+      bonus: "قائمة انضباط العمليات للشركات الصغيرة والمتوسطة",
+    },
+    people_roles_accountability: {
+      leakage: "قد يكون الناس مشغولين لكنهم غير واضحين بشأن الملكية، المعايير، القرارات، والعواقب.",
+      root: "النمط الجذري هو غموض الأدوار: الشركة لديها موظفون لكن لا يوجد وضوح كافٍ حول من يملك أي نتيجة وكيف تتم مراجعة الأداء.",
+      stop: "توقف عن استخدام المسميات الوظيفية كبديل عن الملكية.",
+      start: "ابدأ بتحديد نتائج كل دور، المسؤوليات الأساسية، صلاحيات القرار، وإيقاع المراجعة.",
+      drill: "لكل شخص أساسي، اكتب: يملك، يقيس، يرفع تقريرًا، يقرر، يصعّد.",
+      metric: "الأدوار التي لديها ملكية واضحة ونتائج قابلة للقياس ومواعيد مراجعة",
+      bonus: "خريطة الأدوار والمساءلة",
+    },
+    leadership_decision_making_rhythm: {
+      leakage: "قد يتخذ المالك أو المدير العام قرارات تحت ضغط العجلة أو العاطفة أو معلومات ناقصة.",
+      root: "النمط الجذري هو ضعف إيقاع القيادة: الشركة تفتقد إيقاعًا ثابتًا لمراجعة الأولويات والقرارات والأرقام.",
+      stop: "توقف عن السماح للمشكلة الأعلى صوتًا أن تحدد أسبوع الشركة.",
+      start: "ابدأ بإيقاع قيادي أسبوعي: أرقام، أولويات، عوائق، قرارات، ملاك، مواعيد.",
+      drill: "نفذ مراجعة أسبوعية لمدة 45 دقيقة بأجندة ثابتة ودون بنود عمل غامضة.",
+      metric: "القرارات التي لها مالك وموعد ودليل ومراجعة متابعة",
+      bonus: "إيقاع قرار أسبوعي للمالك أو المدير العام",
+    },
+    products_services_value_proposition: {
+      leakage: "قد تبيع الشركة منتجات أو خدمات كثيرة وغير واضحة أو منخفضة الهامش أو ضعيفة التغليف.",
+      root: "النمط الجذري هو ازدحام العروض: توجد حركة، لكن لا يوجد وضوح كافٍ حول ماذا يجب بيعه، لمن، لماذا، وبأي هامش.",
+      stop: "توقف عن التعامل مع كل منتج أو خدمة كأنها تستحق نفس الجهد.",
+      start: "ابدأ بترتيب العروض حسب الطلب، الهامش، الملاءمة الاستراتيجية، تعقيد التسليم، وقيمة العميل.",
+      drill: "اكتب كل العروض وصنف كل واحد: توسعة، إصلاح، تبسيط، إعادة تموضع، أو إيقاف.",
+      metric: "تركيز الإيرادات والهامش في أقوى العروض الاستراتيجية",
+      bonus: "خريطة صحة محفظة العروض",
+    },
+    technology_data_management_visibility: {
+      leakage: "قد لا يرى المالك الشركة بوضوح لأن البيانات متفرقة أو متأخرة أو يدوية أو ناقصة.",
+      root: "النمط الجذري هو عمى إداري: توجد حركة في الشركة لكن لا توجد لوحة رؤية كافية للمبيعات والنقد والعملاء والعمليات والأفراد.",
+      stop: "توقف عن الاعتماد على التحديثات الشفهية والملفات المتفرقة لفهم صحة الشركة.",
+      start: "ابدأ ببناء لوحة بسيطة للأرقام القليلة التي تكشف واقع الشركة أسبوعيًا.",
+      drill: "اختر 12 رقمًا يجب أن يراها المالك أو المدير العام أسبوعيًا عبر الإيرادات، النقد، العملاء، العمليات، الأفراد، والمخاطر.",
+      metric: "وضوح لوحة الإدارة الأسبوعية دون مطاردة المعلومات",
+      bonus: "مخطط لوحة إدارة الشركة",
+    },
+    risk_compliance_business_continuity: {
+      leakage: "قد تكون الشركة معرضة لصدمات يمكن تجنبها بسبب تركّز العملاء أو اعتماد الموردين أو فجوات الامتثال أو اعتمادها على موظف واحد.",
+      root: "النمط الجذري هو مخاطر غير محسوبة: تعمل الشركة بشكل طبيعي إلى أن تنكسر تبعية مخفية.",
+      stop: "توقف عن افتراض أن الشركة آمنة لمجرد أن شيئًا خطيرًا لم يحدث مؤخرًا.",
+      start: "ابدأ بتحديد المخاطر القليلة التي قد تضرب النقد، السمعة، التسليم، الالتزام، أو الاستمرارية.",
+      drill: "أنشئ قائمة بأهم 10 مخاطر وقيّم كل خطر حسب الاحتمال، الأثر، المالك، وإجراء الوقاية.",
+      metric: "المخاطر الحرجة التي لها ملاك وضوابط وخطط بديلة ومواعيد مراجعة",
+      bonus: "سجل المخاطر واستمرارية الأعمال",
+    },
+    growth_readiness_scalability: {
+      leakage: "قد يخلق النمو فوضى إذا أضافت الشركة عملاء أو موظفين أو فروعًا قبل جاهزية الأنظمة.",
+      root: "النمط الجذري هو التوسع قبل التقوية: يدخل الطلب إلى شركة لا تزال تعتمد على تحكم المالك والعمليات غير الرسمية والرؤية الضعيفة.",
+      stop: "توقف عن مطاردة النمو قبل التأكد أن الشركة تستطيع استيعابه دون كسر الخدمة أو النقد أو قدرة الفريق.",
+      start: "ابدأ بتحديد ما يجب تنظيمه، تفويضه، قياسه، وحمايته قبل تسريع النمو.",
+      drill: "اكتب قائمة جاهزية النمو التي تغطي المبيعات، التسليم، النقد، الأفراد، الأنظمة، التقنية، وإيقاع القيادة.",
+      metric: "مبادرات النمو المدعومة بالقدرة والعملية والنقد والرؤية الإدارية",
+      bonus: "خارطة جاهزية النمو",
+    },
+  };
+
+  return (lang === "ar" ? ar[id] : en[id]) || null;
+}
+
+
 function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: string, strongestLabel?: string) {
   const id = row.competencyId;
+
+  const businessMeta = getBusinessHealthTreatmentMeta(row, lang);
+  if (businessMeta) return businessMeta;
 
   const en: Record<string, any> = {
     sales_coaching_rep_development: {
@@ -1379,6 +1691,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const mri = isMriReport(slug, (attempt as any).assessment_id);
   const salesManager = isSalesManagerAssessment(slug, (attempt as any).assessment_id);
   const lawyer = isLawyerAssessment(slug, (attempt as any).assessment_id);
+  const businessHealth = isBusinessHealthAssessment(slug, (attempt as any).assessment_id);
 
   const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
   const comps = Array.isArray((assessment as any)?.config?.competencies)
@@ -1445,8 +1758,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
     (mri
       ? ar
-        ? lawyer ? "تقرير Lawyer Client Conversion MRI المتقدم" : salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
-        : lawyer ? "Advanced Lawyer Client Conversion MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
+        ? lawyer ? "تقرير Lawyer Client Conversion MRI المتقدم" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
+        : lawyer ? "Advanced Lawyer Client Conversion MRI Report" : businessHealth ? "Advanced SME Business Health MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
       : lawyer
       ? ar
         ? "فحص تحويل العملاء للمحامين"
@@ -1623,104 +1936,128 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       back: "Back to Results",
       printNote: "For best PDF export: choose Save as PDF, turn on background graphics, and turn off browser headers and footers.",
       badge: mri
-        ? lawyer ? "Forensic Legal Client Conversion Diagnostic" : "Full Diagnostic & Treatment Tool"
-        : lawyer ? "Lawyer Client Conversion Blood Test" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
+        ? lawyer ? "Forensic Legal Client Conversion Diagnostic" : businessHealth ? "Forensic SME Business Health Diagnostic" : "Full Diagnostic & Treatment Tool"
+        : lawyer ? "Lawyer Client Conversion Blood Test" : businessHealth ? "SME Business Health Vital Signs Check" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
       subtitle: mri
         ? lawyer
           ? "A personalized Lawyer Client Conversion MRI designed to diagnose how legal inquiries become paid professional engagements — from first inquiry to consultation, legal-value clarity, professional fees, objections, and follow-up."
+          : businessHealth
+          ? "A personalized SME Business Health MRI designed to diagnose where the company is leaking cash, customers, team energy, execution discipline, owner time, and growth readiness — then turn the findings into a practical business revamp roadmap."
           : salesManager
           ? "A personalized Sales Manager MRI designed to diagnose leadership patterns, team performance leaks, and management treatment priorities."
           : "A personalized Sales MRI designed to diagnose the full sales performance body and turn the findings into a practical treatment plan."
         : lawyer
         ? "A fast diagnostic scan of your legal consultation conversion health — from first impression to client trust, fee confidence, objections, and engagement commitment."
+        : businessHealth
+        ? "A fast business health scan that checks the company’s vital signs across direction, revenue, marketing, cash, operations, people, owner dependency, and growth readiness."
         : salesManager
         ? "A fast leadership scan of your sales-management health — like a blood test for the way you coach, inspect, forecast, motivate, and hold the team accountable."
         : "A fast diagnostic scan of your sales performance body — like a blood test for field sales.",
-      overall: lawyer ? "Legal Client Conversion Health Score" : salesManager ? "Overall Sales Management Health Score" : "Overall Sales Health Score",
-      overallMarker: lawyer ? "Legal Client Conversion Index" : salesManager ? "Overall Sales Management Index" : "Overall Sales Health Index",
+      overall: lawyer ? "Legal Client Conversion Health Score" : businessHealth ? "SME Business Health Score" : salesManager ? "Overall Sales Management Health Score" : "Overall Sales Health Score",
+      overallMarker: lawyer ? "Legal Client Conversion Index" : businessHealth ? "Business Health Index" : salesManager ? "Overall Sales Management Index" : "Overall Sales Health Index",
       participant: "Participant Identity",
-      health: lawyer ? "Client Conversion Health Zone" : salesManager ? "Management Health Zone" : "Sales Health Zone",
+      health: lawyer ? "Client Conversion Health Zone" : businessHealth ? "Business Health Temperature" : salesManager ? "Management Health Zone" : "Sales Health Zone",
       bloodPanel: mri
-        ? lawyer ? "15-Competency Lawyer Client Conversion MRI Panel" : salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
-        : lawyer ? "Lawyer Client Conversion Panel: Overall Score + Professional Markers" : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
+        ? lawyer ? "15-Competency Lawyer Client Conversion MRI Panel" : businessHealth ? "12-Area SME Business Health MRI Panel" : salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
+        : lawyer ? "Lawyer Client Conversion Panel: Overall Score + Professional Markers" : businessHealth ? "SME Business Health Panel: Overall Score + Vital Signs" : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
       bloodPanelSub: mri
         ? lawyer
           ? "This deep diagnostic examines the full legal client journey across 15 competencies to reveal where consultation trust, legal-value clarity, professional-fee confidence, engagement commitment, and client experience may be leaking."
+          : businessHealth
+          ? "This deep diagnostic examines the business across 12 health areas to reveal where revenue, cash, customers, operations, people, owner dependency, risk, visibility, and growth readiness may be leaking."
           : salesManager
           ? "This is your deep management diagnostic panel. It examines the wider sales-manager role across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
           : "This is your deep diagnostic panel. It examines the wider sales performance body across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
         : lawyer
         ? "This panel combines your overall client-conversion score with core markers that reveal where you create trust, where clients hesitate, and what needs professional treatment."
+        : businessHealth
+        ? "This panel combines your overall business health score with the core areas that reveal where the company is stable, where it is leaking, and what needs executive treatment."
         : salesManager
         ? "This panel combines your overall management score with seven core markers that reveal where your leadership is strong, where the team may be leaking performance, and what needs attention."
         : "This panel combines your overall sales health score with the seven core markers that reveal where performance is strong, where it is leaking, and what needs treatment.",
-      strongest: lawyer ? "Strongest Legal Conversion Signal" : salesManager ? "Strongest Management Signal" : "Strongest Signal",
-      weakest: lawyer ? "Biggest Hidden Consultation Leak" : salesManager ? "Biggest Hidden Team Performance Leak" : "Biggest Hidden Revenue Leak",
-      commercial: lawyer ? "Professional Interpretation" : salesManager ? "Management Interpretation" : "Commercial Interpretation",
-      swot: lawyer ? "Lawyer Client Conversion SWOT Analysis" : "Strategic SWOT Analysis",
-      actions: mri ? (lawyer ? "Professional Treatment Priorities" : "Personal Treatment Priorities") : "Priority Execution Plan",
-      prescriptionHeadline: lawyer ? "Your Legal MRI Shows the Consultation Leaks. The Treatment Plan Shows What to Fix First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
-      prescriptionSubhead: lawyer ? "The Advanced Lawyer Client Conversion MRI is a full diagnostic and treatment tool for legal inquiries, consultations, client trust, professional fees, objections, engagement commitment, and client experience." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
-      prescriptionCta: lawyer ? "Get My Full Lawyer Client Conversion MRI" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
-      enterpriseTitle: lawyer ? "For Law Firms, Managing Partners & Legal Platforms" : salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
-      enterpriseCta: lawyer ? "Diagnose the Lawyer Before You Train the Lawyer" : "Diagnose the Team Before You Train the Team",
+      strongest: lawyer ? "Strongest Legal Conversion Signal" : businessHealth ? "Strongest Business Health Signal" : salesManager ? "Strongest Management Signal" : "Strongest Signal",
+      weakest: lawyer ? "Biggest Hidden Consultation Leak" : businessHealth ? "Biggest Hidden Business Leak" : salesManager ? "Biggest Hidden Team Performance Leak" : "Biggest Hidden Revenue Leak",
+      commercial: lawyer ? "Professional Interpretation" : businessHealth ? "Business Health Interpretation" : salesManager ? "Management Interpretation" : "Commercial Interpretation",
+      swot: lawyer ? "Lawyer Client Conversion SWOT Analysis" : businessHealth ? "SME Business Health SWOT Analysis" : "Strategic SWOT Analysis",
+      actions: mri ? (lawyer ? "Professional Treatment Priorities" : businessHealth ? "Business Revamp Treatment Priorities" : "Personal Treatment Priorities") : "Priority Execution Plan",
+      prescriptionHeadline: lawyer ? "Your Legal MRI Shows the Consultation Leaks. The Treatment Plan Shows What to Fix First." : businessHealth ? "Your Business Health MRI Shows the Leaks. The Roadmap Shows What to Stabilize and Revamp First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
+      prescriptionSubhead: lawyer ? "The Advanced Lawyer Client Conversion MRI is a full diagnostic and treatment tool for legal inquiries, consultations, client trust, professional fees, objections, engagement commitment, and client experience." : businessHealth ? "The Advanced SME Business Health MRI is a full diagnostic and roadmap tool for owners and general managers who want to stabilize leaks, strengthen the operating system, and identify the next revamp priorities." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
+      prescriptionCta: lawyer ? "Get My Full Lawyer Client Conversion MRI" : businessHealth ? "Get My SME Business Health Roadmap" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
+      enterpriseTitle: lawyer ? "For Law Firms, Managing Partners & Legal Platforms" : businessHealth ? "For SME Owners, General Managers & Partners" : salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
+      enterpriseCta: lawyer ? "Diagnose the Lawyer Before You Train the Lawyer" : businessHealth ? "Diagnose the Business Before You Revamp the Business" : "Diagnose the Team Before You Train the Team",
     },
     ar: {
       back: "العودة إلى النتائج",
       printNote: "لأفضل تصدير PDF: اختر Save as PDF، فعّل Background graphics، وألغِ ترويسات وتذييلات المتصفح.",
       badge: mri
-        ? lawyer ? "تشخيص جنائي لتحويل العملاء للمحامين" : "أداة تشخيص وعلاج كاملة"
-        : lawyer ? "فحص تحويل العملاء للمحامين" : salesManager ? "فحص قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
+        ? lawyer ? "تشخيص جنائي لتحويل العملاء للمحامين" : businessHealth ? "تشخيص جنائي لصحة الشركات الصغيرة والمتوسطة" : "أداة تشخيص وعلاج كاملة"
+        : lawyer ? "فحص تحويل العملاء للمحامين" : businessHealth ? "فحص العلامات الحيوية لصحة الشركة" : salesManager ? "فحص قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
       subtitle: mri
         ? lawyer
           ? "تقرير Lawyer Client Conversion MRI شخصي لتشخيص كيف تتحول الاستفسارات القانونية إلى تعاقدات مهنية مدفوعة — من أول استفسار إلى الاستشارة، وضوح القيمة القانونية، أتعاب المحاماة، الاعتراضات، والمتابعة."
+          : businessHealth
+          ? "تقرير SME Business Health MRI شخصي لتشخيص أين تتسرب الشركة من النقد، العملاء، طاقة الفريق، انضباط التنفيذ، وقت المالك، وجاهزية النمو — ثم تحويل النتائج إلى خارطة طريق عملية لتقوية الشركة."
           : salesManager
           ? "تقرير Sales Manager MRI شخصي لتشخيص أنماط القيادة، وتسريبات أداء الفريق، وأولويات العلاج الإداري."
           : "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
         : lawyer
         ? "فحص سريع لصحة تحويل الاستشارات القانونية — من الانطباع الأول إلى ثقة العميل، عرض أتعاب المحاماة، الاعتراضات، وقرار التعاقد."
+        : businessHealth
+        ? "فحص سريع للعلامات الحيوية للشركة عبر الاتجاه، الإيرادات، التسويق، النقد، العمليات، الأفراد، اعتماد الشركة على المالك، وجاهزية النمو."
         : salesManager
         ? "فحص قيادي سريع لصحة إدارتك لفريق المبيعات — كأنه تحليل دم لطريقة التدريب، فحص البايبلاين، التوقع، التحفيز، والمساءلة."
         : "فحص تشخيصي سريع لجسم أدائك البيعي — كأنه تحليل دم مهني للمبيعات الميدانية.",
-      overall: lawyer ? "مؤشر صحة تحويل العملاء للمحامين" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
-      overallMarker: lawyer ? "مؤشر تحويل الاستشارات إلى تعاقدات" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
+      overall: lawyer ? "مؤشر صحة تحويل العملاء للمحامين" : businessHealth ? "مؤشر صحة الشركة" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
+      overallMarker: lawyer ? "مؤشر تحويل الاستشارات إلى تعاقدات" : businessHealth ? "مؤشر صحة الأعمال" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
-      health: lawyer ? "منطقة صحة تحويل العملاء" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
+      health: lawyer ? "منطقة صحة تحويل العملاء" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
       bloodPanel: mri
-        ? lawyer ? "لوحة Lawyer Client Conversion MRI عبر ١٥ كفاءة" : salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
-        : lawyer ? "لوحة تحويل العملاء للمحامين: النتيجة العامة + المؤشرات المهنية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
+        ? lawyer ? "لوحة Lawyer Client Conversion MRI عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
+        : lawyer ? "لوحة تحويل العملاء للمحامين: النتيجة العامة + المؤشرات المهنية" : businessHealth ? "لوحة صحة الشركة: النتيجة العامة + العلامات الحيوية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
       bloodPanelSub: mri
         ? lawyer
           ? "يفحص هذا التشخيص العميق رحلة العميل القانوني عبر ١٥ كفاءة ليكشف أين قد تتسرّب ثقة العميل، وضوح القيمة القانونية، الثقة في عرض أتعاب المحاماة، قرار التعاقد، وتجربة العميل."
+          : businessHealth
+          ? "يفحص هذا التشخيص العميق الشركة عبر ١٢ منطقة صحية ليكشف أين قد تتسرب الإيرادات، النقد، العملاء، العمليات، الأفراد، وقت المالك، المخاطر، وضوح الإدارة، وجاهزية النمو."
           : salesManager
           ? "هذه لوحة تشخيص إداري عميق تفحص دور مدير المبيعات عبر ١٥ كفاءة لكشف نقاط القوة، التسريبات، الأنماط الجذرية، وأولويات العلاج."
           : "هذه لوحة تشخيص عميق تفحص جسم الأداء البيعي عبر ١٥ كفاءة لكشف نقاط القوة، التسريبات، الأنماط الجذرية، وأولويات العلاج."
         : lawyer
         ? "تجمع هذه اللوحة بين نتيجة تحويل العملاء والمؤشرات الأساسية التي تكشف أين تصنع الثقة، أين يتردد العميل، وما الذي يحتاج إلى علاج مهني."
+        : businessHealth
+        ? "تجمع هذه اللوحة بين مؤشر صحة الشركة والمناطق الأساسية التي تكشف أين الشركة مستقرة، أين تتسرب، وما الذي يحتاج إلى علاج تنفيذي."
         : salesManager
         ? "تجمع هذه اللوحة بين نتيجتك الإدارية العامة وسبعة مؤشرات قيادية تكشف أين قيادتك قوية، أين يتسرّب أداء الفريق، وما الذي يحتاج إلى انتباه."
         : "تجمع هذه اللوحة بين مؤشر صحتك البيعية والسبعة مؤشرات الأساسية التي تكشف أين الأداء قوي، أين يتسرب، وما الذي يحتاج إلى علاج.",
-      strongest: lawyer ? "أقوى إشارة في تحويل العملاء" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
-      weakest: lawyer ? "أكبر تسريب خفي في الاستشارة القانونية" : salesManager ? "أكبر تسريب مخفي في أداء الفريق" : "أكبر تسريب مخفي في الإيرادات",
-      commercial: lawyer ? "التفسير المهني" : salesManager ? "التفسير الإداري" : "التفسير التجاري",
-      swot: lawyer ? "تحليل SWOT لتحويل العملاء للمحامين" : "تحليل SWOT الاستراتيجي",
-      actions: mri ? (lawyer ? "أولويات العلاج المهني" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
-      prescriptionHeadline: lawyer ? "تقريرك يكشف تسريبات الاستشارة. وخطة العلاج توضّح ما يجب إصلاحه أولًا." : salesManager ? "الفحص القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: lawyer ? "تقرير Advanced Lawyer Client Conversion MRI هو أداة تشخيص وعلاج كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، قرار التعاقد، وتجربة العميل." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
-      prescriptionCta: lawyer ? "احصل على Lawyer Client Conversion MRI الكامل" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
-      enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : salesManager ? "لمديري المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمديري المبيعات وأصحاب الشركات",
-      enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : "شخّص الفريق قبل أن تدرّبه",
+      strongest: lawyer ? "أقوى إشارة في تحويل العملاء" : businessHealth ? "أقوى إشارة في صحة الشركة" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
+      weakest: lawyer ? "أكبر تسريب خفي في الاستشارة القانونية" : businessHealth ? "أكبر تسريب خفي في الشركة" : salesManager ? "أكبر تسريب مخفي في أداء الفريق" : "أكبر تسريب مخفي في الإيرادات",
+      commercial: lawyer ? "التفسير المهني" : businessHealth ? "تفسير صحة الشركة" : salesManager ? "التفسير الإداري" : "التفسير التجاري",
+      swot: lawyer ? "تحليل SWOT لتحويل العملاء للمحامين" : businessHealth ? "تحليل SWOT لصحة الشركة" : "تحليل SWOT الاستراتيجي",
+      actions: mri ? (lawyer ? "أولويات العلاج المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
+      prescriptionHeadline: lawyer ? "تقريرك يكشف تسريبات الاستشارة. وخطة العلاج توضّح ما يجب إصلاحه أولًا." : businessHealth ? "تقرير صحة الشركة يكشف التسريبات. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "الفحص القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
+      prescriptionSubhead: lawyer ? "تقرير Advanced Lawyer Client Conversion MRI هو أداة تشخيص وعلاج كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، قرار التعاقد، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمديرين العامين الذين يريدون تثبيت التسريبات، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionCta: lawyer ? "احصل على Lawyer Client Conversion MRI الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
+      enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "لأصحاب الشركات الصغيرة والمتوسطة والمديرين العامين والشركاء" : salesManager ? "لمديري المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمديري المبيعات وأصحاب الشركات",
+      enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : businessHealth ? "شخّص الشركة قبل أن تعيد بناءها" : "شخّص الفريق قبل أن تدرّبه",
     },
   }[lang];
 
   const overallMeaningText = lawyer
     ? lawyerOverallMeaning(overall, overallTier, lang)
+    : businessHealth
+    ? businessHealthOverallMeaning(overall, overallTier, lang)
     : salesManager
     ? managerOverallMeaning(overall, overallTier, lang)
     : overallCommercialMeaning(overall, overallTier, lang);
 
   const rowCommercialText = (row: CompetencyRow) =>
-    lawyer ? lawyerCommercialMeaning(row.tier, row.label, lang) : salesManager ? managerCommercialMeaning(row.tier, row.label, lang) : commercialMeaning(row.tier, row.label, lang);
+    lawyer
+      ? lawyerCommercialMeaning(row.tier, row.label, lang)
+      : businessHealth
+      ? businessHealthCommercialMeaning(row.tier, row.label, lang)
+      : salesManager
+      ? managerCommercialMeaning(row.tier, row.label, lang)
+      : commercialMeaning(row.tier, row.label, lang);
 
   return (
     <div
@@ -1953,7 +2290,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="rounded-3xl bg-slate-950 text-white p-6 shadow-xl">
               <div className="text-sm font-black text-blue-200 uppercase tracking-widest">{t.health}</div>
-              <div className="mt-3 text-3xl font-black rtl-text">{lawyer ? lawyerHealthLabel(overall, lang) : healthLabel(overall, lang)}</div>
+              <div className="mt-3 text-3xl font-black rtl-text">{lawyer ? lawyerHealthLabel(overall, lang) : businessHealth ? businessHealthLabel(overall, lang) : healthLabel(overall, lang)}</div>
               <div className="mt-4">
                 <span className={`inline-flex rounded-full px-4 py-2 text-sm font-black ${tierBadgeClass(overallTier)}`}>
                   {overall}% · {getTierLabel(overallTier, lang)}

@@ -63,6 +63,189 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     metricAr: "إكمال سلوك التصحيح الإداري المختار أسبوعيًا",
   },
 
+
+  sme_business_health_overall_score: {
+    id: "sme_business_health_overall_score",
+    en: "Overall SME Business Health",
+    ar: "الصحة العامة للشركات الصغيرة والمتوسطة",
+    leakageEn: "unclear direction, fragile revenue, cash pressure, weak systems, people accountability gaps, and limited management visibility",
+    leakageAr: "غموض الاتجاه، هشاشة الإيرادات، ضغط النقد، ضعف الأنظمة، فجوات مساءلة الأفراد، وضعف الرؤية الإدارية",
+    treatmentEn: "build a 90-day stabilization roadmap around the lowest three business health areas",
+    treatmentAr: "بناء خارطة تثبيت لمدة 90 يومًا حول أضعف ثلاث مناطق في صحة الشركة",
+    drillEn: "review the top three business leaks weekly and assign one owner, one action, and one measurable correction for each",
+    drillAr: "راجع أكبر ثلاثة تسريبات في الشركة أسبوعيًا وحدد مالكًا واحدًا وإجراءً واحدًا ومؤشر تصحيح واحدًا لكل منها",
+    metricEn: "weekly completion of the agreed business health correction actions",
+    metricAr: "إكمال إجراءات تصحيح صحة الشركة المتفق عليها أسبوعيًا",
+  },
+
+  strategic_direction_business_clarity: {
+    id: "strategic_direction_business_clarity",
+    en: "Strategic Direction & Business Clarity",
+    ar: "الاتجاه الاستراتيجي ووضوح الشركة",
+    leakageEn: "reactive decisions, scattered priorities, unclear ideal customers, and the business saying yes to too many directions",
+    leakageAr: "قرارات تفاعلية وأولويات مشتتة وعميل مثالي غير واضح وقبول اتجاهات كثيرة في الشركة",
+    treatmentEn: "clarify the company’s target customer, strongest offer, top priorities, and stop-doing list",
+    treatmentAr: "توضيح العميل المستهدف وأقوى عرض وأهم الأولويات وقائمة ما يجب التوقف عنه",
+    drillEn: "create a one-page direction map and review every major decision against it for 30 days",
+    drillAr: "أنشئ خريطة اتجاه من صفحة واحدة وراجع كل قرار مهم مقابلها لمدة 30 يومًا",
+    metricEn: "major decisions linked to the agreed strategic priorities",
+    metricAr: "القرارات المهمة المرتبطة بالأولويات الاستراتيجية المتفق عليها",
+  },
+
+  revenue_engine_sales_predictability: {
+    id: "revenue_engine_sales_predictability",
+    en: "Revenue Engine & Sales Predictability",
+    ar: "محرك الإيرادات واستقرار المبيعات",
+    leakageEn: "revenue depending on owner effort, random referrals, inconsistent follow-up, or unclear forecasting",
+    leakageAr: "اعتماد الإيرادات على جهد المالك أو الإحالات العشوائية أو المتابعة غير الثابتة أو التوقعات الغامضة",
+    treatmentEn: "map the revenue engine from lead source to conversion, follow-up, sales cycle, and forecast confidence",
+    treatmentAr: "رسم محرك الإيرادات من مصدر العميل المحتمل إلى التحويل والمتابعة ودورة البيع وثقة التوقع",
+    drillEn: "analyze the last 20 customers and identify where they came from, why they bought, and how long the decision took",
+    drillAr: "حلل آخر 20 عميلًا وحدد من أين جاءوا ولماذا اشتروا وكم استغرق قرارهم",
+    metricEn: "qualified inquiries converted within a tracked sales cycle",
+    metricAr: "الاستفسارات المؤهلة التي تتحول داخل دورة بيع واضحة",
+  },
+
+  marketing_positioning_lead_quality: {
+    id: "marketing_positioning_lead_quality",
+    en: "Marketing Positioning & Lead Quality",
+    ar: "التموضع التسويقي وجودة العملاء المحتملين",
+    leakageEn: "marketing noise, weak differentiation, unclear promise, and poor-fit leads consuming time",
+    leakageAr: "ضجيج تسويقي وتميز ضعيف ووعد غير واضح وعملاء محتملون غير مناسبين يستهلكون الوقت",
+    treatmentEn: "tighten the message, audience, proof, offer clarity, and channel focus before increasing marketing volume",
+    treatmentAr: "تقوية الرسالة والجمهور والدليل ووضوح العرض وتركيز القنوات قبل زيادة حجم التسويق",
+    drillEn: "rewrite the core message using who we help, painful problem, outcome, proof, and next step",
+    drillAr: "أعد صياغة الرسالة الأساسية باستخدام من نساعد والمشكلة المؤلمة والنتيجة والدليل والخطوة التالية",
+    metricEn: "right-fit leads with a clear buying reason",
+    metricAr: "العملاء المحتملون المناسبون ولديهم سبب شراء واضح",
+  },
+
+  customer_experience_retention: {
+    id: "customer_experience_retention",
+    en: "Customer Experience & Retention",
+    ar: "تجربة العملاء والاحتفاظ بهم",
+    leakageEn: "customers buying once but not returning, referring, reviewing, or becoming loyal",
+    leakageAr: "عملاء يشترون مرة واحدة لكن لا يعودون أو يحيلون أو يقيمون أو يصبحون أوفياء",
+    treatmentEn: "manage the customer journey through expectation setting, communication, delivery standards, recovery, and reactivation",
+    treatmentAr: "إدارة رحلة العميل عبر ضبط التوقعات والتواصل ومعايير التسليم والاستدراك وإعادة التفعيل",
+    drillEn: "review 10 recent customers and identify one trust-building or trust-leaking moment in each journey",
+    drillAr: "راجع 10 عملاء حديثين وحدد لحظة بناء ثقة أو تسريب ثقة في كل رحلة",
+    metricEn: "repeat customers, referrals, reviews, complaints resolved, and reactivation",
+    metricAr: "العملاء العائدون والإحالات والتقييمات والشكاوى المعالجة وإعادة التفعيل",
+  },
+
+  cash_flow_margins_financial_control: {
+    id: "cash_flow_margins_financial_control",
+    en: "Cash Flow, Margins & Financial Control",
+    ar: "التدفق النقدي والهوامش والرقابة المالية",
+    leakageEn: "sales existing but cash staying tight because margins, costs, collections, and profit by offer are unclear",
+    leakageAr: "وجود مبيعات مع بقاء النقد مضغوطًا بسبب غموض الهوامش والتكاليف والتحصيل والربح حسب العرض",
+    treatmentEn: "review cash flow, gross margin, net margin, overdue payments, cost creep, and profitability by product or service line",
+    treatmentAr: "مراجعة التدفق النقدي والهامش الإجمالي وصافي الهامش والمتأخرات وزحف التكاليف والربحية حسب المنتج أو الخدمة",
+    drillEn: "identify the top three cash leaks and top three profit contributors from the last 90 days",
+    drillAr: "حدد أكبر ثلاثة تسريبات نقدية وأكبر ثلاثة مصادر ربح من آخر 90 يومًا",
+    metricEn: "weekly cash visibility, margin by offer, overdue receivables, and net profit trend",
+    metricAr: "وضوح النقد الأسبوعي والهامش حسب العرض والمتأخرات واتجاه صافي الربح",
+  },
+
+  operations_systems_process_discipline: {
+    id: "operations_systems_process_discipline",
+    en: "Operations, Systems & Process Discipline",
+    ar: "العمليات والأنظمة وانضباط الإجراءات",
+    leakageEn: "delivery depending on memory, individuals, and owner intervention instead of documented repeatable systems",
+    leakageAr: "اعتماد التسليم على الذاكرة والأفراد وتدخل المالك بدل أنظمة موثقة قابلة للتكرار",
+    treatmentEn: "document critical workflows, quality standards, handoffs, escalation rules, and process owners",
+    treatmentAr: "توثيق العمليات الحرجة ومعايير الجودة ونقاط التسليم وقواعد التصعيد وملاك العمليات",
+    drillEn: "choose one recurring process and define the standard steps, owner, quality check, and failure trigger",
+    drillAr: "اختر عملية متكررة وحدد خطواتها القياسية والمالك وفحص الجودة ومؤشر الفشل",
+    metricEn: "critical processes documented, followed, measured, and improved",
+    metricAr: "العمليات الحرجة الموثقة والمتبعة والمقاسة والمحسنة",
+  },
+
+  people_roles_accountability: {
+    id: "people_roles_accountability",
+    en: "People, Roles & Accountability",
+    ar: "الأفراد والأدوار والمساءلة",
+    leakageEn: "busy employees with unclear ownership, weak standards, soft accountability, and too many decisions returning to the owner",
+    leakageAr: "موظفون مشغولون مع ملكية غير واضحة ومعايير ضعيفة ومساءلة لينة وقرارات كثيرة تعود للمالك",
+    treatmentEn: "define role outcomes, responsibilities, decision rights, review rhythm, and measurable accountability",
+    treatmentAr: "تحديد نتائج الدور والمسؤوليات وصلاحيات القرار وإيقاع المراجعة والمساءلة القابلة للقياس",
+    drillEn: "for each key person, write: owns, measures, reports, decides, escalates",
+    drillAr: "لكل شخص أساسي اكتب: يملك، يقيس، يرفع تقريرًا، يقرر، يصعّد",
+    metricEn: "roles with clear ownership, measurable outcomes, and review dates",
+    metricAr: "الأدوار التي لها ملكية واضحة ونتائج قابلة للقياس ومواعيد مراجعة",
+  },
+
+  leadership_decision_making_rhythm: {
+    id: "leadership_decision_making_rhythm",
+    en: "Leadership & Decision-Making Rhythm",
+    ar: "القيادة وإيقاع اتخاذ القرار",
+    leakageEn: "the week being controlled by the loudest problem rather than a leadership rhythm of priorities, numbers, decisions, and review",
+    leakageAr: "تحكم المشكلة الأعلى صوتًا في الأسبوع بدل إيقاع قيادي للأولويات والأرقام والقرارات والمراجعة",
+    treatmentEn: "install a weekly leadership rhythm around numbers, priorities, blockers, decisions, owners, and deadlines",
+    treatmentAr: "تركيب إيقاع قيادي أسبوعي حول الأرقام والأولويات والعوائق والقرارات والملاك والمواعيد",
+    drillEn: "run one 45-minute weekly business review with fixed agenda and no vague action items",
+    drillAr: "نفذ مراجعة أسبوعية لمدة 45 دقيقة بأجندة ثابتة ودون بنود عمل غامضة",
+    metricEn: "decisions with owner, deadline, evidence, and follow-up review",
+    metricAr: "القرارات التي لها مالك وموعد ودليل ومراجعة متابعة",
+  },
+
+  products_services_value_proposition: {
+    id: "products_services_value_proposition",
+    en: "Products, Services & Value Proposition",
+    ar: "المنتجات والخدمات وعرض القيمة",
+    leakageEn: "too many unclear, low-margin, or difficult-to-deliver offers absorbing attention and capacity",
+    leakageAr: "عروض كثيرة وغير واضحة أو منخفضة الهامش أو صعبة التسليم تستهلك الانتباه والطاقة",
+    treatmentEn: "rank offers by demand, margin, strategic fit, delivery complexity, and customer value",
+    treatmentAr: "ترتيب العروض حسب الطلب والهامش والملاءمة الاستراتيجية وتعقيد التسليم وقيمة العميل",
+    drillEn: "classify every offer as scale, fix, simplify, reposition, or stop",
+    drillAr: "صنف كل عرض إلى توسعة أو إصلاح أو تبسيط أو إعادة تموضع أو إيقاف",
+    metricEn: "revenue and margin concentration in the strongest strategic offers",
+    metricAr: "تركيز الإيرادات والهامش في أقوى العروض الاستراتيجية",
+  },
+
+  technology_data_management_visibility: {
+    id: "technology_data_management_visibility",
+    en: "Technology, Data & Management Visibility",
+    ar: "التقنية والبيانات ووضوح الإدارة",
+    leakageEn: "the owner not seeing the business clearly because data is scattered, late, manual, or missing",
+    leakageAr: "عدم رؤية المالك للشركة بوضوح لأن البيانات متفرقة أو متأخرة أو يدوية أو ناقصة",
+    treatmentEn: "build a simple weekly dashboard across revenue, cash, customers, operations, people, and risk",
+    treatmentAr: "بناء لوحة أسبوعية بسيطة عبر الإيرادات والنقد والعملاء والعمليات والأفراد والمخاطر",
+    drillEn: "choose 12 numbers the owner or GM must see weekly without chasing information",
+    drillAr: "اختر 12 رقمًا يجب أن يراها المالك أو المدير العام أسبوعيًا دون مطاردة المعلومات",
+    metricEn: "weekly visibility of the core business dashboard",
+    metricAr: "وضوح لوحة الإدارة الأساسية أسبوعيًا",
+  },
+
+  risk_compliance_business_continuity: {
+    id: "risk_compliance_business_continuity",
+    en: "Risk, Compliance & Business Continuity",
+    ar: "المخاطر والامتثال واستمرارية الأعمال",
+    leakageEn: "hidden exposure through customer concentration, supplier dependency, compliance gaps, staff dependency, or weak continuity planning",
+    leakageAr: "تعرض مخفي بسبب تركّز العملاء أو اعتماد الموردين أو فجوات الامتثال أو الاعتماد على موظف أو ضعف خطط الاستمرارية",
+    treatmentEn: "identify the few risks that could damage cash, reputation, delivery, compliance, or continuity",
+    treatmentAr: "تحديد المخاطر القليلة التي قد تضرب النقد أو السمعة أو التسليم أو الامتثال أو الاستمرارية",
+    drillEn: "create a top-10 risk register with likelihood, impact, owner, control, and contingency action",
+    drillAr: "أنشئ سجلًا لأهم 10 مخاطر مع الاحتمال والأثر والمالك والضابط وخطة بديلة",
+    metricEn: "critical risks with owners, controls, contingency plans, and review dates",
+    metricAr: "المخاطر الحرجة التي لها ملاك وضوابط وخطط بديلة ومواعيد مراجعة",
+  },
+
+  growth_readiness_scalability: {
+    id: "growth_readiness_scalability",
+    en: "Growth Readiness & Scalability",
+    ar: "جاهزية النمو وقابلية التوسع",
+    leakageEn: "growth creating chaos because customers, staff, marketing, or locations are added before systems are ready",
+    leakageAr: "تحول النمو إلى فوضى بسبب إضافة عملاء أو موظفين أو تسويق أو فروع قبل جاهزية الأنظمة",
+    treatmentEn: "define what must be systemized, delegated, measured, and protected before growth accelerates",
+    treatmentAr: "تحديد ما يجب تنظيمه وتفويضه وقياسه وحمايته قبل تسريع النمو",
+    drillEn: "build a scale-readiness checklist across sales, delivery, cash, people, systems, technology, and leadership rhythm",
+    drillAr: "ابنِ قائمة جاهزية النمو عبر المبيعات والتسليم والنقد والأفراد والأنظمة والتقنية وإيقاع القيادة",
+    metricEn: "growth initiatives supported by capacity, process, cash, and management visibility",
+    metricAr: "مبادرات النمو المدعومة بالقدرة والعملية والنقد والرؤية الإدارية",
+  },
+
   prospecting_finding_new_clients: {
     id: "prospecting_finding_new_clients",
     en: "Prospecting & Finding New Clients",
@@ -935,7 +1118,33 @@ function isLawyerProfile(id: string): boolean {
   ]).has(key);
 }
 
+function isBusinessHealthProfile(id: string): boolean {
+  const key = normalizeCompetencyId(id);
+  return new Set([
+    "sme_business_health_overall_score",
+    "strategic_direction_business_clarity",
+    "revenue_engine_sales_predictability",
+    "marketing_positioning_lead_quality",
+    "customer_experience_retention",
+    "cash_flow_margins_financial_control",
+    "operations_systems_process_discipline",
+    "people_roles_accountability",
+    "leadership_decision_making_rhythm",
+    "products_services_value_proposition",
+    "technology_data_management_visibility",
+    "risk_compliance_business_continuity",
+    "growth_readiness_scalability",
+  ]).has(key);
+}
+
 function enStrength(p: CompetencyProfile): string[] {
+  if (isBusinessHealthProfile(p.id)) {
+    return [
+      `Protect your strength in ${p.en}. This is not just a score; it is one part of the company’s operating system that can stabilize weaker business areas.`,
+      `Use ${p.en} as leverage for the lowest business health area. For the next 7 days, connect this strength to one leak in cash, customers, operations, people, visibility, or growth readiness.`,
+      `Track ${p.metricEn}. Strong SMEs do not rely on effort alone; they protect the vital signs that make the business stable, profitable, and scalable.`,
+    ];
+  }
   if (isLawyerProfile(p.id)) {
     return [
       `Protect your strength in ${p.en}. This is not an area to ignore because it already feels natural. Turn it into a repeatable professional asset by documenting exactly what you do before, during, and after successful consultations where this competency appears.`,
@@ -951,6 +1160,13 @@ function enStrength(p: CompetencyProfile): string[] {
 }
 
 function arStrength(p: CompetencyProfile): string[] {
+  if (isBusinessHealthProfile(p.id)) {
+    return [
+      `احمِ قوتك في ${p.ar}. هذه ليست مجرد نتيجة؛ إنها جزء من نظام تشغيل الشركة ويمكن استخدامها لتثبيت المناطق الأضعف.`,
+      `استخدم ${p.ar} كرافعة لأضعف منطقة في صحة الشركة. خلال 7 أيام، اربط هذه القوة بتسريب واحد في النقد أو العملاء أو العمليات أو الأفراد أو الرؤية الإدارية أو جاهزية النمو.`,
+      `تتبع ${p.metricAr}. الشركات الصغيرة والمتوسطة القوية لا تعتمد على الاجتهاد فقط؛ بل تحمي العلامات الحيوية التي تجعل الشركة مستقرة ومربحة وقابلة للنمو.`,
+    ];
+  }
   if (isLawyerProfile(p.id)) {
     return [
       `احمِ قوتك في ${p.ar}. لا تتجاهل هذه المنطقة لأنها جيدة أصلًا. حوّلها إلى أصل مهني متكرر عبر توثيق ما تفعله قبل وأثناء وبعد الاستشارات الناجحة التي تظهر فيها هذه الكفاءة.`,
@@ -966,6 +1182,13 @@ function arStrength(p: CompetencyProfile): string[] {
 }
 
 function enOpportunity(p: CompetencyProfile): string[] {
+  if (isBusinessHealthProfile(p.id)) {
+    return [
+      `${p.en} is not broken, but it is not yet dependable enough to protect the business under pressure. The treatment is to install a clearer operating routine: ${p.treatmentEn}.`,
+      `For the next 7 days, apply this business drill: ${p.drillEn}. Do not judge success by one meeting. Judge success by whether the company starts seeing this area more clearly and acting on it consistently.`,
+      `Watch for the leakage pattern: ${p.leakageEn}. When it appears, assign an owner, a deadline, and one measurable correction. Your target metric is ${p.metricEn}.`,
+    ];
+  }
   return [
     `${p.en} is not broken, but it is not yet dependable under pressure. The treatment is to stop relying on instinct and install a repeatable behavior: ${p.treatmentEn}.`,
     `For the next 7 days, apply this drill: ${p.drillEn}. Do not judge success by one conversation. Judge success by whether the behavior was repeated enough to become easier and more natural.`,
@@ -974,6 +1197,13 @@ function enOpportunity(p: CompetencyProfile): string[] {
 }
 
 function arOpportunity(p: CompetencyProfile): string[] {
+  if (isBusinessHealthProfile(p.id)) {
+    return [
+      `${p.ar} ليست مكسورة، لكنها لم تصبح ثابتة بما يكفي لحماية الشركة تحت الضغط. العلاج هو تركيب إيقاع تشغيل أوضح: ${p.treatmentAr}.`,
+      `خلال 7 أيام، طبّق هذا التمرين الإداري: ${p.drillAr}. لا تحكم على النجاح من اجتماع واحد. احكم عليه من قدرة الشركة على رؤية هذه المنطقة والتصرف عليها بثبات.`,
+      `انتبه لنمط التسريب: ${p.leakageAr}. عندما يظهر، عيّن مالكًا وموعدًا وإجراء تصحيح قابلًا للقياس. مؤشر القياس المطلوب هو ${p.metricAr}.`,
+    ];
+  }
   return [
     `${p.ar} ليست مكسورة، لكنها لم تصبح ثابتة تحت الضغط بعد. العلاج هو التوقف عن الاعتماد على الغريزة وتركيب سلوك متكرر: ${p.treatmentAr}.`,
     `خلال 7 أيام، طبّق هذا التمرين: ${p.drillAr}. لا تحكم على النجاح من محادثة واحدة. احكم عليه من تكرار السلوك حتى يصبح أسهل وأكثر طبيعية.`,
@@ -982,6 +1212,13 @@ function arOpportunity(p: CompetencyProfile): string[] {
 }
 
 function enThreat(p: CompetencyProfile): string[] {
+  if (isBusinessHealthProfile(p.id)) {
+    return [
+      `${p.en} is now in the business health warning zone. This may already be draining cash, customers, owner time, team energy, operating discipline, or growth capacity. Treat this as a priority business leak: ${p.leakageEn}.`,
+      `Your immediate treatment is: ${p.treatmentEn}. For the next 72 hours, simplify the issue into one owner, one decision, one corrective action, and one measurable checkpoint.`,
+      `Use this business drill: ${p.drillEn}. After each review, write one line: what is leaking, what we corrected, who owns the next step, and when we will review it. Track ${p.metricEn}.`,
+    ];
+  }
   if (isLawyerProfile(p.id)) {
     return [
       `${p.en} is now in the warning zone. This means the issue may already be costing client trust, professional-fee confidence, consultation clarity, or engagement decisions. Do not try to fix everything. Treat this as a priority leak: ${p.leakageEn}.`,
@@ -997,6 +1234,13 @@ function enThreat(p: CompetencyProfile): string[] {
 }
 
 function arThreat(p: CompetencyProfile): string[] {
+  if (isBusinessHealthProfile(p.id)) {
+    return [
+      `${p.ar} الآن في منطقة إنذار لصحة الشركة. قد تكون هذه المنطقة بدأت بالفعل في استنزاف النقد أو العملاء أو وقت المالك أو طاقة الفريق أو انضباط التشغيل أو قدرة النمو. تعامل معها كتسريب أولوية: ${p.leakageAr}.`,
+      `العلاج الفوري هو: ${p.treatmentAr}. خلال 72 ساعة، بسّط المشكلة إلى مالك واحد وقرار واحد وإجراء تصحيح واحد ونقطة قياس واحدة.`,
+      `استخدم هذا التمرين الإداري: ${p.drillAr}. بعد كل مراجعة، اكتب سطرًا واحدًا: ما الذي يتسرب، ماذا صححنا، من يملك الخطوة التالية، ومتى نراجعها. تتبع ${p.metricAr}.`,
+    ];
+  }
   if (isLawyerProfile(p.id)) {
     return [
       `${p.ar} الآن في منطقة إنذار. هذا يعني أن المشكلة قد تكون بدأت بالفعل في خسارة ثقة العميل أو وضوح أتعاب المحاماة أو وضوح الاستشارة أو قرار التعاقد. لا تحاول إصلاح كل شيء. تعامل معها كتسريب أولوية: ${p.leakageAr}.`,
@@ -1013,7 +1257,9 @@ function arThreat(p: CompetencyProfile): string[] {
 
 function enWeakness(p: CompetencyProfile): string[] {
   return [
-    isLawyerProfile(p.id)
+    isBusinessHealthProfile(p.id)
+    ? `${p.en} is a business revamp priority. This is not a label of failure; it is a signal that this part of the company’s health needs direct correction before it keeps leaking cash, customers, execution discipline, owner time, team energy, or growth capacity.`
+    : isLawyerProfile(p.id)
     ? `${p.en} is a treatment priority. This is not a label of legal failure; it is a signal that this part of the legal client-conversion journey needs direct correction before it keeps leaking trust, professional-fee confidence, engagement commitment, or client follow-up.`
     : isManagerProfile(p.id)
     ? `${p.en} is a treatment priority. This is not a label of failure; it is a signal that this part of the sales-management leadership body needs direct correction before it keeps leaking team performance, forecast quality, or execution discipline.`
@@ -1025,7 +1271,9 @@ function enWeakness(p: CompetencyProfile): string[] {
 
 function arWeakness(p: CompetencyProfile): string[] {
   return [
-    isLawyerProfile(p.id)
+    isBusinessHealthProfile(p.id)
+    ? `${p.ar} هي أولوية لإعادة تقوية الشركة. هذا ليس وصفًا للفشل؛ بل إشارة إلى أن هذا الجزء من صحة الشركة يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب النقد أو العملاء أو انضباط التنفيذ أو وقت المالك أو طاقة الفريق أو قدرة النمو.`
+    : isLawyerProfile(p.id)
     ? `${p.ar} هي أولوية علاج. هذا ليس وصفًا لفشل قانوني؛ بل إشارة إلى أن هذا الجزء من رحلة تحويل العميل القانوني يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب الثقة أو وضوح أتعاب المحاماة أو قرار التعاقد أو المتابعة.`
     : isManagerProfile(p.id)
     ? `${p.ar} هي أولوية علاج. هذا ليس وصفًا للفشل؛ بل إشارة إلى أن هذا الجزء من جسم القيادة البيعية يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب أداء الفريق أو جودة التوقعات أو انضباط التنفيذ.`

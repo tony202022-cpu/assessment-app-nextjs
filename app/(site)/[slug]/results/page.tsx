@@ -60,6 +60,20 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   emotional_difficult_clients: { en: "Managing Emotional, Difficult or Unrealistic Clients", ar: "إدارة العملاء الانفعاليين أو الصعبين أو غير الواقعيين" },
   client_experience_referral_growth: { en: "Client Experience, Satisfaction & Referral Growth", ar: "تجربة العميل والرضا ونمو الإحالات" },
 
+  // SME Business Health assessments
+  strategic_direction_business_clarity: { en: "Strategic Direction & Business Clarity", ar: "الاتجاه الاستراتيجي ووضوح الشركة" },
+  revenue_engine_sales_predictability: { en: "Revenue Engine & Sales Predictability", ar: "محرك الإيرادات واستقرار المبيعات" },
+  marketing_positioning_lead_quality: { en: "Marketing Positioning & Lead Quality", ar: "التموضع التسويقي وجودة العملاء المحتملين" },
+  customer_experience_retention: { en: "Customer Experience & Retention", ar: "تجربة العملاء والاحتفاظ بهم" },
+  cash_flow_margins_financial_control: { en: "Cash Flow, Margins & Financial Control", ar: "التدفق النقدي والهوامش والرقابة المالية" },
+  operations_systems_process_discipline: { en: "Operations, Systems & Process Discipline", ar: "العمليات والأنظمة وانضباط الإجراءات" },
+  people_roles_accountability: { en: "People, Roles & Accountability", ar: "الأفراد والأدوار والمساءلة" },
+  leadership_decision_making_rhythm: { en: "Leadership & Decision-Making Rhythm", ar: "القيادة وإيقاع اتخاذ القرار" },
+  products_services_value_proposition: { en: "Products, Services & Value Proposition", ar: "المنتجات والخدمات وعرض القيمة" },
+  technology_data_management_visibility: { en: "Technology, Data & Management Visibility", ar: "التقنية والبيانات ووضوح الإدارة" },
+  risk_compliance_business_continuity: { en: "Risk, Compliance & Business Continuity", ar: "المخاطر والامتثال واستمرارية الأعمال" },
+  growth_readiness_scalability: { en: "Growth Readiness & Scalability", ar: "جاهزية النمو وقابلية التوسع" },
+
   // Sales Manager assessments
   sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
   pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية البايبلاين وفحص الصفقات" },
@@ -122,6 +136,13 @@ function isLawyerAssessment(routeSlug?: string, attemptAssessmentId?: string | n
   const a = String(attemptAssessmentId || "").toLowerCase();
   const c = String(configType || "").toLowerCase();
   return s.includes("lawyer-client-conversion") || a.includes("lawyer_client_conversion") || c.includes("lawyer_client_conversion") || s.includes("lawyer") || a.includes("lawyer");
+}
+
+function isBusinessHealthAssessment(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
+  const s = String(routeSlug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  const c = String(configType || "").toLowerCase();
+  return s.includes("sme-business-health") || a.includes("sme_business_health") || c.includes("sme_business_health") || s.includes("business-health") || a.includes("business_health");
 }
 
 
@@ -228,6 +249,36 @@ function healthMeaning(overall: number, ar: boolean) {
   if (overall >= 30) return "There are warning signals that need practical correction before they become permanent habits.";
   return "There is a clear performance gap that needs deeper diagnosis and a practical treatment plan, not more guessing.";
 }
+
+
+function businessHealthLabel(overall: number, ar: boolean) {
+  if (ar) {
+    if (overall >= 75) return "منطقة صحة أعمال قوية";
+    if (overall >= 50) return "منطقة فرصة واضحة لتقوية الشركة";
+    if (overall >= 30) return "منطقة إنذار في صحة الشركة";
+    return "منطقة تسريب حاد في الأعمال";
+  }
+
+  if (overall >= 75) return "Strong Business Health Zone";
+  if (overall >= 50) return "Clear Business Improvement Zone";
+  if (overall >= 30) return "Business Health Warning Zone";
+  return "High Business Leakage Zone";
+}
+
+function businessHealthMeaning(overall: number, ar: boolean) {
+  if (ar) {
+    if (overall >= 75) return "الشركة لديها أساس صحي يمكن تقويته وتحويله إلى نظام تشغيل يحمي النقد والعملاء والفريق والنمو.";
+    if (overall >= 50) return "الشركة لديها قاعدة قابلة للبناء، لكن بعض التسريبات قد تحد من الاستقرار أو الربحية أو جاهزية النمو.";
+    if (overall >= 30) return "هناك إشارات إنذار في صحة الشركة تحتاج إلى تشخيص وخارطة طريق قبل أن تتحول إلى ضغط دائم.";
+    return "هناك تسريب واضح في صحة الشركة يحتاج إلى علاج منظم بدل المزيد من الاجتهاد والتخمين.";
+  }
+
+  if (overall >= 75) return "The business has a healthy base that can be turned into a stronger operating system for cash, customers, people, and growth.";
+  if (overall >= 50) return "The business has a workable base, but some leaks may still be limiting stability, profitability, or growth readiness.";
+  if (overall >= 30) return "There are business health warning signals that need diagnosis and a roadmap before they become permanent pressure.";
+  return "There is a clear business health leakage pattern that needs structured treatment, not more guessing or random effort.";
+}
+
 
 function cleanRecommendationText(input: string) {
   let text = String(input || "").trim();
@@ -522,6 +573,7 @@ function ResultsContent() {
   const isMri = isProbablyMRI(routeSlug, attempt?.assessment_id, config?.type);
   const isSalesManager = isSalesManagerAssessment(routeSlug, attempt?.assessment_id, config?.type);
   const isLawyer = isLawyerAssessment(routeSlug, attempt?.assessment_id, config?.type);
+  const isBusinessHealth = isBusinessHealthAssessment(routeSlug, attempt?.assessment_id, config?.type);
   const isScan = isProbablyScan(routeSlug, attempt?.assessment_id, config?.type) && !isMri;
 
   const labelsFromConfig = useMemo(() => {
@@ -595,6 +647,10 @@ function ResultsContent() {
       ? ar
         ? "نتائج Lawyer Client Conversion MRI"
         : "Lawyer Client Conversion MRI Results"
+      : isBusinessHealth
+      ? ar
+        ? "نتائج Business Health MRI للشركات الصغيرة والمتوسطة"
+        : "SME Business Health MRI Results"
       : isSalesManager
       ? ar
         ? "نتائج فحص مدير المبيعات"
@@ -607,6 +663,10 @@ function ResultsContent() {
     ? ar
       ? "هذه صفحة النتائج السريعة لتشخيص تحويل العملاء للمحامين. التقرير الكامل يوضح تسريبات الاستشارة، الثقة، أتعاب المحاماة، الاعتراضات، وخطوات العلاج المهني."
       : "This is your quick legal client-conversion dashboard. The full report shows consultation leaks, trust signals, professional-fee confidence, objections, and treatment steps."
+    : isBusinessHealth
+    ? ar
+      ? "هذه صفحة النتائج السريعة لصحة الشركة. التقرير الكامل يوضح التسريبات، المخاطر، العلامات الحيوية، وأولويات خارطة الطريق."
+      : "This is your quick business health dashboard. The full report shows business leaks, risks, vital signs, and roadmap priorities."
     : isSalesManager
     ? ar
       ? "هذه صفحة النتائج السريعة لقيادة المبيعات. التقرير الكامل يوضح التشخيص الإداري، نقاط القوة، التسريبات، وخطوات التنفيذ."
@@ -753,7 +813,7 @@ function ResultsContent() {
                       </span>
                     </div>
                     <p className="mt-4 text-xs sm:text-sm text-blue-100/90 max-w-[220px] mx-auto text-center">
-                      {healthLabel(overallPct, ar)}
+                      {isBusinessHealth ? businessHealthLabel(overallPct, ar) : healthLabel(overallPct, ar)}
                     </p>
                   </div>
                 </div>
@@ -808,12 +868,12 @@ function ResultsContent() {
                   {ar ? "القراءة العامة" : "Overall Reading"}
                 </div>
                 <h3 className="text-xl font-black text-slate-950 rtl-text">
-                  {healthLabel(overallPct, ar)}
+                  {isBusinessHealth ? businessHealthLabel(overallPct, ar) : healthLabel(overallPct, ar)}
                 </h3>
               </div>
             </div>
             <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-700 rtl-text">
-              {healthMeaning(overallPct, ar)}
+              {isBusinessHealth ? businessHealthMeaning(overallPct, ar) : healthMeaning(overallPct, ar)}
             </p>
           </div>
         </section>
@@ -826,10 +886,14 @@ function ResultsContent() {
             </div>
             <div>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
-                {isLawyer ? (ar ? "لوحة تحويل العملاء القانونية السريعة" : "Quick Legal Client Conversion Panel") : isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
+                {isLawyer ? (ar ? "لوحة تحويل العملاء القانونية السريعة" : "Quick Legal Client Conversion Panel") : isBusinessHealth ? (ar ? "لوحة صحة الشركة السريعة" : "Quick Business Health Panel") : isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
               </h3>
               <div className="text-sm text-slate-500 mt-1 rtl-text">
-                {isSalesManager
+                {isBusinessHealth
+                  ? ar
+                    ? "النتيجة العامة + ١٢ منطقة صحية في لقطة واحدة."
+                    : "Overall score + 12 business health areas in one clean dashboard."
+                  : isSalesManager
                   ? ar
                     ? "النتيجة العامة + ٧ مؤشرات قيادية في لقطة واحدة."
                     : "Overall score + 7 leadership markers in one clean dashboard."
@@ -843,10 +907,10 @@ function ResultsContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <HealthMarkerCard
               ar={ar}
-              label={isLawyer ? (ar ? "مؤشر صحة تحويل العملاء للمحامين" : "Legal Client Conversion Health Score") : isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
+              label={isLawyer ? (ar ? "مؤشر صحة تحويل العملاء للمحامين" : "Legal Client Conversion Health Score") : isBusinessHealth ? (ar ? "مؤشر صحة الشركة" : "SME Business Health Score") : isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
               percentage={overallPct}
               tier={overallTier}
-              subtitle={ar ? "القراءة المجمعة لكل الفحص" : "Combined reading of the full scan"}
+              subtitle={isBusinessHealth ? (ar ? "القراءة المجمعة للعلامات الحيوية للشركة" : "Combined reading of the company’s vital signs") : ar ? "القراءة المجمعة لكل الفحص" : "Combined reading of the full scan"}
               isOverall
             />
 
@@ -857,7 +921,7 @@ function ResultsContent() {
                 label={getCompetencyLabel(res)}
                 percentage={safePct(res.percentage)}
                 tier={res.derivedTier}
-                subtitle={ar ? `المؤشر ${index + 1}` : `Marker ${index + 1}`}
+                subtitle={isBusinessHealth ? (ar ? `المنطقة ${index + 1}` : `Area ${index + 1}`) : ar ? `المؤشر ${index + 1}` : `Marker ${index + 1}`}
               />
             ))}
           </div>
