@@ -209,6 +209,20 @@ function healthLabel(overall: number, lang: Language) {
   return "High Leakage Zone";
 }
 
+function lawyerHealthLabel(overall: number, lang: Language) {
+  if (lang === "ar") {
+    if (overall >= 75) return "منطقة تحويل عملاء قوية";
+    if (overall >= 50) return "منطقة فرصة واضحة لتحويل العملاء";
+    if (overall >= 30) return "منطقة إنذار في تحويل العملاء";
+    return "منطقة تسريب حاد في الاستشارات";
+  }
+
+  if (overall >= 75) return "Strong Client Conversion Zone";
+  if (overall >= 50) return "Clear Client Conversion Opportunity Zone";
+  if (overall >= 30) return "Client Conversion Warning Zone";
+  return "High Consultation Leakage Zone";
+}
+
 function commercialMeaning(tier: Tier, label: string, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") {
@@ -1864,7 +1878,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               </h2>
 
               <p className="mt-5 text-base sm:text-xl text-blue-100 leading-relaxed max-w-4xl rtl-text">
-                {salesManager
+                {lawyer
+                  ? ar
+                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لطريقة تحويل الاستفسارات القانونية إلى تعاقدات مهنية. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم أنماط الاستشارة، ثقة العميل، عرض أتعاب المحاماة، قرار التعاقد، وأولويات العلاج التي يجب التعامل معها أولًا."
+                    : "This personalized report gives you a deeper view of your legal client-conversion body. It does not simply tell you where the score is low; it helps you understand consultation patterns, client-trust risks, professional-fee confidence, engagement decisions, and the treatment priorities that should be corrected first."
+                  : salesManager
                   ? ar
                     ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لطريقة قيادتك لفريق المبيعات. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم أنماط القيادة، تسريبات أداء الفريق، وأولويات العلاج الإداري التي يجب التعامل معها أولًا."
                     : "This personalized report gives you a deeper view of how you lead sales performance through people, pipeline, coaching, forecasting, and accountability. It does not simply tell you where the score is low; it helps you understand leadership patterns, team-performance risks, and management treatment priorities."
@@ -1893,7 +1911,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 <DarkInsight
                   title={ar ? "خطة علاج شخصية" : "Personal treatment plan"}
                   body={
-                    salesManager
+                    lawyer
+                      ? ar
+                        ? "أولويات العلاج مبنية على إجاباتك ودرجاتك في رحلة الاستفسار القانوني والاستشارة وأتعاب المحاماة وقرار التعاقد، وليست نصائح عامة."
+                        : "The legal client-conversion treatment priorities are built from your answers and scores across inquiry, consultation, professional fees, and engagement decisions — not from generic advice."
+                      : salesManager
                       ? ar
                         ? "ترتيب أولويات العلاج الإداري مبني على إجاباتك ودرجاتك، وليس على نصائح عامة للقيادة."
                         : "The management treatment priorities are built from your answers and scores, not from generic leadership advice."
@@ -1905,7 +1927,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 <DarkInsight
                   title={ar ? "وصفة ٩٠ يومًا" : "90-day prescription"}
                   body={
-                    salesManager
+                    lawyer
+                      ? ar
+                        ? "الخطة تساعدك على معرفة ما الذي يجب إصلاحه أولًا في افتتاح الاستشارة، بناء الثقة، شرح القيمة القانونية، عرض أتعاب المحاماة، والمتابعة بعد الاستشارة."
+                        : "The plan helps you know what to fix first in consultation opening, client trust, legal-value clarity, professional fees, and post-consultation follow-up."
+                      : salesManager
                       ? ar
                         ? "الخطة تساعدك على معرفة ما الذي يجب إصلاحه أولًا في التدريب، البايبلاين، المساءلة، وإيقاع الفريق."
                         : "The plan helps you know what to fix first in coaching, pipeline inspection, accountability, and team rhythm."
@@ -1927,7 +1953,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="rounded-3xl bg-slate-950 text-white p-6 shadow-xl">
               <div className="text-sm font-black text-blue-200 uppercase tracking-widest">{t.health}</div>
-              <div className="mt-3 text-3xl font-black rtl-text">{healthLabel(overall, lang)}</div>
+              <div className="mt-3 text-3xl font-black rtl-text">{lawyer ? lawyerHealthLabel(overall, lang) : healthLabel(overall, lang)}</div>
               <div className="mt-4">
                 <span className={`inline-flex rounded-full px-4 py-2 text-sm font-black ${tierBadgeClass(overallTier)}`}>
                   {overall}% · {getTierLabel(overallTier, lang)}
