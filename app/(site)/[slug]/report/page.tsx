@@ -2142,6 +2142,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             identity={identity}
             attemptId={attemptId}
             lawyer={lawyer}
+            businessHealth={businessHealth}
           />
         )}
 
@@ -3074,6 +3075,7 @@ function PrintCoverPage({
   identity,
   attemptId,
   lawyer = false,
+  businessHealth = false,
 }: {
   ar: boolean;
   title: string;
@@ -3085,6 +3087,7 @@ function PrintCoverPage({
   identity: { fullName: string; email: string; company: string };
   attemptId: string;
   lawyer?: boolean;
+  businessHealth?: boolean;
 }) {
   const generatedOn = new Date().toLocaleDateString("en-AU", {
     year: "numeric",
