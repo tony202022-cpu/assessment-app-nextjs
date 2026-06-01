@@ -647,6 +647,31 @@ function getProfile(competencyId: string): CompetencyProfile {
   );
 }
 
+
+function isManagerProfile(id: string): boolean {
+  const key = normalizeCompetencyId(id);
+  return new Set([
+    "sales_coaching_rep_development",
+    "pipeline_visibility_deal_inspection",
+    "pipeline_management_deal_inspection",
+    "forecast_judgment",
+    "forecast_accuracy_judgment",
+    "performance_accountability",
+    "target_setting_kpi_discipline",
+    "motivation_team_energy",
+    "sales_meeting_rhythm",
+    "one_on_one_management",
+    "hiring_onboarding_salespeople",
+    "territory_resource_allocation",
+    "handling_underperformance",
+    "managing_difficult_salespeople",
+    "managing_top_performers",
+    "manager_communication_upward_reporting",
+    "decision_making_under_pressure",
+    "sales_manager_overall",
+  ]).has(key);
+}
+
 function enStrength(p: CompetencyProfile): string[] {
   return [
     `Protect your strength in ${p.en}. This is not an area to ignore because it is already good. Turn it into a repeatable asset by documenting exactly what you do before, during, and after successful situations where this competency appears.`,
