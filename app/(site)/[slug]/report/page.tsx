@@ -266,6 +266,34 @@ function managerCommercialMeaning(tier: Tier, label: string, lang: Language) {
   return `${label} is showing a clear management gap. This area may be weakening coaching, follow-up, team discipline, or target execution more than you realize.`;
 }
 
+
+const SALES_MANAGER_COMPETENCY_IDS = new Set([
+  "sales_coaching_rep_development",
+  "pipeline_visibility_deal_inspection",
+  "pipeline_management_deal_inspection",
+  "forecast_judgment",
+  "forecast_accuracy_judgment",
+  "performance_accountability",
+  "target_setting_kpi_discipline",
+  "motivation_team_energy",
+  "sales_meeting_rhythm",
+  "one_on_one_management",
+  "hiring_onboarding_salespeople",
+  "territory_resource_allocation",
+  "handling_underperformance",
+  "managing_difficult_salespeople",
+  "managing_top_performers",
+  "manager_communication_upward_reporting",
+  "decision_making_under_pressure",
+]);
+
+function detailedMeaningFor(row: CompetencyRow, lang: Language) {
+  if (SALES_MANAGER_COMPETENCY_IDS.has(row.competencyId)) {
+    return managerCommercialMeaning(row.tier, row.label, lang);
+  }
+  return commercialMeaning(row.tier, row.label, lang);
+}
+
 function shortDiagnosis(tier: Tier, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return "مؤشر صحي قوي يمكن البناء عليه.";
@@ -3054,7 +3082,7 @@ function MriDeepTreatmentPage({
       <div className="p-6 sm:p-7 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TreatmentInsight
           title={ar ? "ما الذي تكشفه هذه النتيجة؟" : "What this score reveals"}
-          body={meaningFor(row)}
+          body={detailedMeaningFor(row, lang)}
         />
         <TreatmentInsight
           title={ar ? "أين يحدث التسريب؟" : "Where leakage may happen"}
