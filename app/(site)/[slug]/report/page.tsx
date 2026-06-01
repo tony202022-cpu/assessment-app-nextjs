@@ -1589,6 +1589,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             title={reportTitle}
             subtitle={t.subtitle}
             overall={overall}
+            overallLabel={t.overall}
             tier={overallTier}
             lang={lang}
             identity={identity}
@@ -2331,6 +2332,7 @@ function PrintCoverPage({
   title,
   subtitle,
   overall,
+  overallLabel,
   tier,
   lang,
   identity,
@@ -2340,6 +2342,7 @@ function PrintCoverPage({
   title: string;
   subtitle: string;
   overall: number;
+  overallLabel: string;
   tier: Tier;
   lang: Language;
   identity: { fullName: string; email: string; company: string };
@@ -2386,7 +2389,7 @@ function PrintCoverPage({
         <div className="h-72 w-72 rounded-full border-[14px] border-white/15 bg-white/10 flex flex-col items-center justify-center text-center">
           <div className="text-7xl font-black">{overall}%</div>
           <div className="mt-2 text-xs font-black uppercase tracking-widest text-blue-100">
-            {texts.overall}
+            {overallLabel}
           </div>
           <div className={`mt-5 inline-flex rounded-full px-5 py-2 text-sm font-black ${tierBadgeClass(tier)}`}>
             {getTierLabel(tier, lang)}
