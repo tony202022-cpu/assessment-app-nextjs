@@ -473,6 +473,23 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
   const id = row.competencyId;
 
   const en: Record<string, string> = {
+    sales_coaching_rep_development: "Coaching & rep development",
+    pipeline_visibility_deal_inspection: "Pipeline inspection",
+    pipeline_management_deal_inspection: "Pipeline inspection",
+    forecast_judgment: "Forecast judgment",
+    forecast_accuracy_judgment: "Forecast judgment",
+    performance_accountability: "Performance accountability",
+    target_setting_kpi_discipline: "Target and KPI discipline",
+    motivation_team_energy: "Team motivation",
+    sales_meeting_rhythm: "Meeting execution rhythm",
+    one_on_one_management: "One-on-one management",
+    hiring_onboarding_salespeople: "Hiring and onboarding",
+    territory_resource_allocation: "Territory and resource allocation",
+    handling_underperformance: "Underperformance management",
+    managing_difficult_salespeople: "Difficult rep management",
+    managing_top_performers: "Top performer management",
+    manager_communication_upward_reporting: "Executive communication",
+    decision_making_under_pressure: "Decision pressure",
     prospecting_finding_new_clients: "Pipeline creation",
     mental_toughness: "Mindset & pressure control",
     attitude_motivation_mindset: "Mindset & pressure control",
@@ -493,6 +510,23 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
   };
 
   const ar: Record<string, string> = {
+    sales_coaching_rep_development: "التدريب وتطوير المندوبين",
+    pipeline_visibility_deal_inspection: "فحص البايبلاين والصفقات",
+    pipeline_management_deal_inspection: "فحص البايبلاين والصفقات",
+    forecast_judgment: "الحكم على التوقعات",
+    forecast_accuracy_judgment: "الحكم على التوقعات",
+    performance_accountability: "المساءلة على الأداء",
+    target_setting_kpi_discipline: "الأهداف وانضباط المؤشرات",
+    motivation_team_energy: "تحفيز وطاقة الفريق",
+    sales_meeting_rhythm: "إيقاع اجتماعات المبيعات",
+    one_on_one_management: "إدارة الاجتماعات الفردية",
+    hiring_onboarding_salespeople: "التوظيف والتأهيل",
+    territory_resource_allocation: "توزيع المناطق والموارد",
+    handling_underperformance: "معالجة ضعف الأداء",
+    managing_difficult_salespeople: "إدارة المندوبين الصعبين",
+    managing_top_performers: "إدارة أصحاب الأداء العالي",
+    manager_communication_upward_reporting: "التواصل والتقارير للإدارة العليا",
+    decision_making_under_pressure: "اتخاذ القرار تحت الضغط",
     prospecting_finding_new_clients: "صناعة الفرص والعملاء الجدد",
     mental_toughness: "العقلية والتحكم تحت الضغط",
     attitude_motivation_mindset: "العقلية والتحكم تحت الضغط",
@@ -519,6 +553,159 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
   const id = row.competencyId;
 
   const en: Record<string, any> = {
+    sales_coaching_rep_development: {
+      leakage: "Reps may repeat the same mistakes because coaching happens after problems instead of shaping behavior before the next opportunity.",
+      root: "The root pattern is weak coaching rhythm: feedback is given, but it is not specific, observed, practiced, and followed up.",
+      stop: "Stop giving general advice such as work harder, follow up more, or improve your attitude.",
+      start: "Start coaching one observable behavior at a time and agree on the next field action.",
+      drill: "For 7 days, run one 12-minute coaching conversation using: observation, question, behavior, practice, next action.",
+      metric: "Reps leaving coaching with one clear behavior to execute.",
+      bonus: "Sales Coaching Playbook",
+    },
+    pipeline_visibility_deal_inspection: {
+      leakage: "The pipeline may look healthy while deals are actually weak, stale, or missing real next steps.",
+      root: "The root pattern is accepting activity as evidence instead of inspecting buyer commitment, decision process, and next action.",
+      stop: "Stop reviewing pipeline by deal value alone.",
+      start: "Start inspecting each deal for decision stage, stakeholder access, risk, and next dated action.",
+      drill: "Choose five deals and ask: what evidence proves this deal is alive?",
+      metric: "Deals with verified next steps and clear buyer commitment.",
+      bonus: "Pipeline Inspection Checklist",
+    },
+    pipeline_management_deal_inspection: {
+      leakage: "The pipeline may become crowded with hopeful deals while management attention misses the few that truly need intervention.",
+      root: "The root pattern is weak deal triage: not enough separation between real, risky, and dead opportunities.",
+      stop: "Stop treating all open deals as equally important.",
+      start: "Start classifying deals as advance, rescue, qualify out, or manager intervention.",
+      drill: "Review the top 10 deals and assign one inspection status to each.",
+      metric: "Pipeline reviewed by quality, risk, and next action rather than value only.",
+      bonus: "Pipeline Inspection Checklist",
+    },
+    forecast_judgment: {
+      leakage: "Forecasts may become optimistic because the team reports hope, not evidence.",
+      root: "The root pattern is weak judgment under uncertainty: verbal confidence is accepted without proof.",
+      stop: "Stop asking only whether the deal will close.",
+      start: "Start asking what changed, who confirmed it, and what risk remains.",
+      drill: "For every forecasted deal, capture one proof point and one risk point.",
+      metric: "Forecasted deals with evidence, risk, and next action documented.",
+      bonus: "Forecast Accuracy Checklist",
+    },
+    forecast_accuracy_judgment: {
+      leakage: "The forecast may swing late in the month because weak assumptions were not challenged early enough.",
+      root: "The root pattern is forecast softness: managers avoid uncomfortable inspection until pressure becomes urgent.",
+      stop: "Stop letting reps forecast based only on confidence.",
+      start: "Start grading forecast quality by buyer evidence, timeline, authority, and risk.",
+      drill: "Run a 15-minute forecast challenge on the top five deals each week.",
+      metric: "Forecast changes explained before the final week, not after the miss.",
+      bonus: "Forecast Accuracy Checklist",
+    },
+    performance_accountability: {
+      leakage: "Standards may slowly drop when missed actions are discussed but not followed by clear consequences or support.",
+      root: "The root pattern is soft accountability: the manager wants to stay supportive but avoids making expectations measurable.",
+      stop: "Stop accepting repeated explanations without a reset agreement.",
+      start: "Start using clear standards: what must happen, by when, and how it will be reviewed.",
+      drill: "Convert one recurring performance issue into a written expectation and follow-up date.",
+      metric: "Missed commitments converted into clear reset agreements.",
+      bonus: "Accountability Conversation Framework",
+    },
+    target_setting_kpi_discipline: {
+      leakage: "The team may stay busy without knowing which few activities actually drive the target.",
+      root: "The root pattern is KPI clutter: too many numbers and not enough connection to controllable behavior.",
+      stop: "Stop presenting targets as pressure only.",
+      start: "Start translating targets into weekly controllable actions and visible progress markers.",
+      drill: "Choose three KPIs and connect each one to a weekly behavior the rep can control.",
+      metric: "Team members who can explain their target, gap, and next controllable action.",
+      bonus: "Sales KPI Execution Planner",
+    },
+    motivation_team_energy: {
+      leakage: "Team energy may rise after wins and collapse after pressure because motivation is emotional, not operational.",
+      root: "The root pattern is inconsistent leadership energy: the manager reacts to results instead of shaping the climate.",
+      stop: "Stop using pressure as the main source of urgency.",
+      start: "Start creating energy through clarity, recognition, visible progress, and fair standards.",
+      drill: "Open every team day with one priority, one progress signal, and one behavior to execute.",
+      metric: "Team activity maintained after difficult days or missed results.",
+      bonus: "Team Motivation Reset",
+    },
+    sales_meeting_rhythm: {
+      leakage: "Meetings may consume time without changing behavior, pipeline quality, or next actions.",
+      root: "The root pattern is meeting drift: discussion replaces decision and follow-through.",
+      stop: "Stop running meetings that end without owners and deadlines.",
+      start: "Start designing every meeting around decisions, blockers, commitments, and follow-up.",
+      drill: "For the next meeting, write the desired behavior change before building the agenda.",
+      metric: "Meetings ending with owner, deadline, and next action.",
+      bonus: "Sales Meeting Operating Rhythm",
+    },
+    one_on_one_management: {
+      leakage: "One-on-ones may become friendly updates instead of performance-changing management conversations.",
+      root: "The root pattern is low structure: the meeting lacks preparation, inspection, coaching, and accountability.",
+      stop: "Stop asking only how things are going.",
+      start: "Start using one-on-ones to inspect priorities, coach one behavior, and agree on one action.",
+      drill: "Use a three-part one-on-one: pipeline, behavior, next commitment.",
+      metric: "One-on-ones that end with a measurable action before the next meeting.",
+      bonus: "One-on-One Manager Template",
+    },
+    hiring_onboarding_salespeople: {
+      leakage: "New hires may take too long to become productive because onboarding is informal or personality-based.",
+      root: "The root pattern is weak ramp design: the manager assumes the new hire will learn by exposure.",
+      stop: "Stop treating onboarding as product training only.",
+      start: "Start defining the first 30 days by behaviors, role plays, field practice, and evidence of readiness.",
+      drill: "Create a 30-day ramp checklist for one new hire or future hire.",
+      metric: "New hires reaching first productive sales behaviors faster.",
+      bonus: "Sales Hiring & Onboarding Checklist",
+    },
+    territory_resource_allocation: {
+      leakage: "High-potential accounts may receive the same attention as low-probability areas, wasting team capacity.",
+      root: "The root pattern is resource equality: the manager distributes time fairly instead of commercially.",
+      stop: "Stop allocating resources by habit or complaints.",
+      start: "Start allocating time, support, and territory focus by potential, probability, and strategic value.",
+      drill: "Rank territories/accounts by value, risk, and growth potential, then shift one resource decision.",
+      metric: "Manager attention spent on the highest-value opportunities and people.",
+      bonus: "Territory & Resource Allocation Map",
+    },
+    handling_underperformance: {
+      leakage: "Low performance may continue too long because the manager delays hard conversations or confuses patience with support.",
+      root: "The root pattern is delayed intervention: the issue is noticed early but addressed late.",
+      stop: "Stop hoping underperformance will correct itself.",
+      start: "Start separating skill gap, will gap, activity gap, and fit gap.",
+      drill: "Diagnose one underperformer using skill, will, activity, and fit, then choose the correct intervention.",
+      metric: "Underperformance cases with clear diagnosis and next action.",
+      bonus: "Underperformance Treatment Plan",
+    },
+    managing_difficult_salespeople: {
+      leakage: "One difficult salesperson may drain the manager, distract the team, and weaken standards.",
+      root: "The root pattern is boundary weakness: the manager keeps managing mood instead of managing behavior.",
+      stop: "Stop debating attitude without naming the specific behavior and impact.",
+      start: "Start setting behavioral boundaries, consequences, and a short review cycle.",
+      drill: "Write the behavior, team impact, required change, and review date before the next difficult conversation.",
+      metric: "Difficult behavior converted into specific agreements and consequences.",
+      bonus: "Difficult Salespeople Conversation Script",
+    },
+    managing_top_performers: {
+      leakage: "Top performers may become independent, entitled, bored, or under-leveraged.",
+      root: "The root pattern is neglect by success: the manager assumes strong performers need less management.",
+      stop: "Stop giving top performers only praise or more pressure.",
+      start: "Start giving them challenge, influence, recognition, and strategic development.",
+      drill: "Create one growth challenge for each top performer that benefits both the person and the team.",
+      metric: "Top performers retained, stretched, and used as positive leverage.",
+      bonus: "Top Performer Growth Plan",
+    },
+    manager_communication_upward_reporting: {
+      leakage: "Senior leaders may lose confidence when reports are late, vague, or too optimistic.",
+      root: "The root pattern is weak upward clarity: the manager reports numbers without enough risk, cause, and action.",
+      stop: "Stop reporting only what happened.",
+      start: "Start reporting what changed, why it changed, what risk remains, and what action is next.",
+      drill: "Use a weekly executive update: results, risks, causes, actions, support needed.",
+      metric: "Executive conversations ending with clarity and confidence.",
+      bonus: "Executive Sales Update Template",
+    },
+    decision_making_under_pressure: {
+      leakage: "Pressure may lead to reactive decisions, inconsistent standards, or short-term fixes that damage the team later.",
+      root: "The root pattern is pressure narrowing: urgency reduces the manager’s ability to diagnose before acting.",
+      stop: "Stop making high-impact decisions while only looking at the loudest problem.",
+      start: "Start using a short decision filter: facts, options, consequences, people impact, next review.",
+      drill: "Before one pressure decision, write three options and one consequence for each.",
+      metric: "Pressure decisions reviewed by evidence, impact, and follow-up.",
+      bonus: "Manager Decision Filter",
+    },
     prospecting_finding_new_clients: {
       leakage: "New opportunities may dry up because the seller depends too heavily on familiar lead sources, old contacts, or manager-provided pipeline.",
       root: "The root pattern is weak market creation: the seller works existing demand but does not consistently create fresh demand.",
@@ -675,6 +862,159 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
   };
 
   const ar: Record<string, any> = {
+    sales_coaching_rep_development: {
+      leakage: "قد يكرر المندوبون نفس الأخطاء لأن التدريب يحدث بعد المشكلة بدل تشكيل السلوك قبل الفرصة التالية.",
+      root: "النمط الجذري هو ضعف إيقاع التدريب: توجد ملاحظات، لكنها ليست محددة أو قابلة للممارسة والمتابعة.",
+      stop: "توقف عن النصائح العامة مثل اجتهد أكثر أو تابع أكثر أو حسّن موقفك.",
+      start: "ابدأ بتدريب سلوك واحد قابل للملاحظة في كل مرة واتفق على الإجراء الميداني التالي.",
+      drill: "لمدة 7 أيام، نفّذ محادثة تدريب من 12 دقيقة: ملاحظة، سؤال، سلوك، تدريب، إجراء تالٍ.",
+      metric: "عدد المندوبين الذين يخرجون من التدريب بسلوك واضح للتنفيذ.",
+      bonus: "دليل تدريب مندوبي المبيعات",
+    },
+    pipeline_visibility_deal_inspection: {
+      leakage: "قد يبدو البايبلاين صحيًا بينما تكون الصفقات ضعيفة أو قديمة أو بلا خطوات تالية حقيقية.",
+      root: "النمط الجذري هو قبول النشاط كدليل بدل فحص التزام العميل، مسار القرار، والخطوة التالية.",
+      stop: "توقف عن مراجعة البايبلاين حسب قيمة الصفقة فقط.",
+      start: "ابدأ بفحص كل صفقة حسب مرحلة القرار، الوصول لصاحب القرار، المخاطر، والخطوة المؤرخة التالية.",
+      drill: "اختر خمس صفقات واسأل: ما الدليل أن هذه الصفقة ما زالت حية؟",
+      metric: "عدد الصفقات التي لها خطوة تالية مؤكدة والتزام واضح.",
+      bonus: "قائمة فحص البايبلاين",
+    },
+    pipeline_management_deal_inspection: {
+      leakage: "قد يمتلئ البايبلاين بصفقات متفائلة بينما يضيع تركيز المدير عن الصفقات التي تحتاج تدخلًا حقيقيًا.",
+      root: "النمط الجذري هو ضعف فرز الصفقات: لا يوجد فصل كافٍ بين الفرص الحقيقية والخطرة والميتة.",
+      stop: "توقف عن التعامل مع كل الصفقات المفتوحة وكأنها متساوية.",
+      start: "ابدأ بتصنيف الصفقات: تقدّم، إنقاذ، تأهيل للخروج، أو تدخل إداري.",
+      drill: "راجع أهم 10 صفقات وضع لكل واحدة حالة فحص واضحة.",
+      metric: "مراجعة البايبلاين حسب الجودة والمخاطر والخطوة التالية لا القيمة فقط.",
+      bonus: "قائمة فحص البايبلاين",
+    },
+    forecast_judgment: {
+      leakage: "قد تصبح التوقعات متفائلة لأن الفريق يرفع الأمل بدل الدليل.",
+      root: "النمط الجذري هو ضعف الحكم تحت الغموض: يتم قبول الثقة اللفظية دون إثبات.",
+      stop: "توقف عن سؤال: هل ستُغلق الصفقة فقط؟",
+      start: "ابدأ بالسؤال: ما الذي تغيّر؟ من أكده؟ وما الخطر المتبقي؟",
+      drill: "لكل صفقة في التوقعات، التقط دليلًا واحدًا ونقطة خطر واحدة.",
+      metric: "الصفقات المتوقعة التي لها دليل وخطر وخطوة تالية موثقة.",
+      bonus: "قائمة دقة التوقعات",
+    },
+    forecast_accuracy_judgment: {
+      leakage: "قد تتغير التوقعات في نهاية الشهر لأن الافتراضات الضعيفة لم تُراجع مبكرًا.",
+      root: "النمط الجذري هو ليونة التوقعات: يتجنب المدير الفحص المزعج حتى يصبح الضغط عاجلًا.",
+      stop: "توقف عن قبول توقعات المندوب المبنية على الثقة فقط.",
+      start: "ابدأ بتقييم جودة التوقع حسب دليل العميل، الجدول الزمني، الصلاحية، والمخاطر.",
+      drill: "نفّذ تحدي توقعات لمدة 15 دقيقة على أهم خمس صفقات أسبوعيًا.",
+      metric: "تغييرات التوقع التي تُفسر قبل الأسبوع الأخير لا بعد فوات الأوان.",
+      bonus: "قائمة دقة التوقعات",
+    },
+    performance_accountability: {
+      leakage: "قد تنخفض المعايير تدريجيًا عندما تُناقش الالتزامات المفقودة دون عواقب أو دعم واضح.",
+      root: "النمط الجذري هو مساءلة لينة: يريد المدير أن يكون داعمًا لكنه يتجنب جعل التوقعات قابلة للقياس.",
+      stop: "توقف عن قبول التبريرات المتكررة دون اتفاق إعادة ضبط.",
+      start: "ابدأ بمعايير واضحة: ماذا يجب أن يحدث، متى، وكيف ستتم المراجعة.",
+      drill: "حوّل مشكلة أداء متكررة واحدة إلى توقع مكتوب وتاريخ متابعة.",
+      metric: "الالتزامات المفقودة التي تتحول إلى اتفاقات إعادة ضبط واضحة.",
+      bonus: "إطار محادثة المساءلة",
+    },
+    target_setting_kpi_discipline: {
+      leakage: "قد يبقى الفريق مشغولًا دون معرفة الأنشطة القليلة التي تقود الهدف فعليًا.",
+      root: "النمط الجذري هو ازدحام المؤشرات: أرقام كثيرة وربط ضعيف بالسلوك القابل للتحكم.",
+      stop: "توقف عن عرض الأهداف كضغط فقط.",
+      start: "ابدأ بترجمة الأهداف إلى أفعال أسبوعية قابلة للتحكم ومؤشرات تقدم واضحة.",
+      drill: "اختر ثلاثة مؤشرات واربط كل واحد بسلوك أسبوعي يستطيع المندوب التحكم به.",
+      metric: "عدد أعضاء الفريق الذين يستطيعون شرح الهدف والفجوة والإجراء التالي.",
+      bonus: "مخطط تنفيذ مؤشرات المبيعات",
+    },
+    motivation_team_energy: {
+      leakage: "قد ترتفع طاقة الفريق بعد الفوز وتهبط بعد الضغط لأن التحفيز عاطفي وليس تشغيليًا.",
+      root: "النمط الجذري هو عدم ثبات طاقة القيادة: يتفاعل المدير مع النتائج بدل تشكيل المناخ.",
+      stop: "توقف عن استخدام الضغط كمصدر رئيسي للاستعجال.",
+      start: "ابدأ بصناعة الطاقة عبر الوضوح، التقدير، التقدم المرئي، والمعايير العادلة.",
+      drill: "افتح كل يوم للفريق بأولوية واحدة، إشارة تقدم واحدة، وسلوك مطلوب التنفيذ.",
+      metric: "استمرار نشاط الفريق بعد الأيام الصعبة أو النتائج الضعيفة.",
+      bonus: "إعادة ضبط طاقة الفريق",
+    },
+    sales_meeting_rhythm: {
+      leakage: "قد تستهلك الاجتماعات الوقت دون تغيير السلوك أو جودة البايبلاين أو الخطوات التالية.",
+      root: "النمط الجذري هو انحراف الاجتماع: النقاش يحل محل القرار والمتابعة.",
+      stop: "توقف عن إدارة اجتماعات تنتهي بلا مالك ولا موعد.",
+      start: "ابدأ بتصميم كل اجتماع حول القرارات، العوائق، الالتزامات، والمتابعة.",
+      drill: "قبل الاجتماع القادم، اكتب التغيير السلوكي المطلوب قبل بناء الأجندة.",
+      metric: "الاجتماعات التي تنتهي بمالك وموعد وخطوة تالية.",
+      bonus: "إيقاع تشغيل اجتماعات المبيعات",
+    },
+    one_on_one_management: {
+      leakage: "قد تتحول الاجتماعات الفردية إلى تحديثات ودية بدل محادثات تغير الأداء.",
+      root: "النمط الجذري هو ضعف الهيكلة: الاجتماع يفتقد التحضير والفحص والتدريب والمساءلة.",
+      stop: "توقف عن سؤال: كيف تسير الأمور فقط؟",
+      start: "ابدأ باستخدام الاجتماعات الفردية لفحص الأولويات وتدريب سلوك واحد والاتفاق على فعل واحد.",
+      drill: "استخدم هيكلًا من ثلاث خطوات: البايبلاين، السلوك، الالتزام التالي.",
+      metric: "الاجتماعات الفردية التي تنتهي بإجراء قابل للقياس قبل الاجتماع التالي.",
+      bonus: "قالب الاجتماع الفردي للمدير",
+    },
+    hiring_onboarding_salespeople: {
+      leakage: "قد يستغرق الموظفون الجدد وقتًا طويلًا للإنتاجية لأن التأهيل غير رسمي أو مبني على الشخصية.",
+      root: "النمط الجذري هو ضعف تصميم مرحلة الانطلاق: يفترض المدير أن الموظف سيتعلم بالاحتكاك فقط.",
+      stop: "توقف عن اعتبار التأهيل تدريبًا على المنتج فقط.",
+      start: "ابدأ بتحديد أول 30 يومًا عبر السلوكيات، التمثيل، التدريب الميداني، ودليل الجاهزية.",
+      drill: "أنشئ قائمة انطلاق لمدة 30 يومًا لموظف جديد أو تعيين قادم.",
+      metric: "وصول الموظفين الجدد إلى أول سلوكيات إنتاجية بسرعة أكبر.",
+      bonus: "قائمة التوظيف والتأهيل",
+    },
+    territory_resource_allocation: {
+      leakage: "قد تحصل الحسابات عالية الإمكانات على نفس الاهتمام مثل المناطق ضعيفة الاحتمال، فتضيع طاقة الفريق.",
+      root: "النمط الجذري هو مساواة الموارد: يوزع المدير الوقت بعدالة شكلية لا تجارية.",
+      stop: "توقف عن توزيع الموارد حسب العادة أو الشكاوى.",
+      start: "ابدأ بتوزيع الوقت والدعم والتركيز حسب الإمكانات والاحتمال والقيمة الاستراتيجية.",
+      drill: "رتب المناطق أو الحسابات حسب القيمة والخطر وإمكانات النمو، ثم غيّر قرارًا واحدًا في التوزيع.",
+      metric: "وقت المدير المصروف على أعلى الفرص والأشخاص قيمة.",
+      bonus: "خريطة توزيع المناطق والموارد",
+    },
+    handling_underperformance: {
+      leakage: "قد يستمر ضعف الأداء طويلًا لأن المدير يؤجل المحادثات الصعبة أو يخلط الصبر بالدعم.",
+      root: "النمط الجذري هو التدخل المتأخر: تتم ملاحظة المشكلة مبكرًا ومعالجتها متأخرًا.",
+      stop: "توقف عن الأمل أن يصحح الأداء الضعيف نفسه.",
+      start: "ابدأ بفصل فجوة المهارة، فجوة الإرادة، فجوة النشاط، وفجوة الملاءمة.",
+      drill: "شخّص مندوبًا ضعيف الأداء عبر المهارة والإرادة والنشاط والملاءمة، ثم اختر التدخل الصحيح.",
+      metric: "حالات ضعف الأداء التي لها تشخيص واضح وخطوة تالية.",
+      bonus: "خطة علاج ضعف الأداء",
+    },
+    managing_difficult_salespeople: {
+      leakage: "قد يستنزف مندوب صعب المدير ويشتت الفريق ويضعف المعايير.",
+      root: "النمط الجذري هو ضعف الحدود: يواصل المدير إدارة المزاج بدل إدارة السلوك.",
+      stop: "توقف عن مناقشة الموقف العام دون تسمية السلوك المحدد وأثره.",
+      start: "ابدأ بوضع حدود سلوكية وعواقب ودورة مراجعة قصيرة.",
+      drill: "اكتب السلوك، أثره على الفريق، التغيير المطلوب، وتاريخ المراجعة قبل المحادثة الصعبة.",
+      metric: "تحويل السلوك الصعب إلى اتفاقات محددة وعواقب واضحة.",
+      bonus: "نص محادثة المندوب الصعب",
+    },
+    managing_top_performers: {
+      leakage: "قد يصبح أصحاب الأداء العالي مستقلين أكثر من اللازم أو متطلبين أو يشعرون بالملل أو لا يتم استثمارهم.",
+      root: "النمط الجذري هو الإهمال بسبب النجاح: يفترض المدير أن القوي يحتاج إدارة أقل.",
+      stop: "توقف عن إعطاء أصحاب الأداء العالي مديحًا فقط أو ضغطًا إضافيًا فقط.",
+      start: "ابدأ بمنحهم تحديًا وتأثيرًا وتقديرًا وتطويرًا استراتيجيًا.",
+      drill: "أنشئ تحديًا للنمو لكل صاحب أداء عالٍ يفيد الشخص والفريق معًا.",
+      metric: "الاحتفاظ بأصحاب الأداء العالي وتوسيع أثرهم الإيجابي.",
+      bonus: "خطة نمو أصحاب الأداء العالي",
+    },
+    manager_communication_upward_reporting: {
+      leakage: "قد تفقد الإدارة العليا الثقة عندما تكون التقارير متأخرة أو غامضة أو متفائلة أكثر من اللازم.",
+      root: "النمط الجذري هو ضعف الوضوح للأعلى: يرفع المدير الأرقام دون شرح كافٍ للمخاطر والسبب والإجراء.",
+      stop: "توقف عن رفع ما حدث فقط.",
+      start: "ابدأ برفع ما تغيّر، لماذا تغيّر، ما الخطر المتبقي، وما الإجراء التالي.",
+      drill: "استخدم تحديثًا أسبوعيًا: النتائج، المخاطر، الأسباب، الإجراءات، والدعم المطلوب.",
+      metric: "المحادثات مع الإدارة العليا التي تنتهي بوضوح وثقة.",
+      bonus: "قالب تحديث مبيعات تنفيذي",
+    },
+    decision_making_under_pressure: {
+      leakage: "قد يؤدي الضغط إلى قرارات تفاعلية أو معايير غير ثابتة أو حلول قصيرة المدى تضر الفريق لاحقًا.",
+      root: "النمط الجذري هو ضيق الرؤية تحت الضغط: الاستعجال يقلل قدرة المدير على التشخيص قبل الفعل.",
+      stop: "توقف عن اتخاذ قرارات عالية الأثر وأنت تنظر فقط إلى أعلى مشكلة صوتًا.",
+      start: "ابدأ بفلتر قرار قصير: حقائق، خيارات، عواقب، أثر على الناس، ومراجعة تالية.",
+      drill: "قبل قرار واحد تحت الضغط، اكتب ثلاثة خيارات وعاقبة واحدة لكل خيار.",
+      metric: "قرارات الضغط التي تتم مراجعتها بالدليل والأثر والمتابعة.",
+      bonus: "فلتر قرار المدير",
+    },
     prospecting_finding_new_clients: {
       leakage: "قد يجف تدفق الفرص الجديدة بسبب الاعتماد الزائد على مصادر العملاء المعتادة أو العلاقات القديمة أو العملاء الذين يقدّمهم المدير.",
       root: "النمط الجذري هو ضعف صناعة السوق: يعمل البائع على الطلب الموجود، لكنه لا يصنع طلبًا جديدًا باستمرار.",
@@ -1326,7 +1666,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               </h2>
 
               <p className="mt-5 text-base sm:text-xl text-blue-100 leading-relaxed max-w-4xl rtl-text">
-                {ar
+                {salesManager
+                  ? ar
+                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لطريقة قيادتك لفريق المبيعات. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم أنماط القيادة، تسريبات أداء الفريق، وأولويات العلاج الإداري التي يجب التعامل معها أولًا."
+                    : "This personalized report gives you a deeper view of how you lead sales performance through people, pipeline, coaching, forecasting, and accountability. It does not simply tell you where the score is low; it helps you understand leadership patterns, team-performance risks, and management treatment priorities."
+                  : ar
                   ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لجسم أدائك البيعي. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم الأنماط الجذرية، المخاطر التجارية، وأولويات العلاج التي يجب التعامل معها أولًا."
                   : "This personalized report gives you a deeper view of your sales performance body. It does not simply tell you where the score is low; it helps you understand root patterns, commercial risks, and the treatment priorities that should be corrected first."}
               </p>
@@ -1335,7 +1679,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 <DarkInsight
                   title={ar ? "تشخيص أعمق" : "Deeper diagnosis"}
                   body={
-                    ar
+                    salesManager
+                      ? ar
+                        ? "يفحص التقرير ١٥ كفاءة إدارية لمدير المبيعات بدل الاكتفاء بالمؤشرات السريعة."
+                        : "The report examines 15 sales-management competencies instead of stopping at basic markers."
+                      : ar
                       ? "يفحص التقرير ١٥ كفاءة بيعية بدل الاكتفاء بالمؤشرات الأساسية."
                       : "The report examines 15 sales competencies instead of stopping at basic markers."
                   }
@@ -1343,7 +1691,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 <DarkInsight
                   title={ar ? "خطة علاج شخصية" : "Personal treatment plan"}
                   body={
-                    ar
+                    salesManager
+                      ? ar
+                        ? "ترتيب أولويات العلاج الإداري مبني على إجاباتك ودرجاتك، وليس على نصائح عامة للقيادة."
+                        : "The management treatment priorities are built from your answers and scores, not from generic leadership advice."
+                      : ar
                       ? "ترتيب أولويات العلاج مبني على إجاباتك ودرجاتك، وليس على نصائح عامة."
                       : "The treatment priorities are built from your answers and scores, not from generic advice."
                   }
@@ -1351,7 +1703,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 <DarkInsight
                   title={ar ? "وصفة ٩٠ يومًا" : "90-day prescription"}
                   body={
-                    ar
+                    salesManager
+                      ? ar
+                        ? "الخطة تساعدك على معرفة ما الذي يجب إصلاحه أولًا في التدريب، البايبلاين، المساءلة، وإيقاع الفريق."
+                        : "The plan helps you know what to fix first in coaching, pipeline inspection, accountability, and team rhythm."
+                      : ar
                       ? "الخطة تساعدك على معرفة ماذا تصلح أولًا، ماذا تتدرب عليه، وماذا تتوقف عن فعله."
                       : "The plan helps you know what to fix first, what to practice, and what to stop doing."
                   }
@@ -1663,10 +2019,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             <div className="space-y-5">
               <ActionBlock
                 index={1}
-                title={ar ? "أولوية عامة" : "Overall Priority"}
+                title={salesManager ? (ar ? "أولوية إدارية عامة" : "Overall Management Priority") : (ar ? "أولوية عامة" : "Overall Priority")}
                 tier={overallTier}
                 percentage={overall}
-                recommendations={getRecommendations("overall_score", overallTier, lang)}
+                recommendations={getRecommendations(salesManager ? "sales_manager_overall_score" : "overall_score", overallTier, lang)}
                 lang={lang}
               />
 
@@ -1855,15 +2211,25 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                           "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
                           "٦ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
                         ]
-                      : [
-                          "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
-                          "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
-                          "The root patterns behind stalled deals, weak momentum, and hidden leakage",
-                          "A clear priority order of what to correct first instead of guessing",
-                          "A practical 90-day performance prescription without sitting through a long training course",
-                          "A day-by-day correction path showing what to do and what to stop doing",
-                          "6 implementation bonuses that help you act, not just read",
-                        ]
+                      : salesManager
+                        ? [
+                            "A personalized, super-detailed Sales Manager MRI report of around 30 pages based on your answers and scores",
+                            "A full diagnostic and treatment tool examining 15 sales-management competencies",
+                            "The root patterns behind weak coaching, poor pipeline visibility, forecast risk, and team accountability leaks",
+                            "A clear priority order of what to correct first instead of guessing",
+                            "A practical 90-day management prescription without sitting through a long training course",
+                            "A day-by-day correction path showing what to inspect, coach, reset, and reinforce",
+                            "Implementation tools that help you act like a stronger sales leader, not just read",
+                          ]
+                        : [
+                            "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
+                            "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
+                            "The root patterns behind stalled deals, weak momentum, and hidden leakage",
+                            "A clear priority order of what to correct first instead of guessing",
+                            "A practical 90-day performance prescription without sitting through a long training course",
+                            "A day-by-day correction path showing what to do and what to stop doing",
+                            "6 implementation bonuses that help you act, not just read",
+                          ]
                     ).map((x) => (
                       <div key={x} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
                         <div className="shrink-0 h-6 w-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-black">
@@ -2020,7 +2386,7 @@ function PrintCoverPage({
         <div className="h-72 w-72 rounded-full border-[14px] border-white/15 bg-white/10 flex flex-col items-center justify-center text-center">
           <div className="text-7xl font-black">{overall}%</div>
           <div className="mt-2 text-xs font-black uppercase tracking-widest text-blue-100">
-            {ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score"}
+            {texts.overall}
           </div>
           <div className={`mt-5 inline-flex rounded-full px-5 py-2 text-sm font-black ${tierBadgeClass(tier)}`}>
             {getTierLabel(tier, lang)}

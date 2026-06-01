@@ -35,6 +35,20 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     metricAr: "إكمال سلوك التصحيح المختار يوميًا",
   },
 
+  sales_manager_overall_score: {
+    id: "sales_manager_overall_score",
+    en: "Overall Sales Management Health",
+    ar: "الصحة الإدارية العامة للمبيعات",
+    leakageEn: "unclear coaching rhythm, weak pipeline inspection, soft accountability, and inconsistent team execution",
+    leakageAr: "غموض إيقاع التدريب، ضعف فحص البايبلاين، ليونة المساءلة، وعدم ثبات تنفيذ الفريق",
+    treatmentEn: "build a simple weekly management operating system around your lowest three leadership markers",
+    treatmentAr: "بناء نظام إدارة أسبوعي بسيط حول أضعف ثلاثة مؤشرات قيادية لديك",
+    drillEn: "review your top 3 management risks every Monday and choose one coaching, inspection, or accountability action before the first team interaction",
+    drillAr: "راجع أخطر 3 مخاطر إدارية كل يوم اثنين واختر إجراء تدريب أو فحص أو مساءلة واحد قبل أول تفاعل مع الفريق",
+    metricEn: "weekly completion of the chosen management correction behavior",
+    metricAr: "إكمال سلوك التصحيح الإداري المختار أسبوعيًا",
+  },
+
   prospecting_finding_new_clients: {
     id: "prospecting_finding_new_clients",
     en: "Prospecting & Finding New Clients",
