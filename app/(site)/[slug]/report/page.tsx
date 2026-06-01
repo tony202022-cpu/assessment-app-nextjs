@@ -3054,7 +3054,7 @@ function MriDeepTreatmentPage({
       <div className="p-6 sm:p-7 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TreatmentInsight
           title={ar ? "ما الذي تكشفه هذه النتيجة؟" : "What this score reveals"}
-          body={commercialMeaning(row.tier, row.label, lang)}
+          body={meaningFor(row)}
         />
         <TreatmentInsight
           title={ar ? "أين يحدث التسريب؟" : "Where leakage may happen"}

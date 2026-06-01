@@ -697,7 +697,9 @@ function arThreat(p: CompetencyProfile): string[] {
 
 function enWeakness(p: CompetencyProfile): string[] {
   return [
-    `${p.en} is a treatment priority. This is not a label of failure; it is a signal that this part of the sales performance body needs direct correction before it keeps leaking opportunities.`,
+    isManagerProfile(p.id)
+    ? `${p.en} is a treatment priority. This is not a label of failure; it is a signal that this part of the sales-management leadership body needs direct correction before it keeps leaking team performance, forecast quality, or execution discipline.`
+    : `${p.en} is a treatment priority. This is not a label of failure; it is a signal that this part of the sales performance body needs direct correction before it keeps leaking opportunities.`,
     `Stop improvising in this area for the next 7 days. Use a fixed treatment protocol: ${p.treatmentEn}. The purpose is to remove randomness and give your behavior a stable structure.`,
     `Your daily prescription is: ${p.drillEn}. Measure only one thing: ${p.metricEn}. When the weakest behavior becomes measurable, it becomes treatable.`,
   ];
@@ -705,7 +707,9 @@ function enWeakness(p: CompetencyProfile): string[] {
 
 function arWeakness(p: CompetencyProfile): string[] {
   return [
-    `${p.ar} هي أولوية علاج. هذا ليس وصفًا للفشل؛ بل إشارة إلى أن هذا الجزء من جسم الأداء البيعي يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب الفرص.`,
+    isManagerProfile(p.id)
+    ? `${p.ar} هي أولوية علاج. هذا ليس وصفًا للفشل؛ بل إشارة إلى أن هذا الجزء من جسم القيادة البيعية يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب أداء الفريق أو جودة التوقعات أو انضباط التنفيذ.`
+    : `${p.ar} هي أولوية علاج. هذا ليس وصفًا للفشل؛ بل إشارة إلى أن هذا الجزء من جسم الأداء البيعي يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب الفرص.`,
     `توقف عن الارتجال في هذه المنطقة لمدة 7 أيام. استخدم بروتوكول علاج ثابت: ${p.treatmentAr}. الهدف هو إزالة العشوائية ومنح السلوك بنية مستقرة.`,
     `وصفتك اليومية هي: ${p.drillAr}. قِس شيئًا واحدًا فقط: ${p.metricAr}. عندما يصبح السلوك الأضعف قابلًا للقياس، يصبح قابلًا للعلاج.`,
   ];
