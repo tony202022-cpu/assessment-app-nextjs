@@ -2738,148 +2738,152 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </div>
         )}
 
-        {/* MRI 90-DAY PRESCRIPTION */}
-        {mri && (
-          <section className="pdf-page-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
-            {sectionTitle(
-              lawyer
-                ? ar ? "وصفة تحويل الاستشارات القانونية خلال ٩٠ يومًا" : "90-Day Legal Client Conversion Treatment Plan"
-                : ar ? "وصفة الأداء البيعي خلال ٩٠ يومًا" : "90-Day Sales Performance Prescription",
-              lawyer
-                ? ar
-                  ? "هذه ليست دورة تدريبية. إنها خطة علاج مهنية مبنية على تسريبات الاستشارة وأولويات تحويل العميل إلى تعاقد."
-                  : "This is not a training course. It is a professional treatment plan based on your consultation leaks and client-engagement priorities."
-                : ar
-                ? "هذه ليست دورة تدريبية. إنها خطة علاج تنفيذية مبنية على ترتيب أولوياتك الحالية."
-                : "This is not a training course. It is an execution treatment plan based on your current priority order."
-            )}
+{/* MRI 90-DAY PRESCRIPTION */}
+{mri && (
+  <section className="pdf-page-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+    {sectionTitle(
+      businessHealth
+        ? ar
+          ? "خارطة علاج صحة الشركة خلال ٩٠ يومًا"
+          : "90-Day SME Business Health Treatment Roadmap"
+        : lawyer
+        ? ar
+          ? "وصفة تحويل الاستشارات القانونية خلال ٩٠ يومًا"
+          : "90-Day Legal Client Conversion Treatment Plan"
+        : salesManager
+        ? ar
+          ? "خطة علاج إدارة المبيعات خلال ٩٠ يومًا"
+          : "90-Day Sales Management Treatment Plan"
+        : ar
+        ? "وصفة الأداء البيعي خلال ٩٠ يومًا"
+        : "90-Day Sales Performance Prescription",
+      businessHealth
+        ? ar
+          ? "هذه ليست دورة تدريبية. إنها خارطة علاج تنفيذية مبنية على مؤشرات صحة الشركة، وأكبر التسريبات، وأولويات التثبيت والنمو."
+          : "This is not a training course. It is an execution roadmap based on your business health signals, biggest leaks, and stabilization priorities."
+        : lawyer
+        ? ar
+          ? "هذه ليست دورة تدريبية. إنها خطة علاج مهنية مبنية على تسريبات الاستشارة وأولويات تحويل العميل إلى تعاقد."
+          : "This is not a training course. It is a professional treatment plan based on your consultation leaks and client-engagement priorities."
+        : salesManager
+        ? ar
+          ? "هذه ليست دورة تدريبية. إنها خطة علاج إدارية مبنية على تسريبات القيادة وأولويات أداء الفريق."
+          : "This is not a training course. It is a management treatment plan based on your leadership leaks and team-performance priorities."
+        : ar
+        ? "هذه ليست دورة تدريبية. إنها خطة علاج تنفيذية مبنية على ترتيب أولوياتك الحالية."
+        : "This is not a training course. It is an execution treatment plan based on your current priority order."
+    )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <PrescriptionPhase
-                ar={ar}
-                phase="1"
-                titleEn="Days 1–30: Stop the Leakage"
-                titleAr="الأيام ١–٣٠: أوقف التسريب"
-                bodyEn={
-                  lawyer
-                    ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the consultation behavior most likely leaking client trust, professional-fee confidence, or engagement commitment, then build a simple correction routine you can repeat daily.`
-                    : salesManager
-                    ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the management behavior most likely leaking team performance, then build a simple correction rhythm you can repeat weekly.`
-                    : `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the behavior that is most likely leaking opportunities, then build a simple correction routine you can repeat daily.`
-                }
-                bodyAr={
-                  lawyer
-                    ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل سلوك الاستشارة الذي قد يسبب أكبر تسريب في ثقة العميل أو أتعاب المحاماة أو قرار التعاقد، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
-                    : salesManager
-                    ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الإداري الذي قد يسبب أكبر تسريب في أداء الفريق، ثم ابنِ إيقاع تصحيح بسيط يمكنك تكراره أسبوعيًا.`
-                    : `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر تسريب للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
-                }
-              />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <PrescriptionPhase
+        ar={ar}
+        phase="1"
+        titleEn={
+          businessHealth
+            ? "Days 1–30: Stop the Business Leakage"
+            : "Days 1–30: Stop the Leakage"
+        }
+        titleAr={
+          businessHealth
+            ? "الأيام ١–٣٠: أوقف تسريب الشركة"
+            : "الأيام ١–٣٠: أوقف التسريب"
+        }
+        bodyEn={
+          businessHealth
+            ? `Focus first on ${topThreeRisks[0]?.label || "your weakest business health area"}. Reduce the issue most likely leaking cash, customers, execution, owner time, or growth capacity, then build a simple correction rhythm the business can repeat weekly.`
+            : lawyer
+            ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the consultation behavior most likely leaking client trust, professional-fee confidence, or engagement commitment, then build a simple correction routine you can repeat daily.`
+            : salesManager
+            ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the management behavior most likely leaking team performance, then build a simple correction rhythm you can repeat weekly.`
+            : `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the behavior that is most likely leaking opportunities, then build a simple correction routine you can repeat daily.`
+        }
+        bodyAr={
+          businessHealth
+            ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف مجال في صحة الشركة"}. قلّل المشكلة التي قد تسرّب النقد، العملاء، التنفيذ، وقت المالك، أو قدرة الشركة على النمو، ثم ابنِ إيقاع تصحيح بسيط يمكن تكراره أسبوعيًا.`
+            : lawyer
+            ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل سلوك الاستشارة الذي قد يسرّب ثقة العميل أو الثقة في أتعاب المحاماة أو الالتزام بالتعاقد، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
+            : salesManager
+            ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الإداري الذي قد يسبب أكبر تسريب في أداء الفريق، ثم ابنِ إيقاع تصحيح بسيط يمكنك تكراره أسبوعيًا.`
+            : `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر تسريب للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
+        }
+      />
 
-              <PrescriptionPhase
-                ar={ar}
-                phase="2"
-                titleEn={lawyer ? "Days 31–60: Build a Stronger Consultation Rhythm" : salesManager ? "Days 31–60: Build New Management Rhythm" : "Days 31–60: Build New Selling Behavior"}
-                titleAr={lawyer ? "الأيام ٣١–٦٠: ابنِ إيقاع استشارة أقوى" : salesManager ? "الأيام ٣١–٦٠: ابنِ إيقاعًا إداريًا جديدًا" : "الأيام ٣١–٦٠: ابنِ سلوكًا بيعيًا جديدًا"}
-                bodyEn={
-                  lawyer
-                    ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker consultation behaviors and create a more stable inquiry-to-engagement rhythm.`
-                    : salesManager
-                    ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker management behaviors and create a more stable team execution rhythm.`
-                    : `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support the weaker behaviors and create a more stable sales rhythm.`
-                }
-                bodyAr={
-                  lawyer
-                    ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم سلوكيات الاستشارة الأضعف وبناء إيقاع أكثر ثباتًا من الاستفسار إلى التعاقد.`
-                    : salesManager
-                    ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الإدارية الأضعف وبناء إيقاع تنفيذ أكثر ثباتًا داخل الفريق.`
-                    : `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الأضعف وبناء إيقاع بيعي أكثر ثباتًا.`
-                }
-              />
+      <PrescriptionPhase
+        ar={ar}
+        phase="2"
+        titleEn={
+          businessHealth
+            ? "Days 31–60: Build a Stronger Operating Rhythm"
+            : lawyer
+            ? "Days 31–60: Build a Stronger Consultation Rhythm"
+            : salesManager
+            ? "Days 31–60: Build New Management Rhythm"
+            : "Days 31–60: Build New Selling Behavior"
+        }
+        titleAr={
+          businessHealth
+            ? "الأيام ٣١–٦٠: ابنِ إيقاع تشغيل أقوى"
+            : lawyer
+            ? "الأيام ٣١–٦٠: ابنِ إيقاع استشارة أقوى"
+            : salesManager
+            ? "الأيام ٣١–٦٠: ابنِ إيقاعًا إداريًا جديدًا"
+            : "الأيام ٣١–٦٠: ابنِ سلوكًا بيعيًا جديدًا"
+        }
+        bodyEn={
+          businessHealth
+            ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strongest business health area"}, to support the weaker areas and create a more stable operating rhythm across revenue, cash, customers, people, and execution.`
+            : lawyer
+            ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker consultation behaviors and create a more stable inquiry-to-engagement rhythm.`
+            : salesManager
+            ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker management behaviors and create a more stable team execution rhythm.`
+            : `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support the weaker behaviors and create a more stable sales rhythm.`
+        }
+        bodyAr={
+          businessHealth
+            ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "أقوى مجال في صحة الشركة"}، لدعم المجالات الأضعف وبناء إيقاع تشغيل أكثر ثباتًا في الإيرادات، النقد، العملاء، الأشخاص، والتنفيذ.`
+            : lawyer
+            ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم سلوكيات الاستشارة الأضعف وبناء إيقاع أكثر ثباتًا من الاستفسار إلى التعاقد.`
+            : salesManager
+            ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الإدارية الأضعف وبناء إيقاع تنفيذ أكثر ثباتًا داخل الفريق.`
+            : `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الأضعف وبناء إيقاع بيعي أكثر ثباتًا.`
+        }
+      />
 
-              <PrescriptionPhase
-                ar={ar}
-                phase="3"
-                titleEn="Days 61–90: Sharpen and Repeat"
-                titleAr="الأيام ٦١–٩٠: صقِل وكرّر"
-                bodyEn={lawyer ? "Turn the corrected behaviors into a legal client-conversion operating system: open consultations better, diagnose needs better, explain legal value better, present professional fees better, and follow up with more confidence." : businessHealth ? "Turn the corrected actions into a business operating system: review the right numbers, protect cash, strengthen customer flow, clarify roles, stabilize operations, and remove owner dependency." : salesManager ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity." : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."}
-                bodyAr={lawyer ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتحويل العملاء للمحامين: افتح الاستشارة أفضل، شخّص الحاجة القانونية أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، وتابع العميل باحتراف." : businessHealth ? "حوّل الإجراءات المصححة إلى نظام تشغيل للشركة: راجع الأرقام الصحيحة، احمِ النقد، قوِّ تدفق العملاء، وضّح الأدوار، ثبّت التشغيل، وقلّل اعتماد الشركة على المالك." : salesManager ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص البايبلاين أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر." : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."}
-              />
-            </div>
-          </section>
-        )}
-
-        {/* PRINT-ONLY DETAILED 90-DAY ROADMAP */}
-        {mri && (
-          <PrintDetailedRoadmap
-            ar={ar}
-            lawyer={lawyer}
-            primary={topThreeRisks[0]}
-            secondary={topThreeRisks[1]}
-            third={topThreeRisks[2]}
-            leverage={topThreeStrengths[0]}
-          />
-        )}
-
-        {/* MRI BONUS REMEDY TOOLS */}
-        {mri && (
-          <section className="pdf-page-break rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white shadow-2xl p-6 sm:p-8">
-            <div className="mb-6">
-              <div className="inline-flex rounded-full bg-amber-400/20 border border-amber-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-amber-100">
-                {ar ? "أدوات العلاج المرافقة" : "Included Remedy Tools"}
-              </div>
-              <h2 className="mt-4 text-3xl sm:text-4xl font-black leading-tight rtl-text">
-                {ar ? "٦ مكافآت علاجية عملية تساعدك على التطبيق وليس القراءة فقط" : "6 Practical Remedy Bonuses to Help You Apply the Treatment, Not Just Read the Report"}
-              </h2>
-              <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
-                {salesManager
-                  ? ar
-                    ? "هذه الموارد تعمل كأدوات علاجية مرافقة للتقرير. استخدمها لتحسين التدريب، فحص البايبلاين، المساءلة، الاجتماعات الفردية، إدارة المندوبين الصعبين، والتقارير التنفيذية."
-                    : "These resources work as practical remedy tools alongside the report. Use them to improve coaching, pipeline inspection, accountability, one-on-ones, difficult-rep conversations, and executive reporting."
-                  : ar
-                  ? "هذه الموارد تعمل كأدوات علاجية مرافقة للتقرير. استخدمها لعلاج الاعتراضات، ضغط العملاء، الوقت، المواعيد، الذكاء الاصطناعي، وتحويل التشخيص إلى تنفيذ."
-                  : "These resources work as practical remedy tools alongside the report. Use them to treat objections, difficult customers, pressure, time leaks, decision-maker access, AI execution, and follow-up gaps."}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(businessHealth
-                ? [
-                    ar ? "خارطة الاتجاه الاستراتيجي للشركات الصغيرة والمتوسطة" : "SME Strategic Direction Map",
-                    ar ? "خارطة محرك الإيرادات" : "SME Revenue Engine Map",
-                    ar ? "قائمة ضبط التدفق النقدي والهوامش" : "Cash Flow & Margin Control Sheet",
-                    ar ? "قائمة انضباط العمليات والأنظمة" : "SME Process Discipline Checklist",
-                    ar ? "لوحة مؤشرات الإدارة" : "SME Management Dashboard Blueprint",
-                    ar ? "سجل المخاطر واستمرارية الأعمال" : "SME Risk & Continuity Register",
-                  ]
-                : salesManager
-                ? [
-                    ar ? "دليل تدريب وتطوير مندوبي المبيعات" : "Sales Coaching & Rep Development Playbook",
-                    ar ? "قائمة فحص البايبلاين والتوقعات" : "Pipeline & Forecast Inspection Checklist",
-                    ar ? "إطار محادثات المساءلة ومعالجة ضعف الأداء" : "Accountability & Underperformance Conversation Framework",
-                    ar ? "قالب الاجتماع الفردي واجتماعات المبيعات" : "One-on-One & Sales Meeting Rhythm Templates",
-                    ar ? "نص إدارة مندوبي المبيعات الصعبين" : "Managing Difficult Salespeople Conversation Script",
-                    ar ? "قالب التقرير التنفيذي الأسبوعي" : "Executive Sales Update Template",
-                  ]
-                : [
-                    ar ? "أفضل 50 إجابة لأصعب 50 اعتراض بيعي" : "The 50 Best Answers to the 50 Hardest Objections",
-                    lawyer ? (ar ? "دليل تحويل الاستشارة القانونية إلى تعاقد" : "Legal Consultation Conversion Playbook") : ar ? "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي" : "How to Increase Your Sales Using AI",
-                    ar ? "كيف تحفّز نفسك تحت الضغط" : "How to Motivate Yourself Under Pressure",
-                    ar ? "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار" : "How to Book Appointments with VIPs and Decision Makers",
-                    ar ? "إتقان إدارة الوقت للمبيعات الخارجية" : "Time-Management Mastery for Outdoor Sales",
-                    ar ? "كيف تتعامل مع العملاء الصعبين دون خسارة السيطرة" : "How to Deal with Difficult Customers Without Losing Control",
-                  ]
-              ).map((bonus, idx) => (
-                <div key={bonus} className="rounded-3xl bg-white/10 border border-white/15 p-5">
-                  <div className="text-sm font-black text-amber-200 uppercase tracking-widest">
-                    {ar ? `مكافأة ${idx + 1}` : `Bonus ${idx + 1}`}
-                  </div>
-                  <div className="mt-2 text-lg font-black rtl-text">{bonus}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+      <PrescriptionPhase
+        ar={ar}
+        phase="3"
+        titleEn={
+          businessHealth
+            ? "Days 61–90: Stabilize, Systemize, and Scale"
+            : "Days 61–90: Sharpen and Repeat"
+        }
+        titleAr={
+          businessHealth
+            ? "الأيام ٦١–٩٠: ثبّت، نظّم، واستعد للنمو"
+            : "الأيام ٦١–٩٠: صقِل وكرّر"
+        }
+        bodyEn={
+          businessHealth
+            ? "Turn the corrected priorities into a business operating system: review the numbers, inspect customer flow, strengthen accountability, reduce owner dependency, and protect the business from avoidable risk."
+            : lawyer
+            ? "Turn the corrected behaviors into a legal client-conversion operating system: open consultations better, diagnose needs better, explain legal value better, present professional fees better, and follow up with more confidence."
+            : salesManager
+            ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity."
+            : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."
+        }
+        bodyAr={
+          businessHealth
+            ? "حوّل الأولويات المصححة إلى نظام تشغيل للشركة: راجع الأرقام، افحص تدفق العملاء، قوِّ المساءلة، خفّف اعتماد الشركة على المالك، واحمِ العمل من المخاطر التي يمكن تجنبها."
+            : lawyer
+            ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتحويل العملاء للمحامين: افتح الاستشارات بشكل أفضل، شخّص الاحتياج أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، وتابع بوضوح أقوى."
+            : salesManager
+            ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص البايبلاين أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر."
+            : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."
+        }
+      />
+    </div>
+  </section>
+)}
 
         {/* PRINT-ONLY BONUS REMEDY MAP */}
         {mri && <PrintBonusRemedyMap ar={ar} lawyer={lawyer} businessHealth={businessHealth} weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)} />}
