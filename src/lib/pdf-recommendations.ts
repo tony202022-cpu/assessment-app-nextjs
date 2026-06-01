@@ -936,6 +936,13 @@ function isLawyerProfile(id: string): boolean {
 }
 
 function enStrength(p: CompetencyProfile): string[] {
+  if (isLawyerProfile(p.id)) {
+    return [
+      `Protect your strength in ${p.en}. This is not an area to ignore because it already feels natural. Turn it into a repeatable professional asset by documenting exactly what you do before, during, and after successful consultations where this competency appears.`,
+      `Use ${p.en} as leverage for weaker legal client-conversion areas. For the next 7 days, deliberately connect this strength to one weak competency so your strongest professional behavior helps lift consultation clarity, client trust, professional-fee confidence, or engagement commitment.`,
+      `Track ${p.metricEn}. Strong lawyers do not only rely on legal expertise; they protect the consultation behaviors that make expertise visible to the client. Review the metric every evening and write one adjustment for the next day.`,
+    ];
+  }
   return [
     `Protect your strength in ${p.en}. This is not an area to ignore because it is already good. Turn it into a repeatable asset by documenting exactly what you do before, during, and after successful situations where this competency appears.`,
     `Use ${p.en} as leverage for weaker areas. For the next 7 days, deliberately connect this strength to one weak competency. The goal is to make your strength pull the weaker behavior upward instead of letting the weak area drag the whole performance down.`,
@@ -944,6 +951,13 @@ function enStrength(p: CompetencyProfile): string[] {
 }
 
 function arStrength(p: CompetencyProfile): string[] {
+  if (isLawyerProfile(p.id)) {
+    return [
+      `احمِ قوتك في ${p.ar}. لا تتجاهل هذه المنطقة لأنها جيدة أصلًا. حوّلها إلى أصل مهني متكرر عبر توثيق ما تفعله قبل وأثناء وبعد الاستشارات الناجحة التي تظهر فيها هذه الكفاءة.`,
+      `استخدم ${p.ar} كرافعة للمناطق الأضعف في تحويل العملاء للمحامين. خلال 7 أيام، اربط هذه القوة عمدًا بإحدى الكفاءات الضعيفة حتى تساعد على رفع وضوح الاستشارة، ثقة العميل، أتعاب المحاماة، أو قرار التعاقد.`,
+      `تتبع ${p.metricAr}. المحامي القوي لا يعتمد على الخبرة القانونية فقط؛ بل يحمي سلوك الاستشارة الذي يجعل هذه الخبرة مرئية للعميل. راجع المؤشر كل مساء واكتب تعديلًا واحدًا لليوم التالي.`,
+    ];
+  }
   return [
     `احمِ قوتك في ${p.ar}. لا تتجاهل هذه المنطقة لأنها جيدة أصلًا. حوّلها إلى أصل متكرر عبر توثيق ما تفعله قبل وأثناء وبعد المواقف الناجحة التي تظهر فيها هذه الكفاءة.`,
     `استخدم ${p.ar} كرافعة للمناطق الأضعف. خلال 7 أيام، اربط هذه القوة عمدًا بإحدى الكفاءات الضعيفة. الهدف أن تسحب القوة السلوك الأضعف إلى أعلى بدل أن تسحب المنطقة الضعيفة الأداء كله إلى أسفل.`,
@@ -968,6 +982,13 @@ function arOpportunity(p: CompetencyProfile): string[] {
 }
 
 function enThreat(p: CompetencyProfile): string[] {
+  if (isLawyerProfile(p.id)) {
+    return [
+      `${p.en} is now in the warning zone. This means the issue may already be costing client trust, professional-fee confidence, consultation clarity, or engagement decisions. Do not try to fix everything. Treat this as a priority leak: ${p.leakageEn}.`,
+      `Your immediate treatment is: ${p.treatmentEn}. For the next 72 hours, simplify the behavior and use the same correction pattern in every relevant legal inquiry, consultation, professional-fee discussion, or follow-up.`,
+      `Use this consultation drill: ${p.drillEn}. After each attempt, write one line: what happened, what I corrected, what I will repeat. Track ${p.metricEn} until the behavior becomes visible and measurable.`,
+    ];
+  }
   return [
     `${p.en} is now in the warning zone. This means the issue may already be costing momentum, trust, or deal movement. Do not try to fix everything. Treat this as a priority leak: ${p.leakageEn}.`,
     `Your immediate treatment is: ${p.treatmentEn}. For the next 72 hours, simplify the behavior and use the same correction pattern in every relevant sales situation.`,
@@ -976,6 +997,13 @@ function enThreat(p: CompetencyProfile): string[] {
 }
 
 function arThreat(p: CompetencyProfile): string[] {
+  if (isLawyerProfile(p.id)) {
+    return [
+      `${p.ar} الآن في منطقة إنذار. هذا يعني أن المشكلة قد تكون بدأت بالفعل في خسارة ثقة العميل أو وضوح أتعاب المحاماة أو وضوح الاستشارة أو قرار التعاقد. لا تحاول إصلاح كل شيء. تعامل معها كتسريب أولوية: ${p.leakageAr}.`,
+      `العلاج الفوري هو: ${p.treatmentAr}. خلال 72 ساعة، بسّط السلوك واستخدم نفس نمط التصحيح في كل استفسار قانوني أو استشارة أو نقاش حول أتعاب المحاماة أو متابعة.`,
+      `استخدم هذا التمرين الاستشاري: ${p.drillAr}. بعد كل محاولة، اكتب سطرًا واحدًا: ماذا حدث، ماذا صححت، وماذا سأكرر. تتبع ${p.metricAr} حتى يصبح السلوك واضحًا وقابلًا للقياس.`,
+    ];
+  }
   return [
     `${p.ar} الآن في منطقة إنذار. هذا يعني أن المشكلة قد تكون بدأت بالفعل في خسارة الزخم أو الثقة أو حركة الصفقة. لا تحاول إصلاح كل شيء. تعامل معها كتسريب أولوية: ${p.leakageAr}.`,
     `العلاج الفوري هو: ${p.treatmentAr}. خلال 72 ساعة، بسّط السلوك واستخدم نفس نمط التصحيح في كل موقف بيعي مناسب.`,

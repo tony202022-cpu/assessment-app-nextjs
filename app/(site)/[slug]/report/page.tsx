@@ -1220,9 +1220,59 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
   return { ...meta, patternNote };
 }
 
-function getPatternArchetype(overall: number, weakest: CompetencyRow[], strongest: CompetencyRow[], lang: Language) {
+function getPatternArchetype(overall: number, weakest: CompetencyRow[], strongest: CompetencyRow[], lang: Language, context: "lawyer" | "manager" | "sales" = "sales") {
   const weakestNames = weakest.map((x) => x.label).join(", ");
   const strongestNames = strongest.map((x) => x.label).join(", ");
+
+  if (context === "lawyer") {
+    if (lang === "ar") {
+      if (overall < 30) {
+        return {
+          title: "نمط تسريب حاد في تحويل الاستشارات القانونية",
+          body: `الصورة الحالية تشير إلى أن المشكلة ليست في كفاءة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة تسريب تبدأ من أول استفسار وتنتهي بتردد العميل أو ضياع قرار التعاقد. لا تبدأ بكل شيء. ابدأ بأول تسريب في رحلة العميل وعالجه كنظام مهني.`,
+        };
+      }
+      if (overall < 50) {
+        return {
+          title: "نمط إنذار في تحويل العملاء يحتاج إلى ضبط الاستشارة",
+          body: `هناك خبرة قانونية موجودة، لكنها لا تظهر للعميل بثبات تحت ضغط الاستشارة أو أتعاب المحاماة أو المقارنة مع محامٍ آخر. أضعف المناطق (${weakestNames}) تحتاج إلى علاج مبكر، بينما يمكن استخدام أقوى المناطق (${strongestNames}) كرافعة مهنية.`,
+        };
+      }
+      if (overall < 75) {
+        return {
+          title: "نمط فرصة قانونية غير مكتملة يحتاج إلى نظام تعاقد أوضح",
+          body: `الأداء المهني ليس ضعيفًا، لكنه ليس محميًا بما يكفي. المطلوب هو تحويل أقوى المناطق (${strongestNames}) إلى عادات استشارة ثابتة، واستخدامها لدعم أضعف المناطق (${weakestNames}).`,
+        };
+      }
+      return {
+        title: "نمط قوة في تحويل العملاء يحتاج إلى حماية وتوسيع",
+        body: `قدرتك العامة على تحويل الاستشارات إلى تعاقدات قوية. الخطر ليس الضعف، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير مهنية يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تتحول إلى تسريب لاحق.`,
+      };
+    }
+
+    if (overall < 30) {
+      return {
+        title: "High-Leakage Legal Client Conversion Pattern",
+        body: `The current pattern suggests the issue is not one isolated skill. The weakest areas (${weakestNames}) may be creating a leakage chain that begins with the first legal inquiry and ends with hesitation, comparison, or no engagement decision. Do not start everywhere. Start with the first consultation leak and build treatment around it.`,
+      };
+    }
+    if (overall < 50) {
+      return {
+        title: "Legal Client Conversion Warning Pattern",
+        body: `There is legal expertise in the system, but it may not be showing clearly and consistently under consultation pressure, professional-fee discussion, or comparison with another lawyer. The weakest areas (${weakestNames}) need early treatment, while the strongest areas (${strongestNames}) can be used as professional leverage.`,
+      };
+    }
+    if (overall < 75) {
+      return {
+        title: "Unfinished Legal Engagement Pattern Requiring Systemization",
+        body: `Your professional performance is not broken, but it is not protected enough. The treatment is to turn the strongest areas (${strongestNames}) into repeatable consultation habits and use them to support the weakest areas (${weakestNames}).`,
+      };
+    }
+    return {
+      title: "Strong Legal Client Conversion Pattern Requiring Protection",
+      body: `Your overall ability to convert consultations into professional engagements is strong. The danger is not failure; it is drift. Use the strongest areas (${strongestNames}) as daily professional standards and monitor the weakest areas (${weakestNames}) so they do not become future leakage.`,
+    };
+  }
 
   if (lang === "ar") {
     if (overall < 30) {
@@ -1381,8 +1431,12 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
     (mri
       ? ar
-        ? salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
-        : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
+        ? lawyer ? "تقرير Lawyer Client Conversion MRI المتقدم" : salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
+        : lawyer ? "Advanced Lawyer Client Conversion MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
+      : lawyer
+      ? ar
+        ? "فحص تحويل العملاء للمحامين"
+        : "Lawyer Client Conversion Scan"
       : salesManager
       ? ar
         ? "فحص مدير المبيعات القيادي"
@@ -1736,6 +1790,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             lang={lang}
             identity={identity}
             attemptId={attemptId}
+            lawyer={lawyer}
           />
         )}
 
@@ -1822,7 +1877,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 <DarkInsight
                   title={ar ? "تشخيص أعمق" : "Deeper diagnosis"}
                   body={
-                    salesManager
+                    lawyer
+                      ? ar
+                        ? "يفحص التقرير ١٥ كفاءة لتحويل الاستشارات القانونية إلى تعاقدات بدل الاكتفاء بالمؤشرات السريعة."
+                        : "The report examines 15 legal client-conversion competencies instead of stopping at basic markers."
+                      : salesManager
                       ? ar
                         ? "يفحص التقرير ١٥ كفاءة إدارية لمدير المبيعات بدل الاكتفاء بالمؤشرات السريعة."
                         : "The report examines 15 sales-management competencies instead of stopping at basic markers."
@@ -1925,7 +1984,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               </div>
 
               <p className="mt-4 text-sm font-semibold text-slate-700 leading-relaxed rtl-text">
-                {salesManager
+                {lawyer
+                  ? ar
+                    ? "القراءة المجمعة لمؤشرات تحويل الاستشارات القانونية إلى تعاقدات."
+                    : "The combined reading of your full legal client-conversion MRI."
+                  : salesManager
                   ? ar
                     ? "القراءة المجمعة لمؤشرات إدارتك لفريق المبيعات."
                     : "The combined reading of your sales-management leadership scan."
@@ -1992,7 +2055,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     </span>
                   </div>
                   <p className="mt-4 text-sm text-slate-700 leading-relaxed rtl-text">
-                    {salesManager
+                    {lawyer
+                      ? ar
+                        ? "هذه المنطقة قد تكون سببًا جذريًا في تسريب الاستشارة أو ضعف الثقة أو تأخر قرار التعاقد. ابدأ علاجها قبل محاولة إصلاح كل شيء."
+                        : "This area may be a root contributor to consultation leakage, weak client trust, professional-fee hesitation, or delayed engagement decisions. Treat it before trying to fix everything."
+                      : salesManager
                       ? ar
                         ? "هذه المنطقة قد تكون سببًا جذريًا في تسريب أداء الفريق أو ضعف الانضباط أو تراجع وضوح القيادة. ابدأ علاجها قبل محاولة إصلاح كل شيء."
                         : "This area may be a root contributor to team-performance leakage, weak execution discipline, or loss of leadership clarity. Treat it before trying to fix everything."
@@ -2014,7 +2081,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             row={strongest}
             lang={lang}
             description={
-              salesManager
+              lawyer
+                ? ar
+                  ? "هذه هي المنطقة التي يمكن استخدامها كرافعة مهنية، لأنها تكشف سلوكًا يساعد العميل المحتمل على الثقة بك وفهم قيمتك القانونية واتخاذ قرار التعاقد."
+                  : "This is the area you can use as professional leverage because it reveals a behavior that supports client trust, legal-value clarity, and engagement confidence."
+                : salesManager
                 ? ar
                   ? "هذه هي المنطقة التي يمكن استخدامها كرافعة إدارية، لأنها تكشف سلوكًا قياديًا يدعم ثقة الفريق والانضباط والتنفيذ."
                   : "This is the area you can use as management leverage because it reveals a leadership behavior that supports team confidence, discipline, and execution."
@@ -2029,7 +2100,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             row={weakest}
             lang={lang}
             description={
-              salesManager
+              lawyer
+                ? ar
+                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه تسريب الثقة أو وضوح القيمة القانونية أو قرار التعاقد قبل أن يصبح واضحًا."
+                  : "This is not just a low score. It is often where consultation leakage, weak client trust, unclear legal value, or delayed engagement decisions begin before they become obvious."
+                : salesManager
                 ? ar
                   ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه تسريب أداء الفريق أو ضعف المساءلة أو اضطراب البايبلاين دون أن يكون واضحًا في البداية."
                   : "This is not just a low score. It is often where team-performance leakage, weak accountability, or pipeline confusion begins before it becomes obvious."
@@ -2138,7 +2213,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               rows={opportunities}
               empty={ar ? "لا توجد فرص مصنفة هنا." : "No opportunities listed here."}
               explanation={
-                ar
+                lawyer
+                  ? ar
+                    ? "هذه المناطق ليست ضعيفة، لكنها تحتاج إلى صياغة مهنية أوضح حتى تزيد الثقة وتدعم قرار التعاقد."
+                    : "These areas are not broken, but they need clearer professional structure before they reliably improve trust and engagement decisions."
+                  : ar
                   ? "هذه المناطق ليست ضعيفة، لكنها تحتاج إلى تنظيم وممارسة حتى تصبح مصدر قوة."
                   : "These areas are not broken, but they need structure and practice before they become strengths."
               }
@@ -2151,7 +2230,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               rows={threats}
               empty={ar ? "لا توجد مناطق خطر واضحة." : "No clear threats listed."}
               explanation={
-                salesManager
+                lawyer
+                  ? ar
+                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في ثقة العميل، وضوح الاستشارة، عرض أتعاب المحاماة، أو قرار التعاقد."
+                    : "These are warning signals. If left untreated, they may create leakage in client trust, consultation clarity, professional-fee confidence, or engagement decisions."
+                  : salesManager
                   ? ar
                     ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب تسريبًا في وضوح البايبلاين، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
                     : "These are warning signals. If left untreated, they may create leakage in pipeline clarity, accountability, forecast quality, or team execution."
@@ -2168,7 +2251,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               rows={weaknesses}
               empty={ar ? "لا توجد نقاط ضعف مصنفة هنا." : "No weaknesses listed here."}
               explanation={
-                salesManager
+                lawyer
+                  ? ar
+                    ? "هذه المناطق تحتاج إلى علاج مهني مباشر، لأنها غالبًا تؤثر على الانطباع الأول، ثقة العميل، وضوح القيمة القانونية، أو قرار التعاقد."
+                    : "These areas need direct professional treatment because they often affect first impressions, client trust, legal-value clarity, or engagement decision progress."
+                  : salesManager
                   ? ar
                     ? "هذه المناطق تحتاج إلى تدخل إداري مباشر، لأنها غالبًا تؤثر على التدريب، المساءلة، وضوح التوقعات، أو تنفيذ الفريق."
                     : "These areas need direct management intervention because they often affect coaching, accountability, forecast clarity, or team execution."
@@ -2227,6 +2314,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               overall={overall}
               lang={lang}
               ar={ar}
+              lawyer={lawyer}
+              salesManager={salesManager}
             />
           </div>
         )}
@@ -2235,8 +2324,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         {mri && (
           <section className="pdf-page-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
             {sectionTitle(
-              ar ? "وصفة الأداء البيعي خلال ٩٠ يومًا" : "90-Day Sales Performance Prescription",
-              ar
+              lawyer
+                ? ar ? "وصفة تحويل الاستشارات القانونية خلال ٩٠ يومًا" : "90-Day Legal Client Conversion Treatment Plan"
+                : ar ? "وصفة الأداء البيعي خلال ٩٠ يومًا" : "90-Day Sales Performance Prescription",
+              lawyer
+                ? ar
+                  ? "هذه ليست دورة تدريبية. إنها خطة علاج مهنية مبنية على تسريبات الاستشارة وأولويات تحويل العميل إلى تعاقد."
+                  : "This is not a training course. It is a professional treatment plan based on your consultation leaks and client-engagement priorities."
+                : ar
                 ? "هذه ليست دورة تدريبية. إنها خطة علاج تنفيذية مبنية على ترتيب أولوياتك الحالية."
                 : "This is not a training course. It is an execution treatment plan based on your current priority order."
             )}
@@ -2248,12 +2343,16 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 titleEn="Days 1–30: Stop the Leakage"
                 titleAr="الأيام ١–٣٠: أوقف التسريب"
                 bodyEn={
-                  salesManager
+                  lawyer
+                    ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the consultation behavior most likely leaking client trust, professional-fee confidence, or engagement commitment, then build a simple correction routine you can repeat daily.`
+                    : salesManager
                     ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the management behavior most likely leaking team performance, then build a simple correction rhythm you can repeat weekly.`
                     : `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the behavior that is most likely leaking opportunities, then build a simple correction routine you can repeat daily.`
                 }
                 bodyAr={
-                  salesManager
+                  lawyer
+                    ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل سلوك الاستشارة الذي قد يسبب أكبر تسريب في ثقة العميل أو أتعاب المحاماة أو قرار التعاقد، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
+                    : salesManager
                     ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الإداري الذي قد يسبب أكبر تسريب في أداء الفريق، ثم ابنِ إيقاع تصحيح بسيط يمكنك تكراره أسبوعيًا.`
                     : `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر تسريب للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
                 }
@@ -2262,15 +2361,19 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               <PrescriptionPhase
                 ar={ar}
                 phase="2"
-                titleEn={salesManager ? "Days 31–60: Build New Management Rhythm" : "Days 31–60: Build New Selling Behavior"}
-                titleAr={salesManager ? "الأيام ٣١–٦٠: ابنِ إيقاعًا إداريًا جديدًا" : "الأيام ٣١–٦٠: ابنِ سلوكًا بيعيًا جديدًا"}
+                titleEn={lawyer ? "Days 31–60: Build a Stronger Consultation Rhythm" : salesManager ? "Days 31–60: Build New Management Rhythm" : "Days 31–60: Build New Selling Behavior"}
+                titleAr={lawyer ? "الأيام ٣١–٦٠: ابنِ إيقاع استشارة أقوى" : salesManager ? "الأيام ٣١–٦٠: ابنِ إيقاعًا إداريًا جديدًا" : "الأيام ٣١–٦٠: ابنِ سلوكًا بيعيًا جديدًا"}
                 bodyEn={
-                  salesManager
+                  lawyer
+                    ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker consultation behaviors and create a more stable inquiry-to-engagement rhythm.`
+                    : salesManager
                     ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker management behaviors and create a more stable team execution rhythm.`
                     : `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support the weaker behaviors and create a more stable sales rhythm.`
                 }
                 bodyAr={
-                  salesManager
+                  lawyer
+                    ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم سلوكيات الاستشارة الأضعف وبناء إيقاع أكثر ثباتًا من الاستفسار إلى التعاقد.`
+                    : salesManager
                     ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الإدارية الأضعف وبناء إيقاع تنفيذ أكثر ثباتًا داخل الفريق.`
                     : `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الأضعف وبناء إيقاع بيعي أكثر ثباتًا.`
                 }
@@ -2281,8 +2384,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 phase="3"
                 titleEn="Days 61–90: Sharpen and Repeat"
                 titleAr="الأيام ٦١–٩٠: صقِل وكرّر"
-                bodyEn={salesManager ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity." : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."}
-                bodyAr={salesManager ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص البايبلاين أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر." : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."}
+                bodyEn={lawyer ? "Turn the corrected behaviors into a legal client-conversion operating system: open consultations better, diagnose needs better, explain legal value better, present professional fees better, and follow up with more confidence." : salesManager ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity." : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."}
+                bodyAr={lawyer ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتحويل العملاء للمحامين: افتح الاستشارة أفضل، شخّص الحاجة القانونية أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، وتابع العميل باحتراف." : salesManager ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص البايبلاين أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر." : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."}
               />
             </div>
           </section>
@@ -2292,6 +2395,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         {mri && (
           <PrintDetailedRoadmap
             ar={ar}
+            lawyer={lawyer}
             primary={topThreeRisks[0]}
             secondary={topThreeRisks[1]}
             third={topThreeRisks[2]}
@@ -2541,6 +2645,7 @@ function PrintCoverPage({
   lang,
   identity,
   attemptId,
+  lawyer = false,
 }: {
   ar: boolean;
   title: string;
@@ -2551,6 +2656,7 @@ function PrintCoverPage({
   lang: Language;
   identity: { fullName: string; email: string; company: string };
   attemptId: string;
+  lawyer?: boolean;
 }) {
   const generatedOn = new Date().toLocaleDateString("en-AU", {
     year: "numeric",
@@ -2578,7 +2684,7 @@ function PrintCoverPage({
       <div className="flex items-center justify-between gap-10">
         <div className="max-w-lg">
           <h2 className="text-3xl font-black rtl-text">
-            {ar ? "ملف أداء شخصي مبني على نتائجك" : "Personalized Sales Performance File"}
+            {lawyer ? (ar ? "ملف شخصي لتحويل الاستشارات القانونية إلى تعاقدات" : "Personalized Legal Client Conversion File") : (ar ? "ملف أداء شخصي مبني على نتائجك" : "Personalized Sales Performance File")}
           </h2>
           <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
             {ar
@@ -2694,18 +2800,42 @@ function PrintDiagnosticTable({
 
 function PrintDetailedRoadmap({
   ar,
+  lawyer = false,
   primary,
   secondary,
   third,
   leverage,
 }: {
   ar: boolean;
+  lawyer?: boolean;
   primary?: CompetencyRow;
   secondary?: CompetencyRow;
   third?: CompetencyRow;
   leverage?: CompetencyRow;
 }) {
-  const rows = ar
+  const rows = lawyer
+    ? ar
+      ? [
+          ["الأسبوع 1", `ابدأ بمنطقة ${primary?.label || "الأولوية الأولى"}. راقب سلوك الاستشارة الذي يسبب أكبر تسريب في الثقة أو أتعاب المحاماة أو قرار التعاقد واكتب مثالًا يوميًا.`],
+          ["الأسبوع 2", "حوّل السلوك إلى إجراء مهني ثابت: ماذا ستفعل قبل كل استفسار قانوني أو استشارة أو متابعة؟"],
+          ["الأسبوع 3", `أدخل منطقة ${secondary?.label || "الخطر الثاني"} في العلاج حتى تصبح رحلة العميل أوضح من الاستفسار إلى التعاقد.`],
+          ["الأسبوع 4", "راجع أول شهر: ما الذي تحسن في وضوح الاستشارة، عرض القيمة القانونية، أو متابعة العميل؟"],
+          ["الأسابيع 5–6", `استخدم ${leverage?.label || "أقوى منطقة لديك"} كرافعة مهنية لدعم أضعف مناطق تحويل العملاء.`],
+          ["الأسابيع 7–8", `أدخل منطقة ${third?.label || "الأولوية الثالثة"} في التمرين مع قياس أسبوعي واضح.`],
+          ["الأسابيع 9–10", "حوّل التصحيح إلى نظام استشارة يومي: استقبل، شخّص، اشرح، اعرض أتعاب المحاماة، تابع، وأغلق التعاقد."],
+          ["الأسابيع 11–12", "اختبر ثبات السلوك تحت ضغط العميل أو المقارنة مع محامٍ آخر، ثم اختر ثلاث عادات تبقى معك بعد نهاية الخطة."],
+        ]
+      : [
+          ["Week 1", `Start with ${primary?.label || "the first priority"}. Observe the consultation behavior creating the largest leak in trust, professional fees, or engagement commitment and write one example daily.`],
+          ["Week 2", "Turn the behavior into a fixed professional action: what will you do before each legal inquiry, consultation, or follow-up?"],
+          ["Week 3", `Bring ${secondary?.label || "the second risk"} into treatment so the client journey becomes clearer from inquiry to engagement.`],
+          ["Week 4", "Review month one: what improved in consultation clarity, legal-value explanation, or client follow-up?"],
+          ["Weeks 5–6", `Use ${leverage?.label || "your strongest area"} as professional leverage to support the weakest client-conversion behaviors.`],
+          ["Weeks 7–8", `Bring ${third?.label || "the third priority"} into practice with one clear weekly metric.`],
+          ["Weeks 9–10", "Turn the correction into a daily consultation system: receive, diagnose, explain, present professional fees, follow up, and secure engagement."],
+          ["Weeks 11–12", "Test the behavior under client pressure or comparison with another lawyer, then choose the three habits that remain after the plan ends."],
+        ]
+    : ar
     ? [
         ["الأسبوع 1", `ابدأ بمنطقة ${primary?.label || "الأولوية الأولى"}. راقب السلوك الذي يسبب أكبر تسريب واكتب مثالًا يوميًا.`],
         ["الأسبوع 2", "حوّل السلوك إلى إجراء ثابت: ماذا ستفعل قبل كل مكالمة أو زيارة أو متابعة؟"],
@@ -2730,13 +2860,17 @@ function PrintDetailedRoadmap({
   return (
     <section className="print-only pdf-roadmap-page">
       <div className="inline-flex rounded-full bg-slate-950 text-white px-4 py-2 text-xs font-black uppercase tracking-widest">
-        {ar ? "خطة علاج للطباعة" : "Printable Treatment Roadmap"}
+        {lawyer ? (ar ? "خطة علاج للطباعة للمحامين" : "Printable Lawyer Treatment Roadmap") : (ar ? "خطة علاج للطباعة" : "Printable Treatment Roadmap")}
       </div>
       <h2 className="mt-4 text-4xl font-black text-slate-950 rtl-text">
-        {ar ? "خطة الـ 90 يومًا: من التشخيص إلى السلوك" : "90-Day Roadmap: From Diagnosis to Behavior"}
+        {lawyer ? (ar ? "خطة الـ 90 يومًا: من الاستشارة إلى التعاقد" : "90-Day Roadmap: From Consultation to Engagement") : (ar ? "خطة الـ 90 يومًا: من التشخيص إلى السلوك" : "90-Day Roadmap: From Diagnosis to Behavior")}
       </h2>
       <p className="mt-3 text-slate-600 leading-relaxed rtl-text">
-        {ar
+        {lawyer
+          ? ar
+            ? "هذه الصفحة تجعل خطة تحويل العملاء للمحامين قابلة للوضع في ملف أو المتابعة مع شريك أو مدير مكتب أو مدرب."
+            : "This page makes the lawyer client-conversion plan easy to file, review, and follow with a partner, firm manager, or coach."
+          : ar
           ? "هذه الصفحة تجعل الخطة قابلة للوضع في ملف أو المتابعة مع مدير مباشر."
           : "This page makes the plan easy to file, review, and follow with a manager or coach."}
       </p>
@@ -2753,7 +2887,25 @@ function PrintDetailedRoadmap({
 }
 
 function PrintBonusRemedyMap({ ar, lawyer, weakestSix }: { ar: boolean; lawyer: boolean; weakestSix: CompetencyRow[] }) {
-  const bonuses = ar
+  const bonuses = lawyer
+    ? ar
+      ? [
+          ["دليل تحويل الاستشارات القانونية", "الاستفسار، الاستشارة، قرار التعاقد", "استخدمه لبناء افتتاح استشارة أقوى وخطوة تعاقد أو متابعة أوضح."],
+          ["دليل عرض أتعاب المحاماة بثقة", "أتعاب المحاماة، القيمة القانونية، نطاق العمل", "استخدمه لصياغة أتعاب المحاماة بطريقة تربطها بالمخاطر، الجهد، والاستراتيجية."],
+          ["مكتبة اعتراضات العملاء القانونيين", "المقارنة، الثقة، ضمان النتائج، أتعاب المحاماة", "اقرأ فئة واحدة يوميًا وابنِ ردودًا مهنية أخلاقية لا تعد بنتيجة قانونية."],
+          ["قالب متابعة ما بعد الاستشارة", "المتابعة، المستندات، الخطوة التالية", "استخدمه حتى لا تضيع الاستشارات الجيدة بسبب صمت ما بعد اللقاء."],
+          ["خريطة تجربة العميل القانوني", "الرضا، التوقعات، الإحالات", "اربطها بطريقة شرحك للمسار القانوني والتحديثات حتى عندما لا تكون النتيجة مضمونة."],
+          ["إطار التعامل مع العميل الانفعالي", "العملاء الصعبون، الحدود المهنية، الثقة", "استخدمه عندما ترتفع حرارة العميل أو يطلب ضمانات لا يمكن تقديمها مهنيًا."],
+        ]
+      : [
+          ["Legal Consultation Conversion Playbook", "Inquiry, consultation, engagement decision", "Use it to build stronger consultation openings and clearer engagement or follow-up steps."],
+          ["Professional Fee Confidence Guide", "Professional fees, legal value, scope of work", "Use it to present professional fees by connecting them to risk, effort, process, and strategy."],
+          ["Legal Client Objection Library", "Comparison, trust, outcome guarantees, professional fees", "Read one category per day and build ethical professional responses that do not promise legal outcomes."],
+          ["Post-Consultation Follow-Up Template", "Follow-up, documents, next step", "Use it so good consultations do not disappear because of silence after the meeting."],
+          ["Legal Client Experience Map", "Satisfaction, expectations, referrals", "Connect it to how you explain the legal pathway and client updates, even when outcomes cannot be guaranteed."],
+          ["Emotional Client Control Framework", "Difficult clients, professional boundaries, trust", "Use it when the client becomes emotional or asks for guarantees that cannot be professionally given."],
+        ]
+    : ar
     ? [
         ["أفضل 50 إجابة لأصعب 50 اعتراض بيعي", "الاعتراضات، التفاوض، تدمير الاعتراضات", "اقرأ فئة واحدة يوميًا وابنِ مكتبة ردود عملية."],
         ["كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي", "الاكتشاف، العروض، الإنتاجية", "استخدمه لتوليد أسئلة أفضل ورسائل متابعة وعروض أكثر وضوحًا."],
@@ -2764,7 +2916,7 @@ function PrintBonusRemedyMap({ ar, lawyer, weakestSix }: { ar: boolean; lawyer: 
       ]
     : [
         ["The 50 Best Answers to the 50 Hardest Objections", "Objections, negotiation, objection prevention", "Read one objection category per day and build a practical response library."],
-        [lawyer ? "Legal Consultation Conversion Playbook" : "How to Increase Your Sales Using AI", lawyer ? "Client inquiry, consultation, أتعاب المحاماة, engagement" : "Discovery, offers, productivity", lawyer ? "Use it to structure better consultation questions, professional follow-ups, and clearer engagement steps." : "Use it to generate sharper questions, follow-up messages, and clearer offers."],
+        ["How to Increase Your Sales Using AI", "Discovery, offers, productivity", "Use it to generate sharper questions, follow-up messages, and clearer offers."],
         ["How to Motivate Yourself Under Pressure", "Mental toughness and motivation", "Apply the rejection-recovery exercise before judging your pipeline."],
         ["How to Book Appointments with VIPs and Decision Makers", "Opening conversations and executive access", "Use it to build stronger openings, outreach messages, and access angles."],
         ["Time-Management Mastery for Outdoor Sales", "Time, follow-up, territory", "Connect it to weekly planning and account prioritization."],
@@ -3026,6 +3178,8 @@ function MriDetailedTreatmentSection({
   overall,
   lang,
   ar,
+  lawyer = false,
+  salesManager = false,
 }: {
   rows: CompetencyRow[];
   weakestSix: CompetencyRow[];
@@ -3034,23 +3188,31 @@ function MriDetailedTreatmentSection({
   overall: number;
   lang: Language;
   ar: boolean;
+  lawyer?: boolean;
+  salesManager?: boolean;
 }) {
-  const pattern = getPatternArchetype(overall, weakestSix.slice(0, 3), strongestRows.slice(0, 2), lang);
+  const pattern = getPatternArchetype(overall, weakestSix.slice(0, 3), strongestRows.slice(0, 2), lang, lawyer ? "lawyer" : salesManager ? "manager" : "sales");
   const weakestLabel = weakestSix[0]?.label || "";
   const strongestLabel = strongestRows[0]?.label || "";
 
   return (
     <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
       {sectionTitle(
-        ar ? "صفحات العلاج التفصيلية حسب نمطك" : "Detailed Treatment Pages Based on Your Pattern",
-        ar
+        lawyer
+          ? ar ? "صفحات علاج تحويل الاستشارة القانونية حسب نمطك" : "Legal Client Conversion Treatment Pages Based on Your Pattern"
+          : ar ? "صفحات العلاج التفصيلية حسب نمطك" : "Detailed Treatment Pages Based on Your Pattern",
+        lawyer
+          ? ar
+            ? "التقرير لا يكرر نفس النص لكل محامٍ. يتم توسيع أضعف ٦ مناطق لديك في رحلة الاستفسار والاستشارة وأتعاب المحاماة وقرار التعاقد، بينما تظهر بقية الكفاءات كملخصات حماية أو رافعة."
+            : "This report does not repeat the same advice for every lawyer. Your weakest 6 areas in the inquiry, consultation, professional-fee, and engagement journey are expanded into treatment pages, while the remaining competencies appear as compact leverage or protection summaries."
+          : ar
           ? "التقرير لا يكرر نفس النص لكل شخص. يتم توسيع أضعف ٦ مناطق لديك، بينما تظهر بقية الكفاءات كملخصات حماية أو رافعة."
           : "This report does not repeat the same advice for every person. Your weakest 6 areas are expanded into treatment pages, while the remaining competencies appear as compact leverage or protection summaries."
       )}
 
       <div className="pdf-avoid-break rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-7 shadow-xl mb-6">
         <div className="inline-flex rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
-          {ar ? "نمط الأداء العام" : "Overall Performance Pattern"}
+          {lawyer ? (ar ? "نمط تحويل العملاء القانونيين" : "Legal Client Conversion Pattern") : (ar ? "نمط الأداء العام" : "Overall Performance Pattern")}
         </div>
         <h3 className="mt-4 text-2xl sm:text-3xl font-black leading-tight rtl-text">
           {pattern.title}
@@ -3062,22 +3224,22 @@ function MriDetailedTreatmentSection({
         <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
           <MiniPatternBox
             ar={ar}
-            labelEn="Primary leakage"
-            labelAr="التسريب الأساسي"
+            labelEn={lawyer ? "Primary consultation leak" : "Primary leakage"}
+            labelAr={lawyer ? "تسريب الاستشارة الأساسي" : "التسريب الأساسي"}
             value={weakestSix[0]?.label || "—"}
             value2={weakestSix[0] ? `${weakestSix[0].percentage}% · ${getTierLabel(weakestSix[0].tier, lang)}` : ""}
           />
           <MiniPatternBox
             ar={ar}
-            labelEn="Secondary risk"
-            labelAr="الخطر الثاني"
+            labelEn={lawyer ? "Secondary engagement risk" : "Secondary risk"}
+            labelAr={lawyer ? "خطر التعاقد الثاني" : "الخطر الثاني"}
             value={weakestSix[1]?.label || "—"}
             value2={weakestSix[1] ? `${weakestSix[1].percentage}% · ${getTierLabel(weakestSix[1].tier, lang)}` : ""}
           />
           <MiniPatternBox
             ar={ar}
-            labelEn="Best leverage"
-            labelAr="أفضل رافعة"
+            labelEn={lawyer ? "Best professional leverage" : "Best leverage"}
+            labelAr={lawyer ? "أفضل رافعة مهنية" : "أفضل رافعة"}
             value={strongestRows[0]?.label || "—"}
             value2={strongestRows[0] ? `${strongestRows[0].percentage}% · ${getTierLabel(strongestRows[0].tier, lang)}` : ""}
           />
