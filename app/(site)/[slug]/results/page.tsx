@@ -718,9 +718,7 @@ function ResultsContent() {
                         {tierShortLabel(overallTier, ar)}
                       </span>
                     </div>
-                    <p className="mt-4 text-xs sm:text-sm text-blue-100/90 max-w-[220px] mx-auto text-center">
-  {healthLabel(overallPct, ar)}
-</p>
+                    <p className="mt-4 text-xs sm:text-sm text-blue-100/90 max-w-[220px] mx-auto rtl-text">
                       {healthLabel(overallPct, ar)}
                     </p>
                   </div>
