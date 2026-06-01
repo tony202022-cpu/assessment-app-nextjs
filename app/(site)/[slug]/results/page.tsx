@@ -930,7 +930,7 @@ function ResultsContent() {
                     ? "إذا كشف الفحص إشارة إنذار، فالخطوة التالية هي التشخيص الكامل والوصفة العلاجية."
                     : "If the scan exposed a warning sign, the next step is the full diagnosis and treatment prescription."
                 }
-                buttonText={ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
+                buttonText={isLawyer ? (ar ? "احصل على Lawyer Client Conversion MRI الكامل" : "Get My Full Lawyer Client Conversion MRI") : ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
                 href={mriLinkReady ? MRI_PAYMENT_URL : undefined}
                 disabled={!mriLinkReady}
                 icon={<Stethoscope size={22} />}
@@ -963,8 +963,12 @@ function ResultsContent() {
                     ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، التوقعات، المساءلة، وتنفيذ الفريق."
                     : "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, forecasting, accountability, and team execution."
                   : ar
-                  ? "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي."
-                  : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body."}
+                  ? isLawyer
+                    ? "تقرير Lawyer Client Conversion MRI المتقدم هو أداة تشخيص وعلاج كاملة لرحلة الاستفسار القانوني، الاستشارة، أتعاب المحاماة، الاعتراضات، قرار التعاقد، وتجربة العميل."
+                    : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي."
+                  : isLawyer
+                    ? "The Advanced Lawyer Client Conversion MRI is a full diagnostic and treatment tool for legal inquiries, consultations, professional fees, objections, engagement decisions, and client experience."
+                    : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body."}
               </p>
 
               <div className="mt-7 grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-6 items-stretch">
@@ -1010,14 +1014,14 @@ function ResultsContent() {
                   <div className="mt-5 space-y-3">
                     {(ar
                       ? [
-                          isSalesManager ? "تقرير Sales Manager MRI شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
+                          isLawyer ? "تقرير Lawyer Client Conversion MRI شخصي مفصل مبني على إجاباتك ونتائجك" : isSalesManager ? "تقرير Sales Manager MRI شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
                           isSalesManager ? "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في إدارة فريق المبيعات" : "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
                           "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
                           "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
                           "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
                         ]
                       : [
-                          isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
+                          isLawyer ? "A personalized Lawyer Client Conversion MRI report based on your answers and scores" : isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
                           isSalesManager ? "A full diagnostic and treatment tool examining 15 sales-management competencies" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
                           "A practical 90-day performance prescription without sitting through a long training course",
                           "A day-by-day correction path showing what to do and what to stop doing",
@@ -1054,7 +1058,7 @@ function ResultsContent() {
                       rel="noopener noreferrer"
                       className="mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition"
                     >
-                      🚀 {ar ? "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا" : "Get My Full Sales MRI & 90-Day Prescription"}
+                      🚀 {isLawyer ? (ar ? "احصل على تقرير Lawyer Client Conversion MRI الكامل" : "Get My Full Lawyer Client Conversion MRI") : ar ? "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا" : "Get My Full Sales MRI & 90-Day Prescription"}
                     </a>
                   ) : (
                     <div className="mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white/15 text-white/70 px-6 py-4 font-black shadow-xl cursor-not-allowed">

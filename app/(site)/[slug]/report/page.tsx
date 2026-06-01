@@ -2047,7 +2047,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               {t.commercial}
             </h2>
             <p className="mt-2 text-sm sm:text-base text-blue-100 leading-relaxed rtl-text">
-              {salesManager
+              {lawyer
+                ? ar
+                  ? "قراءة مهنية مختصرة لما قد يحدث داخل رحلة الاستشارة، الثقة، أتعاب المحاماة، وقرار التعاقد."
+                  : "A practical professional reading of what may be happening inside the legal inquiry, consultation, trust, fee, and engagement journey."
+                : salesManager
                 ? ar
                   ? "قراءة إدارية مختصرة لما قد يحدث داخل الفريق والبايبلاين."
                   : "A practical management reading of what may be happening inside the team and pipeline."
@@ -2057,9 +2061,13 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <DarkInsight
-              title={salesManager ? (ar ? "ما يعيشه الفريق" : "What the team experiences") : (ar ? "ما يشعر به العميل" : "What prospects experience")}
+              title={lawyer ? (ar ? "ما يعيشه العميل المحتمل" : "What potential clients experience") : salesManager ? (ar ? "ما يعيشه الفريق" : "What the team experiences") : (ar ? "ما يشعر به العميل" : "What prospects experience")}
               body={
-                salesManager
+                lawyer
+                  ? ar
+                    ? "العميل المحتمل لا يرى نتيجتك. هو يختبر وضوحك، هدوءك، قدرتك على تشخيص المشكلة القانونية، شرح الخيارات، عرض أتعاب المحاماة بثقة، وتحديد خطوة التعاقد التالية."
+                    : "Potential clients do not see your score. They experience your clarity, calm authority, legal diagnosis, explanation of options, confidence in presenting professional fees, and ability to guide the next engagement step."
+                  : salesManager
                   ? ar
                     ? "الفريق لا يرى نتيجتك. هو يختبر طريقة تدريبك، فحصك للبايبلاين، وضوح المساءلة، وعدالة تعاملك مع الأداء الصعب."
                     : "The team does not see your score. They experience your coaching rhythm, pipeline inspection, accountability clarity, and fairness with difficult performance."
@@ -2074,9 +2082,13 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               body={
                 weakest
                   ? ar
-                    ? salesManager
+                    ? lawyer
+                      ? `أكبر تسريب ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على ثقة العميل، وضوح الاستشارة، عرض أتعاب المحاماة، أو قرار التعاقد قبل أن يظهر السبب الحقيقي.`
+                      : salesManager
                       ? `أكبر تسريب ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على أداء الفريق أو وضوح البايبلاين أو الانضباط قبل أن يظهر السبب الحقيقي.`
                       : `أكبر تسريب ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
+                    : lawyer
+                    ? `The clearest leakage signal is currently connected to ${weakest.label}. This area may weaken client trust, consultation clarity, professional fee confidence, or the engagement decision before the real reason is visible.`
                     : salesManager
                     ? `The clearest leakage signal is currently connected to ${weakest.label}. This area may weaken team performance, pipeline clarity, or execution discipline before the real reason is visible.`
                     : `The clearest leakage signal is currently connected to ${weakest.label}. This area may stall or weaken opportunities before the real reason is visible.`
@@ -2102,8 +2114,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           {sectionTitle(
             t.swot,
             ar
-              ? "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج في الأداء البيعي الحقيقي."
-              : "Not just a category list — a practical reading of what the results mean in real sales performance."
+              ? lawyer ? "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج داخل رحلة تحويل الاستشارة القانونية إلى تعاقد مهني." : "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج في الأداء البيعي الحقيقي."
+              : lawyer ? "Not just a category list — a practical reading of what the results mean inside the legal consultation-to-engagement journey." : "Not just a category list — a practical reading of what the results mean in real sales performance."
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2114,8 +2126,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               empty={ar ? "لا توجد نقاط قوة واضحة حتى الآن." : "No clear strengths yet."}
               explanation={
                 ar
-                  ? "هذه المناطق يمكن تحويلها إلى عادات ثابتة تدعم بقية الأداء."
-                  : "These areas can be turned into repeatable habits that support the rest of the performance."
+                  ? lawyer ? "هذه المناطق يمكن تحويلها إلى عادات مهنية ثابتة تعزز الثقة، وضوح الاستشارة، وقرار التعاقد." : "هذه المناطق يمكن تحويلها إلى عادات ثابتة تدعم بقية الأداء."
+                  : lawyer ? "These areas can be turned into repeatable professional habits that strengthen trust, consultation clarity, and engagement decisions." : "These areas can be turned into repeatable habits that support the rest of the performance."
               }
               lang={lang}
             />
@@ -2320,7 +2332,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   ]
                 : [
                     ar ? "أفضل 50 إجابة لأصعب 50 اعتراض بيعي" : "The 50 Best Answers to the 50 Hardest Objections",
-                    ar ? "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي" : "How to Increase Your Sales Using AI",
+                    lawyer ? (ar ? "دليل تحويل الاستشارة القانونية إلى تعاقد" : "Legal Consultation Conversion Playbook") : ar ? "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي" : "How to Increase Your Sales Using AI",
                     ar ? "كيف تحفّز نفسك تحت الضغط" : "How to Motivate Yourself Under Pressure",
                     ar ? "كيف تحجز مواعيد مع كبار الشخصيات وصناع القرار" : "How to Book Appointments with VIPs and Decision Makers",
                     ar ? "إتقان إدارة الوقت للمبيعات الخارجية" : "Time-Management Mastery for Outdoor Sales",
@@ -2416,8 +2428,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                           ]
                         : [
                             "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
-                            salesManager ? "A full diagnostic and treatment tool examining 15 competencies in your sales-management leadership body" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
-                            "The root patterns behind stalled deals, weak momentum, and hidden leakage",
+                            lawyer ? "A full diagnostic and treatment tool examining 15 competencies in your legal client-conversion body" : salesManager ? "A full diagnostic and treatment tool examining 15 competencies in your sales-management leadership body" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
+                            lawyer ? "The root patterns behind unclear consultations, weak trust, professional fee resistance, and delayed engagement decisions" : "The root patterns behind stalled deals, weak momentum, and hidden leakage",
                             "A clear priority order of what to correct first instead of guessing",
                             "A practical 90-day performance prescription without sitting through a long training course",
                             "A day-by-day correction path showing what to do and what to stop doing",
@@ -2752,7 +2764,7 @@ function PrintBonusRemedyMap({ ar, weakestSix }: { ar: boolean; weakestSix: Comp
       ]
     : [
         ["The 50 Best Answers to the 50 Hardest Objections", "Objections, negotiation, objection prevention", "Read one objection category per day and build a practical response library."],
-        ["How to Increase Your Sales Using AI", "Discovery, offers, productivity", "Use it to generate sharper questions, follow-up messages, and clearer offers."],
+        [lawyer ? "Legal Consultation Conversion Playbook" : "How to Increase Your Sales Using AI", lawyer ? "Client inquiry, consultation, أتعاب المحاماة, engagement" : "Discovery, offers, productivity", lawyer ? "Use it to structure better consultation questions, professional follow-ups, and clearer engagement steps." : "Use it to generate sharper questions, follow-up messages, and clearer offers."],
         ["How to Motivate Yourself Under Pressure", "Mental toughness and motivation", "Apply the rejection-recovery exercise before judging your pipeline."],
         ["How to Book Appointments with VIPs and Decision Makers", "Opening conversations and executive access", "Use it to build stronger openings, outreach messages, and access angles."],
         ["Time-Management Mastery for Outdoor Sales", "Time, follow-up, territory", "Connect it to weekly planning and account prioritization."],
