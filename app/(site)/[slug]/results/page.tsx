@@ -43,6 +43,24 @@ const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 const MRI_PAYMENT_URL = "PASTE_NEW_ZENLER_MRI_LINK_HERE";
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
+  // Sales Manager assessments
+  sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
+  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية البايبلاين وفحص الصفقات" },
+  pipeline_management_deal_inspection: { en: "Pipeline Management & Deal Inspection", ar: "إدارة البايبلاين وفحص الصفقات" },
+  forecast_judgment: { en: "Forecast Judgment", ar: "الحكم على التوقعات البيعية" },
+  forecast_accuracy_judgment: { en: "Forecast Accuracy & Judgment", ar: "دقة التوقعات والحكم التجاري" },
+  performance_accountability: { en: "Performance Accountability", ar: "المساءلة على الأداء" },
+  target_setting_kpi_discipline: { en: "Target Setting & KPI Discipline", ar: "تحديد الأهداف وانضباط المؤشرات" },
+  motivation_team_energy: { en: "Motivation & Team Energy", ar: "تحفيز الفريق وطاقة الأداء" },
+  sales_meeting_rhythm: { en: "Sales Meeting Rhythm", ar: "إيقاع اجتماعات المبيعات" },
+  one_on_one_management: { en: "One-on-One Management", ar: "إدارة الاجتماعات الفردية" },
+  hiring_onboarding_salespeople: { en: "Hiring & Onboarding Salespeople", ar: "توظيف وتأهيل مندوبي المبيعات" },
+  territory_resource_allocation: { en: "Territory & Resource Allocation", ar: "توزيع المناطق والموارد" },
+  handling_underperformance: { en: "Handling Underperformance", ar: "معالجة ضعف الأداء" },
+  managing_difficult_salespeople: { en: "Managing Difficult Salespeople", ar: "إدارة مندوبي المبيعات الصعبين" },
+  managing_top_performers: { en: "Managing Top Performers", ar: "إدارة أصحاب الأداء العالي" },
+  manager_communication_upward_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل المدير والتقارير للإدارة العليا" },
+  decision_making_under_pressure: { en: "Decision-Making Under Pressure", ar: "اتخاذ القرار تحت الضغط" },
   prospecting_finding_new_clients: { en: "Prospecting & Finding New Clients", ar: "البحث عن عملاء جدد" },
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
@@ -72,6 +90,14 @@ type ResultRow = {
 
 function normalizeCompetencySafe(raw: any) {
   return normalizeCompetencyId(String(raw || ""));
+}
+
+
+function isSalesManagerAssessment(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
+  const s = String(routeSlug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  const c = String(configType || "").toLowerCase();
+  return s.includes("sales-manager") || a.includes("sales_manager") || c.includes("sales_manager");
 }
 
 function isProbablyMRI(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
@@ -469,6 +495,7 @@ function ResultsContent() {
   }, [attemptId, routeSlug]);
 
   const isMri = isProbablyMRI(routeSlug, attempt?.assessment_id, config?.type);
+  const isSalesManager = isSalesManagerAssessment(routeSlug, attempt?.assessment_id, config?.type);
   const isScan = isProbablyScan(routeSlug, attempt?.assessment_id, config?.type) && !isMri;
 
   const labelsFromConfig = useMemo(() => {
@@ -538,9 +565,19 @@ function ResultsContent() {
 
   const heroTitle =
     titleFromDb ||
-    (ar ? "نتائج فحص المبيعات الميدانية" : "Outdoor Sales Scan Results");
+    (isSalesManager
+      ? ar
+        ? "نتائج فحص مدير المبيعات"
+        : "Sales Manager Scan Results"
+      : ar
+      ? "نتائج فحص المبيعات الميدانية"
+      : "Outdoor Sales Scan Results");
 
-  const heroSubtitle = ar
+  const heroSubtitle = isSalesManager
+    ? ar
+      ? "هذه صفحة النتائج السريعة لقيادة المبيعات. التقرير الكامل يوضح التشخيص الإداري، نقاط القوة، التسريبات، وخطوات التنفيذ."
+      : "This is your quick sales-management dashboard. The full report shows the leadership diagnosis, strengths, leaks, and execution steps."
+    : ar
     ? "هذه صفحة النتائج السريعة. التقرير الكامل يحتوي على التشخيص التفصيلي، SWOT، وخطة التنفيذ."
     : "This is your quick result dashboard. The full report contains the detailed diagnosis, SWOT, and execution plan.";
 
@@ -673,7 +710,7 @@ function ResultsContent() {
                       {overallPct}%
                     </div>
                     <div className="mt-2 text-xs font-black uppercase tracking-widest text-blue-100">
-                      {ar ? "مؤشر الصحة البيعية" : "Sales Health Score"}
+                      {isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
                     </div>
                     <div className="mt-4">
                       <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black shadow-xl ${tierBadgeColor(overallTier)}`}>
@@ -755,10 +792,14 @@ function ResultsContent() {
             </div>
             <div>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
-                {ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel"}
+                {isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
               </h3>
               <div className="text-sm text-slate-500 mt-1 rtl-text">
-                {ar
+                {isSalesManager
+                  ? ar
+                    ? "النتيجة العامة + ٧ مؤشرات قيادية في لقطة واحدة."
+                    : "Overall score + 7 leadership markers in one clean dashboard."
+                  : ar
                   ? "النتيجة العامة + ٧ مؤشرات أساسية في لقطة واحدة."
                   : "Overall score + 7 core markers in one clean dashboard."}
               </div>
@@ -768,7 +809,7 @@ function ResultsContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <HealthMarkerCard
               ar={ar}
-              label={ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score"}
+              label={isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
               percentage={overallPct}
               tier={overallTier}
               subtitle={ar ? "القراءة المجمعة لكل الفحص" : "Combined reading of the full scan"}
@@ -873,13 +914,21 @@ function ResultsContent() {
               </div>
 
               <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
-                {ar
+                {isSalesManager
+                  ? ar
+                    ? "الفحص القيادي يكشف الأعراض. أما Sales Manager MRI فيعطيك خطة العلاج."
+                    : "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan."
+                  : ar
                   ? "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية."
                   : "Your Scan Is the Blood Test. The MRI Gives You the Prescription."}
               </h2>
 
               <p className="mt-4 text-lg sm:text-2xl font-black leading-relaxed text-amber-200 max-w-4xl rtl-text">
-                {ar
+                {isSalesManager
+                  ? ar
+                    ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، التوقعات، المساءلة، وتنفيذ الفريق."
+                    : "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, forecasting, accountability, and team execution."
+                  : ar
                   ? "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي."
                   : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body."}
               </p>
@@ -905,7 +954,11 @@ function ResultsContent() {
 
                     <p className="font-black text-white">
                       {ar
-                        ? "الخطوة الذكية هي فحص الجسم المهني كاملًا، معرفة الجذر، ثم اتباع الوصفة."
+                        ? isSalesManager
+                          ? "الخطوة الذكية هي فحص نمط القيادة كاملًا، معرفة الجذر، ثم اتباع خطة علاج إدارية واضحة."
+                          : "الخطوة الذكية هي فحص الجسم المهني كاملًا، معرفة الجذر، ثم اتباع الوصفة."
+                        : isSalesManager
+                        ? "The smart move is to examine the full leadership pattern, identify the root, and follow a clear management treatment plan."
                         : "The smart move is to examine the full career body, identify the root pattern, and follow the prescription."}
                     </p>
                   </div>
@@ -923,15 +976,15 @@ function ResultsContent() {
                   <div className="mt-5 space-y-3">
                     {(ar
                       ? [
-                          "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
-                          "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
+                          isSalesManager ? "تقرير Sales Manager MRI شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
+                          isSalesManager ? "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في إدارة فريق المبيعات" : "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
                           "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
                           "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
                           "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
                         ]
                       : [
-                          "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
-                          "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
+                          isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
+                          isSalesManager ? "A full diagnostic and treatment tool examining 15 sales-management competencies" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
                           "A practical 90-day performance prescription without sitting through a long training course",
                           "A day-by-day correction path showing what to do and what to stop doing",
                           "5 implementation bonuses that help you act, not just read",

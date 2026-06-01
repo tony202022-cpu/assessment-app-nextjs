@@ -37,6 +37,24 @@ type CompetencyRow = {
 };
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
+  // Sales Manager assessments
+  sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
+  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية البايبلاين وفحص الصفقات" },
+  pipeline_management_deal_inspection: { en: "Pipeline Management & Deal Inspection", ar: "إدارة البايبلاين وفحص الصفقات" },
+  forecast_judgment: { en: "Forecast Judgment", ar: "الحكم على التوقعات البيعية" },
+  forecast_accuracy_judgment: { en: "Forecast Accuracy & Judgment", ar: "دقة التوقعات والحكم التجاري" },
+  performance_accountability: { en: "Performance Accountability", ar: "المساءلة على الأداء" },
+  target_setting_kpi_discipline: { en: "Target Setting & KPI Discipline", ar: "تحديد الأهداف وانضباط المؤشرات" },
+  motivation_team_energy: { en: "Motivation & Team Energy", ar: "تحفيز الفريق وطاقة الأداء" },
+  sales_meeting_rhythm: { en: "Sales Meeting Rhythm", ar: "إيقاع اجتماعات المبيعات" },
+  one_on_one_management: { en: "One-on-One Management", ar: "إدارة الاجتماعات الفردية" },
+  hiring_onboarding_salespeople: { en: "Hiring & Onboarding Salespeople", ar: "توظيف وتأهيل مندوبي المبيعات" },
+  territory_resource_allocation: { en: "Territory & Resource Allocation", ar: "توزيع المناطق والموارد" },
+  handling_underperformance: { en: "Handling Underperformance", ar: "معالجة ضعف الأداء" },
+  managing_difficult_salespeople: { en: "Managing Difficult Salespeople", ar: "إدارة مندوبي المبيعات الصعبين" },
+  managing_top_performers: { en: "Managing Top Performers", ar: "إدارة أصحاب الأداء العالي" },
+  manager_communication_upward_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل المدير والتقارير للإدارة العليا" },
+  decision_making_under_pressure: { en: "Decision-Making Under Pressure", ar: "اتخاذ القرار تحت الضغط" },
   prospecting_finding_new_clients: { en: "Prospecting & Finding New Clients", ar: "البحث عن عملاء جدد" },
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
   opening_conversations: { en: "Opening Conversations", ar: "فتح المحادثات" },
@@ -92,6 +110,13 @@ function isMriReport(slug: string, attemptAssessmentId?: string | null) {
   const s = String(slug || "").toLowerCase();
   const a = String(attemptAssessmentId || "").toLowerCase();
   return s.includes("mri") || a.includes("mri");
+}
+
+
+function isSalesManagerAssessment(slug: string, attemptAssessmentId?: string | null) {
+  const s = String(slug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  return s.includes("sales-manager") || a.includes("sales_manager");
 }
 
 function shortAttemptId(id: string) {
@@ -210,6 +235,35 @@ function overallCommercialMeaning(overall: number, tier: Tier, lang: Language) {
     return "Your overall sales health is showing warning signals. Some sales behaviors may be leaking momentum and need correction before they become permanent habits.";
   }
   return "Your overall sales health is showing a clear performance gap. This is not failure, but it does mean you need a practical treatment plan instead of more guessing.";
+}
+
+
+function managerOverallMeaning(overall: number, tier: Tier, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") return "الصورة العامة تشير إلى قيادة مبيعات قوية. المطلوب الآن هو تحويل نقاط القوة إلى نظام إدارة يومي يحمي أداء الفريق ويضاعف أثره.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس إداري يمكن البناء عليه، لكن بعض التسريبات في التدريب أو البايبلاين أو المساءلة قد تحد من نتائج الفريق.";
+    if (tier === "Threat") return "الصورة العامة تظهر إنذارًا إداريًا. بعض أنماط القيادة قد تخلق تسريبًا في أداء الفريق أو التوقعات أو الانضباط، وتحتاج إلى تصحيح عملي سريع.";
+    return "الصورة العامة تظهر فجوة قيادية واضحة. هذا لا يعني الفشل، لكنه يعني أن الفريق يحتاج إلى قيادة أكثر نظامًا في التدريب، المتابعة، المساءلة، وإدارة الأداء.";
+  }
+
+  if (tier === "Strength") return "Your overall sales-management health is strong. The next step is turning your strongest leadership behaviors into a repeatable management system that protects team performance.";
+  if (tier === "Opportunity") return "Your overall sales-management health has a useful base, but some management leaks may still be limiting coaching impact, pipeline clarity, or team accountability.";
+  if (tier === "Threat") return "Your overall sales-management health is showing warning signals. Some leadership behaviors may be leaking team momentum, forecast quality, or execution discipline and need correction.";
+  return "Your overall sales-management health is showing a clear leadership gap. This is not failure, but it does mean the team needs a more structured management rhythm, not more pressure or guessing.";
+}
+
+function managerCommercialMeaning(tier: Tier, label: string, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") return `تشير نتيجة ${label} إلى جانب إداري قوي يمكن استخدامه كرافعة لتحسين أداء الفريق وبناء الثقة والانضباط.`;
+    if (tier === "Opportunity") return `تشير نتيجة ${label} إلى أساس جيد، لكنه يحتاج إلى إيقاع إداري أكثر ثباتًا حتى لا يعتمد الفريق على الاجتهاد الفردي فقط.`;
+    if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تؤثر على أداء الفريق أو وضوح البايبلاين أو المساءلة إذا لم تُعالج بسرعة.`;
+    return `تشير نتيجة ${label} إلى فجوة إدارية واضحة قد تُضعف التدريب، المتابعة، الانضباط، أو قدرة الفريق على تحقيق الهدف.`;
+  }
+
+  if (tier === "Strength") return `${label} is currently a management strength. It can be used as leverage to improve team discipline, confidence, and execution.`;
+  if (tier === "Opportunity") return `${label} has a useful management foundation, but it needs a more consistent rhythm before it can reliably lift the team.`;
+  if (tier === "Threat") return `${label} is creating a leadership warning signal. If left untreated, it may affect team performance, pipeline clarity, or accountability.`;
+  return `${label} is showing a clear management gap. This area may be weakening coaching, follow-up, team discipline, or target execution more than you realize.`;
 }
 
 function shortDiagnosis(tier: Tier, lang: Language) {
@@ -800,6 +854,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
   const assessment = await getAssessmentConfigServer(supabase, slug);
   const mri = isMriReport(slug, (attempt as any).assessment_id);
+  const salesManager = isSalesManagerAssessment(slug, (attempt as any).assessment_id);
 
   const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
   const comps = Array.isArray((assessment as any)?.config?.competencies)
@@ -866,8 +921,12 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
     (mri
       ? ar
-        ? "تقرير Outdoor Sales MRI المتقدم"
-        : "Advanced Outdoor Sales MRI Report"
+        ? salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
+        : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
+      : salesManager
+      ? ar
+        ? "فحص مدير المبيعات القيادي"
+        : "Sales Manager Leadership Scan"
       : ar
       ? "فحص المبيعات الميدانية"
       : "Outdoor Sales Scan");
@@ -1035,56 +1094,83 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     en: {
       back: "Back to Results",
       printNote: "For best PDF export: choose Save as PDF, turn on background graphics, and turn off browser headers and footers.",
-      badge: mri ? "Full Diagnostic & Treatment Tool" : "Sales Performance Blood Test",
+      badge: mri ? "Full Diagnostic & Treatment Tool" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
       subtitle: mri
-        ? "A personalized Sales MRI designed to diagnose the full sales performance body and turn the findings into a practical treatment plan."
+        ? salesManager
+          ? "A personalized Sales Manager MRI designed to diagnose leadership patterns, team performance leaks, and management treatment priorities."
+          : "A personalized Sales MRI designed to diagnose the full sales performance body and turn the findings into a practical treatment plan."
+        : salesManager
+        ? "A fast leadership scan of your sales-management health — like a blood test for the way you coach, inspect, forecast, motivate, and hold the team accountable."
         : "A fast diagnostic scan of your sales performance body — like a blood test for field sales.",
-      overall: "Overall Sales Health Score",
-      overallMarker: "Overall Sales Health Index",
+      overall: salesManager ? "Overall Sales Management Health Score" : "Overall Sales Health Score",
+      overallMarker: salesManager ? "Overall Sales Management Index" : "Overall Sales Health Index",
       participant: "Participant Identity",
-      health: "Sales Health Zone",
-      bloodPanel: mri ? "15-Competency Sales MRI Panel" : "Sales Health Panel: Overall Score + 7 Core Markers",
+      health: salesManager ? "Management Health Zone" : "Sales Health Zone",
+      bloodPanel: mri
+        ? salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
+        : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
       bloodPanelSub: mri
-        ? "This is your deep diagnostic panel. It examines the wider sales performance body across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
+        ? salesManager
+          ? "This is your deep management diagnostic panel. It examines the wider sales-manager role across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
+          : "This is your deep diagnostic panel. It examines the wider sales performance body across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
+        : salesManager
+        ? "This panel combines your overall management score with seven core markers that reveal where your leadership is strong, where the team may be leaking performance, and what needs attention."
         : "This panel combines your overall sales health score with the seven core markers that reveal where performance is strong, where it is leaking, and what needs treatment.",
-      strongest: "Strongest Signal",
-      weakest: "Biggest Hidden Revenue Leak",
-      commercial: "Commercial Interpretation",
+      strongest: salesManager ? "Strongest Management Signal" : "Strongest Signal",
+      weakest: salesManager ? "Biggest Hidden Team Performance Leak" : "Biggest Hidden Revenue Leak",
+      commercial: salesManager ? "Management Interpretation" : "Commercial Interpretation",
       swot: "Strategic SWOT Analysis",
       actions: mri ? "Personal Treatment Priorities" : "Priority Execution Plan",
-      prescriptionHeadline: "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
-      prescriptionSubhead: "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
-      prescriptionCta: "Get My Full Sales MRI & 90-Day Prescription",
-      enterpriseTitle: "For Sales Managers & Business Owners",
+      prescriptionHeadline: salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
+      prescriptionSubhead: salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
+      prescriptionCta: salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
+      enterpriseTitle: salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
       enterpriseCta: "Diagnose the Team Before You Train the Team",
     },
     ar: {
       back: "العودة إلى النتائج",
       printNote: "لأفضل تصدير PDF: اختر Save as PDF، فعّل Background graphics، وألغِ ترويسات وتذييلات المتصفح.",
-      badge: mri ? "أداة تشخيص وعلاج كاملة" : "فحص دم لأداء المبيعات",
+      badge: mri ? "أداة تشخيص وعلاج كاملة" : salesManager ? "فحص قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
       subtitle: mri
-        ? "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
+        ? salesManager
+          ? "تقرير Sales Manager MRI شخصي لتشخيص أنماط القيادة، وتسريبات أداء الفريق، وأولويات العلاج الإداري."
+          : "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
+        : salesManager
+        ? "فحص قيادي سريع لصحة إدارتك لفريق المبيعات — كأنه تحليل دم لطريقة التدريب، فحص البايبلاين، التوقع، التحفيز، والمساءلة."
         : "فحص تشخيصي سريع لجسم أدائك البيعي — كأنه تحليل دم مهني للمبيعات الميدانية.",
-      overall: "مؤشر الصحة البيعية العام",
-      overallMarker: "مؤشر الصحة البيعية العام",
+      overall: salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
+      overallMarker: salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
-      health: "منطقة الصحة البيعية",
-      bloodPanel: mri ? "لوحة MRI التشخيصية عبر ١٥ كفاءة" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
+      health: salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
+      bloodPanel: mri
+        ? salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
+        : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
       bloodPanelSub: mri
-        ? "هذه هي لوحة التشخيص العميق. تفحص الجسم البيعي الكامل عبر ١٥ كفاءة لتكشف نقاط القوة والتسريب والأنماط الجذرية وأولويات العلاج."
+        ? salesManager
+          ? "هذه هي لوحة التشخيص الإداري العميق. تفحص دور مدير المبيعات عبر ١٥ كفاءة لتكشف نقاط القوة والتسريب والأنماط الجذرية وأولويات العلاج."
+          : "هذه هي لوحة التشخيص العميق. تفحص الجسم البيعي الكامل عبر ١٥ كفاءة لتكشف نقاط القوة والتسريب والأنماط الجذرية وأولويات العلاج."
+        : salesManager
+        ? "تجمع هذه اللوحة بين مؤشر صحة الإدارة العام وسبعة مؤشرات قيادية تكشف أين تقوى قيادتك، أين يتسرب أداء الفريق، وما الذي يحتاج إلى انتباه."
         : "تجمع هذه اللوحة بين مؤشر الصحة البيعية العام والسبعة مؤشرات الأساسية التي تكشف أين يقوى الأداء، أين يحدث التسريب، وما الذي يحتاج إلى علاج.",
-      strongest: "أقوى مؤشر",
-      weakest: "أكبر تسريب مخفي للفرص",
-      commercial: "التفسير التجاري",
+      strongest: salesManager ? "أقوى مؤشر إداري" : "أقوى مؤشر",
+      weakest: salesManager ? "أكبر تسريب مخفي في أداء الفريق" : "أكبر تسريب مخفي للفرص",
+      commercial: salesManager ? "التفسير الإداري" : "التفسير التجاري",
       swot: "تحليل SWOT الاستراتيجي",
       actions: mri ? "أولويات العلاج الشخصية" : "خطة التنفيذ ذات الأولوية",
-      prescriptionHeadline: "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
-      prescriptionCta: "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
-      enterpriseTitle: "لمديري المبيعات وأصحاب الشركات",
+      prescriptionHeadline: salesManager ? "الفحص القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
+      prescriptionSubhead: salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionCta: salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
+      enterpriseTitle: salesManager ? "لمديري المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمديري المبيعات وأصحاب الشركات",
       enterpriseCta: "شخّص الفريق قبل أن تدرّبه",
     },
   }[lang];
+
+  const overallMeaningText = salesManager
+    ? managerOverallMeaning(overall, overallTier, lang)
+    : overallCommercialMeaning(overall, overallTier, lang);
+
+  const rowCommercialText = (row: CompetencyRow) =>
+    salesManager ? managerCommercialMeaning(row.tier, row.label, lang) : commercialMeaning(row.tier, row.label, lang);
 
   return (
     <div
@@ -1296,7 +1382,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 {ar ? "ما الذي يعنيه هذا تجاريًا؟" : "What this means commercially"}
               </h3>
               <p className="mt-3 text-slate-700 leading-relaxed rtl-text">
-                {overallCommercialMeaning(overall, overallTier, lang)}
+                {overallMeaningText}
               </p>
             </div>
           </div>
@@ -1340,10 +1426,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               </div>
 
               <p className="mt-4 text-sm font-semibold text-slate-700 leading-relaxed rtl-text">
-                {ar ? "القراءة المجمعة لكل مؤشرات أدائك البيعي." : "The combined reading of your full sales performance scan."}
+                {salesManager
+                  ? ar
+                    ? "القراءة المجمعة لمؤشرات إدارتك لفريق المبيعات."
+                    : "The combined reading of your sales-management leadership scan."
+                  : ar ? "القراءة المجمعة لكل مؤشرات أدائك البيعي." : "The combined reading of your full sales performance scan."}
               </p>
               <p className="mt-2 text-sm text-slate-600 leading-relaxed rtl-text">
-                {overallCommercialMeaning(overall, overallTier, lang)}
+                {overallMeaningText}
               </p>
             </div>
 
@@ -1373,7 +1463,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   {shortDiagnosis(row.tier, lang)}
                 </p>
                 <p className="mt-2 text-sm text-slate-600 leading-relaxed rtl-text">
-                  {commercialMeaning(row.tier, row.label, lang)}
+                  {rowCommercialText(row)}
                 </p>
               </div>
             ))}
@@ -1446,15 +1536,23 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               {t.commercial}
             </h2>
             <p className="mt-2 text-sm sm:text-base text-blue-100 leading-relaxed rtl-text">
-              {ar ? "قراءة تجارية مختصرة لما قد يحدث في الميدان." : "A practical commercial reading of what may be happening in the field."}
+              {salesManager
+                ? ar
+                  ? "قراءة إدارية مختصرة لما قد يحدث داخل الفريق والبايبلاين."
+                  : "A practical management reading of what may be happening inside the team and pipeline."
+                : ar ? "قراءة تجارية مختصرة لما قد يحدث في الميدان." : "A practical commercial reading of what may be happening in the field."}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <DarkInsight
-              title={ar ? "ما يشعر به العميل" : "What prospects experience"}
+              title={salesManager ? (ar ? "ما يعيشه الفريق" : "What the team experiences") : (ar ? "ما يشعر به العميل" : "What prospects experience")}
               body={
-                ar
+                salesManager
+                  ? ar
+                    ? "الفريق لا يرى نتيجتك. هو يختبر طريقة تدريبك، فحصك للبايبلاين، وضوح المساءلة، وعدالة تعاملك مع الأداء الصعب."
+                    : "The team does not see your score. They experience your coaching rhythm, pipeline inspection, accountability clarity, and fairness with difficult performance."
+                  : ar
                   ? "العميل لا يرى درجاتك. هو يشعر بطريقة افتتاحك، عمق أسئلتك، صبرك مع الاعتراضات، وقدرتك على المتابعة."
                   : "Prospects do not see your score. They experience your opening, question depth, patience with objections, and follow-up discipline."
               }
@@ -1465,7 +1563,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               body={
                 weakest
                   ? ar
-                    ? `أكبر تسريب ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
+                    ? salesManager
+                      ? `أكبر تسريب ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على أداء الفريق أو وضوح البايبلاين أو الانضباط قبل أن يظهر السبب الحقيقي.`
+                      : `أكبر تسريب ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
+                    : salesManager
+                    ? `The clearest leakage signal is currently connected to ${weakest.label}. This area may weaken team performance, pipeline clarity, or execution discipline before the real reason is visible.`
                     : `The clearest leakage signal is currently connected to ${weakest.label}. This area may stall or weaken opportunities before the real reason is visible.`
                   : ar
                   ? "لا توجد بيانات كافية لتحديد منطقة التسريب."
