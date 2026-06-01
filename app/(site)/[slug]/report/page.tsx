@@ -2351,7 +2351,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
 
         {/* PRINT-ONLY BONUS REMEDY MAP */}
-        {mri && <PrintBonusRemedyMap ar={ar} weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)} />}
+        {mri && <PrintBonusRemedyMap ar={ar} lawyer={lawyer} weakestSix={[...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6)} />}
 
         {/* SCAN-ONLY MRI PRESCRIPTION UPSELL */}
         {!mri && (
@@ -2752,7 +2752,7 @@ function PrintDetailedRoadmap({
   );
 }
 
-function PrintBonusRemedyMap({ ar, weakestSix }: { ar: boolean; weakestSix: CompetencyRow[] }) {
+function PrintBonusRemedyMap({ ar, lawyer, weakestSix }: { ar: boolean; lawyer: boolean; weakestSix: CompetencyRow[] }) {
   const bonuses = ar
     ? [
         ["أفضل 50 إجابة لأصعب 50 اعتراض بيعي", "الاعتراضات، التفاوض، تدمير الاعتراضات", "اقرأ فئة واحدة يوميًا وابنِ مكتبة ردود عملية."],
