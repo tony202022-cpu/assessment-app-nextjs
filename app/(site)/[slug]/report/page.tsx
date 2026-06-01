@@ -37,6 +37,23 @@ type CompetencyRow = {
 };
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
+  // Lawyer Client Conversion assessments
+  legal_inquiry_handling: { en: "Legal Inquiry Handling", ar: "التعامل مع الاستفسار القانوني" },
+  consultation_opening_control: { en: "Consultation Opening & Control", ar: "افتتاح الاستشارة والسيطرة عليها" },
+  legal_need_diagnosis: { en: "Legal Need Diagnosis", ar: "تشخيص الحاجة القانونية الحقيقية" },
+  case_qualification_client_fit: { en: "Case Qualification & Client Fit", ar: "تأهيل القضية وملاءمة العميل" },
+  client_trust_professional_authority: { en: "Client Trust & Professional Authority", ar: "ثقة العميل والهيبة المهنية" },
+  explaining_legal_strategy_simply: { en: "Explaining Legal Strategy Simply", ar: "شرح الاستراتيجية القانونية ببساطة" },
+  legal_value_framing: { en: "Legal Value Framing", ar: "تأطير القيمة القانونية" },
+  fee_presentation_retainer_confidence: { en: "Fee Presentation & Retainer Confidence", ar: "عرض أتعاب المحاماة والثقة في اتفاق التمثيل" },
+  fee_comparison_objections: { en: "Fee & Comparison Objections", ar: "اعتراضات أتعاب المحاماة والمقارنة" },
+  trust_risk_outcome_objections: { en: "Trust, Risk & Outcome Objections", ar: "اعتراضات الثقة والمخاطر والنتائج" },
+  ethical_persuasion_boundaries: { en: "Ethical Persuasion & Professional Boundaries", ar: "الإقناع المهني الأخلاقي والحدود المهنية" },
+  consultation_closing_engagement: { en: "Consultation Closing & Engagement Commitment", ar: "إغلاق الاستشارة والالتزام بالتعاقد" },
+  post_consultation_follow_up: { en: "Follow-Up Discipline After Consultation", ar: "انضباط المتابعة بعد الاستشارة" },
+  emotional_difficult_clients: { en: "Managing Emotional, Difficult or Unrealistic Clients", ar: "إدارة العملاء الانفعاليين أو الصعبين أو غير الواقعيين" },
+  client_experience_referral_growth: { en: "Client Experience, Satisfaction & Referral Growth", ar: "تجربة العميل والرضا ونمو الإحالات" },
+
   // Sales Manager assessments
   sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
   pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية البايبلاين وفحص الصفقات" },
@@ -118,6 +135,13 @@ function isSalesManagerAssessment(slug: string, attemptAssessmentId?: string | n
   const a = String(attemptAssessmentId || "").toLowerCase();
   return s.includes("sales-manager") || a.includes("sales_manager");
 }
+
+function isLawyerAssessment(slug: string, attemptAssessmentId?: string | null) {
+  const s = String(slug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  return s.includes("lawyer-client-conversion") || a.includes("lawyer_client_conversion") || s.includes("lawyer") || a.includes("lawyer");
+}
+
 
 function shortAttemptId(id: string) {
   const x = String(id || "");
@@ -287,7 +311,54 @@ const SALES_MANAGER_COMPETENCY_IDS = new Set([
   "decision_making_under_pressure",
 ]);
 
+const LAWYER_COMPETENCY_IDS = new Set([
+  "legal_inquiry_handling",
+  "consultation_opening_control",
+  "legal_need_diagnosis",
+  "case_qualification_client_fit",
+  "client_trust_professional_authority",
+  "explaining_legal_strategy_simply",
+  "legal_value_framing",
+  "fee_presentation_retainer_confidence",
+  "fee_comparison_objections",
+  "trust_risk_outcome_objections",
+  "ethical_persuasion_boundaries",
+  "consultation_closing_engagement",
+  "post_consultation_follow_up",
+  "emotional_difficult_clients",
+  "client_experience_referral_growth",
+]);
+
+function lawyerOverallMeaning(overall: number, tier: Tier, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") return "الصورة العامة تشير إلى قدرة قوية على تحويل الاستشارات القانونية إلى تعاقدات مهنية بثقة ووضوح. المطلوب الآن هو تحويل هذه القوة إلى نظام ثابت لا يعتمد على قوة القضية وحدها.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس مهني يمكن البناء عليه، لكن بعض التسريبات في الثقة أو شرح القيمة أو عرض أتعاب المحاماة أو المتابعة قد تجعل العميل يتردد أو يذهب لمحامٍ آخر.";
+    if (tier === "Threat") return "الصورة العامة تظهر إنذارًا مهنيًا. بعض سلوكيات الاستشارة قد تُضعف ثقة العميل أو تقلل وضوح القيمة أو تجعل أتعاب المحاماة تبدو منفصلة عن حجم المخاطر والعمل القانوني المطلوب.";
+    return "الصورة العامة تظهر فجوة واضحة في تحويل الاستشارات إلى تعاقدات قانونية. هذا لا يعني ضعفك كمحامٍ، بل يعني أن خبرتك القانونية قد لا تظهر للعميل بطريقة تجعله يثق، يقرر، ويلتزم.";
+  }
+  if (tier === "Strength") return "Your legal client-conversion health is strong. The next step is to turn your strongest consultation behaviors into a repeatable professional engagement system.";
+  if (tier === "Opportunity") return "Your legal client-conversion health has a useful base, but some leaks may still be limiting client trust, legal-value clarity, professional-fee confidence, or engagement commitment.";
+  if (tier === "Threat") return "Your legal client-conversion health is showing warning signals. Some consultation behaviors may be weakening trust, urgency, fee confidence, or the client’s decision to engage you.";
+  return "Your legal client-conversion health is showing a clear gap. This is not a judgment on your legal ability; it means your expertise may not be becoming visible enough for the client to trust, decide, and engage.";
+}
+
+function lawyerCommercialMeaning(tier: Tier, label: string, lang: Language) {
+  if (lang === "ar") {
+    if (tier === "Strength") return `تشير نتيجة ${label} إلى جانب مهني قوي يساعد العميل على فهمك والثقة بك واتخاذ قرار التعاقد بثبات.`;
+    if (tier === "Opportunity") return `تشير نتيجة ${label} إلى أساس جيد، لكنه يحتاج إلى وضوح أكبر حتى لا يفقد العميل الثقة أو يتردد عند مناقشة أتعاب المحاماة أو خطوات القضية.`;
+    if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تُضعف تحويل الاستشارة إلى تعاقد إذا لم يتم علاجها بطريقة مهنية وأخلاقية.`;
+    return `تشير نتيجة ${label} إلى فجوة واضحة قد تجعل خبرتك القانونية أقل ظهورًا للعميل، أو تجعل العميل يقارن أتعاب المحاماة دون فهم القيمة والمخاطر والمسار القانوني.`;
+  }
+  if (tier === "Strength") return `${label} is currently a professional strength. It helps potential clients understand you, trust your judgment, and move toward engagement with greater confidence.`;
+  if (tier === "Opportunity") return `${label} has a useful foundation, but it needs more clarity before it can reliably protect trust, professional-fee confidence, and engagement commitment.`;
+  if (tier === "Threat") return `${label} is creating a warning signal. If left untreated, it may weaken consultation conversion, client confidence, or the decision to formally engage you.`;
+  return `${label} is showing a clear professional gap. This area may be making your legal expertise less visible to the client or causing the client to compare legal fees without understanding value, risk, and strategy.`;
+}
+
 function detailedMeaningFor(row: CompetencyRow, lang: Language) {
+  if (LAWYER_COMPETENCY_IDS.has(row.competencyId)) {
+    return lawyerCommercialMeaning(row.tier, row.label, lang);
+  }
   if (SALES_MANAGER_COMPETENCY_IDS.has(row.competencyId)) {
     return managerCommercialMeaning(row.tier, row.label, lang);
   }
@@ -1099,25 +1170,45 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
     },
   };
 
-  const fallbackEn = {
-    leakage: `${row.label} may be creating hidden friction in the sales process, especially when pressure rises or the buyer becomes less responsive.`,
-    root: `The likely root pattern is inconsistency: the behavior may appear sometimes, but not reliably enough to protect the deal.`,
-    stop: `Stop treating ${row.label} as a general skill. Treat it as a measurable behavior.`,
-    start: `Start choosing one repeatable behavior connected to ${row.label} and apply it in every relevant interaction.`,
-    drill: `For 7 days, write one correction action before every situation where ${row.label} matters.`,
-    metric: `Daily execution of the selected ${row.label} correction behavior.`,
-    bonus: "How to Increase Your Sales Using AI",
-  };
+  const fallbackEn = LAWYER_COMPETENCY_IDS.has(id)
+    ? {
+        leakage: `${row.label} may be creating hidden friction in the legal consultation journey, especially when the client needs trust, clarity, reassurance, or confidence around professional fees.`,
+        root: `The likely root pattern is inconsistency: the lawyer's expertise may be strong, but the client may not experience enough structure, value clarity, or decision guidance.`,
+        stop: `Stop treating ${row.label} as a general communication skill. Treat it as a measurable professional behavior inside the consultation journey.`,
+        start: `Start choosing one repeatable behavior connected to ${row.label} and apply it in every relevant legal inquiry, consultation, fee discussion, or follow-up.`,
+        drill: `For 7 days, write one correction action before every situation where ${row.label} matters in the client journey.`,
+        metric: `Daily execution of the selected ${row.label} correction behavior.`,
+        bonus: "Lawyer Client Conversion Treatment Guide",
+      }
+    : {
+        leakage: `${row.label} may be creating hidden friction in the sales process, especially when pressure rises or the buyer becomes less responsive.`,
+        root: `The likely root pattern is inconsistency: the behavior may appear sometimes, but not reliably enough to protect the deal.`,
+        stop: `Stop treating ${row.label} as a general skill. Treat it as a measurable behavior.`,
+        start: `Start choosing one repeatable behavior connected to ${row.label} and apply it in every relevant interaction.`,
+        drill: `For 7 days, write one correction action before every situation where ${row.label} matters.`,
+        metric: `Daily execution of the selected ${row.label} correction behavior.`,
+        bonus: "How to Increase Your Sales Using AI",
+      };
 
-  const fallbackAr = {
-    leakage: `قد تسبب ${row.label} احتكاكًا خفيًا في عملية البيع، خصوصًا عندما يرتفع الضغط أو تقل استجابة العميل.`,
-    root: `النمط الجذري المحتمل هو عدم الثبات: قد يظهر السلوك أحيانًا، لكنه ليس ثابتًا بما يكفي لحماية الصفقة.`,
-    stop: `توقف عن التعامل مع ${row.label} كمهارة عامة. تعامل معها كسلوك قابل للقياس.`,
-    start: `ابدأ باختيار سلوك واحد متكرر مرتبط بـ ${row.label} وطبقه في كل تفاعل مناسب.`,
-    drill: `لمدة 7 أيام، اكتب إجراء تصحيح واحد قبل كل موقف تكون فيه ${row.label} مهمة.`,
-    metric: `التنفيذ اليومي لسلوك التصحيح المختار في ${row.label}.`,
-    bonus: "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي",
-  };
+  const fallbackAr = LAWYER_COMPETENCY_IDS.has(id)
+    ? {
+        leakage: `قد تسبب ${row.label} احتكاكًا خفيًا في رحلة الاستشارة القانونية، خصوصًا عندما يحتاج العميل إلى الثقة والوضوح والطمأنة والثقة في أتعاب المحاماة.`,
+        root: `النمط الجذري المحتمل هو عدم الثبات: قد تكون الخبرة القانونية قوية، لكن العميل لا يختبر ما يكفي من الهيكلة أو وضوح القيمة أو توجيه القرار.`,
+        stop: `توقف عن التعامل مع ${row.label} كمهارة تواصل عامة. تعامل معها كسلوك مهني قابل للقياس داخل رحلة الاستشارة.`,
+        start: `ابدأ باختيار سلوك واحد متكرر مرتبط بـ ${row.label} وطبقه في كل استفسار قانوني أو استشارة أو نقاش حول أتعاب المحاماة أو متابعة.`,
+        drill: `لمدة 7 أيام، اكتب إجراء تصحيح واحد قبل كل موقف تكون فيه ${row.label} مهمة في رحلة العميل.`,
+        metric: `التنفيذ اليومي لسلوك التصحيح المختار في ${row.label}.`,
+        bonus: "دليل علاج تحويل العملاء للمحامين",
+      }
+    : {
+        leakage: `قد تسبب ${row.label} احتكاكًا خفيًا في عملية البيع، خصوصًا عندما يرتفع الضغط أو تقل استجابة العميل.`,
+        root: `النمط الجذري المحتمل هو عدم الثبات: قد يظهر السلوك أحيانًا، لكنه ليس ثابتًا بما يكفي لحماية الصفقة.`,
+        stop: `توقف عن التعامل مع ${row.label} كمهارة عامة. تعامل معها كسلوك قابل للقياس.`,
+        start: `ابدأ باختيار سلوك واحد متكرر مرتبط بـ ${row.label} وطبقه في كل تفاعل مناسب.`,
+        drill: `لمدة 7 أيام، اكتب إجراء تصحيح واحد قبل كل موقف تكون فيه ${row.label} مهمة.`,
+        metric: `التنفيذ اليومي لسلوك التصحيح المختار في ${row.label}.`,
+        bonus: "كيف تزيد مبيعاتك باستخدام الذكاء الاصطناعي",
+      };
 
   const meta = lang === "ar" ? ar[id] || fallbackAr : en[id] || fallbackEn;
 
@@ -1223,6 +1314,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const assessment = await getAssessmentConfigServer(supabase, slug);
   const mri = isMriReport(slug, (attempt as any).assessment_id);
   const salesManager = isSalesManagerAssessment(slug, (attempt as any).assessment_id);
+  const lawyer = isLawyerAssessment(slug, (attempt as any).assessment_id);
 
   const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
   const comps = Array.isArray((assessment as any)?.config?.competencies)
@@ -1462,83 +1554,105 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     en: {
       back: "Back to Results",
       printNote: "For best PDF export: choose Save as PDF, turn on background graphics, and turn off browser headers and footers.",
-      badge: mri ? "Full Diagnostic & Treatment Tool" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
+      badge: mri
+        ? lawyer ? "Forensic Legal Client Conversion Diagnostic" : "Full Diagnostic & Treatment Tool"
+        : lawyer ? "Lawyer Client Conversion Blood Test" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
       subtitle: mri
-        ? salesManager
+        ? lawyer
+          ? "A personalized Lawyer Client Conversion MRI designed to diagnose how legal inquiries become paid professional engagements — from first inquiry to consultation, legal-value clarity, professional fees, objections, and follow-up."
+          : salesManager
           ? "A personalized Sales Manager MRI designed to diagnose leadership patterns, team performance leaks, and management treatment priorities."
           : "A personalized Sales MRI designed to diagnose the full sales performance body and turn the findings into a practical treatment plan."
+        : lawyer
+        ? "A fast diagnostic scan of your legal consultation conversion health — from first impression to client trust, fee confidence, objections, and engagement commitment."
         : salesManager
         ? "A fast leadership scan of your sales-management health — like a blood test for the way you coach, inspect, forecast, motivate, and hold the team accountable."
         : "A fast diagnostic scan of your sales performance body — like a blood test for field sales.",
-      overall: salesManager ? "Overall Sales Management Health Score" : "Overall Sales Health Score",
-      overallMarker: salesManager ? "Overall Sales Management Index" : "Overall Sales Health Index",
+      overall: lawyer ? "Legal Client Conversion Health Score" : salesManager ? "Overall Sales Management Health Score" : "Overall Sales Health Score",
+      overallMarker: lawyer ? "Legal Client Conversion Index" : salesManager ? "Overall Sales Management Index" : "Overall Sales Health Index",
       participant: "Participant Identity",
-      health: salesManager ? "Management Health Zone" : "Sales Health Zone",
+      health: lawyer ? "Client Conversion Health Zone" : salesManager ? "Management Health Zone" : "Sales Health Zone",
       bloodPanel: mri
-        ? salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
-        : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
+        ? lawyer ? "15-Competency Lawyer Client Conversion MRI Panel" : salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
+        : lawyer ? "Lawyer Client Conversion Panel: Overall Score + Professional Markers" : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
       bloodPanelSub: mri
-        ? salesManager
+        ? lawyer
+          ? "This deep diagnostic examines the full legal client journey across 15 competencies to reveal where consultation trust, legal-value clarity, professional-fee confidence, engagement commitment, and client experience may be leaking."
+          : salesManager
           ? "This is your deep management diagnostic panel. It examines the wider sales-manager role across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
           : "This is your deep diagnostic panel. It examines the wider sales performance body across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
+        : lawyer
+        ? "This panel combines your overall client-conversion score with core markers that reveal where you create trust, where clients hesitate, and what needs professional treatment."
         : salesManager
         ? "This panel combines your overall management score with seven core markers that reveal where your leadership is strong, where the team may be leaking performance, and what needs attention."
         : "This panel combines your overall sales health score with the seven core markers that reveal where performance is strong, where it is leaking, and what needs treatment.",
-      strongest: salesManager ? "Strongest Management Signal" : "Strongest Signal",
-      weakest: salesManager ? "Biggest Hidden Team Performance Leak" : "Biggest Hidden Revenue Leak",
-      commercial: salesManager ? "Management Interpretation" : "Commercial Interpretation",
-      swot: "Strategic SWOT Analysis",
-      actions: mri ? "Personal Treatment Priorities" : "Priority Execution Plan",
-      prescriptionHeadline: salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
-      prescriptionSubhead: salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
-      prescriptionCta: salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
-      enterpriseTitle: salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
-      enterpriseCta: "Diagnose the Team Before You Train the Team",
+      strongest: lawyer ? "Strongest Legal Conversion Signal" : salesManager ? "Strongest Management Signal" : "Strongest Signal",
+      weakest: lawyer ? "Biggest Hidden Consultation Leak" : salesManager ? "Biggest Hidden Team Performance Leak" : "Biggest Hidden Revenue Leak",
+      commercial: lawyer ? "Professional Interpretation" : salesManager ? "Management Interpretation" : "Commercial Interpretation",
+      swot: lawyer ? "Lawyer Client Conversion SWOT Analysis" : "Strategic SWOT Analysis",
+      actions: mri ? (lawyer ? "Professional Treatment Priorities" : "Personal Treatment Priorities") : "Priority Execution Plan",
+      prescriptionHeadline: lawyer ? "Your Legal MRI Shows the Consultation Leaks. The Treatment Plan Shows What to Fix First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
+      prescriptionSubhead: lawyer ? "The Advanced Lawyer Client Conversion MRI is a full diagnostic and treatment tool for legal inquiries, consultations, client trust, professional fees, objections, engagement commitment, and client experience." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
+      prescriptionCta: lawyer ? "Get My Full Lawyer Client Conversion MRI" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
+      enterpriseTitle: lawyer ? "For Law Firms, Managing Partners & Legal Platforms" : salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
+      enterpriseCta: lawyer ? "Diagnose the Lawyer Before You Train the Lawyer" : "Diagnose the Team Before You Train the Team",
     },
     ar: {
       back: "العودة إلى النتائج",
       printNote: "لأفضل تصدير PDF: اختر Save as PDF، فعّل Background graphics، وألغِ ترويسات وتذييلات المتصفح.",
-      badge: mri ? "أداة تشخيص وعلاج كاملة" : salesManager ? "فحص قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
+      badge: mri
+        ? lawyer ? "تشخيص جنائي لتحويل العملاء للمحامين" : "أداة تشخيص وعلاج كاملة"
+        : lawyer ? "فحص تحويل العملاء للمحامين" : salesManager ? "فحص قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
       subtitle: mri
-        ? salesManager
+        ? lawyer
+          ? "تقرير Lawyer Client Conversion MRI شخصي لتشخيص كيف تتحول الاستفسارات القانونية إلى تعاقدات مهنية مدفوعة — من أول استفسار إلى الاستشارة، وضوح القيمة القانونية، أتعاب المحاماة، الاعتراضات، والمتابعة."
+          : salesManager
           ? "تقرير Sales Manager MRI شخصي لتشخيص أنماط القيادة، وتسريبات أداء الفريق، وأولويات العلاج الإداري."
           : "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
+        : lawyer
+        ? "فحص سريع لصحة تحويل الاستشارات القانونية — من الانطباع الأول إلى ثقة العميل، عرض أتعاب المحاماة، الاعتراضات، وقرار التعاقد."
         : salesManager
         ? "فحص قيادي سريع لصحة إدارتك لفريق المبيعات — كأنه تحليل دم لطريقة التدريب، فحص البايبلاين، التوقع، التحفيز، والمساءلة."
         : "فحص تشخيصي سريع لجسم أدائك البيعي — كأنه تحليل دم مهني للمبيعات الميدانية.",
-      overall: salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
-      overallMarker: salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
+      overall: lawyer ? "مؤشر صحة تحويل العملاء للمحامين" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
+      overallMarker: lawyer ? "مؤشر تحويل الاستشارات إلى تعاقدات" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
-      health: salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
+      health: lawyer ? "منطقة صحة تحويل العملاء" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
       bloodPanel: mri
-        ? salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
-        : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
+        ? lawyer ? "لوحة Lawyer Client Conversion MRI عبر ١٥ كفاءة" : salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
+        : lawyer ? "لوحة تحويل العملاء للمحامين: النتيجة العامة + المؤشرات المهنية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
       bloodPanelSub: mri
-        ? salesManager
-          ? "هذه هي لوحة التشخيص الإداري العميق. تفحص دور مدير المبيعات عبر ١٥ كفاءة لتكشف نقاط القوة والتسريب والأنماط الجذرية وأولويات العلاج."
-          : "هذه هي لوحة التشخيص العميق. تفحص الجسم البيعي الكامل عبر ١٥ كفاءة لتكشف نقاط القوة والتسريب والأنماط الجذرية وأولويات العلاج."
+        ? lawyer
+          ? "يفحص هذا التشخيص العميق رحلة العميل القانوني عبر ١٥ كفاءة ليكشف أين قد تتسرّب ثقة العميل، وضوح القيمة القانونية، الثقة في عرض أتعاب المحاماة، قرار التعاقد، وتجربة العميل."
+          : salesManager
+          ? "هذه لوحة تشخيص إداري عميق تفحص دور مدير المبيعات عبر ١٥ كفاءة لكشف نقاط القوة، التسريبات، الأنماط الجذرية، وأولويات العلاج."
+          : "هذه لوحة تشخيص عميق تفحص جسم الأداء البيعي عبر ١٥ كفاءة لكشف نقاط القوة، التسريبات، الأنماط الجذرية، وأولويات العلاج."
+        : lawyer
+        ? "تجمع هذه اللوحة بين نتيجة تحويل العملاء والمؤشرات الأساسية التي تكشف أين تصنع الثقة، أين يتردد العميل، وما الذي يحتاج إلى علاج مهني."
         : salesManager
-        ? "تجمع هذه اللوحة بين مؤشر صحة الإدارة العام وسبعة مؤشرات قيادية تكشف أين تقوى قيادتك، أين يتسرب أداء الفريق، وما الذي يحتاج إلى انتباه."
-        : "تجمع هذه اللوحة بين مؤشر الصحة البيعية العام والسبعة مؤشرات الأساسية التي تكشف أين يقوى الأداء، أين يحدث التسريب، وما الذي يحتاج إلى علاج.",
-      strongest: salesManager ? "أقوى مؤشر إداري" : "أقوى مؤشر",
-      weakest: salesManager ? "أكبر تسريب مخفي في أداء الفريق" : "أكبر تسريب مخفي للفرص",
-      commercial: salesManager ? "التفسير الإداري" : "التفسير التجاري",
-      swot: "تحليل SWOT الاستراتيجي",
-      actions: mri ? "أولويات العلاج الشخصية" : "خطة التنفيذ ذات الأولوية",
-      prescriptionHeadline: salesManager ? "الفحص القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
-      prescriptionCta: salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
-      enterpriseTitle: salesManager ? "لمديري المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمديري المبيعات وأصحاب الشركات",
-      enterpriseCta: "شخّص الفريق قبل أن تدرّبه",
+        ? "تجمع هذه اللوحة بين نتيجتك الإدارية العامة وسبعة مؤشرات قيادية تكشف أين قيادتك قوية، أين يتسرّب أداء الفريق، وما الذي يحتاج إلى انتباه."
+        : "تجمع هذه اللوحة بين مؤشر صحتك البيعية والسبعة مؤشرات الأساسية التي تكشف أين الأداء قوي، أين يتسرب، وما الذي يحتاج إلى علاج.",
+      strongest: lawyer ? "أقوى إشارة في تحويل العملاء" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
+      weakest: lawyer ? "أكبر تسريب خفي في الاستشارة القانونية" : salesManager ? "أكبر تسريب مخفي في أداء الفريق" : "أكبر تسريب مخفي في الإيرادات",
+      commercial: lawyer ? "التفسير المهني" : salesManager ? "التفسير الإداري" : "التفسير التجاري",
+      swot: lawyer ? "تحليل SWOT لتحويل العملاء للمحامين" : "تحليل SWOT الاستراتيجي",
+      actions: mri ? (lawyer ? "أولويات العلاج المهني" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
+      prescriptionHeadline: lawyer ? "تقريرك يكشف تسريبات الاستشارة. وخطة العلاج توضّح ما يجب إصلاحه أولًا." : salesManager ? "الفحص القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
+      prescriptionSubhead: lawyer ? "تقرير Advanced Lawyer Client Conversion MRI هو أداة تشخيص وعلاج كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، قرار التعاقد، وتجربة العميل." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionCta: lawyer ? "احصل على Lawyer Client Conversion MRI الكامل" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
+      enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : salesManager ? "لمديري المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمديري المبيعات وأصحاب الشركات",
+      enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : "شخّص الفريق قبل أن تدرّبه",
     },
   }[lang];
 
-  const overallMeaningText = salesManager
+  const overallMeaningText = lawyer
+    ? lawyerOverallMeaning(overall, overallTier, lang)
+    : salesManager
     ? managerOverallMeaning(overall, overallTier, lang)
     : overallCommercialMeaning(overall, overallTier, lang);
 
   const rowCommercialText = (row: CompetencyRow) =>
-    salesManager ? managerCommercialMeaning(row.tier, row.label, lang) : commercialMeaning(row.tier, row.label, lang);
+    lawyer ? lawyerCommercialMeaning(row.tier, row.label, lang) : salesManager ? managerCommercialMeaning(row.tier, row.label, lang) : commercialMeaning(row.tier, row.label, lang);
 
   return (
     <div
@@ -2068,10 +2182,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             <div className="space-y-5">
               <ActionBlock
                 index={1}
-                title={salesManager ? (ar ? "أولوية إدارية عامة" : "Overall Management Priority") : (ar ? "أولوية عامة" : "Overall Priority")}
+                title={lawyer ? (ar ? "أولوية مهنية عامة" : "Overall Professional Priority") : salesManager ? (ar ? "أولوية إدارية عامة" : "Overall Management Priority") : (ar ? "أولوية عامة" : "Overall Priority")}
                 tier={overallTier}
                 percentage={overall}
-                recommendations={getRecommendations(salesManager ? "sales_manager_overall_score" : "overall_score", overallTier, lang)}
+                recommendations={getRecommendations(lawyer ? "lawyer_client_conversion_overall_score" : salesManager ? "sales_manager_overall_score" : "overall_score", overallTier, lang)}
                 lang={lang}
               />
 

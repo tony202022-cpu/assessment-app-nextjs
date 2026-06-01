@@ -43,6 +43,23 @@ const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 const MRI_PAYMENT_URL = "PASTE_NEW_ZENLER_MRI_LINK_HERE";
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
+  // Lawyer Client Conversion assessments
+  legal_inquiry_handling: { en: "Legal Inquiry Handling", ar: "التعامل مع الاستفسار القانوني" },
+  consultation_opening_control: { en: "Consultation Opening & Control", ar: "افتتاح الاستشارة والسيطرة عليها" },
+  legal_need_diagnosis: { en: "Legal Need Diagnosis", ar: "تشخيص الحاجة القانونية الحقيقية" },
+  case_qualification_client_fit: { en: "Case Qualification & Client Fit", ar: "تأهيل القضية وملاءمة العميل" },
+  client_trust_professional_authority: { en: "Client Trust & Professional Authority", ar: "ثقة العميل والهيبة المهنية" },
+  explaining_legal_strategy_simply: { en: "Explaining Legal Strategy Simply", ar: "شرح الاستراتيجية القانونية ببساطة" },
+  legal_value_framing: { en: "Legal Value Framing", ar: "تأطير القيمة القانونية" },
+  fee_presentation_retainer_confidence: { en: "Fee Presentation & Retainer Confidence", ar: "عرض أتعاب المحاماة والثقة في اتفاق التمثيل" },
+  fee_comparison_objections: { en: "Fee & Comparison Objections", ar: "اعتراضات أتعاب المحاماة والمقارنة" },
+  trust_risk_outcome_objections: { en: "Trust, Risk & Outcome Objections", ar: "اعتراضات الثقة والمخاطر والنتائج" },
+  ethical_persuasion_boundaries: { en: "Ethical Persuasion & Professional Boundaries", ar: "الإقناع المهني الأخلاقي والحدود المهنية" },
+  consultation_closing_engagement: { en: "Consultation Closing & Engagement Commitment", ar: "إغلاق الاستشارة والالتزام بالتعاقد" },
+  post_consultation_follow_up: { en: "Follow-Up Discipline After Consultation", ar: "انضباط المتابعة بعد الاستشارة" },
+  emotional_difficult_clients: { en: "Managing Emotional, Difficult or Unrealistic Clients", ar: "إدارة العملاء الانفعاليين أو الصعبين أو غير الواقعيين" },
+  client_experience_referral_growth: { en: "Client Experience, Satisfaction & Referral Growth", ar: "تجربة العميل والرضا ونمو الإحالات" },
+
   // Sales Manager assessments
   sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
   pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية البايبلاين وفحص الصفقات" },
@@ -99,6 +116,14 @@ function isSalesManagerAssessment(routeSlug?: string, attemptAssessmentId?: stri
   const c = String(configType || "").toLowerCase();
   return s.includes("sales-manager") || a.includes("sales_manager") || c.includes("sales_manager");
 }
+
+function isLawyerAssessment(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
+  const s = String(routeSlug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  const c = String(configType || "").toLowerCase();
+  return s.includes("lawyer-client-conversion") || a.includes("lawyer_client_conversion") || c.includes("lawyer_client_conversion") || s.includes("lawyer") || a.includes("lawyer");
+}
+
 
 function isProbablyMRI(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
   const s = String(routeSlug || "").toLowerCase();
@@ -496,6 +521,7 @@ function ResultsContent() {
 
   const isMri = isProbablyMRI(routeSlug, attempt?.assessment_id, config?.type);
   const isSalesManager = isSalesManagerAssessment(routeSlug, attempt?.assessment_id, config?.type);
+  const isLawyer = isLawyerAssessment(routeSlug, attempt?.assessment_id, config?.type);
   const isScan = isProbablyScan(routeSlug, attempt?.assessment_id, config?.type) && !isMri;
 
   const labelsFromConfig = useMemo(() => {
@@ -565,7 +591,11 @@ function ResultsContent() {
 
   const heroTitle =
     titleFromDb ||
-    (isSalesManager
+    (isLawyer
+      ? ar
+        ? "نتائج Lawyer Client Conversion MRI"
+        : "Lawyer Client Conversion MRI Results"
+      : isSalesManager
       ? ar
         ? "نتائج فحص مدير المبيعات"
         : "Sales Manager Scan Results"
@@ -573,7 +603,11 @@ function ResultsContent() {
       ? "نتائج فحص المبيعات الميدانية"
       : "Outdoor Sales Scan Results");
 
-  const heroSubtitle = isSalesManager
+  const heroSubtitle = isLawyer
+    ? ar
+      ? "هذه صفحة النتائج السريعة لتشخيص تحويل العملاء للمحامين. التقرير الكامل يوضح تسريبات الاستشارة، الثقة، أتعاب المحاماة، الاعتراضات، وخطوات العلاج المهني."
+      : "This is your quick legal client-conversion dashboard. The full report shows consultation leaks, trust signals, professional-fee confidence, objections, and treatment steps."
+    : isSalesManager
     ? ar
       ? "هذه صفحة النتائج السريعة لقيادة المبيعات. التقرير الكامل يوضح التشخيص الإداري، نقاط القوة، التسريبات، وخطوات التنفيذ."
       : "This is your quick sales-management dashboard. The full report shows the leadership diagnosis, strengths, leaks, and execution steps."
@@ -710,7 +744,7 @@ function ResultsContent() {
                       {overallPct}%
                     </div>
                     <div className="mt-2 text-xs font-black uppercase tracking-widest text-blue-100">
-                      {isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
+                      {isLawyer ? (ar ? "مؤشر تحويل العملاء" : "Client Conversion Score") : isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
                     </div>
                     <div className="mt-4">
                       <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black shadow-xl ${tierBadgeColor(overallTier)}`}>
@@ -792,7 +826,7 @@ function ResultsContent() {
             </div>
             <div>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
-                {isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
+                {isLawyer ? (ar ? "لوحة تحويل العملاء القانونية السريعة" : "Quick Legal Client Conversion Panel") : isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
               </h3>
               <div className="text-sm text-slate-500 mt-1 rtl-text">
                 {isSalesManager
@@ -809,7 +843,7 @@ function ResultsContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <HealthMarkerCard
               ar={ar}
-              label={isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
+              label={isLawyer ? (ar ? "مؤشر صحة تحويل العملاء للمحامين" : "Legal Client Conversion Health Score") : isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
               percentage={overallPct}
               tier={overallTier}
               subtitle={ar ? "القراءة المجمعة لكل الفحص" : "Combined reading of the full scan"}

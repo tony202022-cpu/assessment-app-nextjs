@@ -35,6 +35,20 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     metricAr: "إكمال سلوك التصحيح المختار يوميًا",
   },
 
+  lawyer_client_conversion_overall_score: {
+    id: "lawyer_client_conversion_overall_score",
+    en: "Overall Legal Client Conversion Health",
+    ar: "الصحة العامة لتحويل العملاء للمحامين",
+    leakageEn: "unclear consultation structure, weak client trust, poor legal-value framing, hesitant professional-fee presentation, and passive follow-up",
+    leakageAr: "ضعف هيكلة الاستشارة، ضعف ثقة العميل، غموض تأطير القيمة القانونية، تردد عرض أتعاب المحاماة، والمتابعة السلبية",
+    treatmentEn: "build a simple client-conversion operating system around your lowest three legal consultation markers",
+    treatmentAr: "بناء نظام تشغيل بسيط لتحويل العملاء حول أضعف ثلاثة مؤشرات في الاستشارة القانونية",
+    drillEn: "review your top three consultation leaks before the first client interaction and choose one correction behavior for the day",
+    drillAr: "راجع أكبر ثلاثة تسريبات في الاستشارة قبل أول تفاعل مع عميل واختر سلوك تصحيح واحد لليوم",
+    metricEn: "daily completion of the selected legal client-conversion correction behavior",
+    metricAr: "إكمال سلوك التصحيح المختار لتحويل العملاء يوميًا",
+  },
+
   sales_manager_overall_score: {
     id: "sales_manager_overall_score",
     en: "Overall Sales Management Health",
@@ -525,6 +539,216 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     metricAr: "قرارات الضغط التي اتخذت بناءً على معايير لا رد فعل",
   },
 
+  legal_inquiry_handling: {
+    id: "legal_inquiry_handling",
+    en: "Legal Inquiry Handling",
+    ar: "التعامل مع الاستفسار القانوني",
+    leakageEn: "lost legal inquiries because the first response is slow, vague, overly technical, or gives too much free advice before creating a structured consultation path",
+    leakageAr: "ضياع استفسارات قانونية لأن الرد الأول بطيء أو غامض أو تقني أكثر من اللازم أو يقدم مشورة مجانية قبل بناء مسار استشارة منظم",
+    treatmentEn: "create a calm inquiry triage routine that acknowledges the issue, identifies urgency, frames the consultation, and confirms the next step",
+    treatmentAr: "بناء روتين فرز هادئ للاستفسار يعترف بالمشكلة ويحدد الاستعجال ويضع إطار الاستشارة ويؤكد الخطوة التالية",
+    drillEn: "answer every serious inquiry using: acknowledge, clarify urgency, set consultation frame, request key documents, confirm next step",
+    drillAr: "أجب عن كل استفسار جاد باستخدام: اعتراف، توضيح الاستعجال، إطار الاستشارة، طلب المستندات، تأكيد الخطوة التالية",
+    metricEn: "qualified legal inquiries converted into structured consultations or clear next actions",
+    metricAr: "الاستفسارات القانونية المؤهلة التي تتحول إلى استشارات منظمة أو خطوات واضحة",
+  },
+
+  consultation_opening_control: {
+    id: "consultation_opening_control",
+    en: "Consultation Opening & Control",
+    ar: "افتتاح الاستشارة والسيطرة عليها",
+    leakageEn: "consultations drifting into long emotional discussions without a clear agenda, decision path, or professional next step",
+    leakageAr: "انحراف الاستشارات إلى أحاديث عاطفية طويلة دون أجندة واضحة أو مسار قرار أو خطوة مهنية تالية",
+    treatmentEn: "open every consultation with a professional frame covering facts, risks, options, professional fees, and the next decision",
+    treatmentAr: "افتتاح كل استشارة بإطار مهني يغطي الوقائع والمخاطر والخيارات وأتعاب المحاماة والقرار التالي",
+    drillEn: "begin the next five consultations with a 60-second agenda that explains how the consultation will be handled",
+    drillAr: "ابدأ الاستشارات القادمة بأجندة قصيرة تشرح كيف ستُدار الاستشارة",
+    metricEn: "consultations that stay structured and end with a clear engagement decision or next step",
+    metricAr: "الاستشارات التي تبقى منظمة وتنتهي بقرار تعاقد واضح أو خطوة تالية",
+  },
+
+  legal_need_diagnosis: {
+    id: "legal_need_diagnosis",
+    en: "Legal Need Diagnosis",
+    ar: "تشخيص الحاجة القانونية الحقيقية",
+    leakageEn: "answering the surface legal question while missing the deeper risk, fear, deadline, evidence issue, or decision pressure",
+    leakageAr: "الإجابة على السؤال القانوني السطحي مع تفويت الخطر أو الخوف أو الموعد أو مشكلة الإثبات أو ضغط القرار",
+    treatmentEn: "diagnose facts, urgency, evidence, desired outcome, consequences of delay, and the client’s emotional concern before proposing a path",
+    treatmentAr: "تشخيص الوقائع والاستعجال والأدلة والنتيجة المطلوبة وعواقب التأخير وقلق العميل قبل اقتراح المسار",
+    drillEn: "capture one legal risk, one emotional concern, one deadline, and one consequence of inaction in every consultation",
+    drillAr: "التقط خطرًا قانونيًا وقلقًا عاطفيًا وموعدًا مهمًا ونتيجة لعدم التحرك في كل استشارة",
+    metricEn: "consultations with documented real need and clear risk picture",
+    metricAr: "الاستشارات التي تحتوي على حاجة حقيقية موثقة وصورة واضحة للمخاطر",
+  },
+
+  case_qualification_client_fit: {
+    id: "case_qualification_client_fit",
+    en: "Case Qualification & Client Fit",
+    ar: "تأهيل القضية وملاءمة العميل",
+    leakageEn: "accepting weak matters, unrealistic clients, or poor-fit engagements too quickly and creating future conflict or reputation risk",
+    leakageAr: "قبول ملفات ضعيفة أو عملاء غير واقعيين أو تعاقدات غير مناسبة بسرعة مما يخلق نزاعًا لاحقًا أو خطرًا على السمعة",
+    treatmentEn: "qualify each matter by evidence, urgency, expectations, client behavior, ethical fit, and fit with your expertise",
+    treatmentAr: "تأهيل كل ملف حسب الأدلة والاستعجال والتوقعات وسلوك العميل والملاءمة الأخلاقية وملاءمته لاختصاصك",
+    drillEn: "score the next matter on fit, evidence, urgency, expectations, and engagement quality before accepting it",
+    drillAr: "قيّم الملف القادم حسب الملاءمة والأدلة والاستعجال والتوقعات وجودة العلاقة المهنية قبل قبوله",
+    metricEn: "accepted matters with clear fit, evidence needs, scope, and boundaries",
+    metricAr: "الملفات المقبولة بملاءمة واضحة واحتياجات أدلة ونطاق وحدود مهنية",
+  },
+
+  client_trust_professional_authority: {
+    id: "client_trust_professional_authority",
+    en: "Client Trust & Professional Authority",
+    ar: "ثقة العميل والهيبة المهنية",
+    leakageEn: "clients respecting the lawyer’s knowledge but not feeling enough trust, guidance, or confidence to engage",
+    leakageAr: "احترام العميل لمعرفة المحامي دون شعوره بثقة أو توجيه أو اطمئنان كافٍ للتعاقد",
+    treatmentEn: "combine legal authority with human clarity: summarize the concern, explain the path, set realistic expectations, and guide the decision",
+    treatmentAr: "دمج الهيبة القانونية مع الوضوح الإنساني: تلخيص القلق وشرح المسار ووضع توقعات واقعية وتوجيه القرار",
+    drillEn: "summarize the client’s concern in their own language before giving legal direction",
+    drillAr: "لخّص قلق العميل بلغته قبل إعطاء التوجيه القانوني",
+    metricEn: "clients expressing clarity, confidence, or readiness to proceed",
+    metricAr: "العملاء الذين يعبّرون عن وضوح أو ثقة أو استعداد للمتابعة",
+  },
+
+  explaining_legal_strategy_simply: {
+    id: "explaining_legal_strategy_simply",
+    en: "Explaining Legal Strategy Simply",
+    ar: "شرح الاستراتيجية القانونية ببساطة",
+    leakageEn: "clients delaying because the legal path, risks, documents, stages, and lawyer’s work are not clear enough",
+    leakageAr: "تردد العملاء لأن المسار القانوني والمخاطر والمستندات والمراحل وعمل المحامي ليست واضحة بما يكفي",
+    treatmentEn: "translate the legal pathway into simple stages: immediate risk, required documents, available options, likely process, and next action",
+    treatmentAr: "ترجمة المسار القانوني إلى مراحل بسيطة: الخطر الفوري والمستندات المطلوبة والخيارات المتاحة والإجراء المتوقع والخطوة التالية",
+    drillEn: "explain one matter in three versions: simple client version, procedural version, and risk version",
+    drillAr: "اشرح ملفًا واحدًا بثلاث نسخ: نسخة مبسطة ونسخة إجرائية ونسخة مخاطر",
+    metricEn: "clients able to repeat the legal path and next step in their own words",
+    metricAr: "العملاء القادرون على إعادة شرح المسار القانوني والخطوة التالية بلغتهم",
+  },
+
+  legal_value_framing: {
+    id: "legal_value_framing",
+    en: "Legal Value Framing",
+    ar: "تأطير القيمة القانونية",
+    leakageEn: "clients comparing legal fees without understanding the value of preparation, risk control, negotiation leverage, evidence review, and representation quality",
+    leakageAr: "مقارنة العملاء لأتعاب المحاماة دون فهم قيمة التحضير وتقليل المخاطر وقوة التفاوض ومراجعة الأدلة وجودة التمثيل",
+    treatmentEn: "frame legal value around protection, preparation, legal judgment, risk reduction, negotiation leverage, and peace of mind",
+    treatmentAr: "تأطير القيمة القانونية حول الحماية والتحضير والحكم القانوني وتقليل المخاطر وقوة التفاوض وطمأنينة العميل",
+    drillEn: "rewrite three legal services as value statements: risk protected, process managed, ethical objective pursued, and client burden reduced",
+    drillAr: "أعد صياغة ثلاث خدمات قانونية كعبارات قيمة: الخطر المحمي والمسار المُدار والهدف الأخلاقي والعبء المخفف",
+    metricEn: "clients who understand what the professional fee protects or enables",
+    metricAr: "العملاء الذين يفهمون ماذا تحمي أو تُمكّن أتعاب المحاماة",
+  },
+
+  fee_presentation_retainer_confidence: {
+    id: "fee_presentation_retainer_confidence",
+    en: "Fee Presentation & Retainer Confidence",
+    ar: "عرض أتعاب المحاماة والثقة في اتفاق التمثيل",
+    leakageEn: "engagements lost when professional fees are presented with hesitation, apology, or weak connection to scope, risk, and responsibility",
+    leakageAr: "ضياع التعاقدات عندما تُعرض أتعاب المحاماة بتردد أو اعتذار أو دون ربط قوي بالنطاق والمخاطر والمسؤولية",
+    treatmentEn: "present professional fees with scope, stages, deliverables, risk, responsibility, and the engagement step",
+    treatmentAr: "عرض أتعاب المحاماة مع النطاق والمراحل والمخرجات والمخاطر والمسؤولية وخطوة التعاقد",
+    drillEn: "practice one fee presentation using: scope, legal risk, work stages, professional fee, engagement step",
+    drillAr: "تدرّب على عرض أتعاب المحاماة باستخدام: النطاق، الخطر القانوني، مراحل العمل، أتعاب المحاماة، خطوة التعاقد",
+    metricEn: "fee conversations ending with clarity instead of apology, confusion, or defensive explanation",
+    metricAr: "محادثات أتعاب المحاماة التي تنتهي بوضوح بدل الاعتذار أو الارتباك أو الدفاع",
+  },
+
+  fee_comparison_objections: {
+    id: "fee_comparison_objections",
+    en: "Fee & Comparison Objections",
+    ar: "اعتراضات أتعاب المحاماة والمقارنة",
+    leakageEn: "clients choosing another lawyer because fee comparisons are answered defensively instead of reframing scope, risk, preparation, and accountability",
+    leakageAr: "اختيار العملاء لمحامٍ آخر لأن اعتراضات أتعاب المحاماة تُجاب بدفاعية بدل إعادة تأطير النطاق والمخاطر والتحضير والمسؤولية",
+    treatmentEn: "clarify what is being compared: scope, risk, preparation, communication, and professional accountability",
+    treatmentAr: "توضيح ما الذي تتم مقارنته: النطاق والمخاطر والتحضير والتواصل والمسؤولية المهنية",
+    drillEn: "prepare one professional response to: another lawyer’s fees are lower than yours",
+    drillAr: "حضّر ردًا مهنيًا واحدًا على: أتعاب محامٍ آخر أقل من أتعابك",
+    metricEn: "fee comparison conversations that return to value, scope, and engagement clarity",
+    metricAr: "محادثات مقارنة أتعاب المحاماة التي تعود إلى القيمة والنطاق ووضوح التعاقد",
+  },
+
+  trust_risk_outcome_objections: {
+    id: "trust_risk_outcome_objections",
+    en: "Trust, Risk & Outcome Objections",
+    ar: "اعتراضات الثقة والمخاطر والنتائج",
+    leakageEn: "clients hesitating when they want guarantees, certainty, or reassurance and the lawyer either overpromises or becomes too cold",
+    leakageAr: "تردد العملاء عندما يطلبون ضمانًا أو يقينًا أو طمأنة، فيبالغ المحامي بالوعد أو يصبح باردًا أكثر من اللازم",
+    treatmentEn: "reassure ethically by separating outcome guarantees from process, preparation, risk assessment, and professional commitment",
+    treatmentAr: "الطمأنة الأخلاقية عبر فصل ضمان النتائج عن المسار والتحضير وتقييم المخاطر والالتزام المهني",
+    drillEn: "answer: can you guarantee the result? using ethics, process, preparation, and risk clarity",
+    drillAr: "أجب عن: هل تضمن النتيجة؟ باستخدام الأخلاق والمسار والتحضير ووضوح المخاطر",
+    metricEn: "objections answered without promising outcomes while maintaining client confidence",
+    metricAr: "الاعتراضات التي تُجاب دون وعد بالنتائج مع الحفاظ على ثقة العميل",
+  },
+
+  ethical_persuasion_boundaries: {
+    id: "ethical_persuasion_boundaries",
+    en: "Ethical Persuasion & Professional Boundaries",
+    ar: "الإقناع المهني الأخلاقي والحدود المهنية",
+    leakageEn: "lawyers avoiding persuasion because it feels salesy, or persuading in ways that weaken professional dignity",
+    leakageAr: "تجنب المحامين للإقناع لأنه يبدو تجاريًا أو استخدام الإقناع بطريقة تُضعف الهيبة المهنية",
+    treatmentEn: "reframe persuasion as responsible guidance that helps the right client understand risk, options, professional fees, and next steps",
+    treatmentAr: "إعادة تأطير الإقناع كإرشاد مسؤول يساعد العميل المناسب على فهم المخاطر والخيارات وأتعاب المحاماة والخطوات التالية",
+    drillEn: "write: I am not selling an outcome; I am guiding a legal decision responsibly",
+    drillAr: "اكتب: أنا لا أبيع نتيجة؛ أنا أوجّه قرارًا قانونيًا بمسؤولية",
+    metricEn: "consultations where persuasion remains ethical, clear, and professionally bounded",
+    metricAr: "الاستشارات التي يبقى فيها الإقناع أخلاقيًا وواضحًا ومحدودًا مهنيًا",
+  },
+
+  consultation_closing_engagement: {
+    id: "consultation_closing_engagement",
+    en: "Consultation Closing & Engagement Commitment",
+    ar: "إغلاق الاستشارة والالتزام بالتعاقد",
+    leakageEn: "consultations ending with polite interest but no engagement agreement, no professional-fee step, no document list, and no dated next step",
+    leakageAr: "انتهاء الاستشارات باهتمام مهذب دون عقد تمثيل أو خطوة أتعاب المحاماة أو قائمة مستندات أو خطوة تالية مؤرخة",
+    treatmentEn: "close professionally with risk summary, recommended path, professional fees, engagement agreement, documents, and first action",
+    treatmentAr: "الإغلاق المهني عبر ملخص الخطر والمسار المقترح وأتعاب المحاماة واتفاق التمثيل والمستندات وأول إجراء",
+    drillEn: "end the next five consultations with a clear engagement invitation and one specific next step",
+    drillAr: "اختم الاستشارات القادمة بدعوة واضحة للتعاقد وخطوة محددة",
+    metricEn: "consultations ending with signed engagement, payment step, document submission, or a clear no",
+    metricAr: "الاستشارات التي تنتهي بعقد تمثيل أو خطوة أتعاب أو إرسال مستندات أو رفض واضح",
+  },
+
+  post_consultation_follow_up: {
+    id: "post_consultation_follow_up",
+    en: "Follow-Up Discipline After Consultation",
+    ar: "انضباط المتابعة بعد الاستشارة",
+    leakageEn: "qualified potential clients disappearing after consultation because follow-up is late, weak, or too passive",
+    leakageAr: "اختفاء العملاء المحتملين المؤهلين بعد الاستشارة لأن المتابعة متأخرة أو ضعيفة أو سلبية أكثر من اللازم",
+    treatmentEn: "follow up within 24 hours with a professional summary, risk reminder, required documents, fee step, and next decision",
+    treatmentAr: "المتابعة خلال 24 ساعة بملخص مهني وتذكير بالمخاطر والمستندات المطلوبة وخطوة أتعاب المحاماة والقرار التالي",
+    drillEn: "send a structured follow-up within 24 hours after every qualified consultation",
+    drillAr: "أرسل متابعة منظمة خلال 24 ساعة بعد كل استشارة مؤهلة",
+    metricEn: "qualified consultations followed up within 24 hours with a clear next action",
+    metricAr: "الاستشارات المؤهلة التي تمت متابعتها خلال 24 ساعة بخطوة تالية واضحة",
+  },
+
+  emotional_difficult_clients: {
+    id: "emotional_difficult_clients",
+    en: "Managing Emotional, Difficult or Unrealistic Clients",
+    ar: "إدارة العملاء الانفعاليين أو الصعبين أو غير الواقعيين",
+    leakageEn: "emotional or unrealistic clients consuming time, pressuring the lawyer, resisting professional fees, or later blaming the lawyer for outcomes outside professional control",
+    leakageAr: "استهلاك العملاء الانفعاليين أو غير الواقعيين للوقت وضغطهم على المحامي أو مقاومتهم لأتعاب المحاماة أو لومهم لاحقًا على نتائج خارج السيطرة المهنية",
+    treatmentEn: "set calm boundaries around facts, legal limits, communication rules, professional fees, responsibilities, and realistic expectations",
+    treatmentAr: "وضع حدود هادئة حول الوقائع والحدود القانونية وقواعد التواصل وأتعاب المحاماة والمسؤوليات والتوقعات الواقعية",
+    drillEn: "before one difficult client conversation, write the emotion, boundary, legal reality, and next step",
+    drillAr: "قبل محادثة عميل صعبة واحدة، اكتب الانفعال والحد المهني والحقيقة القانونية والخطوة التالية",
+    metricEn: "difficult client interactions ending with clear boundaries and documented expectations",
+    metricAr: "تفاعلات العملاء الصعبة التي تنتهي بحدود واضحة وتوقعات موثقة",
+  },
+
+  client_experience_referral_growth: {
+    id: "client_experience_referral_growth",
+    en: "Client Experience, Satisfaction & Referral Growth",
+    ar: "تجربة العميل والرضا ونمو الإحالات",
+    leakageEn: "clients becoming dissatisfied even when legal outcomes are uncertain because communication, expectation setting, and experience are weak",
+    leakageAr: "عدم رضا العملاء حتى عندما تكون النتائج القانونية غير مضمونة بسبب ضعف التواصل وإدارة التوقعات وتجربة العميل",
+    treatmentEn: "manage the client experience through clarity, updates, empathy, documentation, realistic expectations, and professional closure",
+    treatmentAr: "إدارة تجربة العميل عبر الوضوح والتحديثات والتعاطف والتوثيق والتوقعات الواقعية والإغلاق المهني",
+    drillEn: "create one client-experience checklist for intake, updates, risk explanations, and closing the matter",
+    drillAr: "أنشئ قائمة تجربة عميل واحدة للاستقبال والتحديثات وشرح المخاطر وإغلاق الملف",
+    metricEn: "clients who feel informed, respected, and guided even when outcomes are uncertain",
+    metricAr: "العملاء الذين يشعرون بأنهم مطلعون ومحترمون وموجّهون حتى عندما تكون النتائج غير مؤكدة",
+  },
+
 };
 
 const ALIASES: Record<string, string> = {
@@ -532,7 +756,24 @@ const ALIASES: Record<string, string> = {
   total: "overall_score",
   total_score: "overall_score",
   overall_score: "overall_score",
+  lawyer_client_conversion_overall_score: "lawyer_client_conversion_overall_score",
+  legal_client_conversion_overall_score: "lawyer_client_conversion_overall_score",
 
+  legal_inquiry_handling: "legal_inquiry_handling",
+  consultation_opening_control: "consultation_opening_control",
+  legal_need_diagnosis: "legal_need_diagnosis",
+  case_qualification_client_fit: "case_qualification_client_fit",
+  client_trust_professional_authority: "client_trust_professional_authority",
+  explaining_legal_strategy_simply: "explaining_legal_strategy_simply",
+  legal_value_framing: "legal_value_framing",
+  fee_presentation_retainer_confidence: "fee_presentation_retainer_confidence",
+  fee_comparison_objections: "fee_comparison_objections",
+  trust_risk_outcome_objections: "trust_risk_outcome_objections",
+  ethical_persuasion_boundaries: "ethical_persuasion_boundaries",
+  consultation_closing_engagement: "consultation_closing_engagement",
+  post_consultation_follow_up: "post_consultation_follow_up",
+  emotional_difficult_clients: "emotional_difficult_clients",
+  client_experience_referral_growth: "client_experience_referral_growth",
   sales_coaching_rep_development: "sales_coaching_rep_development",
   coaching_rep_development: "sales_coaching_rep_development",
   sales_coaching: "sales_coaching_rep_development",
@@ -672,6 +913,28 @@ function isManagerProfile(id: string): boolean {
   ]).has(key);
 }
 
+function isLawyerProfile(id: string): boolean {
+  const key = normalizeCompetencyId(id);
+  return new Set([
+    "lawyer_client_conversion_overall_score",
+    "legal_inquiry_handling",
+    "consultation_opening_control",
+    "legal_need_diagnosis",
+    "case_qualification_client_fit",
+    "client_trust_professional_authority",
+    "explaining_legal_strategy_simply",
+    "legal_value_framing",
+    "fee_presentation_retainer_confidence",
+    "fee_comparison_objections",
+    "trust_risk_outcome_objections",
+    "ethical_persuasion_boundaries",
+    "consultation_closing_engagement",
+    "post_consultation_follow_up",
+    "emotional_difficult_clients",
+    "client_experience_referral_growth",
+  ]).has(key);
+}
+
 function enStrength(p: CompetencyProfile): string[] {
   return [
     `Protect your strength in ${p.en}. This is not an area to ignore because it is already good. Turn it into a repeatable asset by documenting exactly what you do before, during, and after successful situations where this competency appears.`,
@@ -722,7 +985,9 @@ function arThreat(p: CompetencyProfile): string[] {
 
 function enWeakness(p: CompetencyProfile): string[] {
   return [
-    isManagerProfile(p.id)
+    isLawyerProfile(p.id)
+    ? `${p.en} is a treatment priority. This is not a label of legal failure; it is a signal that this part of the legal client-conversion journey needs direct correction before it keeps leaking trust, professional-fee confidence, engagement commitment, or client follow-up.`
+    : isManagerProfile(p.id)
     ? `${p.en} is a treatment priority. This is not a label of failure; it is a signal that this part of the sales-management leadership body needs direct correction before it keeps leaking team performance, forecast quality, or execution discipline.`
     : `${p.en} is a treatment priority. This is not a label of failure; it is a signal that this part of the sales performance body needs direct correction before it keeps leaking opportunities.`,
     `Stop improvising in this area for the next 7 days. Use a fixed treatment protocol: ${p.treatmentEn}. The purpose is to remove randomness and give your behavior a stable structure.`,
@@ -732,7 +997,9 @@ function enWeakness(p: CompetencyProfile): string[] {
 
 function arWeakness(p: CompetencyProfile): string[] {
   return [
-    isManagerProfile(p.id)
+    isLawyerProfile(p.id)
+    ? `${p.ar} هي أولوية علاج. هذا ليس وصفًا لفشل قانوني؛ بل إشارة إلى أن هذا الجزء من رحلة تحويل العميل القانوني يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب الثقة أو وضوح أتعاب المحاماة أو قرار التعاقد أو المتابعة.`
+    : isManagerProfile(p.id)
     ? `${p.ar} هي أولوية علاج. هذا ليس وصفًا للفشل؛ بل إشارة إلى أن هذا الجزء من جسم القيادة البيعية يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب أداء الفريق أو جودة التوقعات أو انضباط التنفيذ.`
     : `${p.ar} هي أولوية علاج. هذا ليس وصفًا للفشل؛ بل إشارة إلى أن هذا الجزء من جسم الأداء البيعي يحتاج إلى تصحيح مباشر قبل أن يستمر في تسريب الفرص.`,
     `توقف عن الارتجال في هذه المنطقة لمدة 7 أيام. استخدم بروتوكول علاج ثابت: ${p.treatmentAr}. الهدف هو إزالة العشوائية ومنح السلوك بنية مستقرة.`,
