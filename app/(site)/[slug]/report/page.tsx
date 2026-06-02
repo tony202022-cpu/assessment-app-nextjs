@@ -1980,12 +1980,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     📧 Email My Report
   </button>
 
-  <button
-    onClick={() => window.print()}
-    className="inline-flex items-center justify-center rounded-2xl bg-white text-slate-900 font-black px-6 py-4 shadow-lg"
-  >
-    🖨 Print Report
-  </button>
+
 </div>
 
               <div className="relative flex justify-center">
