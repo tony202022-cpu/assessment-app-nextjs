@@ -1934,13 +1934,13 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             <span className="font-mono text-blue-700 force-ltr">{shortAttemptId(attemptId)}</span>
           </div>
 
- <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+<div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto">
 
-<EmailReportButton />
+  <EmailReportButton />
 
   <Link
     href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
-    className="inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-4 py-2.5 transition-all shadow-lg text-sm min-h-[44px] w-full sm:w-auto"
+    className="inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-4 py-2.5 transition-all shadow-lg text-sm min-h-[44px] whitespace-nowrap"
   >
     {t.back}
   </Link>
