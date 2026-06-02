@@ -212,10 +212,10 @@ function roadmapWeeks(risks: AreaRow[], strengths: AreaRow[]) {
 
 function getPdfMakePrinter() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const pdfmakeModule = require("pdfmake");
-  const PdfPrinter = pdfmakeModule.default || pdfmakeModule;
+  const PdfPrinter = require("pdfmake/src/printer");
+
   return new PdfPrinter({
-    Helvetica: {
+    Roboto: {
       normal: "Helvetica",
       bold: "Helvetica-Bold",
       italics: "Helvetica-Oblique",
