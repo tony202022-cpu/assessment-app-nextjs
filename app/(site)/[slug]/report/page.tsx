@@ -1933,15 +1933,23 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             <span className="font-mono text-blue-700 force-ltr">{shortAttemptId(attemptId)}</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <Link
-              href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-5 py-3 transition-all shadow-lg text-sm min-h-[44px] w-full sm:w-auto"
-            >
-              {t.back}
-            </Link>
-          </div>
-        </div>
+ <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+
+  <button
+    type="button"
+    className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black px-5 py-3 transition-all shadow-lg text-sm min-h-[44px] w-full sm:w-auto"
+  >
+    📧 Email My Report
+  </button>
+
+  <Link
+    href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
+    className="inline-flex items-center justify-center rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black px-5 py-3 transition-all shadow-lg text-sm min-h-[44px] w-full sm:w-auto"
+  >
+    {t.back}
+  </Link>
+
+</div>
 
         {/* COVER */}
         <section className={`${mri ? "web-cover-print-hide" : ""} avoid-break relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800/10`}>
@@ -1973,15 +1981,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   <InfoChip label={ar ? "البريد" : "Email"} value={identity.email} forceLtr />
                 </div>
               </div>
-<div className="mt-6 flex flex-col sm:flex-row gap-3">
-  <button
-    className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-4 shadow-lg"
-  >
-    📧 Email My Report
-  </button>
 
-
-</div>
 
               <div className="relative flex justify-center">
                 <div className="relative h-64 w-64 sm:h-72 sm:w-72 rounded-full border-[12px] border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-2xl">
