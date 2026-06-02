@@ -38,6 +38,9 @@ type AreaRow = {
   maxScore?: number;
 };
 
+const BRAND_LOGO_SRC = "/brand/levelup-logo.png";
+
+
 const AREA_LABELS: Record<string, { en: string; ar: string }> = {
   strategic_direction_business_clarity: { en: "Strategic Direction & Business Clarity", ar: "الاتجاه الاستراتيجي ووضوح الشركة" },
   revenue_engine_sales_predictability: { en: "Revenue Engine & Sales Predictability", ar: "محرك الإيرادات واستقرار المبيعات" },
@@ -247,6 +250,27 @@ function tierSoftClass(tier: Tier) {
   return "border-rose-200 bg-rose-50 text-rose-950";
 }
 
+function tierAccentHex(tier: Tier) {
+  if (tier === "Strength") return "#059669";
+  if (tier === "Opportunity") return "#2563eb";
+  if (tier === "Threat") return "#f59e0b";
+  return "#be123c";
+}
+
+function tierTextClass(tier: Tier) {
+  if (tier === "Strength") return "text-emerald-600";
+  if (tier === "Opportunity") return "text-blue-600";
+  if (tier === "Threat") return "text-amber-500";
+  return "text-rose-600";
+}
+
+function tierRingClass(tier: Tier) {
+  if (tier === "Strength") return "border-emerald-400/60 bg-emerald-500/10 text-emerald-100";
+  if (tier === "Opportunity") return "border-blue-400/60 bg-blue-500/10 text-blue-100";
+  if (tier === "Threat") return "border-amber-300/70 bg-amber-300/10 text-amber-100";
+  return "border-rose-400/70 bg-rose-500/10 text-rose-100";
+}
+
 function businessHealthLabel(overall: number, lang: Language) {
   if (lang === "ar") {
     if (overall >= 75) return "منطقة صحة أعمال قوية";
@@ -294,6 +318,21 @@ function sortByStrength(rows: AreaRow[]) {
   return [...rows].sort((a, b) => b.percentage - a.percentage);
 }
 
+
+function BrandLogo({ dark = false, ar = false }: { dark?: boolean; ar?: boolean }) {
+  return (
+    <div className={`brand-logo-wrap flex items-center gap-3 ${ar ? "flex-row-reverse text-right" : "text-left"}`}>
+      <div className={`brand-logo-box flex h-14 w-44 items-center justify-center rounded-2xl border ${dark ? "border-white/20 bg-white/10" : "border-slate-200 bg-white"}`}>
+        <img src={BRAND_LOGO_SRC} alt="Level Up Business Consulting" className="max-h-10 max-w-[150px] object-contain" />
+      </div>
+      <div className={dark ? "text-blue-100" : "text-slate-500"}>
+        <div className={`text-[10px] font-black uppercase tracking-[0.18em] ${dark ? "text-amber-200" : "text-amber-700"}`}>Level Up</div>
+        <div className="text-xs font-bold leading-tight">Business Consulting</div>
+      </div>
+    </div>
+  );
+}
+
 function SectionTitle({ eyebrow, title, subtitle, ar }: { eyebrow?: string; title: string; subtitle?: string; ar: boolean }) {
   return (
     <div className="mb-6 break-inside-avoid">
@@ -308,20 +347,21 @@ function SectionTitle({ eyebrow, title, subtitle, ar }: { eyebrow?: string; titl
   );
 }
 
-function ScoreDonut({ score, label }: { score: number; label: string }) {
+function ScoreDonut({ score, label, tier }: { score: number; label: string; tier: Tier }) {
+  const accent = tierAccentHex(tier);
   return (
-    <div className="relative mx-auto flex h-52 w-52 items-center justify-center rounded-full border-[18px] border-slate-200 bg-white shadow-2xl">
+    <div className="score-donut relative mx-auto flex h-48 w-48 items-center justify-center rounded-full border-[16px] border-slate-200 bg-white shadow-2xl">
       <div
         className="absolute inset-[-18px] rounded-full"
         style={{
-          background: `conic-gradient(#f6d98b ${score * 3.6}deg, rgba(255,255,255,0.16) 0deg)`,
+          background: `conic-gradient(${accent} ${score * 3.6}deg, rgba(255,255,255,0.16) 0deg)`,
           WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 18px), #000 calc(100% - 17px))",
           mask: "radial-gradient(farthest-side, transparent calc(100% - 18px), #000 calc(100% - 17px))",
         }}
       />
       <div className="text-center">
-        <div className="text-6xl font-black text-slate-950">{score}%</div>
-        <div className="mt-1 text-xs font-black uppercase tracking-[0.2em] text-slate-500">{label}</div>
+        <div className={`text-5xl font-black ${tierTextClass(tier)}`}>{score}%</div>
+        <div className="score-donut-label mt-1 text-[11px] font-black uppercase tracking-[0.08em] text-slate-500">{label}</div>
       </div>
     </div>
   );
@@ -350,11 +390,19 @@ function AreaBar({ row, ar }: { row: AreaRow; ar: boolean }) {
   );
 }
 
-function MiniKpi({ label, value, sub, dark = false }: { label: string; value: string; sub?: string; dark?: boolean }) {
+function MiniKpi({ label, value, sub, dark = false, tone }: { label: string; value: string; sub?: string; dark?: boolean; tone?: Tier }) {
+  const toneClasses = tone
+    ? dark
+      ? `border ${tierRingClass(tone)}`
+      : `border shadow-sm ${tierSoftClass(tone)}`
+    : dark
+    ? "border border-white/15 bg-white/10 text-white"
+    : "border border-slate-200 bg-white text-slate-950 shadow-sm";
+
   return (
-    <div className={`rounded-3xl p-5 ${dark ? "border border-white/15 bg-white/10 text-white" : "border border-slate-200 bg-white text-slate-950 shadow-sm"}`}>
+    <div className={`rounded-3xl p-5 ${toneClasses}`}>
       <div className={`text-[11px] font-black uppercase tracking-[0.18em] ${dark ? "text-blue-100" : "text-slate-500"}`}>{label}</div>
-      <div className={`mt-2 text-3xl font-black ${dark ? "text-amber-200" : "text-slate-950"}`}>{value}</div>
+      <div className={`mt-2 text-3xl font-black ${tone ? (dark ? "text-white" : tierTextClass(tone)) : dark ? "text-amber-200" : "text-slate-950"}`}>{value}</div>
       {sub && <div className={`mt-1 text-sm leading-snug ${dark ? "text-blue-100" : "text-slate-500"}`}>{sub}</div>}
     </div>
   );
@@ -711,6 +759,8 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
 
     [data-rtl="true"] * { direction: rtl; }
     [data-rtl="true"] .force-ltr { direction: ltr !important; text-align: left !important; unicode-bidi: isolate !important; }
+    [data-rtl="false"] { direction: ltr !important; text-align: left !important; unicode-bidi: isolate !important; }
+    [data-rtl="false"] * { direction: ltr !important; unicode-bidi: isolate !important; }
 
     @page {
       size: A4;
@@ -735,24 +785,29 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
       }
 
       .premium-page {
-        min-height: 267mm !important;
+        min-height: auto !important;
         box-shadow: none !important;
-        border-radius: 18px !important;
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
+        border-radius: 14px !important;
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+        padding: 14mm !important;
+        margin: 0 0 8mm 0 !important;
       }
 
       .break-before-page {
-        break-before: page !important;
-        page-break-before: always !important;
+        break-before: auto !important;
+        page-break-before: auto !important;
       }
 
       .premium-cover {
-        min-height: 275mm !important;
+        min-height: 270mm !important;
         border-radius: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
+        break-after: page !important;
+        page-break-after: always !important;
+        padding: 18mm !important;
       }
 
       .compact-print-text {
@@ -760,13 +815,44 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
         line-height: 1.32 !important;
       }
 
+      .score-donut {
+        width: 145px !important;
+        height: 145px !important;
+        border-width: 12px !important;
+        box-shadow: none !important;
+      }
+
+      .score-donut-label {
+        letter-spacing: .03em !important;
+        max-width: 105px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        line-height: 1.1 !important;
+        word-break: normal !important;
+      }
+
+      .brand-logo-box img {
+        max-height: 34px !important;
+        max-width: 135px !important;
+      }
+
       table {
         page-break-inside: auto !important;
+        font-size: 8.6pt !important;
       }
+
+      thead { display: table-header-group !important; }
+      tfoot { display: table-footer-group !important; }
 
       tr {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+      }
+
+      th, td {
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+        line-height: 1.22 !important;
       }
     }
   `;
@@ -778,7 +864,7 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
       data-premium-report="true"
       data-rtl={ar ? "true" : "false"}
       dir={ar ? "rtl" : "ltr"}
-      className="min-h-screen bg-slate-100 text-slate-950"
+      className={`min-h-screen bg-slate-100 text-slate-950 ${ar ? "text-right" : "text-left"}`}
       style={{
         fontFamily: ar
           ? "'Cairo','Tajawal','Noto Kufi Arabic',Arial,sans-serif"
@@ -808,6 +894,10 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
         {/* COVER */}
         <section className="premium-cover overflow-hidden rounded-[36px] bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-8 text-white shadow-2xl">
           <div className="flex flex-wrap items-start justify-between gap-6">
+            <div className="w-full flex justify-between items-start gap-4">
+              <BrandLogo dark ar={ar} />
+              <div className="text-xs font-black uppercase tracking-[0.18em] text-blue-100">{ar ? "تقرير سري" : "Confidential Report"}</div>
+            </div>
             <div>
               <div className="inline-flex rounded-full border border-amber-300/50 bg-amber-300/10 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-amber-200">
                 {ar ? "تقرير تنفيذي فاخر" : "Premium Executive Report"}
@@ -821,9 +911,9 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
                   : "An executive business health diagnostic that reveals leaks, risks, bottlenecks, and treatment priorities before adding more money, time, people, or effort."}
               </p>
             </div>
-            <div className="rounded-[32px] border border-white/15 bg-white/10 p-5 text-center shadow-2xl">
+            <div className={`rounded-[32px] p-5 text-center shadow-2xl ${tierRingClass(overallTier)}`}>
               <div className="text-[11px] font-black uppercase tracking-[0.22em] text-blue-100">{ar ? "درجة صحة الشركة" : "Business Health Score"}</div>
-              <div className="mt-2 text-7xl font-black text-amber-200">{overall}%</div>
+              <div className="mt-2 text-7xl font-black text-white">{overall}%</div>
               <div className="mt-3 rounded-full bg-white px-4 py-2 text-sm font-black text-slate-950">{scoreZone}</div>
             </div>
           </div>
@@ -856,8 +946,8 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="rounded-[32px] bg-slate-950 p-6 text-white lg:col-span-1">
-              <ScoreDonut score={overall} label={ar ? "صحة الشركة" : "Health"} />
-              <div className="mt-6 text-center text-lg font-black text-amber-200">{scoreZone}</div>
+              <ScoreDonut score={overall} label={ar ? "صحة الشركة" : "Health"} tier={overallTier} />
+              <div className={`mt-6 text-center text-lg font-black ${tierTextClass(overallTier)}`}>{scoreZone}</div>
               <p className="mt-3 text-center text-sm leading-relaxed text-blue-100">{executiveMeaning(overall, lang)}</p>
             </div>
 
@@ -1020,11 +1110,12 @@ export default async function PremiumReportPage({ params, searchParams }: PagePr
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <MiniKpi dark label={ar ? "أكبر تسريب" : "Biggest Leak"} value={weakest?.label || "—"} />
             <MiniKpi dark label={ar ? "أقوى رافعة" : "Strongest Leverage"} value={strongest?.label || "—"} />
-            <MiniKpi dark label={ar ? "درجة الصحة" : "Health Score"} value={`${overall}%`} sub={scoreZone} />
+            <MiniKpi dark tone={overallTier} label={ar ? "درجة الصحة" : "Health Score"} value={`${overall}%`} sub={scoreZone} />
           </div>
 
           <div className="border-t border-white/10 pt-5 text-sm text-blue-100">
-            {ar ? "Level Up Business Consulting — تقرير تشخيصي تنفيذي" : "Level Up Business Consulting — Executive Diagnostic Report"}
+            <BrandLogo dark ar={ar} />
+            <div className="mt-3">{ar ? "Level Up Business Consulting — تقرير تشخيصي تنفيذي" : "Level Up Business Consulting — Executive Diagnostic Report"}</div>
           </div>
         </section>
       </main>
