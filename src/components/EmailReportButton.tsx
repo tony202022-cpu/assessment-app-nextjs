@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function EmailReportButton() {
   const [open, setOpen] = useState(false);
-
+const [email, setEmail] = useState("");
   return (
     <>
       <button
@@ -27,11 +27,13 @@ export default function EmailReportButton() {
               Enter your email address.
             </p>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 mb-4"
-            />
+         <input
+  type="email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  placeholder="Enter your email"
+  className="w-full rounded-xl border border-slate-300 px-4 py-3 mb-4"
+/>
 
             <button
               type="button"
