@@ -4,7 +4,39 @@ import { useState } from "react";
 
 export default function EmailReportButton() {
   const [open, setOpen] = useState(false);
-const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  async function handleSend() {
+    if (!email.trim()) {
+      alert("Please enter your email address");
+      return;
+    }
+
+    try {
+      setSending(true);
+
+      // TEMPORARY
+      // next step will call Supabase Edge Function
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      setSuccess(true);
+
+      setTimeout(() => {
+        setOpen(false);
+        setSuccess(false);
+        setEmail("");
+      }, 1500);
+
+    } catch (err) {
+      alert("Something went wrong");
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <>
       <button
@@ -24,24 +56,43 @@ const [email, setEmail] = useState("");
             </h3>
 
             <p className="text-slate-600 mb-4">
-              Enter your email address.
+              Enter your email address and we'll send you a link to access this report anytime.
             </p>
 
-         <input
-  type="email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  placeholder="Enter your email"
-  className="w-full rounded-xl border border-slate-300 px-4 py-3 mb-4"
-/>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 mb-4"
+            />
 
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="w-full rounded-xl bg-slate-900 text-white px-4 py-3 font-bold"
-            >
-              Close
-            </button>
+            {success && (
+              <div className="mb-4 rounded-xl bg-green-100 text-green-800 px-4 py-3 font-bold">
+                ✅ Report sent successfully
+              </div>
+            )}
+
+            <div className="flex gap-3">
+
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={sending}
+                className="flex-1 rounded-xl bg-emerald-600 text-white px-4 py-3 font-bold disabled:opacity-50"
+              >
+                {sending ? "Sending..." : "Send Report"}
+              </button>
+
+            </div>
 
           </div>
         </div>
