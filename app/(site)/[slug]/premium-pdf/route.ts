@@ -589,14 +589,14 @@ export async function GET(request: NextRequest, context: { params: { slug: strin
     const pdfBuffer = await buildPdfBuffer(docDefinition);
     const filename = `sme-business-health-mri-${attemptId.slice(0, 8)}.pdf`;
 
-    return new Response(pdfBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${filename}"`,
-        "Cache-Control": "no-store, max-age=0",
-      },
-    });
+  return new Response(new Uint8Array(pdfBuffer), {
+  status: 200,
+  headers: {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `inline; filename="${filename}"`,
+    "Cache-Control": "no-store",
+  },
+});
   } catch (err: any) {
     console.error("Premium PDF generation error:", err);
     return new Response(`Premium PDF generation failed: ${err?.message || "Unknown error"}`, { status: 500 });
