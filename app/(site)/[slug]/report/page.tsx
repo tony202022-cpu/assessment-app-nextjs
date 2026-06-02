@@ -1951,6 +1951,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
 </div>
 
+</div>
+
         {/* COVER */}
         <section className={`${mri ? "web-cover-print-hide" : ""} avoid-break relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800/10`}>
           <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-900" />
