@@ -48,8 +48,8 @@ export default function EmailReportButton() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4">
-          <div className="relative z-[10000] w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-black/80 p-4 pt-16">
+          <div className="relative z-[10000] my-8 w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
 
             <h3 className="text-2xl font-black text-slate-900 mb-2">
               📧 Email This Report
