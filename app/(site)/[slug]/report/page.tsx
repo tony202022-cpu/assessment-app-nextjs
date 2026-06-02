@@ -1973,6 +1973,20 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   <InfoChip label={ar ? "البريد" : "Email"} value={identity.email} forceLtr />
                 </div>
               </div>
+<div className="mt-6 flex flex-col sm:flex-row gap-3">
+  <button
+    className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-4 shadow-lg"
+  >
+    📧 Email My Report
+  </button>
+
+  <button
+    onClick={() => window.print()}
+    className="inline-flex items-center justify-center rounded-2xl bg-white text-slate-900 font-black px-6 py-4 shadow-lg"
+  >
+    🖨 Print Report
+  </button>
+</div>
 
               <div className="relative flex justify-center">
                 <div className="relative h-64 w-64 sm:h-72 sm:w-72 rounded-full border-[12px] border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-2xl">
