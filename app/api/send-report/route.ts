@@ -9,10 +9,17 @@ export async function POST(req: Request) {
 
     if (!email || !reportUrl) {
       return NextResponse.json(
-        { success: false, error: "Missing data" },
-        { status: 400 }
+        {
+          success: false,
+          error: "Missing data",
+        },
+        {
+          status: 400,
+        }
       );
     }
+
+    const isArabic = reportUrl.includes("lang=ar");
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -27,22 +34,58 @@ export async function POST(req: Request) {
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: email,
-      subject: "Your Career Labs AI Assessment Report",
-      html: `
-        <p>Hello,</p>
 
-        <p>Thank you for completing your assessment.</p>
+      subject: isArabic
+        ? "تقرير التقييم الخاص بك"
+        : "Your Career Labs AI Assessment Report",
 
-        <p>Your report is available here:</p>
+      html: isArabic
+        ? `
+          <div dir="rtl" style="font-family: Arial, sans-serif; line-height:1.8;">
+            <p>مرحباً،</p>
 
-        <p>
-          <a href="${reportUrl}">
-            Open My Report
-          </a>
-        </p>
+            <p>شكراً لإكمال التقييم.</p>
 
-        <p>Career Labs AI</p>
-      `,
+            <p>
+              يمكنك الوصول إلى تقريرك في أي وقت من خلال الرابط التالي:
+            </p>
+
+            <p>
+              <a href="${reportUrl}">
+                فتح التقرير
+              </a>
+            </p>
+
+            <p>
+              مع التحية،
+              <br />
+              Career Labs AI
+            </p>
+          </div>
+        `
+        : `
+          <div style="font-family: Arial, sans-serif; line-height:1.8;">
+            <p>Hello,</p>
+
+            <p>Thank you for completing your assessment.</p>
+
+            <p>
+              You can access your report anytime using the link below:
+            </p>
+
+            <p>
+              <a href="${reportUrl}">
+                Open My Report
+              </a>
+            </p>
+
+            <p>
+              Regards,
+              <br />
+              Career Labs AI
+            </p>
+          </div>
+        `,
     });
 
     return NextResponse.json({
