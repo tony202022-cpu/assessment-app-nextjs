@@ -16,16 +16,26 @@ export default function EmailReportButton() {
     try {
       setSending(true);
 
-      // TEMPORARY
-      // Next step will call Supabase Edge Function
+const response = await fetch("/api/send-report", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    email,
+    reportUrl: window.location.href,
+  }),
+});
 
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+if (!response.ok) {
+  throw new Error("Failed to send email");
+}
 
-      setSuccess(true);
+setSuccess(true);
 
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
+setTimeout(() => {
+  setSuccess(false);
+}, 3000);
 
     } catch (err) {
       alert("Something went wrong");
