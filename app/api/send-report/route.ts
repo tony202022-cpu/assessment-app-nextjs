@@ -56,11 +56,15 @@ export async function POST(req: Request) {
               </a>
             </p>
 
-            <p>
-              مع التحية،
-              <br />
-              Career Labs AI
-            </p>
+           <p style="margin-top:20px;color:#666;">
+  يمكنك مشاركة هذا التقرير بشكل آمن مع مدير أو زميل أو مستشار أو مدرب أو شريك عمل مباشرة من داخل التقرير.
+</p>
+
+<p>
+  مع التحية،
+  <br />
+  Career Labs AI
+</p>
           </div>
         `
         : `
@@ -79,11 +83,15 @@ export async function POST(req: Request) {
               </a>
             </p>
 
-            <p>
-              Regards,
-              <br />
-              Career Labs AI
-            </p>
+            <p style="margin-top:20px;color:#666;">
+  You may securely share this report with a manager, colleague, consultant, coach, or business partner directly from within the report.
+</p>
+
+<p>
+  Regards,
+  <br />
+  Career Labs AI
+</p>
           </div>
         `,
     });
