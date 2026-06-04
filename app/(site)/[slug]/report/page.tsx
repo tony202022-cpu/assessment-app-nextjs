@@ -2899,6 +2899,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   </div>
 </section>
 
+  </main>
+</div>
+
+);
+}
+
+function InfoChip({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
+
 
 
 function InfoChip({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
