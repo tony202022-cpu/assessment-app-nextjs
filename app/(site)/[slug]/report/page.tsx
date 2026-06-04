@@ -2930,15 +2930,15 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
   </p>
 
+</div>
 
+  </div>
 
 </div>
 
-
-  </div>
 </section>
 
-  </main>
+</main>
 </div>
 
 );
