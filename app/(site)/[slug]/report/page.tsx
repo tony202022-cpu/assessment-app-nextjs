@@ -265,7 +265,7 @@ function commercialMeaning(tier: Tier, label: string, lang: Language) {
       return `تشير نتيجة ${label} إلى أن هذا الجانب يدعم أداءك الحالي ويمكن استخدامه كنقطة ارتكاز لرفع بقية النتائج.`;
     }
     if (tier === "Opportunity") {
-      return `تشير نتيجة ${label} إلى وجود أساس جيد، لكن الأداء ما زال غير ثابت بما يكفي لحماية كل فرصة تجارية.`;
+      return `تشير نتيجة ${label} إلى وجود أساس جيد، لكن الأداء ما زال غير ثابت بما يكفي لحماية كل فرصة محتملة.`;
     }
     if (tier === "Threat") {
       return `تشير نتيجة ${label} إلى منطقة قد تُسبب هدراً في الفرص إذا لم يتم التعامل معها بسرعة وبشكل منظم.`;
@@ -1461,7 +1461,7 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
     },
     opening_conversations: {
       leakage: "قد ينفصل العميل قبل بدء الاكتشاف لأن الافتتاح لم يكسب انتباهًا أو صلة كافية.",
-      root: "السبب الجذري عادة هو ضعف التحكم في الإطار الأول: تبدأ المحادثة كعرض بدل أن تكون مقاطعة تجارية ذات صلة.",
+      root: "السبب الجذري عادة هو ضعف التحكم في الإطار الأول: تبدأ المحادثة كعرض بدل أن تكون مقاطعة عبثية ذات صلة.",
       stop: "توقف عن الافتتاح بسياق طويل أو مقدمات عامة أو لغة منتج.",
       start: "ابدأ بسؤال تجاري مبني على الإذن ومرتبط بقضية حقيقية.",
       drill: "استخدم افتتاحًا واحدًا من 10 ثوانٍ مع 20 عميلًا محتملًا وتتبع من يتحول إلى اكتشاف.",
@@ -1891,7 +1891,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         : "تجمع هذه اللوحة بين مؤشر صحتك البيعية والسبعة مؤشرات الأساسية التي تكشف أين الأداء قوي، أين يتسرب، وما الذي يحتاج إلى علاج.",
       strongest: lawyer ? "أقوى إشارة في تحويل العملاء" : businessHealth ? "أقوى إشارة في صحة الشركة" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
       weakest: lawyer ? "أكبر هدر خفي في الاستشارة القانونية" : businessHealth ? "أكبر هدر خفي في الشركة" : salesManager ? "أكبر هدر مخفي في أداء الفريق" : "أكبر هدر مخفي في الإيرادات",
-      commercial: lawyer ? "التفسير المهني" : businessHealth ? "تفسير صحة الشركة" : salesManager ? "التفسير الإداري" : "التفسير التجاري",
+      commercial: lawyer ? "التفسير المهني" : businessHealth ? "تفسير صحة الشركة" : salesManager ? "التفسير الإداري" : "التفسير العملي",
       swot: lawyer ? "تحليل SWOT لتحويل العملاء للمحامين" : businessHealth ? "تحليل SWOT لصحة الشركة" : "تحليل SWOT الاستراتيجي",
       actions: mri ? (lawyer ? "أولويات العلاج المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
       prescriptionHeadline: lawyer ? "تقريرك يكشف هدر. وخطة العلاج توضّح ما يجب إصلاحه أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "ال SCAN القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
@@ -2308,7 +2308,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 ? ar
                   ? "قراءة إدارية مختصرة لما قد يحدث داخل الفريق ومسار التدفّق."
                   : "A practical management reading of what may be happening inside the team and pipeline."
-                : ar ? "قراءة تجارية مختصرة لما قد يحدث في الميدان." : "A practical commercial reading of what may be happening in the field."}
+                : ar ? "قراءة عملية مختصرة لما قد يحدث في الميدان." : "A practical commercial reading of what may be happening in the field."}
             </p>
           </div>
 
