@@ -2906,10 +2906,6 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 }
 
 function InfoChip({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
-
-
-
-function InfoChip({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
   return (
     <div className="rounded-2xl bg-white/10 border border-white/15 p-4 backdrop-blur-md">
       <div className="text-[10px] font-black uppercase tracking-widest text-blue-100">{label}</div>
