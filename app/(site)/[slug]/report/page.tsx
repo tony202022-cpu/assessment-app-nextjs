@@ -2807,46 +2807,98 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </section>
         )}
 
-        {/* ENTERPRISE CTA */}
-        <section className="web-enterprise-print-hide avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-6 items-center">
-            <div>
-              <div className="inline-flex rounded-full bg-amber-100 text-amber-800 px-4 py-2 text-xs font-black uppercase tracking-widest">
-                B2B / Team Diagnostic
-              </div>
-              <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-950 rtl-text">
-                {t.enterpriseTitle}
-              </h2>
-              <p className="mt-3 text-lg font-black text-blue-800 rtl-text">
-                {t.enterpriseCta}
-              </p>
-            </div>
+ {/* ENTERPRISE CTA */}
 
-            <div className="space-y-3 text-slate-700 leading-relaxed rtl-text">
-              <p>
-                {ar
-                  ? "إذا كان هذا الفحص مفيدًا لفرد واحد، فقيمته الحقيقية تظهر عندما يستخدمه المدير مع الفريق بالكامل. عندها لا يرى المدير آراء عامة، بل خريطة واضحة لمناطق القوة والهدر والتدريب المطلوب."
-                  : "If this scan is useful for one person, its real value appears when a manager uses it across the whole team. The manager no longer sees opinions, they see a diagnostic map of strengths, leakage areas, and training priorities."}
-              </p>
+<section className="web-enterprise-print-hide avoid-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+  <div className="grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-6 items-center">
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {(ar
-                  ? ["خريطة حرارة للفريق", "أقوى ٣ مناطق", "أخطر ٣ فجوات", "أولويات تدريب واضحة"]
-                  : ["Team heatmap", "Top 3 strengths", "Top 3 risk gaps", "Clear training priorities"]
-                ).map((x) => (
-                  <div key={x} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 font-bold">
-                    ✓ {x}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+<div>
+  <div className="inline-flex rounded-full bg-amber-100 text-amber-800 px-4 py-2 text-xs font-black uppercase tracking-widest">
+    B2B / Team Assessments
+  </div>
 
-      </main>
-    </div>
-  );
-}
+  <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-950 rtl-text">
+    {t.enterpriseTitle}
+  </h2>
+
+  <p className="mt-3 text-lg font-black text-blue-800 rtl-text">
+    {t.enterpriseCta}
+  </p>
+</div>
+
+<div className="space-y-4 text-slate-700 leading-relaxed rtl-text">
+
+  <p>
+    {ar
+      ? "إذا كان هذا التقييم يقدم رؤية واضحة لشخص واحد، فإن قيمته تصبح أكبر بكثير عند تطبيقه على فريق كامل. يحصل المديرون وقادة الأعمال على صورة واضحة لنقاط القوة والفجوات وأولويات التطوير وفرص التدريب عبر الأشخاص المسؤولين عن تحقيق النتائج."
+      : "If this assessment provides valuable insight for one person, its impact becomes significantly greater when applied across an entire team. Managers and business leaders gain a clear view of strengths, performance gaps, development priorities, and coaching opportunities across the people responsible for delivering results."}
+  </p>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    {(ar
+      ? [
+          "تقييم شامل للفريق",
+          "أقوى ٣ نقاط قوة",
+          "أهم ٣ فجوات أداء",
+          "أولويات تطوير واضحة"
+        ]
+      : [
+          "Team assessment overview",
+          "Top 3 strengths",
+          "Top 3 performance gaps",
+          "Clear development priorities"
+        ]
+    ).map((x) => (
+      <div
+        key={x}
+        className="rounded-2xl border border-slate-200 bg-slate-50 p-4 font-bold"
+      >
+        ✓ {x}
+      </div>
+    ))}
+  </div>
+
+  <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4">
+
+    <p className="font-bold text-slate-800 rtl-text">
+      {ar
+        ? "للاستفسار عن تقييمات الفرق أو الإدارات أو البرامج المؤسسية المخصصة:"
+        : "For team assessments, department assessments, or custom organizational programs:"}
+    </p>
+
+    <p className="mt-3 font-black text-blue-800">
+      support@careerlabsai.com
+    </p>
+
+    <p className="mt-3">
+      <a
+        href="https://wa.me/61416489994"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 font-black text-green-700 hover:underline"
+      >
+        <img
+          src="/whatsapp-icon.svg"
+          alt="WhatsApp"
+          className="h-5 w-5"
+        />
+        WhatsApp: +61 4 1648 9994
+      </a>
+    </p>
+
+    <p className="mt-3 text-sm text-slate-600 rtl-text">
+      {ar
+        ? "تتوفر عروض مخصصة للفرق والإدارات والمؤسسات."
+        : "Custom team and organizational assessment proposals are available."}
+    </p>
+
+  </div>
+
+</div>
+
+  </div>
+</section>
+
 
 
 function InfoChip({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
