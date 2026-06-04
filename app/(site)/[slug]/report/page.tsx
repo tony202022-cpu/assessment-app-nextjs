@@ -2114,7 +2114,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
             <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50 p-6">
               <h3 className="text-xl font-black text-slate-950 rtl-text">
-                {businessHealth ? (ar ? "ما الذي يعنيه هذا لصحة الشركة؟" : "What this means for the business") : ar ? "ما الذي يعنيه هذا تجاريًا؟" : "What this means commercially"}
+                {businessHealth ? (ar ? "ما الذي يعنيه هذا لصحة الشركة؟" : "What this means for the business") : ar ? "ما الذي يعنيه هذا عملياً" : "What this means commercially"}
               </h3>
               <p className="mt-3 text-slate-700 leading-relaxed rtl-text">
                 {overallMeaningText}
