@@ -2813,9 +2813,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   <div className="grid grid-cols-1 lg:grid-cols-[.8fr_1.2fr] gap-6 items-center">
 
 <div>
-  <div className="inline-flex rounded-full bg-amber-100 text-amber-800 px-4 py-2 text-xs font-black uppercase tracking-widest">
-    B2B / Team Assessments
-  </div>
+ <div className="inline-flex rounded-full bg-amber-100 text-amber-800 px-4 py-2 text-xs font-black tracking-widest rtl-text">
+  {ar
+    ? "تقييمات الفريق والإدارات"
+    : "B2B / Team Assessments"}
+</div>
 
   <h2 className="mt-4 text-3xl sm:text-4xl font-black text-slate-950 rtl-text">
     {t.enterpriseTitle}
@@ -2858,43 +2860,80 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     ))}
   </div>
 
-  <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4">
+ <div className="rounded-3xl bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 border border-blue-700 p-6 text-center shadow-xl">
 
-    <p className="font-bold text-slate-800 rtl-text">
-      {ar
-        ? "للاستفسار عن تقييمات الفرق أو الإدارات أو البرامج المؤسسية المخصصة:"
-        : "For team assessments, department assessments, or custom organizational programs:"}
-    </p>
 
-    <p className="mt-3 font-black text-blue-800">
+
+  <p className="font-black text-lg text-white rtl-text">
+
+    {ar
+
+      ? "للاستفسار عن تقييمات الفرق أو الإدارات أو البرامج المؤسسية المخصصة"
+
+      : "For Team Assessments, Department Assessments, and Custom Organizational Programs"}
+
+  </p>
+
+
+
+  <div className="mt-5">
+
+    <p className="font-black text-xl text-white">
+
       support@careerlabsai.com
-    </p>
 
-    <p className="mt-3">
-      <a
-        href="https://wa.me/61416489994"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 font-black text-green-700 hover:underline"
-      >
-        <img
-          src="/whatsapp-icon.svg"
-          alt="WhatsApp"
-          className="h-5 w-5"
-        />
-        WhatsApp: +61 4 1648 9994
-      </a>
-    </p>
-
-    <p className="mt-3 text-sm text-slate-600 rtl-text">
-      {ar
-        ? "تتوفر عروض مخصصة للفرق والإدارات والمؤسسات."
-        : "Custom team and organizational assessment proposals are available."}
     </p>
 
   </div>
 
+
+
+  <div className="mt-4 flex justify-center">
+
+    <a
+
+      href="https://wa.me/61416489994"
+
+      target="_blank"
+
+      rel="noopener noreferrer"
+
+      className="inline-flex items-center gap-3 rounded-2xl bg-white px-5 py-3 font-black text-green-700 shadow-lg hover:scale-105 transition-all"
+
+    >
+
+      <img
+
+        src="/whatsapp-icon.svg"
+
+        alt="WhatsApp"
+
+        className="h-5 w-5"
+
+      />
+
+      WhatsApp: +61 4 1648 9994
+
+    </a>
+
+  </div>
+
+
+
+  <p className="mt-5 text-blue-100 rtl-text">
+
+    {ar
+
+      ? "تتوفر عروض مخصصة للفرق والإدارات والمؤسسات."
+
+      : "Custom team and organizational assessment proposals are available."}
+
+  </p>
+
+
+
 </div>
+
 
   </div>
 </section>
