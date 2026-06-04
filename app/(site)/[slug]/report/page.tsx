@@ -2797,7 +2797,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   </p>
 
                   <a
-                    href={MRI_CHECKOUT_URL}
+                    href={ar ? MRI_CHECKOUT_URL_AR : MRI_CHECKOUT_URL_EN}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="print-hide mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition"
@@ -2904,6 +2904,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
 </section>
 
+      </main>
+    </div>
+  );
+}
 function InfoChip({ label, value, forceLtr = false }: { label: string; value: string; forceLtr?: boolean }) {
   return (
     <div className="rounded-2xl bg-white/10 border border-white/15 p-4 backdrop-blur-md">
