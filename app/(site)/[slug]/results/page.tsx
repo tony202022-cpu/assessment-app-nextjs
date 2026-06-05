@@ -740,16 +740,6 @@ function ResultsContent() {
 
       <Header />
 
-      <div className={`print-hide fixed top-4 z-50 flex items-center gap-2 ${ar ? "left-4" : "right-4"}`}>
-        <button
-          onClick={handlePrint}
-          className="bg-white text-slate-800 px-4 py-3 rounded-xl hover:bg-slate-50 shadow-lg flex items-center gap-2 font-black border border-slate-200 transition-all"
-        >
-          <Download size={18} />
-          {ar ? "طباعة" : "Print"}
-        </button>
-      </div>
-
       <main className="flex-1 w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 md:space-y-10">
         {/* HERO */}
         <section className="relative overflow-hidden rounded-3xl shadow-2xl border border-slate-800/10">
