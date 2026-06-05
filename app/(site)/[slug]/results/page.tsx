@@ -227,7 +227,7 @@ function healthLabel(overall: number, ar: boolean) {
     if (overall >= 75) return "منطقة أداء قوية";
     if (overall >= 50) return "منطقة فرصة واضحة";
     if (overall >= 30) return "منطقة إنذار تجاري";
-    return "منطقة تسريب حاد";
+    return "منطقة هدر حاد";
   }
 
   if (overall >= 75) return "Strong Performance Zone";
@@ -239,7 +239,7 @@ function healthLabel(overall: number, ar: boolean) {
 function healthMeaning(overall: number, ar: boolean) {
   if (ar) {
     if (overall >= 75) return "لديك قاعدة أداء قوية، لكن القوة تحتاج إلى نظام يومي يحميها ويضاعف أثرها.";
-    if (overall >= 50) return "لديك أساس جيد، لكن هناك تسريبات واضحة قد تمنعك من الوصول إلى مستوى أعلى.";
+    if (overall >= 50) return "لديك أساس جيد، لكن هناك هدر واضح قد تمنعك من الوصول إلى مستوى أعلى.";
     if (overall >= 30) return "هناك إشارات إنذار تحتاج إلى علاج عملي قبل أن تتحول إلى عادات ثابتة.";
     return "هناك فجوة أداء واضحة تحتاج إلى تشخيص أعمق وخطة علاج عملية بدل التخمين.";
   }
@@ -256,7 +256,7 @@ function businessHealthLabel(overall: number, ar: boolean) {
     if (overall >= 75) return "منطقة صحة أعمال قوية";
     if (overall >= 50) return "منطقة فرصة واضحة لتقوية الشركة";
     if (overall >= 30) return "منطقة إنذار في صحة الشركة";
-    return "منطقة تسريب حاد في الأعمال";
+    return "منطقة هدر حاد في الأعمال";
   }
 
   if (overall >= 75) return "Strong Business Health Zone";
@@ -268,9 +268,9 @@ function businessHealthLabel(overall: number, ar: boolean) {
 function businessHealthMeaning(overall: number, ar: boolean) {
   if (ar) {
     if (overall >= 75) return "الشركة لديها أساس صحي يمكن تقويته وتحويله إلى نظام تشغيل يحمي النقد والعملاء والفريق والنمو.";
-    if (overall >= 50) return "الشركة لديها قاعدة قابلة للبناء، لكن بعض التسريبات قد تحد من الاستقرار أو الربحية أو جاهزية النمو.";
+    if (overall >= 50) return "الشركة لديها قاعدة قابلة للبناء، لكن بعض الهدر أو النزف قد يحد من الاستقرار أو الربحية أو جاهزية النمو.";
     if (overall >= 30) return "هناك إشارات إنذار في صحة الشركة تحتاج إلى تشخيص وخارطة طريق قبل أن تتحول إلى ضغط دائم.";
-    return "هناك تسريب واضح في صحة الشركة يحتاج إلى علاج منظم بدل المزيد من الاجتهاد والتخمين.";
+    return "هناك هدر ونزيف واضح في صحة الشركة يحتاج إلى علاج منظم بدل المزيد من الاجتهاد والتخمين.";
   }
 
   if (overall >= 75) return "The business has a healthy base that can be turned into a stronger operating system for cash, customers, people, and growth.";
@@ -661,15 +661,15 @@ function ResultsContent() {
 
   const heroSubtitle = isLawyer
     ? ar
-      ? "هذه صفحة النتائج السريعة لتشخيص تحويل العملاء للمحامين. التقرير الكامل يوضح تسريبات الاستشارة، الثقة، أتعاب المحاماة، الاعتراضات، وخطوات العلاج المهني."
+      ? "هذه صفحة النتائج السريعة لتشخيص تحويل العملاء للمحامين. التقرير الكامل يوضح هدر ونزيف الاستشارات القانونية المدفوعة ، الثقة، أتعاب المحاماة، الاعتراضات، وخطوات العلاج المهني."
       : "This is your quick legal client-conversion dashboard. The full report shows consultation leaks, trust signals, professional-fee confidence, objections, and treatment steps."
     : isBusinessHealth
     ? ar
-      ? "هذه صفحة النتائج السريعة لصحة الشركة. التقرير الكامل يوضح التسريبات، المخاطر، العلامات الحيوية، وأولويات خارطة الطريق."
+      ? "هذه صفحة النتائج السريعة لصحة الشركة. التقرير الكامل يوضح نسبة الهدر والنزيف، المخاطر، العلامات الحيوية، وأولويات خارطة الطريق."
       : "This is your quick business health dashboard. The full report shows business leaks, risks, vital signs, and roadmap priorities."
     : isSalesManager
     ? ar
-      ? "هذه صفحة النتائج السريعة لقيادة المبيعات. التقرير الكامل يوضح التشخيص الإداري، نقاط القوة، التسريبات، وخطوات التنفيذ."
+      ? "هذه صفحة النتائج السريعة لقيادة المبيعات. التقرير الكامل يوضح التشخيص الإداري، نقاط القوة، نسبة الهدر، وخطوات التنفيذ."
       : "This is your quick sales-management dashboard. The full report shows the leadership diagnosis, strengths, leaks, and execution steps."
     : ar
     ? "هذه صفحة النتائج السريعة. التقرير الكامل يحتوي على التشخيص التفصيلي، SWOT، وخطة التنفيذ."
@@ -754,7 +754,7 @@ function ResultsContent() {
               <div className="space-y-5 sm:space-y-6 text-center lg:text-start">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs sm:text-sm font-black uppercase tracking-widest backdrop-blur-sm">
                   <Check size={16} />
-                  {ar ? "اكتمل الفحص بنجاح" : "Scan Completed"}
+                  {ar ? "اكتمل التشخيص بنجاح" : "Scan Completed"}
                 </div>
 
                 <div>
@@ -837,13 +837,13 @@ function ResultsContent() {
 
           <QuickSignalCard
             ar={ar}
-            title={ar ? "أكبر تسريب مخفي" : "Biggest Hidden Leak"}
+            title={ar ? "أكبر هدر ونزيف مخفي" : "Biggest Hidden Leak"}
             icon={<ShieldAlert size={22} />}
             row={weakest}
             getLabel={getCompetencyLabel}
             body={
               ar
-                ? "هذه المنطقة غالبًا تحتاج إلى علاج سريع قبل أن تستمر في تسريب الفرص."
+                ? "هذه المنطقة غالبًا تحتاج إلى علاج سريع قبل أن تستمر في اهدار الفرص."
                 : "This area likely needs fast correction before it keeps leaking opportunities."
             }
           />
@@ -900,7 +900,7 @@ function ResultsContent() {
               label={isLawyer ? (ar ? "مؤشر صحة تحويل العملاء للمحامين" : "Legal Client Conversion Health Score") : isBusinessHealth ? (ar ? "مؤشر صحة الشركة" : "SME Business Health Score") : isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
               percentage={overallPct}
               tier={overallTier}
-              subtitle={isBusinessHealth ? (ar ? "القراءة المجمعة للعلامات الحيوية للشركة" : "Combined reading of the company’s vital signs") : ar ? "القراءة المجمعة لكل الفحص" : "Combined reading of the full scan"}
+              subtitle={isBusinessHealth ? (ar ? "القراءة المجمعة للعلامات الحيوية للشركة" : "Combined reading of the company’s vital signs") : ar ? "القراءة المجمعة لكل التشخيص" : "Combined reading of the full scan"}
               isOverall
             />
 
@@ -978,10 +978,10 @@ function ResultsContent() {
 
               <PreviewActionCard
                 ar={ar}
-                title={ar ? "لا تترك التسريب بلا علاج" : "Do not leave the leak untreated"}
+                title={ar ? "لا تترك الهدر والنزيف بلا علاج" : "Do not leave the leak untreated"}
                 body={
                   ar
-                    ? "إذا كشف الفحص إشارة إنذار، فالخطوة التالية هي التشخيص الكامل والوصفة العلاجية."
+                    ? "إذا كشف التشخيص إشارة إنذار، فالخطوة التالية هي التشخيص الكامل والوصفة العلاجية."
                     : "If the scan exposed a warning sign, the next step is the full diagnosis and treatment prescription."
                 }
                 buttonText={isLawyer ? (ar ? "احصل على Lawyer Client Conversion MRI الكامل" : "Get My Full Lawyer Client Conversion MRI") : ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
@@ -998,16 +998,16 @@ function ResultsContent() {
           <section className="print-hide rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
               <div className="inline-flex rounded-full bg-rose-500/20 border border-rose-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-rose-100">
-                {ar ? "لا تتوقف عند الفحص" : "Do Not Stop at the Scan"}
+                {ar ? "لا تتوقف عند هذا التشخيص المقتضب" : "Do Not Stop at the Scan"}
               </div>
 
               <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
                 {isSalesManager
                   ? ar
-                    ? "الفحص القيادي يكشف الأعراض. أما Sales Manager MRI فيعطيك خطة العلاج."
+                    ? "التشخيص القيادي يكشف الأعراض. أما Sales Manager MRI فيعطيك خطة العلاج."
                     : "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan."
                   : ar
-                  ? "الفحص هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية."
+                  ? "التشخيص الأولي هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية."
                   : "Your Scan Is the Blood Test. The MRI Gives You the Prescription."}
               </h2>
 
@@ -1028,19 +1028,19 @@ function ResultsContent() {
               <div className="mt-7 grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-6 items-stretch">
                 <div className="rounded-3xl bg-white/10 border border-white/15 p-6 sm:p-7 backdrop-blur-md">
                   <h3 className="text-2xl font-black text-white rtl-text">
-                    {ar ? "لماذا لا يكفي الفحص وحده؟" : "Why the scan alone is not enough"}
+                    {ar ? "لماذا لا يكفي هذا التشخيص وحده؟" : "Why the scan alone is not enough"}
                   </h3>
 
                   <div className="mt-4 space-y-4 text-blue-100 leading-relaxed rtl-text">
                     <p>
                       {ar
-                        ? "الفحص يكشف علامات الإنذار، لكنه لا يعطيك الفحص الكامل ولا خطة العلاج اليومية."
+                        ? "هذا التشخيص يكشف علامات الإنذار، لكنه لا يعطيك التشخيص العميق والكامل ولا خطة العلاج اليومية."
                         : "The scan reveals warning signs, but it does not give you the full examination or the daily treatment path."}
                     </p>
 
                     <p>
                       {ar
-                        ? "معظم الناس يقرؤون النتيجة ثم يعودون لنفس العادات. هنا يحدث الخطر: أن ترى التسريب ثم تتركه كما هو."
+                        ? "معظم الناس يقرؤون النتيجة ثم يعودون لنفس العادات. هنا يحدث الخطر: أن ترى الهدر ثم تتركه كما هو."
                         : "Most people read the result and go back to the same habits. That is the risk: seeing the leak and leaving it untreated."}
                     </p>
 

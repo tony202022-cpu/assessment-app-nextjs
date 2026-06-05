@@ -272,7 +272,7 @@ function commercialMeaning(tier: Tier, label: string, lang: Language) {
       return `تشير نتيجة ${label} إلى وجود أساس جيد، لكن الأداء ما زال غير ثابت بما يكفي لحماية كل فرصة محتملة.`;
     }
     if (tier === "Threat") {
-      return `تشير نتيجة ${label} إلى منطقة قد تُسبب هدراً في الفرص إذا لم يتم التعامل معها بسرعة وبشكل منظم.`;
+      return `تشير نتيجة ${label} إلى منطقة قد تُسبب هدراً ونزيفاً في الفرص إذا لم يتم التعامل معها بسرعة وبشكل منظم.`;
     }
     return `تشير نتيجة ${label} إلى فجوة واضحة قد تؤثر على المحادثات والصفقات والمتابعة إذا بقيت دون علاج.`;
   }
@@ -295,10 +295,10 @@ function overallCommercialMeaning(overall: number, tier: Tier, lang: Language) {
       return "الصورة العامة قوية، لكن القوة لا تعني التوقف. المطلوب الآن هو تحويل السلوك القوي إلى نظام يومي ثابت.";
     }
     if (tier === "Opportunity") {
-      return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس يمكن البناء عليه، لكن بعض الهدر قد يمنع الأداء من الوصول إلى مستوى أعلى.";
+      return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس يمكن البناء عليه، لكن بعض الهدر والنزيف قد يمنع الأداء من الوصول إلى مستوى أعلى.";
     }
     if (tier === "Threat") {
-      return "الصورة العامة تُظهر إشارات إنذار. هناك هدر محتمل في بعض السلوكيات البيعية يحتاج إلى علاج قبل أن يتحول إلى نمط ثابت.";
+      return "الصورة العامة تُظهر إشارات إنذار. هناك هدر ونزيف محتمل في بعض السلوكيات البيعية يحتاج إلى علاج قبل أن يتحول إلى نمط ثابت.";
     }
     return "الصورة العامة تُظهر فجوة واضحة. هذا لا يعني الفشل، لكنه يعني أن الأداء يحتاج إلى خطة علاج عملية ومنظمة بدل الاعتماد على المحاولة والتخمين.";
   }
@@ -319,8 +319,8 @@ function overallCommercialMeaning(overall: number, tier: Tier, lang: Language) {
 function managerOverallMeaning(overall: number, tier: Tier, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return "الصورة العامة تشير إلى قيادة مبيعات قوية. المطلوب الآن هو تحويل نقاط القوة إلى نظام إدارة يومي يحمي أداء الفريق ويضاعف أثره.";
-    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس إداري يمكن البناء عليه، لكن بعض الهدر في التدريب أو مسار التدفّق أو المساءلة قد تحد من نتائج الفريق.";
-    if (tier === "Threat") return "الصورة العامة تظهر إنذارًا إداريًا. بعض أنماط القيادة قد تخلق هدراً في أداء الفريق أو التوقعات أو الانضباط، وتحتاج إلى تصحيح عملي سريع.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس إداري يمكن البناء عليه، لكن بعض الهدر والنزيف في التدريب أو مسار التدفّق أو المساءلة قد تحد من نتائج الفريق.";
+    if (tier === "Threat") return "الصورة العامة تظهر إنذارًا إداريًا. بعض أنماط القيادة قد تخلق هدراً ونزيفا في أداء الفريق أو التوقعات أو الانضباط، وتحتاج إلى تصحيح عملي سريع.";
     return "الصورة العامة تظهر فجوة قيادية واضحة. هذا لا يعني الفشل، لكنه يعني أن الفريق يحتاج إلى قيادة أكثر نظامًا في التدريب، المتابعة، المساءلة، وإدارة الأداء.";
   }
 
@@ -401,9 +401,9 @@ const BUSINESS_HEALTH_AREA_IDS = new Set([
 function businessHealthOverallMeaning(overall: number, tier: Tier, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return "الصورة العامة تشير إلى شركة لديها أساس صحي يمكن البناء عليه. المطلوب الآن هو تحويل القوة إلى نظام تشغيل واضح يحمي التدفق النقدي، العملاء، الفريق، والقدرة على النمو.";
-    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس عملي يمكن تقويته، لكن بعض الهدر في الإيرادات أو العمليات أو الأفراد أو الرؤية الإدارية قد تمنع الشركة من الوصول إلى مستوى أعلى.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس عملي يمكن تقويته، لكن بعض الهدر والنزيف في الإيرادات أو العمليات أو الأفراد أو الرؤية الإدارية قد تمنع الشركة من الوصول إلى مستوى أعلى.";
     if (tier === "Threat") return "الصورة العامة تظهر إنذارًا في صحة الشركة. بعض المناطق قد تستنزف السيولة، العملاء، الوقت، أو طاقة المالك إذا لم تُعالج بخارطة طريق واضحة.";
-    return "الصورة العامة تظهر هدراً حادًا في صحة الشركة. هذا لا يعني أن الشركة انتهت، لكنه يعني أن النمو أو الاستمرار بالأسلوب الحالي قد يزيد الضغط بدل أن يعالج السبب الجذري.";
+    return "الصورة العامة تظهر هدراً ونزيفاً حاداً في صحة الشركة. هذا لا يعني أن الشركة انتهت، لكنه يعني أن النمو أو الاستمرار بالأسلوب الحالي قد يزيد الضغط بدل أن يعالج السبب الجذري.";
   }
   if (tier === "Strength") return "Your business health has a strong base. The next step is to turn that strength into a repeatable operating system that protects cash, customers, people, execution, and growth.";
   if (tier === "Opportunity") return "Your business health has a workable base, but some leaks may still be limiting revenue stability, operational discipline, people accountability, or management visibility.";
@@ -414,9 +414,9 @@ function businessHealthOverallMeaning(overall: number, tier: Tier, lang: Languag
 function businessHealthCommercialMeaning(tier: Tier, label: string, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return `تشير نتيجة ${label} إلى منطقة صحية داخل الشركة يمكن استخدامها كرافعة لتقوية بقية النظام التجاري والتشغيلي.`;
-    if (tier === "Opportunity") return `تشير نتيجة ${label} إلى أساس قابل للتطوير، لكنه يحتاج إلى وضوح وانضباط أعلى حتى لا يتحول إلى هدر في السيولة أو العملاء أو التنفيذ.`;
+    if (tier === "Opportunity") return `تشير نتيجة ${label} إلى أساس قابل للتطوير، لكنه يحتاج إلى وضوح وانضباط أعلى حتى لا يتحول إلى هدر ونزيف في السيولة أو العملاء أو التنفيذ.`;
     if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تُضعف صحة الشركة إذا لم تُعالج بخطة واضحة ومسؤولية تنفيذية.`;
-    return `تشير نتيجة ${label} إلى هدر واضح قد يجعل الشركة تعمل بجهد كبير دون أن تشعر بقوة حقيقية في الربح أو العملاء أو الفريق أو النمو.`;
+    return `تشير نتيجة ${label} إلى هدر ونزيف واضح قد يجعل الشركة تعمل بجهد كبير دون أن تشعر بقوة حقيقية في الربح أو العملاء أو الفريق أو النمو.`;
   }
   if (tier === "Strength") return `${label} is currently a healthy business area. Use it as leverage to strengthen weaker parts of the company’s commercial and operating system.`;
   if (tier === "Opportunity") return `${label} has a workable base, but it needs clearer discipline before it becomes fully dependable under market pressure.`;
@@ -427,7 +427,7 @@ function businessHealthCommercialMeaning(tier: Tier, label: string, lang: Langua
 function lawyerOverallMeaning(overall: number, tier: Tier, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return "الصورة العامة تشير إلى قدرة قوية على تحويل الاستشارات القانونية إلى تعاقدات مهنية بثقة ووضوح. المطلوب الآن هو تحويل هذه القوة إلى نظام ثابت لا يعتمد على قوة القضية وحدها.";
-    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس مهني يمكن البناء عليه، لكن بعض الهدر في الثقة أو شرح القيمة أو عرض أتعاب المحاماة أو المتابعة قد تجعل العميل يتردد أو يذهب لمحامٍ آخر.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس مهني يمكن البناء عليه، لكن بعض الهدر والنزيف في الثقة أو شرح القيمة أو عرض أتعاب المحاماة أو المتابعة قد تجعل العميل يتردد أو يذهب لمحامٍ آخر.";
     if (tier === "Threat") return "الصورة العامة تظهر إنذارًا مهنيًا. بعض سلوكيات الاستشارة قد تُضعف ثقة العميل أو تقلل وضوح القيمة أو تجعل أتعاب المحاماة تبدو منفصلة عن حجم المخاطر والعمل القانوني المطلوب.";
     return "الصورة العامة تظهر فجوة واضحة في تحويل الاستشارات إلى تعاقدات قانونية. هذا لا يعني ضعفك كمحامٍ، بل يعني أن خبرتك القانونية قد لا تظهر للعميل بطريقة تجعله يثق، يقرر، ويلتزم.";
   }
@@ -900,10 +900,10 @@ function getBusinessHealthTreatmentMeta(row: CompetencyRow, lang: Language) {
     },
     cash_flow_margins_financial_control: {
       leakage: "قد تبيع الشركة لكنها تبقى ضعيفة ماليًا لأن السيولة والهوامش والتكاليف والتحصيل والربحية ليست واضحة كفاية.",
-      root: "السبب الجذري هو ضباب مالي: يرى المالك الإيرادات لكنه لا يرى آليات الربح الحقيقية، توقيت السيولة، هدر في نسبة التدفق النقدي، أو سلوك التكلفة.",
+      root: "السبب الجذري هو ضباب مالي: يرى المالك الإيرادات لكنه لا يرى آليات الربح الحقيقية، توقيت السيولة، هدر ونزيف في نسبة التدفق النقدي، أو سلوك التكلفة.",
       stop: "توقف عن اعتبار نمو المبيعات دليلًا كافيًا على قوة الشركة.",
       start: "ابدأ بمراجعة التدفق النقدي، الهامش الإجمالي، صافي الهامش، المتأخرات، زحف التكاليف، والربحية حسب المنتج أو الخدمة.",
-      drill: "راجع آخر 90 يومًا وحدد أكبر 3 مسارات هدر نقدية وأكبر 3 مصادر ربح.",
+      drill: "راجع آخر 90 يومًا وحدد أكبر 3 مسارات هدر ونزيف نقدية وأكبر 3 مصادر ربح.",
       metric: "وضوح السيولة الأسبوعية، الهامش حسب العرض، المتأخرات، واتجاه صافي الربح",
       bonus: "ورقة التحكم في التدفق النقدي والهوامش",
     },
@@ -1557,10 +1557,10 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
 
   if (context === "business") {
     if (lang === "ar") {
-      if (overall < 30) return { title: "نمط هدر حاد في صحة الشركة", body: `الصورة الحالية تشير إلى أن المشكلة ليست في مجال واحد فقط. أضعف المجالات (${weakestNames}) قد تخلق سلسلة ضغط تبدأ من ضعف الرؤية وتنتهي بهدر في السيولة أو العملاء أو التشغيل أو وقت المالك. ابدأ بأكبر هدر، ثم ابنِ خارطة علاج حوله.` };
+      if (overall < 30) return { title: "نمط هدر ونزيف حاد في صحة الشركة", body: `الصورة الحالية تشير إلى أن المشكلة ليست في مجال واحد فقط. أضعف المجالات (${weakestNames}) قد تخلق سلسلة ضغط تبدأ من ضعف الرؤية وتنتهي بهدر ونزيف في السيولة أو العملاء أو التشغيل أو وقت المالك. ابدأ بأكبر هدر ونزيف، ثم ابنِ خارطة علاج حوله.` };
       if (overall < 50) return { title: "نمط إنذار في صحة الشركة يحتاج إلى تثبيت سريع", body: `الشركة تعمل، لكنها لا تعمل بقوة كافية. أضعف المجالات (${weakestNames}) تحتاج إلى تدخل مبكر، بينما يمكن استخدام أقوى المجالات (${strongestNames}) كرافعة لتثبيت الشركة وتقوية نظامها التشغيلي.` };
       if (overall < 75) return { title: "نمط فرصة نمو غير مكتملة يحتاج إلى نظام تشغيل أوضح", body: `صحة الشركة ليست ضعيفة، لكنها غير محمية بما يكفي. المطلوب هو تحويل أقوى المجالات (${strongestNames}) إلى نظام مراجعة وتشغيل ثابت، واستخدامها لدعم أضعف المجالات (${weakestNames}).` };
-      return { title: "نمط صحة شركة قوي يحتاج إلى حماية وتوسيع", body: `الشركة تمتلك قاعدة صحية قوية. الخطر ليس الضعف، بل التراخي أو النمو غير المنظم. استخدم أقوى المجالات (${strongestNames}) كمعايير أسبوعية، وراقب أضعف المجالات (${weakestNames}) حتى لا تصبح هدراً لاحقًا.` };
+      return { title: "نمط صحة شركة قوي يحتاج إلى حماية وتوسيع", body: `الشركة تمتلك قاعدة صحية قوية. الخطر ليس الضعف، بل التراخي أو النمو غير المنظم. استخدم أقوى المجالات (${strongestNames}) كمعايير أسبوعية، وراقب أضعف المجالات (${weakestNames}) حتى لا تصبح هدراً ونزيفاً لاحقاً.` };
     }
     if (overall < 30) return { title: "High-Leakage Business Health Pattern", body: `The current pattern suggests the problem is not one isolated area. The weakest areas (${weakestNames}) may create a pressure chain that starts with poor visibility and ends with leakage in cash, customers, operations, or owner time. Start with the biggest leak and build the roadmap around it.` };
     if (overall < 50) return { title: "Business Health Warning Pattern Requiring Stabilization", body: `The business is operating, but not strongly enough. The weakest areas (${weakestNames}) need early treatment, while the strongest areas (${strongestNames}) can be used as leverage to stabilize the company and strengthen its operating system.` };
@@ -1572,8 +1572,8 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
     if (lang === "ar") {
       if (overall < 30) {
         return {
-          title: "نمط هدر حاد في تحويل الاستشارات القانونية",
-          body: `الصورة الحالية تشير إلى أن المشكلة ليست في كفاءة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة هدر تبدأ من أول استفسار وتنتهي بتردد العميل أو ضياع قرار التعاقد. لا تبدأ بكل شيء. ابدأ بأول هدر في رحلة العميل وعالجه كنظام مهني.`,
+          title: "نمط هدر ونزيف حاد في كسب الاستشارات القانونية",
+          body: `الصورة الحالية تشير إلى أن المشكلة ليست في كفاءة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة هدر ونزيف تبدأ من أول استفسار وتنتهي بتردد العميل أو ضياع قرار التعاقد. لا تبدأ بكل شيء. ابدأ بأول هدر ونزيف في رحلة العميل وعالجه كنظام مهني.`,
         };
       }
       if (overall < 50) {
@@ -1590,7 +1590,7 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
       }
       return {
         title: "نمط قوة في تحويل العملاء يحتاج إلى حماية وتوسيع",
-        body: `قدرتك العامة على تحويل الاستشارات إلى تعاقدات قوية. الخطر ليس الضعف، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير مهنية يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تتحول إلى هدر لاحق.`,
+        body: `قدرتك العامة على تحويل الاستشارات إلى تعاقدات قوية. الخطر ليس الضعف، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير مهنية يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تتحول إلى هدر ونزيف لاحق.`,
       };
     }
 
@@ -1621,8 +1621,8 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
   if (lang === "ar") {
     if (overall < 30) {
       return {
-        title: "نمط هدر حاد يحتاج إلى علاج من الجذور",
-        body: `الصورة الحالية تشير إلى أن المشكلة ليست في نقطة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة هدر تبدأ من السلوك اليومي وتنتهي بفرص أقل أو صفقات أبطأ. لا تبدأ بكل شيء. ابدأ بأول هدر ثم ابنِ روتين علاج حوله.`,
+        title: "نمط هدر ونزيف حاد يحتاج إلى علاج من الجذور",
+        body: `الصورة الحالية تشير إلى أن المشكلة ليست في نقطة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة هدر ونزيف تبدأ من السلوك اليومي وتنتهي بفرص أقل أو صفقات أبطأ. لا تبدأ بكل شيء. ابدأ بأول هدر ونزيف ثم ابنِ روتين علاج حوله.`,
       };
     }
     if (overall < 50) {
@@ -1639,7 +1639,7 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
     }
     return {
       title: "نمط قوة يحتاج إلى حماية وتوسيع",
-      body: `الأداء العام قوي. الخطر ليس الفشل، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير تشغيل يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تصبح هدراً لاحقًا.`,
+      body: `الأداء العام قوي. الخطر ليس الفشل، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير تشغيل يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تصبح هدراً ونزيفاً لاحقًا.`,
     };
   }
 
@@ -1862,7 +1862,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           : businessHealth
           ? "تقرير SME Business Health MRI شخصي لتشخيص أين تهدر الشركة السيولة، العملاء، طاقة الفريق، انضباط التنفيذ، وقت المالك، وجاهزية النمو  ثم تحويل النتائج إلى خارطة طريق عملية لتقوية الشركة."
           : salesManager
-          ? "تقرير Sales Manager MRI شخصي لتشخيص أنماط القيادة، وهدر  أداء الفريق، وأولويات العلاج الإداري."
+          ? "تقرير Sales Manager MRI شخصي لتشخيص أنماط القيادة، وهدر ونزيف في أداء الفريق، وأولويات العلاج الإداري."
           : "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
         : lawyer
         ? "SCAN سريع لصحة تحويل الاستشارات القانونية  من الانطباع الأول إلى ثقة العميل، عرض أتعاب المحاماة، الاعتراضات، وقرار التعاقد."
@@ -1884,8 +1884,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           : businessHealth
           ? "يفحص هذا التشخيص العميق الشركة عبر ١٢ منطقة صحية ليكشف أين قد تتسرب الإيرادات، السيولة، العملاء، العمليات، الأفراد، وقت المالك، المخاطر، وضوح الإدارة، وجاهزية النمو."
           : salesManager
-          ? "هذه لوحة تشخيص إداري عميق تفحص دور مدير المبيعات عبر ١٥ كفاءة لكشف نقاط القوة، الهدر، الأسباب الجذرية، وأولويات العلاج."
-          : "هذه لوحة تشخيص عميق تفحص جسم الأداء البيعي عبر ١٥ كفاءة لكشف نقاط القوة، الهدر، الأسباب الجذرية، وأولويات العلاج."
+          ? "هذه لوحة تشخيص إداري عميق تفحص دور مدير المبيعات عبر ١٥ كفاءة لكشف نقاط القوة، الهدر والنزيف، الأسباب الجذرية، وأولويات العلاج."
+          : "هذه لوحة تشخيص عميق تفحص جسم الأداء البيعي عبر ١٥ كفاءة لكشف نقاط القوة، الهدر والنزيف، الأسباب الجذرية، وأولويات العلاج."
         : lawyer
         ? "تجمع هذه اللوحة بين نتيجة تحويل العملاء والمؤشرات الأساسية التي تكشف أين تصنع الثقة، أين يتردد العميل، وما الذي يحتاج إلى علاج مهني."
         : businessHealth
@@ -1894,11 +1894,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         ? "تجمع هذه اللوحة بين نتيجتك الإدارية العامة وسبعة مؤشرات قيادية تكشف أين قيادتك قوية، أين يتسرّب أداء الفريق، وما الذي يحتاج إلى انتباه."
         : "تجمع هذه اللوحة بين مؤشر صحتك البيعية والسبعة مؤشرات الأساسية التي تكشف أين الأداء قوي، أين يتسرب، وما الذي يحتاج إلى علاج.",
       strongest: lawyer ? "أقوى إشارة في تحويل العملاء" : businessHealth ? "أقوى إشارة في صحة الشركة" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
-      weakest: lawyer ? "أكبر هدر خفي في الاستشارة القانونية" : businessHealth ? "أكبر هدر خفي في الشركة" : salesManager ? "أكبر هدر مخفي في أداء الفريق" : "أكبر هدر مخفي في الإيرادات",
+      weakest: lawyer ? "أكبر هدر ونزيف مخفي في الاستشارة القانونية" : businessHealth ? "أكبر هدر ونزيف خفي في الشركة" : salesManager ? "أكبر هدر ونزيف مخفي في أداء الفريق" : "أكبر هدر ونزيف مخفي في الإيرادات",
       commercial: lawyer ? "التفسير المهني" : businessHealth ? "تفسير صحة الشركة" : salesManager ? "التفسير الإداري" : "التفسير العملي",
       swot: lawyer ? "تحليل SWOT لتحويل العملاء للمحامين" : businessHealth ? "تحليل SWOT لصحة الشركة" : "تحليل SWOT الاستراتيجي",
       actions: mri ? (lawyer ? "أولويات العلاج المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
-      prescriptionHeadline: lawyer ? "تقريرك يكشف هدر. وخطة العلاج توضّح ما يجب إصلاحه أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "ال SCAN القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
+      prescriptionHeadline: lawyer ? "تقريرك يكشف هدر ونزيف. وخطة العلاج توضّح ما يجب إصلاحه أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "ال SCAN القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
       prescriptionSubhead: lawyer ? "تقرير Advanced Lawyer Client Conversion MRI هو أداة تشخيص وعلاج كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، قرار التعاقد، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، مسار التدفّق، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
       prescriptionCta: lawyer ? "احصل على Lawyer Client Conversion MRI الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
       enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "لأصحاب الشركات الصغيرة والمتوسطة والمدراء العامين والشركاء" : salesManager ? "لمدراء المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمدراء المبيعات وأصحاب الشركات",
@@ -2027,11 +2027,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     : "This personalized report gives you a deeper view of your legal client-conversion body. It does not simply tell you where the score is low; it helps you understand consultation patterns, client-trust risks, professional-fee confidence, engagement decisions, and the treatment priorities that should be corrected first."
                   : businessHealth
                   ? ar
-                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لصحة الشركة كنظام كامل. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم مصادر الهدر  السيولة، العملاء، العمليات، الأفراد، وقت المالك، المخاطر، وجاهزية النمو  ثم يحوّلها إلى أولويات تقوية وخارطة طريق عملية."
+                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لصحة الشركة كنظام كامل. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم مصادر الهدر والنزيف في السيولة، العملاء، العمليات، الأفراد، وقت المالك، المخاطر، وجاهزية النمو  ثم يحوّلها إلى أولويات تقوية وخارطة طريق عملية."
                     : "This personalized report gives you a deeper view of the business health body as a complete operating system. It does not simply tell you where the score is low; it helps you understand cash leaks, customer leaks, operating gaps, people accountability issues, owner-time dependency, risk exposure, and growth-readiness priorities."
                   : salesManager
                   ? ar
-                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لطريقة قيادتك لفريق المبيعات. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم أنماط القيادة، هدر في أداء الفريق، وأولويات العلاج الإداري التي يجب التعامل معها أولًا."
+                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لطريقة قيادتك لفريق المبيعات. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم أنماط القيادة، هدر ونزيف في أداء الفريق، وأولويات العلاج الإداري التي يجب التعامل معها أولًا."
                     : "This personalized report gives you a deeper view of how you lead sales performance through people, pipeline, coaching, forecasting, and accountability. It does not simply tell you where the score is low; it helps you understand leadership patterns, team-performance risks, and management treatment priorities."
                   : ar
                   ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لجسم أدائك البيعي. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم الأسباب الجذرية، المخاطر التجارية، وأولويات العلاج التي يجب التعامل معها أولًا."
@@ -2227,18 +2227,18 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   <p className="mt-4 text-sm text-slate-700 leading-relaxed rtl-text">
                     {lawyer
                       ? ar
-                        ? "هذه المنطقة قد تكون سببًا جذريًا في هدر الاستشارة أو ضعف الثقة أو تأخر قرار التعاقد. ابدأ علاجها قبل محاولة إصلاح كل شيء."
+                        ? "هذه المنطقة قد تكون سببًا جذريًا في خسارة الاستشارة وضياعها أو ضعف الثقة أو تأخر قرار التعاقد. ابدأ علاجها قبل محاولة إصلاح كل شيء."
                         : "This area may be a root contributor to consultation leakage, weak client trust, professional-fee hesitation, or delayed engagement decisions. Treat it before trying to fix everything."
                       : businessHealth
                       ? ar
-                        ? "هذه المنطقة قد تكون سببًا جذريًا في هدر السيولة أو العملاء أو طاقة الفريق أو وقت المالك أو جاهزية النمو. ابدأ علاجها قبل محاولة إصلاح كل شيء."
+                        ? "هذه المنطقة قد تكون سببًا جذريًا في هدر ونزيف في السيولة أو العملاء أو طاقة الفريق أو وقت المالك أو جاهزية النمو. ابدأ علاجها قبل محاولة إصلاح كل شيء."
                         : "This area may be a root contributor to cash leakage, customer leakage, team-energy drain, owner-time dependency, or weak growth readiness. Treat it before trying to fix everything."
                       : salesManager
                       ? ar
-                        ? "هذه المنطقة قد تكون سببًا جذريًا في هدر في أداء الفريق أو ضعف الانضباط أو تراجع وضوح القيادة. ابدأ علاجها قبل محاولة إصلاح كل شيء."
+                        ? "هذه المنطقة قد تكون سببًا جذريًا في هدر ونزيف في أداء الفريق أو ضعف الانضباط أو تراجع وضوح القيادة. ابدأ علاجها قبل محاولة إصلاح كل شيء."
                         : "This area may be a root contributor to team-performance leakage, weak execution discipline, or loss of leadership clarity. Treat it before trying to fix everything."
                       : ar
-                      ? "هذه المنطقة قد تكون سببًا جذريًا في هدر الفرص أو ضعف الزخم أو تراجع الثقة أثناء البيع. ابدأ علاجها قبل محاولة إصلاح كل شيء."
+                      ? "هذه المنطقة قد تكون سببًا جذريًا في هدر ونزيف الفرص أو ضعف الزخم أو تراجع الثقة أثناء البيع. ابدأ علاجها قبل محاولة إصلاح كل شيء."
                       : "This area may be a root contributor to opportunity leakage, weak momentum, or loss of confidence during the sale. Treat it before trying to fix everything."}
                   </p>
                 </div>
@@ -2284,14 +2284,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   : "This is not just a low score. It is often where consultation leakage, weak client trust, unclear legal value, or delayed engagement decisions begin before they become obvious."
                 : businessHealth
                 ? ar
-                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر في الشركة قبل أن يظهر في السيولة، العملاء، العمليات، الفريق، أو وقت المالك."
+                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر ونزيف في الشركة قبل أن يظهر في السيولة، العملاء، العمليات، الفريق، أو وقت المالك."
                   : "This is not just a low score. It is often where business leakage begins before it shows up clearly in cash, customers, operations, people, or owner time."
                 : salesManager
                 ? ar
-                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر في أداء الفريق أو ضعف المساءلة أو اضطراب مسار التدفّق دون أن يكون واضحًا في البداية."
+                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر ونزيف في أداء الفريق أو ضعف المساءلة أو اضطراب مسار التدفّق دون أن يكون واضحًا في البداية."
                   : "This is not just a low score. It is often where team-performance leakage, weak accountability, or pipeline confusion begins before it becomes obvious."
                 : ar
-                ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر في الفرص دون أن يكون واضحًا في البداية."
+                ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر ونزيف في الفرص دون أن يكون واضحًا في البداية."
                 : "This is not just a low score. It is often where opportunity leakage begins before it becomes obvious."
             }
           />
@@ -2339,17 +2339,17 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             />
 
             <DarkInsight
-              title={ar ? "أين يحدث الهدر" : "Where leakage happens"}
+              title={ar ? "أين يحدث الهدر والنزيف" : "Where leakage happens"}
               body={
                 weakest
                   ? ar
                     ? lawyer
-                      ? `أكبر هدر ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على ثقة العميل، وضوح الاستشارة، عرض أتعاب المحاماة، أو قرار التعاقد قبل أن يظهر السبب الحقيقي.`
+                      ? `أكبر هدر ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على ثقة العميل، وضوح الاستشارة القانونية، عرض أتعاب المحاماة، أو قرار التعاقد قبل أن يظهر السبب الحقيقي.`
                       : businessHealth
-                      ? `أكبر هدر ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تستنزف السيولة أو العملاء أو وقت المالك أو طاقة الفريق أو جاهزية النمو قبل أن يظهر السبب الحقيقي.`
+                      ? `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تستنزف السيولة أو العملاء أو وقت المالك أو طاقة الفريق أو جاهزية النمو قبل أن يظهر السبب الحقيقي.`
                       : salesManager
-                      ? `أكبر هدر ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على أداء الفريق أو وضوح مسار التدفّق أو الانضباط قبل أن يظهر السبب الحقيقي.`
-                      : `أكبر هدر ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
+                      ? `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على أداء الفريق أو وضوح مسار التدفّق أو الانضباط قبل أن يظهر السبب الحقيقي.`
+                      : `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
                     : lawyer
                     ? `The clearest leakage signal is currently connected to ${weakest.label}. This area may weaken client trust, consultation clarity, professional fee confidence, or the engagement decision before the real reason is visible.`
                     : businessHealth
@@ -2358,7 +2358,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     ? `The clearest leakage signal is currently connected to ${weakest.label}. This area may weaken team performance, pipeline clarity, or execution discipline before the real reason is visible.`
                     : `The clearest leakage signal is currently connected to ${weakest.label}. This area may stall or weaken opportunities before the real reason is visible.`
                   : ar
-                  ? "لا توجد بيانات كافية لتحديد منطقة الهدر."
+                  ? "لا توجد بيانات كافية لتحديد منطقة الهدر والنزيف."
                   : "There is not enough data to identify the leakage area."
               }
             />
@@ -2426,14 +2426,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     : "These are warning signals. If left untreated, they may create leakage in client trust, consultation clarity, professional-fee confidence, or engagement decisions."
                   : salesManager
                   ? ar
-                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً في وضوح مسار التدفّق، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
+                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً ونزيفاً في وضوح مسار التدفّق، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
                     : "These are warning signals. If left untreated, they may create leakage in pipeline clarity, accountability, forecast quality, or team execution."
                   : businessHealth
                   ? ar
-                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً في السيولة والعملاء والتنفيذ ووقت المالك واستعداد الشركة للنمو."
+                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً ونزيفاً في السيولة والعملاء والتنفيذ ووقت المالك واستعداد الشركة للنمو."
                     : "These are warning signals. If left untreated, they may create leakage in cash, customers, execution, owner time, or growth readiness."
                   : ar
-                  ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً في مسار التدفّق والمتابعة والثقة."
+                  ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً ونزيفاً في مسار التدفّق والمتابعة والثقة."
                   : "These are warning signals. If left untreated, they may create leakage in pipeline movement, follow-up, or confidence."
               }
               lang={lang}
@@ -2540,15 +2540,15 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         : "90-Day Sales Performance Prescription",
       businessHealth
         ? ar
-          ? "هذه ليست دورة تدريبية. إنها خارطة علاج تنفيذية مبنية على مؤشرات صحة الشركة، وأكبر نسبة هدر، وأولويات التثبيت والنمو."
+          ? "هذه ليست دورة تدريبية. إنها خارطة علاج تنفيذية مبنية على مؤشرات صحة الشركة، وأكبر نسبة هدر ونزيف، وأولويات التثبيت والنمو."
           : "This is not a training course. It is an execution roadmap based on your business health signals, biggest leaks, and stabilization priorities."
         : lawyer
         ? ar
-          ? "هذه ليست دورة تدريبية. إنها خطة علاج مهنية مبنية على هدر في الاستشارة وأولويات تحويل العميل إلى تعاقد."
+          ? "هذه ليست دورة تدريبية. إنها خطة علاج مهنية مبنية على نسبة خسارات الاستشارات والعملاء  وأولويات تحويل العميل إلى تعاقد."
           : "This is not a training course. It is a professional treatment plan based on your consultation leaks and client-engagement priorities."
         : salesManager
         ? ar
-          ? "هذه ليست دورة تدريبية. إنها خطة علاج إدارية مبنية على هدر في القيادة وأولويات أداء الفريق."
+          ? "هذه ليست دورة تدريبية. إنها خطة علاج إدارية مبنية على هدر ونزيف في القيادة وأولويات أداء الفريق."
           : "This is not a training course. It is a management treatment plan based on your leadership leaks and team-performance priorities."
         : ar
         ? "هذه ليست دورة تدريبية. إنها خطة علاج تنفيذية مبنية على ترتيب أولوياتك الحالية."
@@ -2566,8 +2566,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         }
         titleAr={
           businessHealth
-            ? "الأيام ١–٣٠: أوقف الهدر في الشركة"
-            : "الأيام ١–٣٠: أوقف الهدر"
+            ? "الأيام ١–٣٠: أوقف الهدر والنزيف في  الشركة"
+            : "الأيام ١–٣٠: أوقف الهدر والنزيف"
         }
         bodyEn={
           businessHealth
@@ -2584,8 +2584,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             : lawyer
             ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل سلوك الاستشارة الذي قد يسرّب ثقة العميل أو الثقة في أتعاب المحاماة أو الالتزام بالتعاقد، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
             : salesManager
-            ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الإداري الذي قد يسبب أكبر هدر في أداء الفريق، ثم ابنِ إيقاع تصحيح بسيط يمكنك تكراره أسبوعيًا.`
-            : `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر هدر للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
+            ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الإداري الذي قد يسبب أكبر هدر ونزيف في أداء الفريق، ثم ابنِ إيقاع تصحيح بسيط يمكنك تكراره أسبوعيًا.`
+            : `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر هدر ونزيف للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
         }
       />
 
@@ -2704,8 +2704,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     <p className="font-black text-white">
                       {ar
                         ? businessHealth
-                          ? "إذا كشف التشخيص هدراً في صحة الشركة، فالخطوة الذكية ليست تجاهله. الخطوة الذكية هي فحص نظام الشركة كاملًا، معرفة الجذر، ثم اتباع خارطة الطريق."
-                          : "إذا كشف الفحص هدراً، فالخطوة الذكية ليست تجاهله. الخطوة الذكية هي فحص الجسم المهني كاملًا، معرفة الجذر، ثم اتباع الوصفة."
+                          ? "إذا كشف التشخيص هدراً ونزيفاً في صحة الشركة، فالخطوة الذكية ليست تجاهله. الخطوة الذكية هي فحص نظام الشركة كاملًا، معرفة الجذر، ثم اتباع خارطة الطريق."
+                          : "إذا كشف الفحص هدراً ونزيفاً، فالخطوة الذكية ليست تجاهله. الخطوة الذكية هي فحص الجسم المهني كاملًا، معرفة الجذر، ثم اتباع الوصفة."
                         : businessHealth
                         ? "If the MRI exposed a business leak, the smart move is not to ignore it. The smart move is to examine the full business operating system, identify the root pattern, and follow the roadmap."
                         : "If the scan exposed a leak, the smart move is not to ignore it. The smart move is to examine the full career body, identify the root pattern, and follow the prescription."}
@@ -2728,7 +2728,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                         ? [
                             "تقرير SME Business Health MRI شخصي ومفصل مبني على إجاباتك ونتائجك",
                             "أداة تشخيص وخارطة طريق تفحص ١٢ منطقة في صحة الشركة",
-                            "كشف الأسباب الجذرية خلف هدر السيولة والعملاء وضعف الأنظمة واعتماد الشركة على المالك ومخاطر النمو",
+                            "كشف الأسباب الجذرية خلف هدر ونزيف السيولة والعملاء وضعف الأنظمة واعتماد الشركة على المالك ومخاطر النمو",
                             "ترتيب واضح لما يجب تثبيته وتقويته وإعادة بنائه أولًا بدل التخمين",
                             "خارطة تثبيت عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
                             "اتجاه إعادة بناء لمدة ١٢ شهرًا يوضح ما يجب إصلاحه وتنظيمه وتفويضه وقياسه وحمايته",
@@ -3133,7 +3133,7 @@ function MriDetailedTreatmentSection({
           <MiniPatternBox
             ar={ar}
             labelEn={lawyer ? "Primary consultation leak" : businessHealth ? "Primary business leak" : "Primary leakage"}
-            labelAr={lawyer ? "هدر الاستشارة الأساسي" : businessHealth ? "هدر الشركة الأساسي" : "الهدر الأساسي"}
+            labelAr={lawyer ? "خسارة العميل والاستشارة الأساسي" : businessHealth ? "هدر الشركة الأساسي" : "الهدر الأساسي"}
             value={weakestSix[0]?.label || "—"}
             value2={weakestSix[0] ? `${weakestSix[0].percentage}% · ${getTierLabel(weakestSix[0].tier, lang)}` : ""}
           />
@@ -3285,7 +3285,7 @@ function MriDeepTreatmentPage({
           body={detailedMeaningFor(row, lang)}
         />
         <TreatmentInsight
-          title={ar ? "أين يحدث الهدر؟" : "Where leakage may happen"}
+          title={ar ? "أين يحدث الهدر والنزيف؟" : "Where leakage may happen"}
           body={meta.leakage}
         />
         <TreatmentInsight
@@ -3394,7 +3394,7 @@ function MriCompactSummaryCard({
         ? "هذه فرصة تحسين. تحتاج إلى عادة صغيرة وثابتة، وليس تدخلًا كاملًا."
         : "This is an improvement opportunity. It needs a small consistent habit, not full intervention."
       : ar
-      ? "راقب هذه المنطقة. ليست ضمن أضعف ٦ الآن، لكنها قد تتحول إلى هدر إذا أهملت."
+      ? "راقب هذه المنطقة. ليست ضمن أضعف ٦ الآن، لكنها قد تتحول إلى هدر ونزيف إذا أهملت."
       : "Monitor this area. It is not in the weakest 6 right now, but it can become leakage if ignored.";
 
   return (
