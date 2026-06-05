@@ -39,8 +39,12 @@ import { toast } from "sonner";
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 
-const MRI_PAYMENT_URL = "https://www.levelupbusinessconsulting.com/courses/outdoor-sales-page-english-mri";
-const MRI_PAYMENT_URL_AR = "YOUR_ARABIC_MRI_SALES_PAGE";
+const MRI_PAYMENT_URL_EN =
+  "https://www.levelupbusinessconsulting.com/courses/outdoor-sales-page-english-mri";
+
+const MRI_PAYMENT_URL_AR =
+  "PUT_YOUR_ARABIC_MRI_URL_HERE";
+
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   // Lawyer Client Conversion assessments
@@ -696,7 +700,11 @@ function ResultsContent() {
     window.print();
   };
 
-  const mriLinkReady = MRI_PAYMENT_URL && !MRI_PAYMENT_URL.includes("PASTE_");
+const MRI_PAYMENT_URL =
+  ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL_EN;
+
+const mriLinkReady =
+  MRI_PAYMENT_URL && !MRI_PAYMENT_URL.includes("PASTE_");
 
   if (loading) {
     return (
@@ -987,7 +995,7 @@ function ResultsContent() {
                 buttonText={isLawyer ? (ar ? "احصل على Lawyer Client Conversion MRI الكامل" : "Get My Full Lawyer Client Conversion MRI") : ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
                href={
   mriLinkReady
-    ? (ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL_EN)
+    ? (ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL)
     : undefined
 }
                 disabled={!mriLinkReady}
@@ -1111,7 +1119,7 @@ function ResultsContent() {
 
                   {mriLinkReady ? (
                     <a
-                      href={https://www.levelupbusinessconsulting.com/courses/outdoor-sales-page-english-mri}
+                      href={ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL_EN} 
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition"
