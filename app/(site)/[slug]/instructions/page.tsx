@@ -192,7 +192,7 @@ export default function InstructionsPage() {
 
           {!effectiveIsScan && (
             <p className="text-amber-200 font-semibold">
-              ⚠️ {ar ? "لا يمكن إيقاف أو إعادة التقييم بعد البدء." : "Once started, the assessment cannot be paused or restarted."}
+              ⚠️ {ar ? " لا يمكن إيقاف أو إعادة التقييم بعد البدء. التزم بالوقت. الأسئلة بدون اجابة تحصل على صفر عند انتهاء الوقت يرفع التقييم تلقائيا الى النتائج  ." : "Once started, the assessment cannot be paused or restarted. Stick to the time limit. Unanswered questions get zero. When time is up, it auto-submits to results."}
             </p>
           )}
         </div>
