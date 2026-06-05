@@ -1154,11 +1154,6 @@ const mriLinkReady =
     </div>
 )}
 
-           <p className="mt-3 text-xs text-blue-100/70 rtl-text text-center max-w-md mx-auto">
-  {ar
-    ? "انتقل إلى صفحة الـ MRI للاطلاع على التشخيص المتقدم، خطة الـ90 يومًا، والمكافآت التنفيذية."
-    : "Continue to the MRI page to explore the advanced diagnosis, 90-day prescription, and executive bonuses."}
-</p>
                 </div>
               </div>
             </div>
