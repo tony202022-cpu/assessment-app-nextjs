@@ -39,8 +39,8 @@ import { toast } from "sonner";
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
 
-// Replace later with the real New Zenler MRI page/checkout URL.
-const MRI_PAYMENT_URL = "PASTE_NEW_ZENLER_MRI_LINK_HERE";
+const MRI_PAYMENT_URL = "https://www.levelupbusinessconsulting.com/courses/outdoor-sales-page-english-mri";
+const MRI_PAYMENT_URL_AR = "YOUR_ARABIC_MRI_SALES_PAGE";
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   // Lawyer Client Conversion assessments
@@ -226,13 +226,13 @@ function healthLabel(overall: number, ar: boolean) {
   if (ar) {
     if (overall >= 75) return "منطقة أداء قوية";
     if (overall >= 50) return "منطقة فرصة واضحة";
-    if (overall >= 30) return "منطقة إنذار تجاري";
+    if (overall >= 30) return "منطقة إنذار";
     return "منطقة هدر حاد";
   }
 
   if (overall >= 75) return "Strong Performance Zone";
   if (overall >= 50) return "Clear Opportunity Zone";
-  if (overall >= 30) return "Commercial Warning Zone";
+  if (overall >= 30) return "Warning Zone";
   return "High Leakage Zone";
 }
 
@@ -787,13 +787,13 @@ function ResultsContent() {
               </div>
 
               <div className="relative flex justify-center">
-                <div className="relative h-64 w-64 sm:h-72 sm:w-72 rounded-full border-[12px] border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-2xl">
+              <div className="relative h-72 w-72 sm:h-80 sm:w-80 rounded-full border-[12px] border-white/10 bg-white/10 backdrop-blur-md flex items-center justify-center shadow-2xl">
                   <div className="absolute inset-6 rounded-full border border-white/10" />
                   <div className="text-center">
                     <div className="text-6xl sm:text-7xl font-black text-white">
                       {overallPct}%
                     </div>
-                    <div className="mt-2 text-xs font-black uppercase tracking-widest text-blue-100">
+                   <div className="mt-2 text-[10px] sm:text-xs font-black uppercase tracking-wide text-blue-100 px-6 leading-tight">
                       {isLawyer ? (ar ? "مؤشر تحويل العملاء" : "Client Conversion Score") : isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
                     </div>
                     <div className="mt-4">
@@ -985,7 +985,11 @@ function ResultsContent() {
                     : "If the scan exposed a warning sign, the next step is the full diagnosis and treatment prescription."
                 }
                 buttonText={isLawyer ? (ar ? "احصل على Lawyer Client Conversion MRI الكامل" : "Get My Full Lawyer Client Conversion MRI") : ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
-                href={mriLinkReady ? MRI_PAYMENT_URL : undefined}
+               href={
+  mriLinkReady
+    ? (ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL_EN)
+    : undefined
+}
                 disabled={!mriLinkReady}
                 icon={<Stethoscope size={22} />}
               />
@@ -1107,7 +1111,7 @@ function ResultsContent() {
 
                   {mriLinkReady ? (
                     <a
-                      href={MRI_PAYMENT_URL}
+                      href={https://www.levelupbusinessconsulting.com/courses/outdoor-sales-page-english-mri}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition"
@@ -1116,15 +1120,15 @@ function ResultsContent() {
                     </a>
                   ) : (
                     <div className="mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white/15 text-white/70 px-6 py-4 font-black shadow-xl cursor-not-allowed">
-                      {ar ? "سيتم ربط زر MRI قريبًا" : "MRI link will be connected soon"}
+                      {ar ? "اضغط هنا للحصول على التفاصيل الكاملة" : "Click here for full details about MRI"}
                     </div>
                   )}
 
-                  <p className="mt-3 text-xs text-blue-100/70 rtl-text">
-                    {ar
-                      ? "سيتم ربط هذا الزر لاحقًا بصفحة New Zenler التي تعرض التفاصيل، المكافآت، والدفع."
-                      : "This button will connect to your New Zenler page with the full details, bonuses, and checkout."}
-                  </p>
+           <p className="mt-3 text-xs text-blue-100/70 rtl-text text-center max-w-md mx-auto">
+  {ar
+    ? "انتقل إلى صفحة الـ MRI للاطلاع على التشخيص المتقدم، خطة الـ90 يومًا، والمكافآت التنفيذية."
+    : "Continue to the MRI page to explore the advanced diagnosis, 90-day prescription, and executive bonuses."}
+</p>
                 </div>
               </div>
             </div>
