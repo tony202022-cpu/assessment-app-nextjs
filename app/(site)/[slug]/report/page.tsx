@@ -2873,9 +2873,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             : "For Team Assessments, Department Assessments, and Custom Organizational Programs"}
         </p>
 
-        <div className="mt-6 text-2xl sm:text-3xl font-black text-white">
-          support@careerlabsai.com
-        </div>
+        <div className="mt-5">
+  <a
+    href="mailto:support@careerlabsai.com"
+    className="block text-center font-black text-base sm:text-xl text-white break-all px-4 hover:text-blue-100 transition force-ltr"
+  >
+    support@careerlabsai.com
+  </a>
+</div>
 
         <div className="mt-6 flex justify-center">
 
