@@ -20,9 +20,16 @@ const Header = () => {
   const { user } = useSession();
   const isArabic = language === "ar";
 
-  const handleLanguageToggle = () => {
-    setLanguage(language === "en" ? "ar" : "en");
-  };
+const handleLanguageToggle = () => {
+  const newLang = language === "en" ? "ar" : "en";
+
+  setLanguage(newLang);
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("lang", newLang);
+
+  window.location.href = url.toString();
+};
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
