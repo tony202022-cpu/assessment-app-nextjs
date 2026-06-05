@@ -1117,20 +1117,42 @@ const mriLinkReady =
                       : "No long videos. No theory overload. No generic sales advice. It is a practical, detailed treatment prescription built from your results."}
                   </p>
 
-                  {mriLinkReady ? (
-                    <a
-                      href={ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL_EN} 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition"
-                    >
-                      🚀 {isLawyer ? (ar ? "احصل على تقرير Lawyer Client Conversion MRI الكامل" : "Get My Full Lawyer Client Conversion MRI") : ar ? "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا" : "Get My Full Sales MRI & 90-Day Prescription"}
-                    </a>
-                  ) : (
-                    <div className="mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white/15 text-white/70 px-6 py-4 font-black shadow-xl cursor-not-allowed">
-                      {ar ? "اضغط هنا للحصول على التفاصيل الكاملة" : "Click here for full details about MRI"}
-                    </div>
-                  )}
+                {mriLinkReady ? (
+  <div className="mt-6 flex flex-col items-center">
+    <a
+      href={ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL_EN}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition text-center"
+    >
+      🚀 {isLawyer
+        ? (ar
+            ? "احصل على تقرير Lawyer Client Conversion MRI الكامل"
+            : "Get My Full Lawyer Client Conversion MRI")
+        : (ar
+            ? "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا"
+            : "Get My Full Sales MRI & 90-Day Prescription")}
+    </a>
+
+    <p
+      className="mt-4 text-xs text-blue-100/70 max-w-md text-center leading-relaxed"
+      style={{ textAlign: "center" }}
+    >
+      {ar
+        ? "انتقل إلى صفحة الـ MRI للاطلاع على التشخيص المتقدم، خطة الـ90 يومًا، والمكافآت التنفيذية."
+        : "Continue to the MRI page to explore the advanced diagnosis, 90-day prescription, and executive bonuses."}
+    </p>
+  </div>
+) : (
+  <div className="mt-6 flex flex-col items-center">
+    <div className="inline-flex items-center justify-center rounded-2xl bg-white/15 text-white/70 px-6 py-4 font-black shadow-xl cursor-not-allowed text-center">
+      {ar
+        ? "اضغط هنا للحصول على التفاصيل الكاملة"
+        : "Click here for full details about MRI"}
+    </div>
+
+    </div>
+)}
 
            <p className="mt-3 text-xs text-blue-100/70 rtl-text text-center max-w-md mx-auto">
   {ar
