@@ -190,10 +190,11 @@ export default function InstructionsPage() {
               : "All answer options are intentionally realistic. Choose what you would truly do."}
           </p>
 
-          {!effectiveIsScan && (
-            <p className="text-amber-200 font-semibold">
-              ⚠️ {ar ? " لا يمكن إيقاف أو إعادة التقييم بعد البدء. التزم بالوقت. الأسئلة بدون اجابة تحصل على صفر عند انتهاء الوقت يرفع التقييم تلقائيا الى النتائج  ." : "Once started, the assessment cannot be paused or restarted. Stick to the time limit. Unanswered questions get zero. When time is up, it auto-submits to results."}
-            </p>
+         <p className="text-amber-200 font-semibold">
+  ⚠️ {ar
+    ? "لا يمكن إيقاف أو إعادة التقييم بعد البدء. التزم بالوقت. الأسئلة بدون إجابة تحصل على صفر. عند انتهاء الوقت يتم إرسال التقييم تلقائياً إلى صفحة النتائج."
+    : "Once started, the assessment cannot be paused or restarted. Stick to the time limit. Unanswered questions receive zero. When time expires, the assessment is automatically submitted to the results page."}
+</p>
           )}
         </div>
 
