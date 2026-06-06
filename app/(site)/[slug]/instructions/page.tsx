@@ -195,7 +195,7 @@ export default function InstructionsPage() {
     ? "لا يمكن إيقاف أو إعادة التقييم بعد البدء. التزم بالوقت. الأسئلة بدون إجابة تحصل على صفر. عند انتهاء الوقت يتم إرسال التقييم تلقائياً إلى صفحة النتائج."
     : "Once started, the assessment cannot be paused or restarted. Stick to the time limit. Unanswered questions receive zero. When time expires, the assessment is automatically submitted to the results page."}
 </p>
-          )}
+      
         </div>
 
         {/* CTA */}
