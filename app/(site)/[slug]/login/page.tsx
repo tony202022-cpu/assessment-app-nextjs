@@ -35,6 +35,7 @@ export default function LoginPage() {
 
   const slug = useMemo(() => safeSlug(params?.slug), [params]);
   const urlLang = useMemo<Lang>(() => safeLang(searchParams.get("lang")), [searchParams]);
+  const tokenFromUrl = useMemo(() => String(searchParams.get("token") || "").trim(), [searchParams]);
 
   const { language, setLanguage } = useLocale();
   const { user, isLoading } = useSession();
@@ -44,6 +45,10 @@ export default function LoginPage() {
 
   const [hydrated, setHydrated] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // ✅ Team/bulk master link token.
+  // Kept in state/localStorage so the slug kitchen remains unchanged and the token can survive page steps.
+  const [teamToken, setTeamToken] = useState("");
 
   // ✅ prevents "already logged in" flash after logout
   const [forceLoggedOut, setForceLoggedOut] = useState(false);
@@ -70,6 +75,32 @@ export default function LoginPage() {
     if (!hydrated) return;
     if (language !== urlLang) setLanguage(urlLang);
   }, [hydrated, urlLang, language, setLanguage]);
+
+  // ✅ Preserve the company/team token without touching the assessment engine.
+  // If the login URL has ?token=..., save it.
+  // If the token was saved by an earlier step, reuse it here.
+  useEffect(() => {
+    if (!hydrated || !slug) return;
+
+    const storageKey = `team_access_token:${slug}`;
+
+    if (tokenFromUrl) {
+      setTeamToken(tokenFromUrl);
+      try {
+        window.localStorage.setItem(storageKey, tokenFromUrl);
+      } catch {
+        // ignore storage failures
+      }
+      return;
+    }
+
+    try {
+      const savedToken = window.localStorage.getItem(storageKey) || "";
+      if (savedToken) setTeamToken(savedToken);
+    } catch {
+      // ignore storage failures
+    }
+  }, [hydrated, slug, tokenFromUrl]);
 
   // Load assessment config by slug (so MRI/SCAN is always correct)
   useEffect(() => {
@@ -165,6 +196,49 @@ export default function LoginPage() {
     const meta: any = auth.user.user_metadata || {};
     const questions = totalQuestions || (isMRIFromSlug(slug) ? 75 : 30);
 
+    // ✅ TEAM / BULK CREDIT FLOW
+    // When the user arrives through a secure master team link, do NOT create the attempt
+    // directly from the browser. Call the server cashier route instead.
+    // The server route validates the token, checks company credits, deducts 1 credit,
+    // records a -1 credit transaction, and creates quiz_attempt with company_id/access_token_id.
+    if (teamToken) {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const sessionAccessToken = sessionData?.session?.access_token;
+
+      if (sessionError || !sessionAccessToken) {
+        throw new Error(ar ? "انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى." : "Session expired. Please sign in again.");
+      }
+
+      const res = await fetch("/api/start-assessment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionAccessToken}`,
+        },
+        body: JSON.stringify({
+          slug,
+          token: teamToken,
+          lang: urlLang,
+          fullName: fullName.trim() || meta?.full_name || "",
+          company: company.trim() || meta?.company || "",
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(json?.error || (ar ? "تعذر بدء التقييم" : "Could not start assessment"));
+      }
+
+      if (!json?.attemptId) {
+        throw new Error(ar ? "لم يتم إنشاء محاولة التقييم" : "Assessment attempt was not created");
+      }
+
+      return json.attemptId as string;
+    }
+
+    // ✅ NORMAL / NON-TOKEN FLOW
+    // This keeps the existing slug kitchen working for scans and any assessment that does not use bulk credits.
     const payload = {
       assessment_id: assessmentId,
       language: urlLang,
