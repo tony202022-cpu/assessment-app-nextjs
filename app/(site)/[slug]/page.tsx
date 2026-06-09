@@ -27,10 +27,21 @@ function competencyCountFromConf(conf: any, slug: string) {
 
 export default async function LanguageEntry({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams?: { token?: string | string[] };
 }) {
   const slug = safeSlug(params?.slug);
+
+  // ✅ Preserve team/company token from master links:
+  // /outdoor-mri?token=xxx -> /outdoor-mri/login?lang=en&token=xxx
+  const rawToken = Array.isArray(searchParams?.token)
+    ? searchParams?.token[0]
+    : searchParams?.token;
+
+  const teamToken = String(rawToken || "").trim();
+  const tokenQuery = teamToken ? `&token=${encodeURIComponent(teamToken)}` : "";
 
   // ✅ Allow any slug that exists and is active in Supabase
   const conf: any = await getAssessmentConfig(slug);
@@ -107,7 +118,7 @@ export default async function LanguageEntry({
           <div className="px-6 sm:px-8 pb-9 sm:pb-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Link
-                href={`/${slug}/login?lang=en`}
+                href={`/${slug}/login?lang=en${tokenQuery}`}
                 className="group h-14 md:h-16 rounded-2xl bg-white text-[#0b1b3a] text-lg font-extrabold flex items-center justify-center shadow-lg hover:bg-white/90 active:bg-white/80 transition"
               >
                 English
@@ -117,7 +128,7 @@ export default async function LanguageEntry({
               </Link>
 
               <Link
-                href={`/${slug}/login?lang=ar`}
+                href={`/${slug}/login?lang=ar${tokenQuery}`}
                 className="group h-14 md:h-16 rounded-2xl bg-white text-[#0b1b3a] text-lg font-extrabold flex items-center justify-center shadow-lg hover:bg-white/90 active:bg-white/80 transition"
               >
                 Arabic
