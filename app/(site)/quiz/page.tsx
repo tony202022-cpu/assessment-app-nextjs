@@ -340,7 +340,7 @@ useEffect(() => {
   };
 
   // 6) Finish -> submitQuiz (attemptId-driven)
-  const handleFinish = async () => {
+  const handleFinish = async (answersOverride?: AnswerPayload[]) => {
     if (!attemptId) return;
 
     if (finishLockRef.current) return;
@@ -355,7 +355,9 @@ useEffect(() => {
     setIsSubmitting(true);
     setIsTransitioning(true);
 
-    const finalAnswers = selectedAnswers.map((a) => ({
+    const answersToSubmit = answersOverride || selectedAnswers;
+
+    const finalAnswers = answersToSubmit.map((a) => ({
       ...a,
       selectedScore: a.selectedScore === -1 ? 0 : a.selectedScore,
     }));
@@ -396,7 +398,7 @@ setSelectedOptionIndex(optionIndex ?? null);
 setTimeout(() => {
   if (isLast) {
     setSelectedOptionIndex(null);
-    handleFinish();
+    handleFinish(copy);
   } else {
     setCurrentQuestionIndex((i) => i + 1);
     setSelectedOptionIndex(null);
