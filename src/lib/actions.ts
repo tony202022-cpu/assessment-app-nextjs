@@ -137,13 +137,25 @@ export async function submitQuiz(
   // --------------------------------------------------
   const { data: existing, error: attemptErr } = await supabase
     .from("quiz_attempts")
-    .select("id, assessment_id, language")
+    .select("id, assessment_id, language, answers, competency_results, total_percentage")
     .eq("id", attemptId)
     .maybeSingle();
 
   if (attemptErr) throw attemptErr;
   if (!existing) {
     throw new Error("Attempt not found. Missing or invalid attemptId.");
+  }
+
+  const alreadySubmitted =
+    (Array.isArray(existing.answers) && existing.answers.length > 0) ||
+    (Array.isArray(existing.competency_results) &&
+      existing.competency_results.length > 0) ||
+    Number(existing.total_percentage || 0) > 0;
+
+  if (alreadySubmitted) {
+    throw new Error(
+      "This assessment has already been submitted. Please use your report link instead."
+    );
   }
 
   // Hard safety: prevent mixing assessments
