@@ -43,7 +43,7 @@ const MRI_PAYMENT_URL_EN =
   "https://www.levelupbusinessconsulting.com/courses/outdoor-sales-page-english-mri";
 
 const MRI_PAYMENT_URL_AR =
-  "PUT_YOUR_ARABIC_MRI_URL_HERE";
+  "https://www.levelupbusinessconsulting.com/courses/outdoor-sales-page-arabic-mri";
 
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
