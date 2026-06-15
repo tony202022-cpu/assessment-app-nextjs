@@ -1035,6 +1035,27 @@ const OUTDOOR_SALES_FITNESS_DRILLS: Record<string, { en: SalesFitnessDrill[]; ar
 };
 
 OUTDOOR_SALES_FITNESS_DRILLS.handling_objections = OUTDOOR_SALES_FITNESS_DRILLS.destroying_objections;
+OUTDOOR_SALES_FITNESS_DRILLS.prospecting = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
+OUTDOOR_SALES_FITNESS_DRILLS.prospecting_and_finding_new_clients = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
+OUTDOOR_SALES_FITNESS_DRILLS.finding_new_clients = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
+OUTDOOR_SALES_FITNESS_DRILLS.lead_generation = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
+
+function getOutdoorSalesFitnessDrills(row: CompetencyRow | undefined, ar: boolean) {
+  const id = normalizeCompetencySafe(row?.competencyId || "");
+  const label = String(row?.label || "").toLowerCase();
+  const language = ar ? "ar" : "en";
+
+  if (
+    id === "prospecting_finding_new_clients" ||
+    label.includes("prospecting") ||
+    label.includes("finding new clients") ||
+    label.includes("البحث عن عملاء")
+  ) {
+    return OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients[language];
+  }
+
+  return OUTDOOR_SALES_FITNESS_DRILLS[id]?.[language] || OUTDOOR_SALES_FITNESS_DRILLS.generic_sales_priority[language];
+}
 
 function buildOutdoorSalesFitnessPlan(
   weakestRows: CompetencyRow[],
@@ -1143,8 +1164,7 @@ function buildOutdoorSalesFitnessPlan(
   for (let i = 0; i < 42; i++) {
     const row = weak[Math.floor(i / 7) % weak.length];
     const focus = row?.label || fallbackFocus;
-    const id = normalizeCompetencySafe(row?.competencyId || "");
-    const drills = OUTDOOR_SALES_FITNESS_DRILLS[id]?.[ar ? "ar" : "en"] || OUTDOOR_SALES_FITNESS_DRILLS.generic_sales_priority[ar ? "ar" : "en"];
+    const drills = getOutdoorSalesFitnessDrills(row, ar);
     const drill = drills[i % drills.length];
     days.push({
       day: i + 1,
