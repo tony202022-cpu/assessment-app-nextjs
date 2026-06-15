@@ -671,6 +671,483 @@ function sectionTitle(text: string, sub?: string) {
   );
 }
 
+type SalesFitnessDay = {
+  day: number;
+  phase: string;
+  week: number;
+  focus: string;
+  microAction: string;
+  fieldExercise: string;
+  checkpoint: string;
+};
+
+type SalesFitnessDrill = {
+  microAction: string;
+  fieldExercise: string;
+  checkpoint: string;
+};
+
+const OUTDOOR_SALES_FITNESS_DRILLS: Record<string, { en: SalesFitnessDrill[]; ar: SalesFitnessDrill[] }> = {
+  mental_toughness: {
+    en: [
+      { microAction: "Write the one sales situation you avoided yesterday.", fieldExercise: "Do that situation first today before easier activity.", checkpoint: "Did you act before your confidence felt ready?" },
+      { microAction: "Name one rejection you are likely to hear today.", fieldExercise: "Prepare a calm one-line response and use it without defending yourself.", checkpoint: "Did you stay steady after the rejection?" },
+      { microAction: "Choose one difficult buyer or account you have postponed.", fieldExercise: "Send the first useful message or make the first call.", checkpoint: "Did the task become smaller after action?" },
+      { microAction: "Write your reset phrase for a bad call.", fieldExercise: "After one weak interaction, reset and start the next one within 10 minutes.", checkpoint: "Did one bad moment stop controlling the day?" },
+      { microAction: "Pick one uncomfortable selling behavior to practice today.", fieldExercise: "Practice it in one real conversation instead of only planning it.", checkpoint: "Did discomfort reduce after doing it?" },
+      { microAction: "Set a minimum action target for the day.", fieldExercise: "Complete the target even if the day feels messy or low-energy.", checkpoint: "Did discipline beat mood?" },
+      { microAction: "Review one lost opportunity without blaming the buyer.", fieldExercise: "Extract one behavior you can improve in the next conversation.", checkpoint: "Did the loss turn into a usable lesson?" },
+    ],
+    ar: [
+      { microAction: "اكتب موقفًا بيعيًا واحدًا تجنبته أمس.", fieldExercise: "ابدأ به اليوم قبل الأنشطة الأسهل.", checkpoint: "هل تحركت قبل أن تشعر بالجاهزية الكاملة؟" },
+      { microAction: "حدد اعتراضًا أو رفضًا تتوقع سماعه اليوم.", fieldExercise: "حضّر ردًا هادئًا من جملة واحدة واستخدمه دون دفاع زائد.", checkpoint: "هل بقيت ثابتًا بعد الرفض؟" },
+      { microAction: "اختر عميلًا أو حسابًا صعبًا أجلته.", fieldExercise: "أرسل أول رسالة مفيدة أو قم بأول اتصال.", checkpoint: "هل أصبح الأمر أصغر بعد الحركة؟" },
+      { microAction: "اكتب جملة إعادة ضبط بعد مكالمة سيئة.", fieldExercise: "بعد تفاعل ضعيف، أعد ضبط نفسك وابدأ التفاعل التالي خلال 10 دقائق.", checkpoint: "هل توقفت لحظة سيئة عن التحكم في يومك؟" },
+      { microAction: "اختر سلوكًا بيعيًا غير مريح للتدرب عليه اليوم.", fieldExercise: "طبقه في محادثة حقيقية بدل الاكتفاء بالتخطيط.", checkpoint: "هل قل الانزعاج بعد التطبيق؟" },
+      { microAction: "حدد حدًا أدنى من النشاط البيعي لليوم.", fieldExercise: "أنجزه حتى لو كان اليوم مزدحمًا أو طاقتك منخفضة.", checkpoint: "هل غلب الانضباط المزاج؟" },
+      { microAction: "راجع فرصة خسرتها دون لوم العميل.", fieldExercise: "استخرج سلوكًا واحدًا لتحسينه في المحادثة التالية.", checkpoint: "هل تحولت الخسارة إلى درس قابل للاستخدام؟" },
+    ],
+  },
+  opening_conversations: {
+    en: [
+      { microAction: "Write a 10-second opening that mentions the buyer's business issue.", fieldExercise: "Use it in your next call instead of starting with your company intro.", checkpoint: "Did the buyer engage faster?" },
+      { microAction: "Prepare one opening question about the buyer's current priority.", fieldExercise: "Ask it before explaining any product.", checkpoint: "Did you learn the agenda before presenting?" },
+      { microAction: "Remove one filler phrase from your opening.", fieldExercise: "Start one conversation with a direct reason for the call.", checkpoint: "Was the first minute cleaner?" },
+      { microAction: "Write one opening for a cold buyer and one for a warm buyer.", fieldExercise: "Use the correct version in two real interactions.", checkpoint: "Did the opening match the relationship?" },
+      { microAction: "Create a permission-based opener.", fieldExercise: "Ask permission to share one relevant reason, then pause.", checkpoint: "Did the buyer give you attention voluntarily?" },
+      { microAction: "Prepare one industry-specific opening trigger.", fieldExercise: "Connect your opening to a real market, season, or business pressure.", checkpoint: "Did the conversation feel less generic?" },
+      { microAction: "Record your opening once and cut unnecessary words.", fieldExercise: "Use the shorter version in the field.", checkpoint: "Did you reach the point faster?" },
+    ],
+    ar: [
+      { microAction: "اكتب افتتاحية من 10 ثوانٍ تذكر مشكلة تجارية لدى العميل.", fieldExercise: "استخدمها في مكالمتك التالية بدل البدء بتعريف شركتك.", checkpoint: "هل تفاعل العميل أسرع؟" },
+      { microAction: "حضّر سؤال افتتاحي عن أولوية العميل الحالية.", fieldExercise: "اسأله قبل شرح أي منتج.", checkpoint: "هل عرفت أجندة العميل قبل العرض؟" },
+      { microAction: "احذف عبارة حشو واحدة من افتتاحيتك.", fieldExercise: "ابدأ محادثة واحدة بسبب واضح للتواصل.", checkpoint: "هل أصبحت الدقيقة الأولى أنظف؟" },
+      { microAction: "اكتب افتتاحية لعميل بارد وأخرى لعميل دافئ.", fieldExercise: "استخدم النسخة المناسبة في تفاعلين حقيقيين.", checkpoint: "هل ناسبت الافتتاحية العلاقة؟" },
+      { microAction: "حضّر افتتاحية تطلب الإذن.", fieldExercise: "اطلب الإذن لمشاركة سبب مهم ثم توقف.", checkpoint: "هل منحك العميل انتباهه باختياره؟" },
+      { microAction: "حضّر مدخلًا مرتبطًا بقطاع العميل.", fieldExercise: "اربط الافتتاحية بضغط سوقي أو موسمي أو تجاري حقيقي.", checkpoint: "هل بدت المحادثة أقل عمومية؟" },
+      { microAction: "سجل افتتاحيتك مرة واحذف الكلمات الزائدة.", fieldExercise: "استخدم النسخة الأقصر في الميدان.", checkpoint: "هل وصلت للنقطة أسرع؟" },
+    ],
+  },
+  identifying_real_needs: {
+    en: [
+      { microAction: "Prepare the question: “Why now?”", fieldExercise: "Ask it in one real conversation before offering a solution.", checkpoint: "Did you uncover urgency?" },
+      { microAction: "Write: “What happens if this stays the same for 90 days?”", fieldExercise: "Ask it when a buyer describes a problem.", checkpoint: "Did the consequence become clearer?" },
+      { microAction: "Prepare one question that quantifies pain.", fieldExercise: "Ask for time, money, volume, delay, or risk impact.", checkpoint: "Did you capture a number?" },
+      { microAction: "Write one stakeholder question.", fieldExercise: "Ask who else is affected by the problem or decision.", checkpoint: "Did you discover a hidden influencer?" },
+      { microAction: "Choose one call where you will delay the solution.", fieldExercise: "Do not present until the buyer explains the consequence.", checkpoint: "Did your diagnosis improve?" },
+      { microAction: "After one call, write the buyer's real need in one sentence.", fieldExercise: "Use that sentence in your follow-up.", checkpoint: "Would the buyer agree with the sentence?" },
+      { microAction: "Prepare a confirmation sentence.", fieldExercise: "Before presenting, repeat the need back to the buyer.", checkpoint: "Did the buyer confirm or correct you?" },
+    ],
+    ar: [
+      { microAction: "حضّر سؤال: لماذا الآن؟", fieldExercise: "اسأله في محادثة حقيقية قبل تقديم الحل.", checkpoint: "هل كشفت درجة الاستعجال؟" },
+      { microAction: "اكتب: ماذا يحدث إذا بقيت المشكلة كما هي 90 يومًا؟", fieldExercise: "اسألها عندما يصف العميل مشكلة.", checkpoint: "هل أصبحت العاقبة أوضح؟" },
+      { microAction: "حضّر سؤالًا يقيس الألم بالأرقام.", fieldExercise: "اسأل عن أثر الوقت أو المال أو الحجم أو التأخير أو المخاطر.", checkpoint: "هل حصلت على رقم؟" },
+      { microAction: "اكتب سؤالًا عن أصحاب التأثير.", fieldExercise: "اسأل من يتأثر أيضًا بالمشكلة أو القرار.", checkpoint: "هل اكتشفت مؤثرًا خفيًا؟" },
+      { microAction: "اختر مكالمة ستؤجل فيها عرض الحل.", fieldExercise: "لا تعرض الحل حتى يشرح العميل العاقبة.", checkpoint: "هل تحسن التشخيص؟" },
+      { microAction: "بعد مكالمة واحدة، اكتب حاجة العميل الحقيقية في جملة واحدة.", fieldExercise: "استخدم الجملة في رسالة المتابعة.", checkpoint: "هل سيوافق العميل على هذه الجملة؟" },
+      { microAction: "حضّر جملة تأكيد للاحتياج.", fieldExercise: "قبل العرض، أعد الاحتياج على العميل.", checkpoint: "هل أكد العميل كلامك أو صححه؟" },
+    ],
+  },
+  destroying_objections: {
+    en: [
+      { microAction: "Write the top price objection you hear.", fieldExercise: "Answer it by returning to cost of inaction before discounting.", checkpoint: "Did you protect value?" },
+      { microAction: "List one likely trust objection.", fieldExercise: "Use proof before the buyer asks for it.", checkpoint: "Did proof reduce resistance?" },
+      { microAction: "Prepare a calm response to “I need to think.”", fieldExercise: "Ask what part needs more clarity.", checkpoint: "Did you uncover the real concern?" },
+      { microAction: "Write one objection-prevention story.", fieldExercise: "Share the story before presenting price or next step.", checkpoint: "Did the buyer raise fewer doubts?" },
+      { microAction: "Choose one objection and write the question behind it.", fieldExercise: "Answer the hidden question, not just the words.", checkpoint: "Did your response feel more precise?" },
+      { microAction: "Prepare one comparison against doing nothing.", fieldExercise: "Use it when the buyer hesitates.", checkpoint: "Did the buyer see the risk of delay?" },
+      { microAction: "Review one lost deal and identify the unhandled objection.", fieldExercise: "Write the response you should use next time.", checkpoint: "Is the new response shorter and stronger?" },
+    ],
+    ar: [
+      { microAction: "اكتب أكثر اعتراض سعري تسمعه.", fieldExercise: "أجب عليه بالعودة إلى تكلفة عدم التحرك قبل الخصم.", checkpoint: "هل حميت القيمة؟" },
+      { microAction: "حدد اعتراض ثقة محتملًا.", fieldExercise: "استخدم دليلًا قبل أن يطلبه العميل.", checkpoint: "هل قللت الإثباتات المقاومة؟" },
+      { microAction: "حضّر ردًا هادئًا على: أحتاج أن أفكر.", fieldExercise: "اسأل أي جزء يحتاج وضوحًا أكثر.", checkpoint: "هل كشفت القلق الحقيقي؟" },
+      { microAction: "اكتب قصة قصيرة تمنع اعتراضًا.", fieldExercise: "شاركها قبل عرض السعر أو الخطوة التالية.", checkpoint: "هل ظهرت شكوك أقل؟" },
+      { microAction: "اختر اعتراضًا واكتب السؤال المخفي خلفه.", fieldExercise: "أجب على السؤال الحقيقي لا الكلمات فقط.", checkpoint: "هل صار الرد أدق؟" },
+      { microAction: "حضّر مقارنة ضد عدم فعل شيء.", fieldExercise: "استخدمها عندما يتردد العميل.", checkpoint: "هل رأى العميل خطر التأجيل؟" },
+      { microAction: "راجع صفقة ضاعت وحدد الاعتراض غير المعالج.", fieldExercise: "اكتب الرد الذي ستستخدمه في المرة القادمة.", checkpoint: "هل الرد الجديد أقصر وأقوى؟" },
+    ],
+  },
+  handling_objections: {
+    en: [],
+    ar: [],
+  },
+  creating_irresistible_offers: {
+    en: [
+      { microAction: "Rewrite one offer using pain, outcome, proof, and next step.", fieldExercise: "Use the rewritten offer with one active buyer.", checkpoint: "Did the offer feel easier to understand?" },
+      { microAction: "Remove one weak feature from your offer.", fieldExercise: "Replace it with the business result the buyer cares about.", checkpoint: "Did value sound more commercial?" },
+      { microAction: "Add one risk reducer to the offer.", fieldExercise: "Mention the risk reducer before asking for commitment.", checkpoint: "Did approval feel safer for the buyer?" },
+      { microAction: "Write one reason to act now.", fieldExercise: "Use it without pressure or fake urgency.", checkpoint: "Did timing become clearer?" },
+      { microAction: "Create a contrast: cost of staying the same versus benefit of action.", fieldExercise: "Share the contrast in one proposal or conversation.", checkpoint: "Did the buyer see both sides?" },
+      { microAction: "Prepare a 30-second offer pitch.", fieldExercise: "Deliver it once without adding extra explanation.", checkpoint: "Could the buyer repeat the offer?" },
+      { microAction: "Ask one buyer what would make the offer easier to approve.", fieldExercise: "Listen for approval friction and write it down.", checkpoint: "Did you find a practical improvement?" },
+    ],
+    ar: [
+      { microAction: "أعد كتابة عرض واحد بصيغة: ألم، نتيجة، دليل، خطوة تالية.", fieldExercise: "استخدم العرض الجديد مع عميل نشط.", checkpoint: "هل أصبح العرض أسهل فهمًا؟" },
+      { microAction: "احذف ميزة ضعيفة من العرض.", fieldExercise: "استبدلها بنتيجة تجارية تهم العميل.", checkpoint: "هل أصبحت القيمة أكثر تجارية؟" },
+      { microAction: "أضف عنصرًا يقلل المخاطر في العرض.", fieldExercise: "اذكره قبل طلب الالتزام.", checkpoint: "هل أصبح القرار أكثر أمانًا للعميل؟" },
+      { microAction: "اكتب سببًا واحدًا للتحرك الآن.", fieldExercise: "استخدمه دون ضغط أو استعجال مصطنع.", checkpoint: "هل أصبح التوقيت أوضح؟" },
+      { microAction: "اصنع مقارنة بين تكلفة البقاء كما هو وفائدة التحرك.", fieldExercise: "شارك المقارنة في عرض أو محادثة.", checkpoint: "هل رأى العميل الجانبين؟" },
+      { microAction: "حضّر عرضًا مختصرًا في 30 ثانية.", fieldExercise: "قدمه مرة واحدة دون شرح زائد.", checkpoint: "هل يستطيع العميل إعادة العرض؟" },
+      { microAction: "اسأل عميلًا ما الذي يجعل العرض أسهل للموافقة.", fieldExercise: "استمع لعوائق الموافقة واكتبها.", checkpoint: "هل وجدت تحسينًا عمليًا؟" },
+    ],
+  },
+  mastering_closing: {
+    en: [
+      { microAction: "Write the next commitment you want before the conversation starts.", fieldExercise: "Ask for that commitment clearly at the right moment.", checkpoint: "Did you ask instead of hinting?" },
+      { microAction: "Prepare two closing options.", fieldExercise: "Offer the buyer a choice between two practical next steps.", checkpoint: "Did choice reduce friction?" },
+      { microAction: "Write one closing question that checks readiness.", fieldExercise: "Ask it after summarizing value.", checkpoint: "Did you learn if the buyer is ready?" },
+      { microAction: "Identify one deal where the next step is vague.", fieldExercise: "Ask for a date, decision, or missing information.", checkpoint: "Did the deal become more concrete?" },
+      { microAction: "Prepare your response if the buyer delays.", fieldExercise: "Ask what must happen before they can move forward.", checkpoint: "Did you uncover the condition?" },
+      { microAction: "Practice a 20-second value recap.", fieldExercise: "Use it before asking for the close.", checkpoint: "Did the close feel earned?" },
+      { microAction: "Review one closed-lost deal.", fieldExercise: "Mark the moment where you should have asked for commitment.", checkpoint: "Will you recognize that moment next time?" },
+    ],
+    ar: [
+      { microAction: "اكتب الالتزام التالي الذي تريده قبل بداية المحادثة.", fieldExercise: "اطلب هذا الالتزام بوضوح في اللحظة المناسبة.", checkpoint: "هل طلبت بدل التلميح؟" },
+      { microAction: "حضّر خيارين للإغلاق.", fieldExercise: "اعرض على العميل اختيارًا بين خطوتين عمليتين.", checkpoint: "هل قلل الاختيار الاحتكاك؟" },
+      { microAction: "اكتب سؤال إغلاق يقيس الجاهزية.", fieldExercise: "اسأله بعد تلخيص القيمة.", checkpoint: "هل عرفت إن كان العميل جاهزًا؟" },
+      { microAction: "حدد صفقة خطوتها التالية غامضة.", fieldExercise: "اطلب تاريخًا أو قرارًا أو معلومة ناقصة.", checkpoint: "هل أصبحت الصفقة أوضح؟" },
+      { microAction: "حضّر ردك إذا أجل العميل القرار.", fieldExercise: "اسأل ما الذي يجب أن يحدث قبل التحرك.", checkpoint: "هل كشفت الشرط الحقيقي؟" },
+      { microAction: "تدرب على تلخيص قيمة في 20 ثانية.", fieldExercise: "استخدمه قبل طلب الإغلاق.", checkpoint: "هل بدا الإغلاق مستحقًا؟" },
+      { microAction: "راجع صفقة خسرتها.", fieldExercise: "حدد اللحظة التي كان يجب أن تطلب فيها الالتزام.", checkpoint: "هل ستتعرف على اللحظة في المرة القادمة؟" },
+    ],
+  },
+  follow_up_discipline: {
+    en: [
+      { microAction: "Before ending one conversation, book the next action.", fieldExercise: "Do not leave the call without date, owner, and purpose.", checkpoint: "Is the next step real?" },
+      { microAction: "Send one follow-up within 10 minutes of a meeting.", fieldExercise: "Keep it short and linked to what the buyer said.", checkpoint: "Did speed improve momentum?" },
+      { microAction: "Write a follow-up using context, value, and next step.", fieldExercise: "Send it to one active opportunity.", checkpoint: "Does the buyer know exactly what to do next?" },
+      { microAction: "Remove vague phrases like “checking in.”", fieldExercise: "Replace them with a reason that matters to the buyer.", checkpoint: "Did the message become more useful?" },
+      { microAction: "Find one useful insight for a buyer.", fieldExercise: "Follow up with the insight, not a reminder.", checkpoint: "Did the follow-up add value?" },
+      { microAction: "Ask for a dated next step.", fieldExercise: "Use a specific date or time window instead of “soon.”", checkpoint: "Did the timeline become visible?" },
+      { microAction: "Review all open opportunities.", fieldExercise: "Mark the next action for each one before the day ends.", checkpoint: "Are there fewer loose ends?" },
+    ],
+    ar: [
+      { microAction: "قبل إنهاء محادثة واحدة، احجز الخطوة التالية.", fieldExercise: "لا تنهِ المكالمة دون تاريخ ومسؤول وهدف.", checkpoint: "هل الخطوة التالية حقيقية؟" },
+      { microAction: "أرسل متابعة واحدة خلال 10 دقائق من الاجتماع.", fieldExercise: "اجعلها قصيرة ومرتبطة بما قاله العميل.", checkpoint: "هل حسنت السرعة الزخم؟" },
+      { microAction: "اكتب متابعة بصيغة: سياق، قيمة، خطوة تالية.", fieldExercise: "أرسلها لفرصة نشطة واحدة.", checkpoint: "هل يعرف العميل ماذا يفعل بعد ذلك؟" },
+      { microAction: "احذف عبارات غامضة مثل: فقط أتابع.", fieldExercise: "استبدلها بسبب يهم العميل.", checkpoint: "هل أصبحت الرسالة أكثر فائدة؟" },
+      { microAction: "ابحث عن فكرة مفيدة لعميل واحد.", fieldExercise: "تابع بالفكرة لا بالتذكير فقط.", checkpoint: "هل أضافت المتابعة قيمة؟" },
+      { microAction: "اطلب خطوة تالية بتاريخ.", fieldExercise: "استخدم تاريخًا أو نافذة زمنية بدل كلمة قريبًا.", checkpoint: "هل ظهر الجدول الزمني؟" },
+      { microAction: "راجع كل الفرص المفتوحة.", fieldExercise: "حدد الخطوة التالية لكل فرصة قبل نهاية اليوم.", checkpoint: "هل قلت النهايات المفتوحة؟" },
+    ],
+  },
+  consultative_selling: {
+    en: [
+      { microAction: "Write three diagnosis questions before one meeting.", fieldExercise: "Ask all three before explaining your solution.", checkpoint: "Did the meeting become more consultative?" },
+      { microAction: "Prepare one summary of the buyer's situation.", fieldExercise: "Repeat the summary before recommending anything.", checkpoint: "Did the buyer feel understood?" },
+      { microAction: "Map one buyer problem to one business outcome.", fieldExercise: "Use the map to guide the conversation.", checkpoint: "Did the solution fit the problem?" },
+      { microAction: "Write one question about decision criteria.", fieldExercise: "Ask what will make the buyer choose one option over another.", checkpoint: "Did you learn the buying standard?" },
+      { microAction: "Prepare one advisory statement, not a pitch.", fieldExercise: "Share it as guidance based on what the buyer told you.", checkpoint: "Did you sound like an advisor?" },
+      { microAction: "Identify one assumption you are making about the buyer.", fieldExercise: "Test that assumption with a question.", checkpoint: "Was your assumption right?" },
+      { microAction: "End one conversation with a recommended next step.", fieldExercise: "Explain why that step fits the diagnosis.", checkpoint: "Did the next step feel logical?" },
+    ],
+    ar: [
+      { microAction: "اكتب ثلاثة أسئلة تشخيصية قبل اجتماع واحد.", fieldExercise: "اسألها كلها قبل شرح الحل.", checkpoint: "هل أصبح الاجتماع أكثر استشارية؟" },
+      { microAction: "حضّر ملخصًا واحدًا لوضع العميل.", fieldExercise: "أعد الملخص قبل أي توصية.", checkpoint: "هل شعر العميل أنك فهمته؟" },
+      { microAction: "اربط مشكلة عميل واحدة بنتيجة تجارية واحدة.", fieldExercise: "استخدم الربط لتوجيه المحادثة.", checkpoint: "هل ناسبت الحل المشكلة؟" },
+      { microAction: "اكتب سؤالًا عن معايير القرار.", fieldExercise: "اسأل ما الذي يجعل العميل يختار خيارًا على آخر.", checkpoint: "هل عرفت معيار الشراء؟" },
+      { microAction: "حضّر جملة إرشادية لا عرضًا بيعيًا.", fieldExercise: "شاركها كتوجيه مبني على كلام العميل.", checkpoint: "هل بدوت كمستشار؟" },
+      { microAction: "حدد افتراضًا واحدًا لديك عن العميل.", fieldExercise: "اختبره بسؤال.", checkpoint: "هل كان افتراضك صحيحًا؟" },
+      { microAction: "اختم محادثة بتوصية للخطوة التالية.", fieldExercise: "اشرح لماذا تناسب هذه الخطوة التشخيص.", checkpoint: "هل بدت الخطوة منطقية؟" },
+    ],
+  },
+  time_territory_management: {
+    en: [
+      { microAction: "List today's opportunities by probability and value.", fieldExercise: "Start with the highest-value active opportunity.", checkpoint: "Did your first hour matter?" },
+      { microAction: "Block one selling hour with no admin.", fieldExercise: "Use it only for calls, visits, follow-ups, or proposals.", checkpoint: "Was the hour protected?" },
+      { microAction: "Mark one low-probability account to pause.", fieldExercise: "Move that energy to a better opportunity.", checkpoint: "Did focus improve?" },
+      { microAction: "Write your route or call sequence before starting.", fieldExercise: "Follow the sequence unless a real priority changes.", checkpoint: "Did you reduce wasted movement?" },
+      { microAction: "Choose three must-win actions for the day.", fieldExercise: "Complete them before optional tasks.", checkpoint: "Did priorities beat noise?" },
+      { microAction: "Review one territory or pipeline gap.", fieldExercise: "Add one action to create coverage in that gap.", checkpoint: "Did you protect future pipeline?" },
+      { microAction: "End the day by choosing tomorrow's first sales action.", fieldExercise: "Put it on your calendar before closing work.", checkpoint: "Will tomorrow start faster?" },
+    ],
+    ar: [
+      { microAction: "رتب فرص اليوم حسب الاحتمال والقيمة.", fieldExercise: "ابدأ بأعلى فرصة نشطة من حيث القيمة.", checkpoint: "هل كانت الساعة الأولى مهمة؟" },
+      { microAction: "احجز ساعة بيع بلا أعمال إدارية.", fieldExercise: "استخدمها فقط للمكالمات أو الزيارات أو المتابعات أو العروض.", checkpoint: "هل حميت الساعة؟" },
+      { microAction: "حدد حسابًا ضعيف الاحتمال لتجميده.", fieldExercise: "انقل طاقتك إلى فرصة أفضل.", checkpoint: "هل زاد التركيز؟" },
+      { microAction: "اكتب مسار زياراتك أو ترتيب مكالماتك قبل البدء.", fieldExercise: "اتبع الترتيب إلا إذا ظهرت أولوية حقيقية.", checkpoint: "هل قللت الحركة المهدرة؟" },
+      { microAction: "اختر ثلاث أفعال لا بد من إنجازها اليوم.", fieldExercise: "أنجزها قبل المهام الاختيارية.", checkpoint: "هل غلبت الأولويات الضجيج؟" },
+      { microAction: "راجع فجوة واحدة في المنطقة أو خط الأنابيب.", fieldExercise: "أضف فعلًا واحدًا لتغطية هذه الفجوة.", checkpoint: "هل حميت الفرص المستقبلية؟" },
+      { microAction: "اختم اليوم باختيار أول فعل بيعي للغد.", fieldExercise: "ضعه في التقويم قبل إغلاق العمل.", checkpoint: "هل سيبدأ الغد أسرع؟" },
+    ],
+  },
+  product_expertise: {
+    en: [
+      { microAction: "Pick one product you sell often and write 3 business problems it solves, not 3 features.", fieldExercise: "Use one problem-led explanation in your next conversation.", checkpoint: "Can the buyer repeat the business problem clearly?" },
+      { microAction: "Translate one feature into problem solved, proof, and buyer outcome.", fieldExercise: "Use the translated version instead of the feature list.", checkpoint: "Did the value sound more practical?" },
+      { microAction: "Record a 30-second explanation without technical language.", fieldExercise: "Use the same simple wording with one buyer.", checkpoint: "Could a non-expert understand it?" },
+      { microAction: "Ask one buyer which product benefit matters most to their business result.", fieldExercise: "Let their answer guide the rest of the conversation.", checkpoint: "Did you stop guessing what matters?" },
+      { microAction: "Create one before-and-after comparison for the product.", fieldExercise: "Show the buyer the difference between current state and improved state.", checkpoint: "Did the outcome become more visible?" },
+      { microAction: "Write one proof story from a real customer or realistic use case.", fieldExercise: "Use the story when explaining value.", checkpoint: "Did the proof make the product more believable?" },
+      { microAction: "Prepare one answer to: “Why should I choose this instead of doing nothing?”", fieldExercise: "Use the answer with one hesitant buyer.", checkpoint: "Did you make inaction feel costly?" },
+    ],
+    ar: [
+      { microAction: "اختر منتجًا تبيعه كثيرًا واكتب 3 مشكلات تجارية يحلها، لا 3 مزايا.", fieldExercise: "استخدم شرحًا يبدأ بالمشكلة في محادثتك التالية.", checkpoint: "هل يستطيع العميل إعادة شرح المشكلة التجارية؟" },
+      { microAction: "حوّل ميزة واحدة إلى: مشكلة محلولة، دليل، نتيجة للعميل.", fieldExercise: "استخدم النسخة المترجمة بدل قائمة المزايا.", checkpoint: "هل بدت القيمة أكثر عملية؟" },
+      { microAction: "سجل شرحًا لمدة 30 ثانية دون لغة تقنية.", fieldExercise: "استخدم نفس الصياغة البسيطة مع عميل واحد.", checkpoint: "هل يفهمها شخص غير متخصص؟" },
+      { microAction: "اسأل عميلًا أي فائدة من المنتج تهم نتيجته التجارية أكثر.", fieldExercise: "دع إجابته تقود بقية المحادثة.", checkpoint: "هل توقفت عن تخمين ما يهمه؟" },
+      { microAction: "اصنع مقارنة قبل وبعد للمنتج.", fieldExercise: "أرِ العميل الفرق بين الوضع الحالي والوضع المحسن.", checkpoint: "هل أصبحت النتيجة مرئية أكثر؟" },
+      { microAction: "اكتب قصة إثبات من عميل حقيقي أو حالة استخدام واقعية.", fieldExercise: "استخدم القصة عند شرح القيمة.", checkpoint: "هل جعل الدليل المنتج أكثر تصديقًا؟" },
+      { microAction: "حضّر إجابة لسؤال: لماذا أختار هذا بدل ألا أفعل شيئًا؟", fieldExercise: "استخدم الإجابة مع عميل متردد.", checkpoint: "هل جعلت عدم التحرك مكلفًا؟" },
+    ],
+  },
+  negotiation_skills: {
+    en: [
+      { microAction: "Write what you can trade that is not price.", fieldExercise: "Use one non-price trade if the buyer asks for a concession.", checkpoint: "Did you avoid giving value for free?" },
+      { microAction: "Prepare your walk-away point before one negotiation.", fieldExercise: "Keep the conversation above that line.", checkpoint: "Did you protect the deal quality?" },
+      { microAction: "Write one question that tests what the buyer values most.", fieldExercise: "Ask it before offering any concession.", checkpoint: "Did you learn what to trade?" },
+      { microAction: "Prepare a conditional concession sentence.", fieldExercise: "Use “If we can do X, can you do Y?”", checkpoint: "Did every concession get a return?" },
+      { microAction: "List the buyer's likely pressure tactic.", fieldExercise: "Respond with a question instead of reacting.", checkpoint: "Did you stay in control?" },
+      { microAction: "Create a value recap before discussing price.", fieldExercise: "Use it when the conversation moves to cost.", checkpoint: "Did price sit inside value?" },
+      { microAction: "Review one discount you gave too fast.", fieldExercise: "Write the trade you should ask for next time.", checkpoint: "Is your next negotiation stronger?" },
+    ],
+    ar: [
+      { microAction: "اكتب ما يمكنك مبادلته غير السعر.", fieldExercise: "استخدم مبادلة غير سعرية إذا طلب العميل تنازلًا.", checkpoint: "هل تجنبت إعطاء قيمة مجانًا؟" },
+      { microAction: "حدد حدك الأدنى قبل تفاوض واحد.", fieldExercise: "حافظ على المحادثة فوق هذا الحد.", checkpoint: "هل حميت جودة الصفقة؟" },
+      { microAction: "اكتب سؤالًا يكشف ما يقدره العميل أكثر.", fieldExercise: "اسأله قبل تقديم أي تنازل.", checkpoint: "هل عرفت ماذا تبادل؟" },
+      { microAction: "حضّر جملة تنازل مشروطة.", fieldExercise: "استخدم: إذا فعلنا كذا، هل يمكنكم فعل كذا؟", checkpoint: "هل حصل كل تنازل على مقابل؟" },
+      { microAction: "حدد أسلوب ضغط محتمل من العميل.", fieldExercise: "رد بسؤال بدل الانفعال.", checkpoint: "هل بقيت مسيطرًا؟" },
+      { microAction: "اصنع تلخيص قيمة قبل نقاش السعر.", fieldExercise: "استخدمه عندما ينتقل الحديث للتكلفة.", checkpoint: "هل بقي السعر داخل إطار القيمة؟" },
+      { microAction: "راجع خصمًا قدمته بسرعة.", fieldExercise: "اكتب المقابل الذي ستطلبه المرة القادمة.", checkpoint: "هل أصبح تفاوضك القادم أقوى؟" },
+    ],
+  },
+  attitude_motivation_mindset: {
+    en: [
+      { microAction: "Write the sales behavior you will control today.", fieldExercise: "Measure the day by that behavior, not by buyer mood.", checkpoint: "Did you focus on controllables?" },
+      { microAction: "Choose one buyer problem that is worth solving.", fieldExercise: "Start your next conversation from that purpose.", checkpoint: "Did purpose improve your energy?" },
+      { microAction: "Remove one complaint from your morning language.", fieldExercise: "Replace it with one action you can take.", checkpoint: "Did your language change your pace?" },
+      { microAction: "Write one reason your product genuinely helps customers.", fieldExercise: "Use that belief in one conversation without exaggeration.", checkpoint: "Did confidence sound authentic?" },
+      { microAction: "Choose one task you usually postpone.", fieldExercise: "Complete it before checking easy messages.", checkpoint: "Did action create momentum?" },
+      { microAction: "Write one learning target for the day.", fieldExercise: "After each call, note one thing you learned.", checkpoint: "Did the day produce learning?" },
+      { microAction: "Review one success from the week.", fieldExercise: "Repeat the exact behavior that created it.", checkpoint: "Can you reproduce your own momentum?" },
+    ],
+    ar: [
+      { microAction: "اكتب السلوك البيعي الذي ستتحكم به اليوم.", fieldExercise: "قس اليوم بهذا السلوك لا بمزاج العميل.", checkpoint: "هل ركزت على ما يمكنك التحكم به؟" },
+      { microAction: "اختر مشكلة عميل تستحق الحل.", fieldExercise: "ابدأ محادثتك التالية من هذا الهدف.", checkpoint: "هل رفع الهدف طاقتك؟" },
+      { microAction: "احذف شكوى واحدة من لغة الصباح.", fieldExercise: "استبدلها بفعل يمكنك القيام به.", checkpoint: "هل غيرت اللغة سرعتك؟" },
+      { microAction: "اكتب سببًا حقيقيًا يجعل منتجك يساعد العملاء.", fieldExercise: "استخدم هذا الإيمان في محادثة دون مبالغة.", checkpoint: "هل بدت الثقة حقيقية؟" },
+      { microAction: "اختر مهمة تؤجلها عادة.", fieldExercise: "أنجزها قبل الرسائل السهلة.", checkpoint: "هل صنع الفعل زخمًا؟" },
+      { microAction: "اكتب هدف تعلم لليوم.", fieldExercise: "بعد كل مكالمة، سجل شيئًا واحدًا تعلمته.", checkpoint: "هل أنتج اليوم تعلمًا؟" },
+      { microAction: "راجع نجاحًا واحدًا من الأسبوع.", fieldExercise: "كرر السلوك الذي صنعه بالضبط.", checkpoint: "هل تستطيع إعادة إنتاج زخمك؟" },
+    ],
+  },
+  dealing_with_boss: {
+    en: [
+      { microAction: "Write one sales obstacle you need your manager to understand.", fieldExercise: "Share it with evidence, not frustration.", checkpoint: "Did the conversation become more useful?" },
+      { microAction: "Prepare one clear request for support.", fieldExercise: "Ask for a decision, resource, or coaching point.", checkpoint: "Did you make it easy to help you?" },
+      { microAction: "Summarize your pipeline risk in three bullets.", fieldExercise: "Send or discuss it before it becomes urgent.", checkpoint: "Did you create alignment early?" },
+      { microAction: "Write one update using facts, impact, and next action.", fieldExercise: "Use it in your next internal update.", checkpoint: "Was the update clearer?" },
+      { microAction: "Identify one internal delay hurting a customer.", fieldExercise: "Escalate it with customer impact and proposed solution.", checkpoint: "Did you protect the customer outcome?" },
+      { microAction: "Ask your manager one coaching question.", fieldExercise: "Apply the answer in one live opportunity.", checkpoint: "Did coaching turn into action?" },
+      { microAction: "Clarify one target or priority that feels unclear.", fieldExercise: "Ask for the success measure in plain language.", checkpoint: "Do you know what good looks like?" },
+    ],
+    ar: [
+      { microAction: "اكتب عائقًا بيعيًا يحتاج مديرك لفهمه.", fieldExercise: "شاركه بالدليل لا بالإحباط.", checkpoint: "هل أصبحت المحادثة أكثر فائدة؟" },
+      { microAction: "حضّر طلب دعم واضح.", fieldExercise: "اطلب قرارًا أو موردًا أو نقطة تدريب.", checkpoint: "هل سهّلت مساعدتك؟" },
+      { microAction: "لخص خطرًا في خط الأنابيب بثلاث نقاط.", fieldExercise: "ناقشه قبل أن يصبح عاجلًا.", checkpoint: "هل صنعت توافقًا مبكرًا؟" },
+      { microAction: "اكتب تحديثًا بصيغة: حقائق، أثر، خطوة تالية.", fieldExercise: "استخدمه في تحديثك الداخلي القادم.", checkpoint: "هل أصبح التحديث أوضح؟" },
+      { microAction: "حدد تأخيرًا داخليًا يضر عميلًا.", fieldExercise: "صعّده بأثره على العميل وحل مقترح.", checkpoint: "هل حميت نتيجة العميل؟" },
+      { microAction: "اسأل مديرك سؤال تدريب واحد.", fieldExercise: "طبق الإجابة في فرصة حية.", checkpoint: "هل تحول التدريب إلى فعل؟" },
+      { microAction: "وضح هدفًا أو أولوية غير واضحة.", fieldExercise: "اسأل عن معيار النجاح بلغة بسيطة.", checkpoint: "هل عرفت شكل النجاح؟" },
+    ],
+  },
+  handling_difficult_customers: {
+    en: [
+      { microAction: "Write the difficult customer behavior you expect today.", fieldExercise: "Prepare a calm boundary sentence before it happens.", checkpoint: "Did you respond instead of react?" },
+      { microAction: "Prepare one empathy statement that does not surrender value.", fieldExercise: "Use it when a buyer is upset or demanding.", checkpoint: "Did the tone cool down?" },
+      { microAction: "List the facts of one difficult account.", fieldExercise: "Separate facts from emotion before responding.", checkpoint: "Was your response cleaner?" },
+      { microAction: "Write one question that redirects complaint into need.", fieldExercise: "Ask what outcome the customer wants now.", checkpoint: "Did the conversation move forward?" },
+      { microAction: "Prepare a polite no for one unreasonable request.", fieldExercise: "Offer the best available alternative.", checkpoint: "Did you protect boundaries?" },
+      { microAction: "Choose one difficult customer to follow up proactively.", fieldExercise: "Send a useful update before they chase you.", checkpoint: "Did proactivity reduce pressure?" },
+      { microAction: "Review one tense conversation.", fieldExercise: "Write what you will repeat and what you will stop doing.", checkpoint: "Did you learn a pattern?" },
+    ],
+    ar: [
+      { microAction: "اكتب سلوك العميل الصعب الذي تتوقعه اليوم.", fieldExercise: "حضّر جملة حدود هادئة قبل حدوثه.", checkpoint: "هل رددت بدل الانفعال؟" },
+      { microAction: "حضّر جملة تعاطف لا تتنازل عن القيمة.", fieldExercise: "استخدمها عندما يكون العميل غاضبًا أو كثير الطلبات.", checkpoint: "هل هدأت النبرة؟" },
+      { microAction: "اكتب حقائق حساب صعب واحد.", fieldExercise: "افصل الحقائق عن العاطفة قبل الرد.", checkpoint: "هل أصبح ردك أنظف؟" },
+      { microAction: "اكتب سؤالًا يحول الشكوى إلى احتياج.", fieldExercise: "اسأل ما النتيجة التي يريدها العميل الآن.", checkpoint: "هل تحركت المحادثة للأمام؟" },
+      { microAction: "حضّر رفضًا مهذبًا لطلب غير منطقي.", fieldExercise: "اعرض أفضل بديل متاح.", checkpoint: "هل حميت الحدود؟" },
+      { microAction: "اختر عميلًا صعبًا للمتابعة الاستباقية.", fieldExercise: "أرسل تحديثًا مفيدًا قبل أن يلاحقك.", checkpoint: "هل قللت المبادرة الضغط؟" },
+      { microAction: "راجع محادثة متوترة.", fieldExercise: "اكتب ما ستكرره وما ستتوقف عنه.", checkpoint: "هل تعلمت نمطًا؟" },
+    ],
+  },
+  handling_difficult_colleagues: {
+    en: [
+      { microAction: "Write the internal behavior slowing one sale.", fieldExercise: "Ask the colleague for one specific action, not general help.", checkpoint: "Did the request become clearer?" },
+      { microAction: "Prepare facts before raising an internal issue.", fieldExercise: "Discuss impact on customer or revenue, not personality.", checkpoint: "Did the conversation stay professional?" },
+      { microAction: "Identify one colleague dependency.", fieldExercise: "Agree on owner, deadline, and handoff format.", checkpoint: "Did ambiguity reduce?" },
+      { microAction: "Write one appreciation plus one clear request.", fieldExercise: "Use both in the same internal message.", checkpoint: "Did cooperation improve?" },
+      { microAction: "Choose one repeated internal friction point.", fieldExercise: "Suggest a simple process fix.", checkpoint: "Did you move from complaint to system?" },
+      { microAction: "Prepare one boundary for urgent interruptions.", fieldExercise: "Protect one selling block while offering a later time.", checkpoint: "Did you protect selling time?" },
+      { microAction: "Review one internal conflict.", fieldExercise: "Write the shared customer goal before the next discussion.", checkpoint: "Did the common goal become visible?" },
+    ],
+    ar: [
+      { microAction: "اكتب سلوكًا داخليًا يبطئ صفقة واحدة.", fieldExercise: "اطلب من الزميل فعلًا محددًا لا مساعدة عامة.", checkpoint: "هل أصبح الطلب أوضح؟" },
+      { microAction: "حضّر الحقائق قبل طرح مشكلة داخلية.", fieldExercise: "ناقش أثرها على العميل أو الإيراد لا الشخصية.", checkpoint: "هل بقيت المحادثة مهنية؟" },
+      { microAction: "حدد اعتمادًا واحدًا على زميل.", fieldExercise: "اتفق على المسؤول والموعد وشكل التسليم.", checkpoint: "هل قل الغموض؟" },
+      { microAction: "اكتب تقديرًا واحدًا مع طلب واضح.", fieldExercise: "استخدم الاثنين في نفس الرسالة الداخلية.", checkpoint: "هل تحسن التعاون؟" },
+      { microAction: "اختر نقطة احتكاك داخلية متكررة.", fieldExercise: "اقترح حلًا بسيطًا في العملية.", checkpoint: "هل انتقلت من الشكوى إلى النظام؟" },
+      { microAction: "حضّر حدًا للمقاطعات العاجلة.", fieldExercise: "احمِ وقت بيع واحد مع اقتراح وقت لاحق.", checkpoint: "هل حميت وقت البيع؟" },
+      { microAction: "راجع خلافًا داخليًا واحدًا.", fieldExercise: "اكتب هدف العميل المشترك قبل النقاش التالي.", checkpoint: "هل ظهر الهدف المشترك؟" },
+    ],
+  },
+};
+
+OUTDOOR_SALES_FITNESS_DRILLS.handling_objections = OUTDOOR_SALES_FITNESS_DRILLS.destroying_objections;
+
+function buildOutdoorSalesFitnessPlan(
+  weakestRows: CompetencyRow[],
+  strongestRow: CompetencyRow | null,
+  lang: Language
+): SalesFitnessDay[] {
+  const ar = lang === "ar";
+  const fallbackFocus = ar ? "أولوية بيعية" : "Sales Priority";
+  const leverageFocus = strongestRow?.label || (ar ? "أقوى عضلة بيعية لديك" : "your strongest sales muscle");
+  const weak = weakestRows.length ? weakestRows : [{ label: fallbackFocus } as CompetencyRow];
+
+  const integrationTemplates = ar
+    ? [
+        {
+          micro: (w: string, s: string) => `استخدم قوتك في ${s} لدعم ضعف ${w}.`,
+          field: () => "ابدأ المحادثة بقوتك الطبيعية، ثم انتقل عمدًا إلى السلوك الأضعف.",
+          check: "هل ساعدت القوة على تقليل الضعف؟",
+        },
+        {
+          micro: (w: string, s: string) => `اكتب جملة تربط ${s} بـ ${w} في موقف بيع حقيقي.`,
+          field: () => "استخدم الجملة مع فرصة نشطة بدل ترك كل مهارة منفصلة.",
+          check: "هل أصبحت المحادثة أكثر تماسكًا؟",
+        },
+        {
+          micro: (w: string, s: string) => `حضّر مثالًا يثبت قوتك في ${s} ويعالج فجوة ${w}.`,
+          field: () => "استخدم المثال عندما يظهر تردد أو عدم وضوح لدى العميل.",
+          check: "هل تحرك العميل خطوة للأمام؟",
+        },
+        {
+          micro: (w: string, s: string) => `اختر فرصة واحدة تحتاج إلى ${w} وادخلها بثقة ${s}.`,
+          field: () => "طبّق الاثنين معًا في زيارة أو مكالمة أو متابعة.",
+          check: "هل خرجت بخطوة تالية واضحة؟",
+        },
+      ]
+    : [
+        {
+          micro: (w: string, s: string) => `Use your strength in ${s} to support the weaker muscle: ${w}.`,
+          field: () => "Start from your natural strength, then deliberately practice the weaker behavior.",
+          check: "Did your strength reduce the impact of the weak area?",
+        },
+        {
+          micro: (w: string, s: string) => `Write one sentence that connects ${s} with ${w} in a real sales moment.`,
+          field: () => "Use that sentence with an active opportunity instead of treating the skills separately.",
+          check: "Did the conversation feel more connected and controlled?",
+        },
+        {
+          micro: (w: string, s: string) => `Prepare one proof point that uses ${s} and repairs a gap in ${w}.`,
+          field: () => "Use the proof when the buyer shows hesitation or confusion.",
+          check: "Did the buyer move one step forward?",
+        },
+        {
+          micro: (w: string, s: string) => `Choose one opportunity that needs ${w} and enter it through your strength in ${s}.`,
+          field: () => "Apply both muscles together in a visit, call, or follow-up.",
+          check: "Did you leave with a clearer next step?",
+        },
+      ];
+
+  const executionTemplates = ar
+    ? [
+        ["راجع خطتك اليومية قبل أول تواصل.", "اختر أهم فرصة واحدة وطبّق عليها أفضل سلوك من الخطة.", "هل بدأت اليوم بوضوح بدل رد الفعل؟"],
+        ["اكتب هدفًا سلوكيًا واحدًا لليوم.", "لا تقيس اليوم بالمزاج؛ قسه بتنفيذ السلوك.", "هل أنهيت السلوك المطلوب؟"],
+        ["راجع متابعة واحدة مؤجلة.", "أرسل متابعة قصيرة بهدف وخطوة تالية واضحة.", "هل أصبحت المتابعة محددة؟"],
+        ["اختر فرصة عالقة.", "اطلب قرارًا أو موعدًا أو معلومة ناقصة بدل الانتظار.", "هل تحركت الفرصة؟"],
+        ["اكتب اعتراضين محتملين.", "ازرع الدليل قبل أن يطرح العميل الاعتراض.", "هل منعت مقاومة قبل ظهورها؟"],
+        ["راجع صفقة لم تتحرك.", "حدد السبب الحقيقي: ألم، ثقة، قيمة، وقت، أو قرار.", "هل عرفت العائق الحقيقي؟"],
+        ["نظّف يومك من نشاط منخفض القيمة.", "انقل وقتًا واحدًا إلى فرصة أعلى احتمالًا.", "هل حميت ساعة بيع مهمة؟"],
+        ["اختم محادثة بخطوة مؤرخة.", "لا تترك المحادثة بكلمة سنتابع فقط.", "هل توجد خطوة تالية بتاريخ؟"],
+        ["راجع أقوى عادة بنيتها.", "كررها في موقفين اليوم.", "هل أصبحت أسهل من الأسبوع الأول؟"],
+        ["راجع أضعف عادة ما زالت تقاومك.", "طبّق نسخة صغيرة منها مرة واحدة فقط.", "هل كسرت المقاومة؟"],
+        ["اكتب درسًا واحدًا من آخر 70 يومًا.", "حوّل الدرس إلى قاعدة عمل يومية.", "هل القاعدة قابلة للتطبيق؟"],
+        ["اختر عميلًا يحتاج قيمة أوضح.", "اشرح القيمة بلغة مشكلة ونتيجة لا بلغة مزايا.", "هل فهم العميل القيمة ببساطة؟"],
+        ["راجع خط أنابيبك.", "ضع علامة على كل فرصة: تتحرك، عالقة، أو يجب إغلاقها.", "هل أصبحت الأولويات واضحة؟"],
+        ["درّب نفسك على لا واضح.", "اطلب جوابًا واضحًا من فرصة غامضة بأدب.", "هل قلّ الغموض؟"],
+        ["اكتب معيارك الشخصي للبيع الجيد.", "طبّقه في تواصل واحد اليوم.", "هل كان أداؤك مقصودًا؟"],
+        ["راجع أفضل محادثة في الأسبوع.", "كرر عنصرًا واحدًا منها اليوم.", "هل استطعت إعادة القوة؟"],
+        ["راجع أسوأ محادثة في الأسبوع.", "أعد كتابة لحظة واحدة منها بشكل أفضل.", "هل عرفت ما ستغيره؟"],
+        ["ثبت روتين ما قبل البيع.", "قبل كل تواصل: هدف، سؤال، دليل، خطوة تالية.", "هل دخلت أكثر استعدادًا؟"],
+        ["ثبت روتين ما بعد البيع.", "بعد كل تواصل: ما حدث، ما المعنى، ما الخطوة.", "هل أصبح التعلم أسرع؟"],
+        ["اكتب خطة الأسبوع القادم.", "اختر 3 سلوكيات فقط لتحميها وتكررها.", "هل لديك نظام يستمر بعد اليوم 90؟"],
+      ]
+    : [
+        ["Review your daily plan before the first outreach.", "Choose one important opportunity and apply the strongest behavior from this plan.", "Did you start with clarity instead of reaction?"],
+        ["Write one behavioral target for the day.", "Measure the day by process completion, not mood.", "Did you complete the behavior?"],
+        ["Review one delayed follow-up.", "Send a short follow-up with purpose and a clear next step.", "Did the follow-up become specific?"],
+        ["Choose one stuck opportunity.", "Ask for a decision, date, or missing information instead of waiting.", "Did the opportunity move?"],
+        ["Write two likely objections.", "Plant proof before the buyer raises the objection.", "Did you prevent resistance before it appeared?"],
+        ["Review one stalled deal.", "Name the real barrier: pain, trust, value, timing, or decision.", "Do you know the real obstacle now?"],
+        ["Remove one low-value activity from the day.", "Move that time to a higher-probability opportunity.", "Did you protect one real selling hour?"],
+        ["End one conversation with a dated next step.", "Do not leave it at vague follow-up language.", "Is there a next step with a date?"],
+        ["Review the strongest habit you built.", "Repeat it in two situations today.", "Is it easier than it was in week one?"],
+        ["Review the weak habit that still resists you.", "Practice a small version of it once today.", "Did you break the resistance?"],
+        ["Write one lesson from the last 70 days.", "Turn the lesson into one daily operating rule.", "Can you apply the rule tomorrow?"],
+        ["Choose one buyer who needs clearer value.", "Explain value through problem and outcome, not features.", "Can the buyer explain the value simply?"],
+        ["Review your pipeline.", "Mark each opportunity as moving, stuck, or should be closed.", "Are your priorities clearer?"],
+        ["Practice a clean no.", "Ask a vague opportunity for a clear answer politely.", "Did uncertainty decrease?"],
+        ["Write your personal standard for a good sales day.", "Apply it in one interaction today.", "Was your performance intentional?"],
+        ["Review your best conversation this week.", "Repeat one strong element from it today.", "Could you reproduce the strength?"],
+        ["Review your worst conversation this week.", "Rewrite one moment from it in a better way.", "Do you know what you will change?"],
+        ["Stabilize your pre-sale routine.", "Before each interaction: goal, question, proof, next step.", "Did you enter better prepared?"],
+        ["Stabilize your post-sale routine.", "After each interaction: what happened, what it means, next step.", "Did learning become faster?"],
+        ["Write next week's plan.", "Choose only 3 behaviors to protect and repeat.", "Do you have a system that survives after day 90?"],
+      ];
+
+  const days: SalesFitnessDay[] = [];
+
+  for (let i = 0; i < 42; i++) {
+    const row = weak[Math.floor(i / 7) % weak.length];
+    const focus = row?.label || fallbackFocus;
+    const id = normalizeCompetencySafe(row?.competencyId || "");
+    const drills = OUTDOOR_SALES_FITNESS_DRILLS[id]?.[ar ? "ar" : "en"] || OUTDOOR_SALES_FITNESS_DRILLS.product_expertise[ar ? "ar" : "en"];
+    const drill = drills[i % drills.length];
+    days.push({
+      day: i + 1,
+      phase: ar ? "المرحلة 1: تقوية أضعف العضلات" : "Phase 1: Strengthen the Weakest Muscles",
+      week: Math.floor(i / 7) + 1,
+      focus,
+      microAction: drill.microAction,
+      fieldExercise: drill.fieldExercise,
+      checkpoint: drill.checkpoint,
+    });
+  }
+
+  for (let i = 0; i < 28; i++) {
+    const focus = weak[i % weak.length]?.label || fallbackFocus;
+    const template = integrationTemplates[i % integrationTemplates.length];
+    days.push({
+      day: i + 43,
+      phase: ar ? "المرحلة 2: دمج الضعف مع القوة" : "Phase 2: Integrate Weak Muscles with Leverage",
+      week: Math.floor((i + 42) / 7) + 1,
+      focus,
+      microAction: template.micro(focus, leverageFocus),
+      fieldExercise: template.field(),
+      checkpoint: template.check,
+    });
+  }
+
+  for (let i = 0; i < 20; i++) {
+    const focus = i % 2 === 0 ? leverageFocus : weak[i % weak.length]?.label || fallbackFocus;
+    const [microAction, fieldExercise, checkpoint] = executionTemplates[i];
+    days.push({
+      day: i + 71,
+      phase: ar ? "المرحلة 3: التنفيذ والتثبيت" : "Phase 3: Execute, Repeat, and Stabilize",
+      week: Math.floor((i + 70) / 7) + 1,
+      focus,
+      microAction,
+      fieldExercise,
+      checkpoint,
+    });
+  }
+
+  return days;
+}
+
 
 function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
   const id = row.competencyId;
@@ -1780,6 +2257,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
   const topThreeRisks = [...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 3);
   const topThreeStrengths = [...rows].sort((a, b) => b.percentage - a.percentage).slice(0, 3);
+  const weakestSixForTreatment = [...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 6);
+  const outdoorSalesFitnessPlan = outdoorSalesMri
+    ? buildOutdoorSalesFitnessPlan(weakestSixForTreatment, topThreeStrengths[0] || null, lang)
+    : [];
 
   const reportTitle =
     (ar
@@ -2533,6 +3014,18 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 {/* MRI 90-DAY PRESCRIPTION */}
 {mri && (
   <section className="page-break rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
+    {outdoorSalesMri ? (
+      <>
+        {sectionTitle(
+          ar ? "خطة اللياقة البيعية خلال 90 يومًا" : "90-Day Sales Fitness Plan",
+          ar
+            ? "خطة تطوير يومية مبنية على أضعف عضلاتك البيعية. كل يوم يمنحك إجراءً صغيرًا لتطبيقه في مواقف بيع حقيقية."
+            : "A daily field-development plan based on your weakest sales muscles. Each day gives you one small action to practice in real selling situations."
+        )}
+        <OutdoorSalesFitnessPlanSection days={outdoorSalesFitnessPlan} lang={lang} />
+      </>
+    ) : (
+      <>
     {sectionTitle(
       businessHealth
         ? ar
@@ -2674,6 +3167,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         }
       />
     </div>
+      </>
+    )}
   </section>
 )}
 
@@ -3477,6 +3972,102 @@ function PrescriptionPhase({
       <p className="mt-3 text-sm sm:text-base text-slate-700 leading-relaxed rtl-text">
         {ar ? bodyAr : bodyEn}
       </p>
+    </div>
+  );
+}
+
+function OutdoorSalesFitnessPlanSection({
+  days,
+  lang,
+}: {
+  days: SalesFitnessDay[];
+  lang: Language;
+}) {
+  const ar = lang === "ar";
+  const weeks = Array.from(
+    days.reduce((groups, day) => {
+      const weekDays = groups.get(day.week) || [];
+      weekDays.push(day);
+      groups.set(day.week, weekDays);
+      return groups;
+    }, new Map<number, SalesFitnessDay[]>())
+  );
+
+  return (
+    <div className="space-y-5">
+      {weeks.map(([week, weekDays]) => {
+        const phase = weekDays[0]?.phase || "";
+        const startDay = weekDays[0]?.day || 1;
+        const endDay = weekDays[weekDays.length - 1]?.day || startDay;
+
+        return (
+          <div
+            key={week}
+            className="avoid-break rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 sm:p-5 shadow-sm"
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-xs font-black uppercase tracking-widest text-slate-500 rtl-text">
+                  {ar ? `الأسبوع ${week}` : `Week ${week}`}
+                </div>
+                <h3 className="mt-1 text-lg sm:text-xl font-black text-slate-950 rtl-text">
+                  {phase}
+                </h3>
+              </div>
+              <div className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-black text-slate-600">
+                {ar ? `الأيام ${startDay}-${endDay}` : `Days ${startDay}-${endDay}`}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-3">
+              {weekDays.map((day) => (
+                <article
+                  key={day.day}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <h4 className="text-base font-black text-slate-950 rtl-text">
+                      {ar ? `اليوم ${day.day}` : `Day ${day.day}`} — {day.focus}
+                    </h4>
+                    <span className="inline-flex w-fit rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white">
+                      {ar ? "تمرين يومي" : "Daily drill"}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
+                    <div className="rounded-2xl bg-slate-50 p-3">
+                      <div className="text-[11px] font-black uppercase tracking-widest text-slate-500 rtl-text">
+                        {ar ? "الإجراء الصغير" : "Micro-action"}
+                      </div>
+                      <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-700 rtl-text">
+                        {day.microAction}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl bg-blue-50 p-3">
+                      <div className="text-[11px] font-black uppercase tracking-widest text-blue-700 rtl-text">
+                        {ar ? "تمرين ميداني" : "Field exercise"}
+                      </div>
+                      <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-700 rtl-text">
+                        {day.fieldExercise}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl bg-emerald-50 p-3">
+                      <div className="text-[11px] font-black uppercase tracking-widest text-emerald-700 rtl-text">
+                        {ar ? "نقطة التحقق" : "Checkpoint"}
+                      </div>
+                      <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-700 rtl-text">
+                        {day.checkpoint}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
