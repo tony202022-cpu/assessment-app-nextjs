@@ -356,8 +356,26 @@ useEffect(() => {
     setIsTransitioning(true);
 
     const answersToSubmit = answersOverride || selectedAnswers;
+    const isOutdoorScan =
+      assessmentId === SCAN_ASSESSMENT_ID || slug === "outdoor-scan" || slug === "scan";
+    const answersByQuestionId = new Map(
+      answersToSubmit
+        .filter((a) => a?.questionId)
+        .map((a) => [String(a.questionId), a])
+    );
+    const paddedAnswers =
+      isOutdoorScan && questions.length
+        ? questions.map((q, index) => {
+            const existing = answersByQuestionId.get(String((q as any).id)) || answersToSubmit[index];
+            return {
+              questionId: String((q as any).id || existing?.questionId || ""),
+              competencyId: String((q as any).competency_id || existing?.competencyId || ""),
+              selectedScore: existing?.selectedScore ?? 0,
+            };
+          })
+        : answersToSubmit;
 
-    const finalAnswers = answersToSubmit.map((a) => ({
+    const finalAnswers = paddedAnswers.map((a) => ({
       ...a,
       selectedScore: a.selectedScore === -1 ? 0 : a.selectedScore,
     }));

@@ -164,6 +164,12 @@ function isOutdoorSalesMri(routeSlug?: string, attemptAssessmentId?: string | nu
   return s === "outdoor-mri" || a === MRI_ASSESSMENT_ID;
 }
 
+function isOutdoorSalesScan(routeSlug?: string, attemptAssessmentId?: string | null) {
+  const s = String(routeSlug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  return s === "outdoor-scan" || s === "scan" || a === SCAN_ASSESSMENT_ID;
+}
+
 function isProbablyScan(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
   const s = String(routeSlug || "").toLowerCase();
   const a = String(attemptAssessmentId || "").toLowerCase();
@@ -586,6 +592,7 @@ function ResultsContent() {
   const isBusinessHealth = isBusinessHealthAssessment(routeSlug, attempt?.assessment_id, config?.type);
   const isScan = isProbablyScan(routeSlug, attempt?.assessment_id, config?.type) && !isMri;
   const isOutdoorMri = isOutdoorSalesMri(routeSlug, attempt?.assessment_id);
+  const isOutdoorScan = isOutdoorSalesScan(routeSlug, attempt?.assessment_id);
 
   const labelsFromConfig = useMemo(() => {
     const out: Record<string, { en: string; ar: string }> = {};
@@ -981,7 +988,7 @@ const mriLinkReady =
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className={`grid grid-cols-1 ${isOutdoorScan ? "" : "lg:grid-cols-2"} gap-4`}>
               <PreviewActionCard
                 ar={ar}
                 title={ar ? "افتح التقرير الكامل" : "Open the full report"}
@@ -995,6 +1002,7 @@ const mriLinkReady =
                 icon={<FileText size={22} />}
               />
 
+              {!isOutdoorScan && (
               <PreviewActionCard
                 ar={ar}
                 title={ar ? "لا تترك الهدر والنزيف بلا علاج" : "Do not leave the leak untreated"}
@@ -1012,12 +1020,109 @@ const mriLinkReady =
                 disabled={!mriLinkReady}
                 icon={<Stethoscope size={22} />}
               />
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* OUTDOOR SALES SCAN MRI BRIDGE */}
+        {isOutdoorScan && (
+          <section className="print-hide rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
+            <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-8 md:p-10">
+              <div className="inline-flex rounded-full bg-amber-300 text-slate-950 px-4 py-2 text-xs font-black uppercase tracking-widest">
+                {ar ? "الـ Scan كشف الإشارات" : "Your Scan Found the Signals"}
+              </div>
+
+              <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
+                {ar
+                  ? "الـ Scan يُظهر إشارات التحذير. أما الـ MRI فيكشف لك ماذا تصلح أولًا."
+                  : "The Scan shows the warning lights. The MRI shows what to fix first."}
+              </h2>
+
+              <p className="mt-4 max-w-4xl text-base sm:text-xl leading-relaxed text-blue-100 rtl-text">
+                {ar
+                  ? "يمنحك Outdoor Sales Scan المجاني قراءة سريعة لـ 7 مؤشرات بيعية أساسية. أما Outdoor Sales MRI فيذهب أعمق: يشخّص 15 كفاءة بيعية، يكشف أضعف مناطق العلاج، ويعطيك خطة لياقة بيعية لمدة 90 يومًا."
+                  : "Your free Outdoor Sales Scan gives you a fast reading of 7 key sales signals. The Outdoor Sales MRI goes deeper: it diagnoses 15 sales competencies, identifies your weakest treatment areas, and gives you a 90-day field correction plan."}
+              </p>
+
+              <div className="mt-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-3xl bg-white/10 border border-white/15 p-5 sm:p-6">
+                  <h3 className="text-xl font-black text-white rtl-text">
+                    {ar ? "ماذا يعطيك الـ Scan؟" : "What the Scan gives you"}
+                  </h3>
+                  <p className="mt-3 text-sm sm:text-base leading-relaxed text-blue-100 rtl-text">
+                    {ar
+                      ? "فحص سريع لصحة أهم السلوكيات البيعية الميدانية. يساعدك على رؤية إشارات التحذير الأساسية."
+                      : "A fast health check across your core outdoor sales behaviors. It shows where warning signs may exist."}
+                  </p>
+                </div>
+
+                <div className="rounded-3xl bg-white text-slate-950 p-5 sm:p-6 shadow-2xl">
+                  <h3 className="text-xl font-black rtl-text">
+                    {ar ? "ماذا يعطيك الـ MRI؟" : "What the MRI gives you"}
+                  </h3>
+                  <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-700 rtl-text">
+                    {ar
+                      ? "تشخيصًا أعمق، أولويات الأسباب الجذرية، صفحات علاج تفصيلية، وخطة لياقة بيعية يومية لمدة 90 يومًا."
+                      : "A deeper diagnosis, root-cause priorities, detailed treatment pages, and a 90-day Sales Fitness Plan."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-7 rounded-3xl bg-white/10 border border-white/15 p-5 sm:p-6">
+                <h3 className="text-xl font-black text-white rtl-text">
+                  {ar ? "ماذا ستجد داخل تقرير Outdoor Sales MRI الكامل؟" : "Inside the full Outdoor Sales MRI"}
+                </h3>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {(ar
+                  ? [
+                      "تشخيص عميق من 75 سؤالًا",
+                      "15 كفاءة بيعية",
+                      "خريطة أولويات الأسباب الجذرية",
+                      "صفحات علاج تفصيلية",
+                      "خطة يومية لمدة 90 يومًا",
+                      "أدلة عملية إضافية للتطبيق",
+                    ]
+                  : [
+                      "75-question deep diagnostic",
+                      "15 sales competencies",
+                      "Root-cause priority map",
+                      "Detailed treatment pages",
+                      "90-day daily action plan",
+                      "Practical bonus guides",
+                    ]).map((item) => (
+                  <div key={item} className="flex gap-3 rounded-2xl bg-white/10 border border-white/15 p-4">
+                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
+                    <span className="text-sm sm:text-base font-bold text-blue-50 rtl-text">{item}</span>
+                  </div>
+                ))}
+                </div>
+              </div>
+
+              <p className="mt-7 text-lg sm:text-xl font-black text-amber-200 rtl-text">
+                {ar
+                  ? "لا تخمّن ما الذي يجب إصلاحه. شخّصه بطريقة صحيحة."
+                  : "Do not guess what to fix. Diagnose it properly."}
+              </p>
+
+              <div className="mt-6">
+                <a
+                  href={ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL_EN}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition text-center"
+                >
+                  {ar
+                    ? "احصل على تقرير Sales MRI الكامل وخطة الـ 90 يومًا"
+                    : "Get My Full Sales MRI & 90-Day Prescription"}
+                </a>
+              </div>
             </div>
           </section>
         )}
 
         {/* MRI PRESCRIPTION CARD */}
-        {isScan && (
+        {isScan && !isOutdoorScan && (
           <section className="print-hide rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
               <div className="inline-flex rounded-full bg-rose-500/20 border border-rose-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-rose-100">
