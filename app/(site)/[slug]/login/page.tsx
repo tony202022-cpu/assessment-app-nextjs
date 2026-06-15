@@ -234,7 +234,10 @@ export default function LoginPage() {
         throw new Error(ar ? "لم يتم إنشاء محاولة التقييم" : "Assessment attempt was not created");
       }
 
-      return json.attemptId as string;
+      return {
+        attemptId: json.attemptId as string,
+        alreadySubmitted: !!json.alreadySubmitted,
+      };
     }
 
     // ✅ NORMAL / NON-TOKEN FLOW
@@ -267,7 +270,15 @@ export default function LoginPage() {
     try {
       await saveProfileToSupabaseUser();
 
-      const attemptId = await createAttempt();
+      const result = await createAttempt();
+      const attemptId =
+        typeof result === "string" ? result : result.attemptId;
+
+      if (typeof result !== "string" && result.alreadySubmitted) {
+        router.replace(`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${urlLang}`);
+        return;
+      }
+
       router.replace(`/${slug}/instructions?lang=${urlLang}&attemptId=${encodeURIComponent(attemptId)}`);
     } catch (e: any) {
       toast.error(e?.message || (ar ? "فشل المتابعة" : "Failed to continue"));

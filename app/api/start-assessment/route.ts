@@ -94,9 +94,22 @@ export async function POST(req: Request) {
       );
     }
 
+    const { data: attempt } = await supabaseAdmin
+      .from("quiz_attempts")
+      .select("answers, competency_results, total_percentage")
+      .eq("id", row.attempt_id)
+      .maybeSingle();
+
+    const alreadySubmitted =
+      (Array.isArray(attempt?.answers) && attempt.answers.length > 0) ||
+      (Array.isArray(attempt?.competency_results) &&
+        attempt.competency_results.length > 0) ||
+      Number(attempt?.total_percentage || 0) > 0;
+
     return NextResponse.json({
       attemptId: row.attempt_id,
       creditsRemaining: row.credits_remaining,
+      alreadySubmitted,
     });
   } catch (e: any) {
     return NextResponse.json(
