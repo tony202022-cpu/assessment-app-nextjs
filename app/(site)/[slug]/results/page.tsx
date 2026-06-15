@@ -158,6 +158,12 @@ function isProbablyMRI(routeSlug?: string, attemptAssessmentId?: string | null, 
   return s.includes("mri") || a.includes("mri") || c === "mri" || a === MRI_ASSESSMENT_ID;
 }
 
+function isOutdoorSalesMri(routeSlug?: string, attemptAssessmentId?: string | null) {
+  const s = String(routeSlug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  return s === "outdoor-mri" || a === MRI_ASSESSMENT_ID;
+}
+
 function isProbablyScan(routeSlug?: string, attemptAssessmentId?: string | null, configType?: string | null) {
   const s = String(routeSlug || "").toLowerCase();
   const a = String(attemptAssessmentId || "").toLowerCase();
@@ -579,6 +585,7 @@ function ResultsContent() {
   const isLawyer = isLawyerAssessment(routeSlug, attempt?.assessment_id, config?.type);
   const isBusinessHealth = isBusinessHealthAssessment(routeSlug, attempt?.assessment_id, config?.type);
   const isScan = isProbablyScan(routeSlug, attempt?.assessment_id, config?.type) && !isMri;
+  const isOutdoorMri = isOutdoorSalesMri(routeSlug, attempt?.assessment_id);
 
   const labelsFromConfig = useMemo(() => {
     const out: Record<string, { en: string; ar: string }> = {};
@@ -595,6 +602,10 @@ function ResultsContent() {
 
   const getCompetencyLabel = (res: any) => {
     const id = normalizeCompetencySafe(res?.competencyId || res?.key);
+    if (isOutdoorMri && id === "dealing_with_boss") {
+      return ar ? "التعامل مع الإدارة وبناء التوافق الداخلي" : "Managing Up & Internal Alignment";
+    }
+
     const meta = (id && COMPETENCY_LABELS[id]) || (id && labelsFromConfig[id]) || null;
 
     if (meta) return ar ? meta.ar || meta.en : meta.en || meta.ar;
@@ -1171,7 +1182,11 @@ const mriLinkReady =
 
             <p className="text-white/90 leading-relaxed rtl-text">
               {ar
-                ? "هذا هو التقرير المتقدم. سيتم تطوير عرض MRI التفصيلي في المرحلة التالية."
+                ? isOutdoorMri
+                  ? "تقرير Outdoor Sales MRI الكامل جاهز الآن. افتح التقرير الكامل للاطلاع على التشخيص التفصيلي، أولويات العلاج، تحليل SWOT، وخطة التنفيذ لمدة 90 يومًا."
+                  : "هذا هو التقرير المتقدم. سيتم تطوير عرض MRI التفصيلي في المرحلة التالية."
+                : isOutdoorMri
+                ? "Your full Outdoor Sales MRI report is ready. Open the full report to view your detailed diagnosis, priority treatment areas, SWOT analysis, and 90-day execution plan."
                 : "This is the advanced report flow. The detailed MRI presentation will be refined in the next stage."}
             </p>
           </section>

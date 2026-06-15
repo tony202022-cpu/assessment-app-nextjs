@@ -148,6 +148,12 @@ function isMriReport(slug: string, attemptAssessmentId?: string | null) {
   return s.includes("mri") || a.includes("mri");
 }
 
+function isOutdoorSalesMriReport(slug: string, attemptAssessmentId?: string | null) {
+  const s = String(slug || "").toLowerCase();
+  const a = String(attemptAssessmentId || "").toLowerCase();
+  return s === "outdoor-mri" || a === "outdoor_sales_mri";
+}
+
 
 function isSalesManagerAssessment(slug: string, attemptAssessmentId?: string | null) {
   const s = String(slug || "").toLowerCase();
@@ -1710,6 +1716,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const salesManager = isSalesManagerAssessment(slug, (attempt as any).assessment_id);
   const lawyer = isLawyerAssessment(slug, (attempt as any).assessment_id);
   const businessHealth = isBusinessHealthAssessment(slug, (attempt as any).assessment_id);
+  const outdoorSalesMri = isOutdoorSalesMriReport(slug, (attempt as any).assessment_id);
 
   const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
   const comps = Array.isArray((assessment as any)?.config?.competencies)
@@ -1727,6 +1734,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
   function getCompetencyLabel(competencyId: string): string {
     const key = normalizeCompetencySafe(competencyId);
+    if (outdoorSalesMri && key === "dealing_with_boss") {
+      return ar ? "التعامل مع الإدارة وبناء التوافق الداخلي" : "Managing Up & Internal Alignment";
+    }
+
     const meta = labelsFromConfig[key] || COMPETENCY_LABELS[key] || null;
 
     if (meta) {
@@ -2811,6 +2822,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </section>
         )}
 
+{!outdoorSalesMri && (
+<>
 {/* ENTERPRISE CTA */}
 
 <section className="web-enterprise-print-hide avoid-break mt-8">
@@ -2908,6 +2921,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   </div>
 
 </section>
+</>
+)}
 
       </main>
     </div>
