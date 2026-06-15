@@ -687,25 +687,44 @@ type SalesFitnessDrill = {
   checkpoint: string;
 };
 
-const OUTDOOR_SALES_FITNESS_DRILLS: Record<string, { en: SalesFitnessDrill[]; ar: SalesFitnessDrill[] }> = {
-  generic_sales_priority: {
+type OutdoorMriCompetencyKey =
+  | "general_sales_execution"
+  | "mental_toughness"
+  | "product_expertise"
+  | "identifying_real_needs"
+  | "handling_difficult_customers"
+  | "time_territory_management"
+  | "prospecting_finding_new_clients"
+  | "creating_irresistible_offers"
+  | "mastering_closing"
+  | "handling_difficult_colleagues"
+  | "consultative_selling"
+  | "destroying_objections"
+  | "attitude_motivation_mindset"
+  | "negotiation_skills"
+  | "follow_up_discipline"
+  | "opening_conversations"
+  | "dealing_with_boss";
+
+const OUTDOOR_SALES_FITNESS_DRILLS: Record<OutdoorMriCompetencyKey, { en: SalesFitnessDrill[]; ar: SalesFitnessDrill[] }> = {
+  general_sales_execution: {
     en: [
-      { microAction: "Choose one active sales situation that needs cleaner execution.", fieldExercise: "Write the next useful action and complete it today.", checkpoint: "Did the opportunity move one step forward?" },
-      { microAction: "Identify one buyer conversation that needs more clarity.", fieldExercise: "Ask one direct question before explaining more.", checkpoint: "Did the conversation become clearer?" },
-      { microAction: "Write one proof point you can use today.", fieldExercise: "Use it with a buyer who needs more confidence.", checkpoint: "Did proof reduce uncertainty?" },
-      { microAction: "Choose one delayed opportunity.", fieldExercise: "Send a specific next-step message with a date or clear ask.", checkpoint: "Did you remove vagueness?" },
-      { microAction: "Review one weak sales moment from yesterday.", fieldExercise: "Rewrite it as a stronger question, message, or next step.", checkpoint: "Is the new version easier to use?" },
-      { microAction: "Pick one behavior to repeat in every serious opportunity today.", fieldExercise: "Apply it at least three times in live selling situations.", checkpoint: "Did repetition make it easier?" },
-      { microAction: "End the day by naming the best action and the missed action.", fieldExercise: "Turn both into tomorrow's first two sales moves.", checkpoint: "Do you know exactly what to do next?" },
+      { microAction: "Choose one sales conversation today and define the desired next step before it starts.", fieldExercise: "Open the conversation with that next step in mind.", checkpoint: "Did the conversation move toward a clear action?" },
+      { microAction: "After one interaction, write what worked, what failed, and one correction for tomorrow.", fieldExercise: "Use the correction in your next similar conversation.", checkpoint: "Did the review create a practical improvement?" },
+      { microAction: "Ask one clearer business question before presenting any solution.", fieldExercise: "Pause the pitch until the buyer answers the question.", checkpoint: "Did the answer change how you presented?" },
+      { microAction: "Convert one vague opportunity into a dated next action.", fieldExercise: "Ask for the date, owner, or decision needed.", checkpoint: "Did the opportunity become less vague?" },
+      { microAction: "Write one buyer concern and prepare one calm response.", fieldExercise: "Use the response without sounding defensive.", checkpoint: "Did the response protect trust?" },
+      { microAction: "Review one open opportunity and identify the missing decision step.", fieldExercise: "Ask for the missing step directly.", checkpoint: "Did you learn what must happen next?" },
+      { microAction: "End one conversation with a clear agreed action.", fieldExercise: "Confirm the action, owner, and timing before leaving.", checkpoint: "Is the next step agreed, not assumed?" },
     ],
     ar: [
-      { microAction: "اختر موقفًا بيعيًا نشطًا يحتاج تنفيذًا أوضح.", fieldExercise: "اكتب الإجراء المفيد التالي وأنجزه اليوم.", checkpoint: "هل تحركت الفرصة خطوة للأمام؟" },
-      { microAction: "حدد محادثة عميل تحتاج وضوحًا أكثر.", fieldExercise: "اسأل سؤالًا مباشرًا واحدًا قبل شرح المزيد.", checkpoint: "هل أصبحت المحادثة أوضح؟" },
-      { microAction: "اكتب دليلًا واحدًا يمكنك استخدامه اليوم.", fieldExercise: "استخدمه مع عميل يحتاج ثقة أكبر.", checkpoint: "هل قلل الدليل التردد؟" },
-      { microAction: "اختر فرصة مؤجلة.", fieldExercise: "أرسل رسالة خطوة تالية محددة بتاريخ أو طلب واضح.", checkpoint: "هل أزلت الغموض؟" },
-      { microAction: "راجع لحظة بيعية ضعيفة من أمس.", fieldExercise: "أعد كتابتها كسؤال أو رسالة أو خطوة تالية أقوى.", checkpoint: "هل النسخة الجديدة أسهل للاستخدام؟" },
-      { microAction: "اختر سلوكًا واحدًا لتكراره في كل فرصة جادة اليوم.", fieldExercise: "طبقه ثلاث مرات على الأقل في مواقف بيع حقيقية.", checkpoint: "هل جعل التكرار السلوك أسهل؟" },
-      { microAction: "اختم اليوم بتسمية أفضل فعل والفعل الذي فاتك.", fieldExercise: "حوّل الاثنين إلى أول حركتين بيعيتين للغد.", checkpoint: "هل تعرف بالضبط ماذا ستفعل بعد ذلك؟" },
+      { microAction: "اختر محادثة بيعية واحدة اليوم وحدد الخطوة التالية المطلوبة قبل أن تبدأ.", fieldExercise: "ابدأ المحادثة وأنت تعرف الخطوة التي تريد الوصول إليها.", checkpoint: "هل تحركت المحادثة نحو فعل واضح؟" },
+      { microAction: "بعد تفاعل واحد، اكتب ما نجح وما لم ينجح وتصحيحًا واحدًا للغد.", fieldExercise: "استخدم التصحيح في أقرب محادثة مشابهة.", checkpoint: "هل أنتجت المراجعة تحسينًا عمليًا؟" },
+      { microAction: "اطرح سؤالًا تجاريًا أوضح قبل تقديم أي حل.", fieldExercise: "أجل العرض حتى يجيب العميل على السؤال.", checkpoint: "هل غيرت الإجابة طريقة عرضك؟" },
+      { microAction: "حوّل فرصة غامضة إلى خطوة تالية بتاريخ واضح.", fieldExercise: "اطلب التاريخ أو المسؤول أو القرار المطلوب.", checkpoint: "هل أصبحت الفرصة أقل غموضًا؟" },
+      { microAction: "اكتب قلقًا واحدًا لدى العميل وحضّر ردًا هادئًا عليه.", fieldExercise: "استخدم الرد دون أن تبدو دفاعيًا.", checkpoint: "هل حمى الرد الثقة؟" },
+      { microAction: "راجع فرصة مفتوحة وحدد خطوة القرار الناقصة.", fieldExercise: "اطلب الخطوة الناقصة مباشرة.", checkpoint: "هل عرفت ما يجب أن يحدث بعد ذلك؟" },
+      { microAction: "أنهِ محادثة واحدة باتفاق واضح على الخطوة التالية.", fieldExercise: "أكد الفعل والمسؤول والتوقيت قبل المغادرة.", checkpoint: "هل الخطوة التالية متفق عليها لا مفترضة؟" },
     ],
   },
   prospecting_finding_new_clients: {
@@ -807,10 +826,6 @@ const OUTDOOR_SALES_FITNESS_DRILLS: Record<string, { en: SalesFitnessDrill[]; ar
       { microAction: "حضّر مقارنة ضد عدم فعل شيء.", fieldExercise: "استخدمها عندما يتردد العميل.", checkpoint: "هل رأى العميل خطر التأجيل؟" },
       { microAction: "راجع صفقة ضاعت وحدد الاعتراض غير المعالج.", fieldExercise: "اكتب الرد الذي ستستخدمه في المرة القادمة.", checkpoint: "هل الرد الجديد أقصر وأقوى؟" },
     ],
-  },
-  handling_objections: {
-    en: [],
-    ar: [],
   },
   creating_irresistible_offers: {
     en: [
@@ -1034,27 +1049,112 @@ const OUTDOOR_SALES_FITNESS_DRILLS: Record<string, { en: SalesFitnessDrill[]; ar
   },
 };
 
-OUTDOOR_SALES_FITNESS_DRILLS.handling_objections = OUTDOOR_SALES_FITNESS_DRILLS.destroying_objections;
-OUTDOOR_SALES_FITNESS_DRILLS.prospecting = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
-OUTDOOR_SALES_FITNESS_DRILLS.prospecting_and_finding_new_clients = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
-OUTDOOR_SALES_FITNESS_DRILLS.finding_new_clients = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
-OUTDOOR_SALES_FITNESS_DRILLS.lead_generation = OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients;
+const OUTDOOR_MRI_COMPETENCY_ALIASES: Record<string, OutdoorMriCompetencyKey> = {
+  mental_toughness: "mental_toughness",
+  "Mental Toughness": "mental_toughness",
+  "mental toughness": "mental_toughness",
+  "الصلابة الذهنية": "mental_toughness",
 
-function getOutdoorSalesFitnessDrills(row: CompetencyRow | undefined, ar: boolean) {
-  const id = normalizeCompetencySafe(row?.competencyId || "");
-  const label = String(row?.label || "").toLowerCase();
-  const language = ar ? "ar" : "en";
+  product_expertise: "product_expertise",
+  "Product Expertise": "product_expertise",
+  "product expertise": "product_expertise",
+  "الخبرة في المنتج": "product_expertise",
 
-  if (
-    id === "prospecting_finding_new_clients" ||
-    label.includes("prospecting") ||
-    label.includes("finding new clients") ||
-    label.includes("البحث عن عملاء")
-  ) {
-    return OUTDOOR_SALES_FITNESS_DRILLS.prospecting_finding_new_clients[language];
-  }
+  identifying_real_needs: "identifying_real_needs",
+  "Identifying Real Needs": "identifying_real_needs",
+  "identifying real needs": "identifying_real_needs",
+  "تحديد الاحتياجات الحقيقية": "identifying_real_needs",
 
-  return OUTDOOR_SALES_FITNESS_DRILLS[id]?.[language] || OUTDOOR_SALES_FITNESS_DRILLS.generic_sales_priority[language];
+  handling_difficult_customers: "handling_difficult_customers",
+  "Handling Difficult Customers": "handling_difficult_customers",
+  "handling difficult customers": "handling_difficult_customers",
+  "التعامل مع العملاء الصعبين": "handling_difficult_customers",
+
+  time_territory_management: "time_territory_management",
+  time_and_territory_management: "time_territory_management",
+  "Time & Territory Management": "time_territory_management",
+  "time & territory management": "time_territory_management",
+  "إدارة الوقت والمنطقة": "time_territory_management",
+
+  prospecting_finding_new_clients: "prospecting_finding_new_clients",
+  prospecting_and_finding_new_clients: "prospecting_finding_new_clients",
+  prospecting: "prospecting_finding_new_clients",
+  finding_new_clients: "prospecting_finding_new_clients",
+  lead_generation: "prospecting_finding_new_clients",
+  "Prospecting & Finding New Clients": "prospecting_finding_new_clients",
+  "prospecting & finding new clients": "prospecting_finding_new_clients",
+  "البحث عن عملاء جدد": "prospecting_finding_new_clients",
+
+  creating_irresistible_offers: "creating_irresistible_offers",
+  "Creating Irresistible Offers": "creating_irresistible_offers",
+  "creating irresistible offers": "creating_irresistible_offers",
+  "إنشاء عروض لا تُقاوَم": "creating_irresistible_offers",
+
+  mastering_closing: "mastering_closing",
+  "Mastering Closing": "mastering_closing",
+  "mastering closing": "mastering_closing",
+  "إتقان الإغلاق": "mastering_closing",
+
+  handling_difficult_colleagues: "handling_difficult_colleagues",
+  "Handling Difficult Colleagues": "handling_difficult_colleagues",
+  "handling difficult colleagues": "handling_difficult_colleagues",
+  "التعامل مع الزملاء الصعبين": "handling_difficult_colleagues",
+
+  consultative_selling: "consultative_selling",
+  "Consultative Selling": "consultative_selling",
+  "consultative selling": "consultative_selling",
+  "المبيعات الاستشارية": "consultative_selling",
+
+  destroying_objections: "destroying_objections",
+  handling_objections: "destroying_objections",
+  "Destroying Objections": "destroying_objections",
+  "destroying objections": "destroying_objections",
+  "Handling Objections": "destroying_objections",
+  "handling objections": "destroying_objections",
+  "تدمير الاعتراضات من الجذور": "destroying_objections",
+  "التعامل مع الاعتراضات": "destroying_objections",
+
+  attitude_motivation_mindset: "attitude_motivation_mindset",
+  attitude_and_motivation_mindset: "attitude_motivation_mindset",
+  "Attitude & Motivation Mindset": "attitude_motivation_mindset",
+  "attitude & motivation mindset": "attitude_motivation_mindset",
+  "العقلية والتحفيز": "attitude_motivation_mindset",
+
+  negotiation_skills: "negotiation_skills",
+  "Negotiation Skills": "negotiation_skills",
+  "negotiation skills": "negotiation_skills",
+  "مهارات التفاوض": "negotiation_skills",
+
+  follow_up_discipline: "follow_up_discipline",
+  followup_discipline: "follow_up_discipline",
+  "Follow-Up Discipline": "follow_up_discipline",
+  "follow-up discipline": "follow_up_discipline",
+  "follow up discipline": "follow_up_discipline",
+  "انضباط المتابعة": "follow_up_discipline",
+
+  opening_conversations: "opening_conversations",
+  "Opening Conversations": "opening_conversations",
+  "opening conversations": "opening_conversations",
+  "فتح المحادثات": "opening_conversations",
+
+  dealing_with_boss: "dealing_with_boss",
+  "Dealing with Boss": "dealing_with_boss",
+  "dealing with boss": "dealing_with_boss",
+  "Managing Up & Internal Alignment": "dealing_with_boss",
+  "managing up & internal alignment": "dealing_with_boss",
+  "التعامل مع المدير": "dealing_with_boss",
+  "التعامل مع الإدارة وبناء التوافق الداخلي": "dealing_with_boss",
+};
+
+function getOutdoorMriCanonicalKey(input: string): OutdoorMriCompetencyKey {
+  const raw = String(input || "").trim();
+  const normalized = raw.toLowerCase().trim();
+  return OUTDOOR_MRI_COMPETENCY_ALIASES[raw] || OUTDOOR_MRI_COMPETENCY_ALIASES[normalized] || "general_sales_execution";
+}
+
+function getOutdoorSalesFitnessDrills(competencyId: string | undefined, ar: boolean) {
+  const key = getOutdoorMriCanonicalKey(competencyId || "");
+  return OUTDOOR_SALES_FITNESS_DRILLS[key][ar ? "ar" : "en"];
 }
 
 function buildOutdoorSalesFitnessPlan(
@@ -1164,7 +1264,7 @@ function buildOutdoorSalesFitnessPlan(
   for (let i = 0; i < 42; i++) {
     const row = weak[Math.floor(i / 7) % weak.length];
     const focus = row?.label || fallbackFocus;
-    const drills = getOutdoorSalesFitnessDrills(row, ar);
+    const drills = getOutdoorSalesFitnessDrills(row?.competencyId, ar);
     const drill = drills[i % drills.length];
     days.push({
       day: i + 1,
