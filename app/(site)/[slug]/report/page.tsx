@@ -688,6 +688,46 @@ type SalesFitnessDrill = {
 };
 
 const OUTDOOR_SALES_FITNESS_DRILLS: Record<string, { en: SalesFitnessDrill[]; ar: SalesFitnessDrill[] }> = {
+  generic_sales_priority: {
+    en: [
+      { microAction: "Choose one active sales situation that needs cleaner execution.", fieldExercise: "Write the next useful action and complete it today.", checkpoint: "Did the opportunity move one step forward?" },
+      { microAction: "Identify one buyer conversation that needs more clarity.", fieldExercise: "Ask one direct question before explaining more.", checkpoint: "Did the conversation become clearer?" },
+      { microAction: "Write one proof point you can use today.", fieldExercise: "Use it with a buyer who needs more confidence.", checkpoint: "Did proof reduce uncertainty?" },
+      { microAction: "Choose one delayed opportunity.", fieldExercise: "Send a specific next-step message with a date or clear ask.", checkpoint: "Did you remove vagueness?" },
+      { microAction: "Review one weak sales moment from yesterday.", fieldExercise: "Rewrite it as a stronger question, message, or next step.", checkpoint: "Is the new version easier to use?" },
+      { microAction: "Pick one behavior to repeat in every serious opportunity today.", fieldExercise: "Apply it at least three times in live selling situations.", checkpoint: "Did repetition make it easier?" },
+      { microAction: "End the day by naming the best action and the missed action.", fieldExercise: "Turn both into tomorrow's first two sales moves.", checkpoint: "Do you know exactly what to do next?" },
+    ],
+    ar: [
+      { microAction: "اختر موقفًا بيعيًا نشطًا يحتاج تنفيذًا أوضح.", fieldExercise: "اكتب الإجراء المفيد التالي وأنجزه اليوم.", checkpoint: "هل تحركت الفرصة خطوة للأمام؟" },
+      { microAction: "حدد محادثة عميل تحتاج وضوحًا أكثر.", fieldExercise: "اسأل سؤالًا مباشرًا واحدًا قبل شرح المزيد.", checkpoint: "هل أصبحت المحادثة أوضح؟" },
+      { microAction: "اكتب دليلًا واحدًا يمكنك استخدامه اليوم.", fieldExercise: "استخدمه مع عميل يحتاج ثقة أكبر.", checkpoint: "هل قلل الدليل التردد؟" },
+      { microAction: "اختر فرصة مؤجلة.", fieldExercise: "أرسل رسالة خطوة تالية محددة بتاريخ أو طلب واضح.", checkpoint: "هل أزلت الغموض؟" },
+      { microAction: "راجع لحظة بيعية ضعيفة من أمس.", fieldExercise: "أعد كتابتها كسؤال أو رسالة أو خطوة تالية أقوى.", checkpoint: "هل النسخة الجديدة أسهل للاستخدام؟" },
+      { microAction: "اختر سلوكًا واحدًا لتكراره في كل فرصة جادة اليوم.", fieldExercise: "طبقه ثلاث مرات على الأقل في مواقف بيع حقيقية.", checkpoint: "هل جعل التكرار السلوك أسهل؟" },
+      { microAction: "اختم اليوم بتسمية أفضل فعل والفعل الذي فاتك.", fieldExercise: "حوّل الاثنين إلى أول حركتين بيعيتين للغد.", checkpoint: "هل تعرف بالضبط ماذا ستفعل بعد ذلك؟" },
+    ],
+  },
+  prospecting_finding_new_clients: {
+    en: [
+      { microAction: "Build a list of 10 fresh prospects from one source.", fieldExercise: "Choose one source today: LinkedIn, referrals, directories, events, or nearby accounts.", checkpoint: "Do you have 10 usable names with a reason to contact them?" },
+      { microAction: "Ask one existing customer for a referral.", fieldExercise: "Ask for one person or company with a similar problem, not a general introduction.", checkpoint: "Did you create one warm path?" },
+      { microAction: "Identify 5 lookalike companies similar to your best customer.", fieldExercise: "Write why each company may have the same problem or buying trigger.", checkpoint: "Can you explain why each prospect fits?" },
+      { microAction: "Send one problem-based outreach message.", fieldExercise: "Start with the likely business problem, not your product or company story.", checkpoint: "Did the message earn a reply or a next attempt?" },
+      { microAction: "Reconnect with one dormant lead using a useful insight.", fieldExercise: "Send a relevant idea, trend, risk, or observation instead of “just checking in.”", checkpoint: "Did the old lead receive new value?" },
+      { microAction: "Add one new decision maker to your pipeline.", fieldExercise: "Find the person who owns the problem, budget, or final approval.", checkpoint: "Is your pipeline connected to a real decision maker?" },
+      { microAction: "Track new qualified conversations created today.", fieldExercise: "Count only prospects with a real problem, fit, and possible next step.", checkpoint: "How many qualified conversations did you create?" },
+    ],
+    ar: [
+      { microAction: "ابنِ قائمة من 10 عملاء محتملين جدد من مصدر واحد.", fieldExercise: "اختر مصدرًا واحدًا اليوم: لينكدإن، الإحالات، الأدلة، الفعاليات، أو الحسابات القريبة.", checkpoint: "هل لديك 10 أسماء قابلة للاستخدام مع سبب واضح للتواصل؟" },
+      { microAction: "اطلب إحالة واحدة من عميل حالي.", fieldExercise: "اطلب شخصًا أو شركة لديها مشكلة مشابهة، لا تعريفًا عامًا.", checkpoint: "هل صنعت طريقًا دافئًا واحدًا؟" },
+      { microAction: "حدد 5 شركات تشبه أفضل عميل لديك.", fieldExercise: "اكتب لماذا قد تملك كل شركة نفس المشكلة أو محفز الشراء.", checkpoint: "هل تستطيع شرح سبب ملاءمة كل عميل محتمل؟" },
+      { microAction: "أرسل رسالة تواصل مبنية على مشكلة حقيقية.", fieldExercise: "ابدأ بالمشكلة التجارية المحتملة، لا بمنتجك أو قصة شركتك.", checkpoint: "هل حصلت الرسالة على رد أو محاولة تالية؟" },
+      { microAction: "أعد التواصل مع عميل محتمل قديم بفكرة مفيدة.", fieldExercise: "أرسل فكرة أو توجهًا أو خطرًا أو ملاحظة مفيدة بدل عبارة فقط أتابع.", checkpoint: "هل تلقى العميل القديم قيمة جديدة؟" },
+      { microAction: "أضف صانع قرار جديدًا إلى خط الأنابيب.", fieldExercise: "ابحث عن الشخص الذي يملك المشكلة أو الميزانية أو الموافقة النهائية.", checkpoint: "هل أصبح خط الأنابيب مرتبطًا بصانع قرار حقيقي؟" },
+      { microAction: "قِس عدد المحادثات المؤهلة الجديدة اليوم.", fieldExercise: "احسب فقط العملاء الذين لديهم مشكلة حقيقية وملاءمة وخطوة تالية محتملة.", checkpoint: "كم محادثة مؤهلة جديدة صنعت اليوم؟" },
+    ],
+  },
   mental_toughness: {
     en: [
       { microAction: "Write the one sales situation you avoided yesterday.", fieldExercise: "Do that situation first today before easier activity.", checkpoint: "Did you act before your confidence felt ready?" },
@@ -1104,7 +1144,7 @@ function buildOutdoorSalesFitnessPlan(
     const row = weak[Math.floor(i / 7) % weak.length];
     const focus = row?.label || fallbackFocus;
     const id = normalizeCompetencySafe(row?.competencyId || "");
-    const drills = OUTDOOR_SALES_FITNESS_DRILLS[id]?.[ar ? "ar" : "en"] || OUTDOOR_SALES_FITNESS_DRILLS.product_expertise[ar ? "ar" : "en"];
+    const drills = OUTDOOR_SALES_FITNESS_DRILLS[id]?.[ar ? "ar" : "en"] || OUTDOOR_SALES_FITNESS_DRILLS.generic_sales_priority[ar ? "ar" : "en"];
     const drill = drills[i % drills.length];
     days.push({
       day: i + 1,
