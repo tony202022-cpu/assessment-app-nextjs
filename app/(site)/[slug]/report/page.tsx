@@ -699,6 +699,22 @@ type SalesFitnessDrill = {
   checkpoint: string;
 };
 
+type LawyerTreatmentDay = {
+  day: number;
+  phase: string;
+  week: number;
+  focus: string;
+  microAction: string;
+  consultationDrill: string;
+  checkpoint: string;
+};
+
+type LawyerTreatmentDrill = {
+  microAction: string;
+  consultationDrill: string;
+  checkpoint: string;
+};
+
 type OutdoorMriCompetencyKey =
   | "general_sales_execution"
   | "mental_toughness"
@@ -1313,6 +1329,512 @@ function buildOutdoorSalesFitnessPlan(
       focus,
       microAction,
       fieldExercise,
+      checkpoint,
+    });
+  }
+
+  return days;
+}
+
+type LawyerMriCompetencyKey =
+  | "legal_inquiry_handling"
+  | "consultation_opening_control"
+  | "legal_need_diagnosis"
+  | "case_qualification_client_fit"
+  | "client_trust_professional_authority"
+  | "explaining_legal_strategy_simply"
+  | "legal_value_framing"
+  | "fee_presentation_retainer_confidence"
+  | "fee_comparison_objections"
+  | "trust_risk_outcome_objections"
+  | "ethical_persuasion_boundaries"
+  | "consultation_closing_engagement"
+  | "post_consultation_follow_up"
+  | "emotional_difficult_clients"
+  | "client_experience_referral_growth";
+
+const LAWYER_MRI_COMPETENCY_KEYS: LawyerMriCompetencyKey[] = [
+  "legal_inquiry_handling",
+  "consultation_opening_control",
+  "legal_need_diagnosis",
+  "case_qualification_client_fit",
+  "client_trust_professional_authority",
+  "explaining_legal_strategy_simply",
+  "legal_value_framing",
+  "fee_presentation_retainer_confidence",
+  "fee_comparison_objections",
+  "trust_risk_outcome_objections",
+  "ethical_persuasion_boundaries",
+  "consultation_closing_engagement",
+  "post_consultation_follow_up",
+  "emotional_difficult_clients",
+  "client_experience_referral_growth",
+];
+
+const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatmentDrill[]; ar: LawyerTreatmentDrill[] }> = {
+  legal_inquiry_handling: {
+    en: [
+      { microAction: "Write a 4-question intake filter for one new inquiry.", consultationDrill: "Before discussing the file, ask about matter type, urgency, parties involved, and expected decision date.", checkpoint: "Did you know whether the inquiry deserved a full consultation?" },
+      { microAction: "Prepare one calm response for callers who demand instant advice.", consultationDrill: "Use it to move the caller into a structured consultation instead of giving rushed guidance.", checkpoint: "Did you protect professional boundaries before giving direction?" },
+      { microAction: "Create one conflict-check prompt for inbound inquiries.", consultationDrill: "Ask for the names of relevant parties before hearing sensitive details.", checkpoint: "Was the inquiry screened before confidential detail expanded?" },
+      { microAction: "Write one sentence that explains what the consultation can and cannot cover.", consultationDrill: "Use it at the start of the next inquiry call.", checkpoint: "Did the client understand the consultation boundary?" },
+      { microAction: "Prepare a note template for inquiry source, issue, urgency, and next step.", consultationDrill: "Complete it during one inquiry instead of relying on memory.", checkpoint: "Could another professional understand the matter from your note?" },
+      { microAction: "Identify one inquiry that should be redirected or declined early.", consultationDrill: "Explain the boundary professionally and point to the appropriate next route.", checkpoint: "Did you avoid taking in a poor-fit matter?" },
+      { microAction: "Set one standard inquiry response time for today.", consultationDrill: "Respond within that window with either a consultation path or a clear boundary.", checkpoint: "Was every inquiry moved to a defined next step?" },
+    ],
+    ar: [
+      { microAction: "اكتب فلتر استقبال من 4 أسئلة لاستفسار قانوني جديد.", consultationDrill: "قبل مناقشة الملف، اسأل عن نوع المسألة، درجة الاستعجال، الأطراف المعنية، وموعد القرار المتوقع.", checkpoint: "هل عرفت إن كان الاستفسار يستحق استشارة كاملة؟" },
+      { microAction: "حضّر ردًا هادئًا لمن يطلب نصيحة فورية عبر الاتصال.", consultationDrill: "استخدمه لنقل المتصل إلى استشارة منظمة بدل إعطاء توجيه متسرع.", checkpoint: "هل حميت الحدود المهنية قبل تقديم أي توجيه؟" },
+      { microAction: "أنشئ سؤال فحص تعارض مصالح للاستفسارات الواردة.", consultationDrill: "اطلب أسماء الأطراف ذات الصلة قبل سماع تفاصيل حساسة.", checkpoint: "هل تم فحص الاستفسار قبل توسع التفاصيل السرية؟" },
+      { microAction: "اكتب جملة توضح ما تغطيه الاستشارة وما لا تغطيه.", consultationDrill: "استخدمها في بداية الاستفسار التالي.", checkpoint: "هل فهم العميل حدود الاستشارة؟" },
+      { microAction: "حضّر قالب ملاحظة يتضمن مصدر الاستفسار، المسألة، الاستعجال، والخطوة التالية.", consultationDrill: "املأه أثناء استفسار واحد بدل الاعتماد على الذاكرة.", checkpoint: "هل يستطيع مهني آخر فهم المسألة من ملاحظتك؟" },
+      { microAction: "حدد استفسارًا واحدًا يجب تحويله أو رفضه مبكرًا.", consultationDrill: "اشرح الحد المهني بوضوح ووجّه العميل إلى المسار الأنسب.", checkpoint: "هل تجنبت إدخال ملف غير مناسب؟" },
+      { microAction: "حدد زمن استجابة معياريًا للاستفسارات اليوم.", consultationDrill: "استجب ضمن هذا الزمن بمسار استشارة واضح أو حد مهني واضح.", checkpoint: "هل انتقل كل استفسار إلى خطوة محددة؟" },
+    ],
+  },
+  consultation_opening_control: {
+    en: [
+      { microAction: "Write a 60-second opening script for your next consultation.", consultationDrill: "Start with purpose, agenda, confidentiality boundary, and decision path.", checkpoint: "Did the client know how the consultation would run?" },
+      { microAction: "Prepare three agenda items before the client speaks in detail.", consultationDrill: "Name the agenda and ask permission to guide the sequence.", checkpoint: "Did you lead the structure without sounding controlling?" },
+      { microAction: "Create one interruption phrase for clients who jump between facts.", consultationDrill: "Use it to pause, sequence the facts, and return to the legal issue.", checkpoint: "Did the conversation become easier to follow?" },
+      { microAction: "Define the consultation outcome before the meeting starts.", consultationDrill: "Say whether the goal is assessment, legal options, next step, or engagement readiness.", checkpoint: "Did the consultation have a clear destination?" },
+      { microAction: "Prepare a time-frame statement for long stories.", consultationDrill: "Tell the client how you will use the available time and when you will ask clarifying questions.", checkpoint: "Did time stay protected?" },
+      { microAction: "Write one authority-building opening line without boasting.", consultationDrill: "Use professional calm, process clarity, and listening discipline.", checkpoint: "Did authority come from structure rather than ego?" },
+      { microAction: "Close the opening by confirming the client’s main concern.", consultationDrill: "Reflect the issue in one sentence before moving into diagnosis.", checkpoint: "Did the client feel heard before analysis began?" },
+    ],
+    ar: [
+      { microAction: "اكتب افتتاحية مدتها 60 ثانية للاستشارة التالية.", consultationDrill: "ابدأ بالهدف، جدول الاستشارة، حدود السرية، ومسار القرار المهني.", checkpoint: "هل عرف العميل كيف ستسير الاستشارة؟" },
+      { microAction: "حضّر ثلاثة محاور قبل أن يدخل العميل في التفاصيل.", consultationDrill: "اذكر المحاور واطلب الإذن بقيادة التسلسل.", checkpoint: "هل قدت الهيكل دون أن تبدو متسلطًا؟" },
+      { microAction: "أنشئ عبارة مقاطعة مهنية عندما ينتقل العميل بين الوقائع.", consultationDrill: "استخدمها لإيقاف التشتت، ترتيب الوقائع، والعودة للمسألة القانونية.", checkpoint: "هل أصبحت المحادثة أسهل في المتابعة؟" },
+      { microAction: "حدد نتيجة الاستشارة قبل بدايتها.", consultationDrill: "وضح إن كان الهدف تقييمًا، خيارات قانونية، خطوة تالية، أو جاهزية لاتفاق التمثيل.", checkpoint: "هل كان للاستشارة اتجاه واضح؟" },
+      { microAction: "حضّر جملة لإدارة الوقت عندما يطول السرد.", consultationDrill: "اشرح للعميل كيف ستستخدم الوقت ومتى ستطرح أسئلة توضيحية.", checkpoint: "هل بقي الوقت محميًا؟" },
+      { microAction: "اكتب افتتاحية تبني الهيبة المهنية دون مبالغة.", consultationDrill: "استخدم الهدوء المهني، وضوح العملية، وانضباط الاستماع.", checkpoint: "هل جاءت الهيبة من الهيكل لا من الاستعراض؟" },
+      { microAction: "اختم الافتتاح بتأكيد القلق الأساسي لدى العميل.", consultationDrill: "اعكس المسألة في جملة واحدة قبل الانتقال للتشخيص.", checkpoint: "هل شعر العميل أنه مسموع قبل بدء التحليل؟" },
+    ],
+  },
+  legal_need_diagnosis: {
+    en: [
+      { microAction: "Ask the client: What changed recently that made this urgent now?", consultationDrill: "Listen for trigger, risk, deadline, or pressure point before giving options.", checkpoint: "Did you identify the real reason for action?" },
+      { microAction: "Write one question that separates symptoms from the legal issue.", consultationDrill: "Ask what outcome the client needs, not only what happened.", checkpoint: "Did the need become clearer than the story?" },
+      { microAction: "Ask what happens if the matter remains unresolved for 90 days.", consultationDrill: "Capture practical, legal, and emotional consequences.", checkpoint: "Did the client name the cost of delay?" },
+      { microAction: "Identify all decision stakeholders in one consultation.", consultationDrill: "Ask who else must approve, cooperate, or provide documents.", checkpoint: "Did you uncover hidden decision pressure?" },
+      { microAction: "Summarize the legal need in one sentence before advising.", consultationDrill: "Say, 'The core issue I hear is...' and let the client correct it.", checkpoint: "Did the client confirm your diagnosis?" },
+      { microAction: "Ask for the document or fact most likely to change the advice.", consultationDrill: "Pause analysis until the critical fact is clarified.", checkpoint: "Did you avoid premature conclusions?" },
+      { microAction: "Rank the client’s concerns by legal risk, urgency, and desired outcome.", consultationDrill: "Show the ranking back to the client before proposing a route.", checkpoint: "Did the client see the order of priorities?" },
+    ],
+    ar: [
+      { microAction: "اسأل العميل: ما الذي تغيّر مؤخرًا وجعل الأمر عاجلًا الآن؟", consultationDrill: "استمع للمحفز، المخاطر، الموعد النهائي، أو نقطة الضغط قبل عرض الخيارات.", checkpoint: "هل حددت السبب الحقيقي للتحرك؟" },
+      { microAction: "اكتب سؤالًا يفرق بين الأعراض والمسألة القانونية.", consultationDrill: "اسأل عن النتيجة التي يحتاجها العميل، لا عن ما حدث فقط.", checkpoint: "هل أصبحت الحاجة أوضح من القصة؟" },
+      { microAction: "اسأل ماذا يحدث إذا بقيت المسألة بلا حل لمدة 90 يومًا.", consultationDrill: "التقط العواقب العملية والقانونية والشعورية.", checkpoint: "هل سمّى العميل أثر التأخير؟" },
+      { microAction: "حدد كل أصحاب القرار في استشارة واحدة.", consultationDrill: "اسأل من يجب أن يوافق أو يتعاون أو يقدم مستندات.", checkpoint: "هل كشفت ضغط قرار غير ظاهر؟" },
+      { microAction: "لخص الحاجة القانونية في جملة واحدة قبل تقديم الرأي.", consultationDrill: "قل: المسألة الأساسية التي أسمعها هي... واترك العميل يصححها.", checkpoint: "هل أكد العميل تشخيصك؟" },
+      { microAction: "اطلب المستند أو الواقعة الأكثر تأثيرًا في التوجيه القانوني.", consultationDrill: "أوقف التحليل حتى تتضح الواقعة الحرجة.", checkpoint: "هل تجنبت الاستنتاج المتسرع؟" },
+      { microAction: "رتب مخاوف العميل حسب المخاطر القانونية والاستعجال والنتيجة المطلوبة.", consultationDrill: "اعرض الترتيب على العميل قبل اقتراح المسار.", checkpoint: "هل رأى العميل ترتيب الأولويات؟" },
+    ],
+  },
+  case_qualification_client_fit: {
+    en: [
+      { microAction: "Write your minimum fit criteria for accepting a matter.", consultationDrill: "Check matter type, evidence, urgency, client cooperation, and scope fit.", checkpoint: "Did the matter meet your professional intake standard?" },
+      { microAction: "Prepare one respectful decline sentence for poor-fit matters.", consultationDrill: "Use it when the issue falls outside your practice or risk tolerance.", checkpoint: "Did you protect the firm without embarrassing the client?" },
+      { microAction: "Identify one red flag before proposing representation.", consultationDrill: "Ask about deadlines, prior counsel, missing documents, or unrealistic expectations.", checkpoint: "Was the risk visible before commitment?" },
+      { microAction: "Ask what the client expects from the lawyer-client relationship.", consultationDrill: "Listen for cooperation, responsiveness, decision style, and boundary issues.", checkpoint: "Did you understand client fit beyond the legal issue?" },
+      { microAction: "Create a matter-fit note with accept, pause, refer, or decline.", consultationDrill: "Classify one consultation immediately after it ends.", checkpoint: "Was the next route professionally clear?" },
+      { microAction: "Ask what evidence the client can provide this week.", consultationDrill: "Tie case viability to available proof, not only the client’s narrative.", checkpoint: "Did evidence support the matter?" },
+      { microAction: "Define one boundary that must exist before engagement.", consultationDrill: "State it calmly before discussing the engagement agreement.", checkpoint: "Did the client accept the working boundary?" },
+    ],
+    ar: [
+      { microAction: "اكتب معاييرك الدنيا لقبول ملف جديد.", consultationDrill: "افحص نوع المسألة، الأدلة، الاستعجال، تعاون العميل، وملاءمة نطاق العمل.", checkpoint: "هل يطابق الملف معيار القبول المهني؟" },
+      { microAction: "حضّر جملة اعتذار محترمة للملفات غير المناسبة.", consultationDrill: "استخدمها عندما تكون المسألة خارج تخصصك أو مستوى المخاطر المقبول.", checkpoint: "هل حميت المكتب دون إحراج العميل؟" },
+      { microAction: "حدد علامة خطر واحدة قبل اقتراح التمثيل.", consultationDrill: "اسأل عن المواعيد، محام سابق، مستندات مفقودة، أو توقعات غير واقعية.", checkpoint: "هل ظهرت المخاطر قبل الالتزام؟" },
+      { microAction: "اسأل العميل ماذا يتوقع من علاقة المحامي والعميل.", consultationDrill: "استمع للتعاون، سرعة الاستجابة، أسلوب القرار، ومشكلات الحدود.", checkpoint: "هل فهمت ملاءمة العميل خارج المسألة القانونية؟" },
+      { microAction: "أنشئ ملاحظة ملاءمة: قبول، توقف، إحالة، أو اعتذار.", consultationDrill: "صنّف استشارة واحدة فور انتهائها.", checkpoint: "هل أصبح المسار التالي واضحًا مهنيًا؟" },
+      { microAction: "اسأل عن الدليل الذي يستطيع العميل توفيره هذا الأسبوع.", consultationDrill: "اربط جدوى الملف بالأدلة المتاحة لا بسرد العميل فقط.", checkpoint: "هل يدعم الدليل المسألة؟" },
+      { microAction: "حدد حدًا مهنيًا واحدًا يجب وجوده قبل اتفاق التمثيل.", consultationDrill: "اذكره بهدوء قبل مناقشة الاتفاق.", checkpoint: "هل قبل العميل حد العمل؟" },
+    ],
+  },
+  client_trust_professional_authority: {
+    en: [
+      { microAction: "Prepare one credibility statement based on process, not self-praise.", consultationDrill: "Explain how you assess matters, protect risk, and guide decisions.", checkpoint: "Did trust come from method and clarity?" },
+      { microAction: "Write one sentence that acknowledges client concern without overpromising.", consultationDrill: "Use it before explaining the legal path.", checkpoint: "Did empathy protect authority instead of weakening it?" },
+      { microAction: "Choose one point where you will slow down your explanation.", consultationDrill: "Pause after the key risk and ask the client to reflect it back.", checkpoint: "Did the client understand the risk?" },
+      { microAction: "Prepare a boundary phrase for requests outside professional responsibility.", consultationDrill: "Use the phrase while offering an appropriate alternative.", checkpoint: "Did the boundary increase trust?" },
+      { microAction: "Document one promise you will not make.", consultationDrill: "Replace it with a process commitment you can honor.", checkpoint: "Did you avoid certainty you cannot ethically provide?" },
+      { microAction: "Create one visual sequence for the matter path.", consultationDrill: "Show the client the stages from assessment to decision.", checkpoint: "Did the process reduce anxiety?" },
+      { microAction: "End one consultation by summarizing facts, risk, route, and next step.", consultationDrill: "Confirm each point with the client before closing.", checkpoint: "Did the client leave with confidence in the structure?" },
+    ],
+    ar: [
+      { microAction: "حضّر جملة مصداقية مبنية على المنهج لا على مدح الذات.", consultationDrill: "اشرح كيف تقيّم الملفات، تحمي من المخاطر، وتوجه القرارات.", checkpoint: "هل جاءت الثقة من المنهج والوضوح؟" },
+      { microAction: "اكتب جملة تعترف بقلق العميل دون وعود زائدة.", consultationDrill: "استخدمها قبل شرح المسار القانوني.", checkpoint: "هل دعمت التعاطف الهيبة بدل إضعافها؟" },
+      { microAction: "اختر نقطة واحدة ستبطئ عند شرحها.", consultationDrill: "توقف بعد المخاطر الأساسية واطلب من العميل إعادة فهمها.", checkpoint: "هل فهم العميل المخاطر؟" },
+      { microAction: "حضّر عبارة حدود للطلبات خارج المسؤولية المهنية.", consultationDrill: "استخدم العبارة مع تقديم بديل مناسب.", checkpoint: "هل زاد الحد المهني الثقة؟" },
+      { microAction: "وثّق وعدًا واحدًا لن تقدمه.", consultationDrill: "استبدله بالتزام إجرائي تستطيع الوفاء به.", checkpoint: "هل تجنبت يقينًا لا تستطيع تقديمه مهنيًا؟" },
+      { microAction: "أنشئ تسلسلًا بصريًا بسيطًا لمسار الملف.", consultationDrill: "اعرض للعميل المراحل من التقييم إلى القرار.", checkpoint: "هل خفف وضوح المسار القلق؟" },
+      { microAction: "اختم استشارة واحدة بتلخيص الوقائع والمخاطر والمسار والخطوة التالية.", consultationDrill: "أكد كل نقطة مع العميل قبل الإغلاق.", checkpoint: "هل خرج العميل بثقة في الهيكل؟" },
+    ],
+  },
+  explaining_legal_strategy_simply: {
+    en: [
+      { microAction: "Translate one legal concept into plain client language.", consultationDrill: "Explain it without jargon, then ask the client what it means for their matter.", checkpoint: "Could the client repeat the idea accurately?" },
+      { microAction: "Prepare a three-step legal strategy explanation.", consultationDrill: "Use: current position, legal route, expected decision point.", checkpoint: "Did the client see the strategy instead of fragments?" },
+      { microAction: "Write one analogy that simplifies risk without minimizing it.", consultationDrill: "Use it only after explaining the legal substance.", checkpoint: "Did the analogy clarify rather than distract?" },
+      { microAction: "Separate facts, legal issue, options, and next step on one page.", consultationDrill: "Walk the client through the four sections.", checkpoint: "Did the structure make the advice easier to follow?" },
+      { microAction: "Prepare one sentence that explains uncertainty professionally.", consultationDrill: "Name what is known, what is unknown, and what must be verified.", checkpoint: "Did uncertainty feel managed?" },
+      { microAction: "Ask the client to choose between two lawful routes after explanation.", consultationDrill: "Compare route, risk, effort, and decision requirement.", checkpoint: "Did the client understand the tradeoff?" },
+      { microAction: "Record a 45-second explanation of one matter strategy.", consultationDrill: "Listen for jargon, length, and unclear sequencing before your next consultation.", checkpoint: "Was the explanation concise enough for a stressed client?" },
+    ],
+    ar: [
+      { microAction: "حوّل مفهومًا قانونيًا واحدًا إلى لغة عميل بسيطة.", consultationDrill: "اشرحه دون مصطلحات ثقيلة، ثم اسأل العميل ماذا يعني ذلك لملفه.", checkpoint: "هل يستطيع العميل إعادة الفكرة بدقة؟" },
+      { microAction: "حضّر شرحًا للاستراتيجية القانونية من ثلاث خطوات.", consultationDrill: "استخدم: الوضع الحالي، المسار القانوني، نقطة القرار المتوقعة.", checkpoint: "هل رأى العميل الاستراتيجية لا أجزاء متفرقة؟" },
+      { microAction: "اكتب تشبيهًا يبسّط المخاطر دون التقليل منها.", consultationDrill: "استخدمه فقط بعد شرح الأساس القانوني.", checkpoint: "هل وضّح التشبيه الفكرة بدل تشتيتها؟" },
+      { microAction: "افصل الوقائع، المسألة القانونية، الخيارات، والخطوة التالية في صفحة واحدة.", consultationDrill: "امشِ مع العميل عبر الأقسام الأربعة.", checkpoint: "هل جعل الهيكل الرأي أسهل في الفهم؟" },
+      { microAction: "حضّر جملة تشرح عدم اليقين بطريقة مهنية.", consultationDrill: "اذكر ما هو معروف، وما هو غير معروف، وما يجب التحقق منه.", checkpoint: "هل بدا عدم اليقين مُدارًا؟" },
+      { microAction: "اطلب من العميل الاختيار بين مسارين قانونيين بعد الشرح.", consultationDrill: "قارن المسار، المخاطر، الجهد، ومتطلبات القرار.", checkpoint: "هل فهم العميل المفاضلة؟" },
+      { microAction: "سجّل شرحًا مدته 45 ثانية لاستراتيجية ملف واحد.", consultationDrill: "استمع للمصطلحات الثقيلة، الطول، وضعف التسلسل قبل الاستشارة التالية.", checkpoint: "هل كان الشرح مختصرًا بما يكفي لعميل متوتر؟" },
+    ],
+  },
+  legal_value_framing: {
+    en: [
+      { microAction: "Write the legal value of one matter as risk reduced, decision improved, or harm prevented.", consultationDrill: "Use that frame before discussing professional legal fees.", checkpoint: "Did the client connect the work to a meaningful outcome?" },
+      { microAction: "Prepare one before-and-after statement for legal representation.", consultationDrill: "Show the client the difference between acting alone and acting with structured counsel.", checkpoint: "Did the client see the value of guidance?" },
+      { microAction: "List three consequences of an unmanaged legal issue.", consultationDrill: "Discuss the most relevant consequence in the consultation.", checkpoint: "Did the client understand what is being protected?" },
+      { microAction: "Turn one legal task into a client outcome.", consultationDrill: "Explain the task through clarity, risk control, leverage, or decision quality.", checkpoint: "Did the work feel tied to client benefit?" },
+      { microAction: "Prepare one proof story from a similar matter without revealing confidential detail.", consultationDrill: "Use it to show process value, not guaranteed result.", checkpoint: "Did the example build trust ethically?" },
+      { microAction: "Ask which outcome matters most: speed, protection, leverage, closure, or certainty.", consultationDrill: "Use the answer to frame the legal path.", checkpoint: "Did the value match the client’s priority?" },
+      { microAction: "Write a one-sentence value summary before the engagement discussion.", consultationDrill: "Say what the client gains in clarity, protection, and next-step control.", checkpoint: "Did the client understand the reason to proceed?" },
+    ],
+    ar: [
+      { microAction: "اكتب قيمة ملف قانوني واحد كخفض مخاطر أو تحسين قرار أو منع ضرر.", consultationDrill: "استخدم هذا الإطار قبل مناقشة أتعاب المحاماة.", checkpoint: "هل ربط العميل العمل بنتيجة مهمة؟" },
+      { microAction: "حضّر جملة قبل وبعد للتمثيل القانوني.", consultationDrill: "أظهر الفرق بين التصرف منفردًا والتصرف مع إرشاد قانوني منظم.", checkpoint: "هل رأى العميل قيمة التوجيه؟" },
+      { microAction: "اكتب ثلاث عواقب لمسألة قانونية غير مُدارة.", consultationDrill: "ناقش العاقبة الأكثر صلة أثناء الاستشارة.", checkpoint: "هل فهم العميل ما الذي تتم حمايته؟" },
+      { microAction: "حوّل مهمة قانونية واحدة إلى نتيجة للعميل.", consultationDrill: "اشرح المهمة من خلال الوضوح أو ضبط المخاطر أو قوة الموقف أو جودة القرار.", checkpoint: "هل ارتبط العمل بمنفعة العميل؟" },
+      { microAction: "حضّر قصة إثبات من ملف مشابه دون كشف تفاصيل سرية.", consultationDrill: "استخدمها لإظهار قيمة المنهج لا لضمان نتيجة.", checkpoint: "هل بنى المثال الثقة بشكل مهني؟" },
+      { microAction: "اسأل أي نتيجة تهم العميل أكثر: السرعة، الحماية، قوة الموقف، الإغلاق، أو اليقين.", consultationDrill: "استخدم الإجابة لتأطير المسار القانوني.", checkpoint: "هل تطابقت القيمة مع أولوية العميل؟" },
+      { microAction: "اكتب ملخص قيمة من جملة واحدة قبل نقاش اتفاق التمثيل.", consultationDrill: "قل ما يكسبه العميل من وضوح وحماية وسيطرة على الخطوة التالية.", checkpoint: "هل فهم العميل سبب التقدم؟" },
+    ],
+  },
+  fee_presentation_retainer_confidence: {
+    en: [
+      { microAction: "Prepare a professional legal-fee explanation tied to scope of work.", consultationDrill: "Present scope, responsibilities, payment terms, and engagement agreement in one sequence.", checkpoint: "Did the discussion feel structured and confident?" },
+      { microAction: "Write one sentence that separates legal fees from outcome promises.", consultationDrill: "Explain that fees cover professional work, analysis, preparation, and representation within scope.", checkpoint: "Did you avoid implying a guaranteed result?" },
+      { microAction: "Create a scope checklist before discussing the engagement agreement.", consultationDrill: "Confirm what is included, what is excluded, and what requires separate approval.", checkpoint: "Did the client understand the boundary of work?" },
+      { microAction: "Practice saying the professional legal fees without apology.", consultationDrill: "Pause after stating them and let the client process the information.", checkpoint: "Did you stay calm during silence?" },
+      { microAction: "Prepare one response for: I need to think about it.", consultationDrill: "Ask what part of the scope, risk, or decision needs clarification.", checkpoint: "Did you uncover the real hesitation?" },
+      { microAction: "Write the next administrative step after verbal approval.", consultationDrill: "Move to engagement agreement, required documents, and first action.", checkpoint: "Did verbal interest become a defined process?" },
+      { microAction: "Review one past consultation where fees felt uncomfortable.", consultationDrill: "Rewrite the explanation around scope, legal risk, and client decision quality.", checkpoint: "Is the new explanation more professional?" },
+    ],
+    ar: [
+      { microAction: "حضّر شرحًا لأتعاب المحاماة مرتبطًا بنطاق العمل.", consultationDrill: "اعرض النطاق، المسؤوليات، شروط السداد، واتفاق التمثيل في تسلسل واحد.", checkpoint: "هل بدا النقاش منظمًا وواثقًا؟" },
+      { microAction: "اكتب جملة تفصل أتعاب المحاماة عن وعود النتائج.", consultationDrill: "اشرح أن الأتعاب تغطي العمل المهني والتحليل والتحضير والتمثيل ضمن النطاق.", checkpoint: "هل تجنبت الإيحاء بضمان نتيجة؟" },
+      { microAction: "أنشئ قائمة نطاق قبل مناقشة اتفاق التمثيل.", consultationDrill: "أكد ما هو داخل النطاق، ما هو خارجه، وما يحتاج موافقة منفصلة.", checkpoint: "هل فهم العميل حدود العمل؟" },
+      { microAction: "تدرّب على ذكر أتعاب المحاماة دون اعتذار.", consultationDrill: "توقف بعد ذكرها ودع العميل يستوعب المعلومة.", checkpoint: "هل بقيت هادئًا أثناء الصمت؟" },
+      { microAction: "حضّر ردًا على: أحتاج أن أفكر.", consultationDrill: "اسأل أي جزء من النطاق أو المخاطر أو القرار يحتاج توضيحًا.", checkpoint: "هل كشفت التردد الحقيقي؟" },
+      { microAction: "اكتب الخطوة الإدارية التالية بعد الموافقة الشفهية.", consultationDrill: "انتقل إلى اتفاق التمثيل، المستندات المطلوبة، وأول إجراء.", checkpoint: "هل تحولت الرغبة الشفهية إلى عملية محددة؟" },
+      { microAction: "راجع استشارة سابقة شعرت فيها بعدم ارتياح عند شرح الأتعاب.", consultationDrill: "أعد صياغة الشرح حول النطاق والمخاطر القانونية وجودة قرار العميل.", checkpoint: "هل أصبح الشرح أكثر مهنية؟" },
+    ],
+  },
+  fee_comparison_objections: {
+    en: [
+      { microAction: "Write one calm response when a client compares professional legal fees with another provider.", consultationDrill: "Bring the conversation back to scope, experience, responsibility, and risk control.", checkpoint: "Did you avoid defending yourself emotionally?" },
+      { microAction: "Prepare a scope-comparison table with three categories.", consultationDrill: "Compare included work, excluded work, and client responsibilities.", checkpoint: "Did the client compare scope rather than numbers alone?" },
+      { microAction: "Ask what the client believes is included in the other offer.", consultationDrill: "Clarify assumptions before responding.", checkpoint: "Did you uncover an incomplete comparison?" },
+      { microAction: "Explain the risk of choosing unclear representation terms.", consultationDrill: "Discuss documentation, responsibility, communication, and decision support.", checkpoint: "Did the client see the risk of vague scope?" },
+      { microAction: "Prepare one non-defensive phrase for fee pressure.", consultationDrill: "Say what you can responsibly include, then stop negotiating against yourself.", checkpoint: "Did you protect professional authority?" },
+      { microAction: "Offer a scope adjustment only if it is professionally sound.", consultationDrill: "Reduce or phase work by scope, not by weakening responsibility.", checkpoint: "Did the adjustment preserve quality and boundaries?" },
+      { microAction: "Ask whether the client wants the lowest commitment or the most appropriate legal path.", consultationDrill: "Use the answer to guide the decision conversation.", checkpoint: "Did the client clarify decision criteria?" },
+    ],
+    ar: [
+      { microAction: "اكتب ردًا هادئًا عندما يقارن العميل أتعاب المحاماة بمقدم خدمة آخر.", consultationDrill: "أعد الحديث إلى النطاق، الخبرة، المسؤولية، وضبط المخاطر.", checkpoint: "هل تجنبت الدفاع العاطفي عن نفسك؟" },
+      { microAction: "حضّر جدول مقارنة نطاق من ثلاث خانات.", consultationDrill: "قارن العمل المشمول، العمل غير المشمول، ومسؤوليات العميل.", checkpoint: "هل قارن العميل النطاق لا الأرقام وحدها؟" },
+      { microAction: "اسأل العميل عمّا يعتقد أنه مشمول في العرض الآخر.", consultationDrill: "وضح الافتراضات قبل الرد.", checkpoint: "هل كشفت مقارنة ناقصة؟" },
+      { microAction: "اشرح مخاطر اختيار شروط تمثيل غير واضحة.", consultationDrill: "ناقش التوثيق، المسؤولية، التواصل، ودعم القرار.", checkpoint: "هل رأى العميل مخاطر النطاق الغامض؟" },
+      { microAction: "حضّر عبارة غير دفاعية عند الضغط على الأتعاب.", consultationDrill: "اذكر ما تستطيع إدخاله بمسؤولية، ثم توقف عن التنازل ضد نفسك.", checkpoint: "هل حميت الهيبة المهنية؟" },
+      { microAction: "اقترح تعديل نطاق فقط إذا كان مهنيًا وسليمًا.", consultationDrill: "خفف أو مرحل العمل حسب النطاق، لا عبر إضعاف المسؤولية.", checkpoint: "هل حافظ التعديل على الجودة والحدود؟" },
+      { microAction: "اسأل إن كان العميل يريد أقل التزام أم المسار القانوني الأنسب.", consultationDrill: "استخدم الإجابة لتوجيه نقاش القرار.", checkpoint: "هل وضّح العميل معيار قراره؟" },
+    ],
+  },
+  trust_risk_outcome_objections: {
+    en: [
+      { microAction: "List the client’s objection as trust, risk, outcome, timing, or scope.", consultationDrill: "Ask one clarifying question before answering.", checkpoint: "Did you respond to the real objection?" },
+      { microAction: "Prepare a risk explanation that does not create fear.", consultationDrill: "Name the legal risk, consequence, and responsible next step.", checkpoint: "Did the client feel informed rather than pressured?" },
+      { microAction: "Write a response to: Can you guarantee the result?", consultationDrill: "Separate process control from outcome uncertainty.", checkpoint: "Did you stay ethical and confident?" },
+      { microAction: "Ask what would make the client comfortable moving to the next professional step.", consultationDrill: "Listen for missing clarity, authority, documents, or timing.", checkpoint: "Did you identify the decision gap?" },
+      { microAction: "Use one proof point from process, not promises.", consultationDrill: "Explain how the matter will be assessed, prepared, and managed.", checkpoint: "Did proof support trust without overclaiming?" },
+      { microAction: "Turn one objection into a checklist item.", consultationDrill: "Document what must be clarified before the client decides.", checkpoint: "Did the objection become manageable?" },
+      { microAction: "Summarize the client’s hesitation before answering it.", consultationDrill: "Say the hesitation back in neutral professional language.", checkpoint: "Did the client feel understood before you responded?" },
+    ],
+    ar: [
+      { microAction: "صنّف اعتراض العميل: ثقة، مخاطر، نتيجة، توقيت، أو نطاق.", consultationDrill: "اطرح سؤالًا توضيحيًا واحدًا قبل الإجابة.", checkpoint: "هل أجبت على الاعتراض الحقيقي؟" },
+      { microAction: "حضّر شرحًا للمخاطر دون صناعة خوف.", consultationDrill: "اذكر المخاطر القانونية، العاقبة، والخطوة المسؤولة التالية.", checkpoint: "هل شعر العميل بالوعي لا بالضغط؟" },
+      { microAction: "اكتب ردًا على: هل تضمن النتيجة؟", consultationDrill: "افصل بين ضبط العملية وعدم اليقين في النتيجة.", checkpoint: "هل بقيت مهنيًا وواثقًا؟" },
+      { microAction: "اسأل ما الذي يجعل العميل مرتاحًا للانتقال إلى الخطوة المهنية التالية.", consultationDrill: "استمع لنقص الوضوح أو الثقة أو المستندات أو التوقيت.", checkpoint: "هل حددت فجوة القرار؟" },
+      { microAction: "استخدم نقطة إثبات من المنهج لا من الوعود.", consultationDrill: "اشرح كيف سيتم تقييم الملف وتحضيره وإدارته.", checkpoint: "هل دعم الإثبات الثقة دون مبالغة؟" },
+      { microAction: "حوّل اعتراضًا واحدًا إلى بند في قائمة تحقق.", consultationDrill: "وثّق ما يجب توضيحه قبل أن يقرر العميل.", checkpoint: "هل أصبح الاعتراض قابلًا للإدارة؟" },
+      { microAction: "لخص تردد العميل قبل الرد عليه.", consultationDrill: "أعد صياغة التردد بلغة مهنية محايدة.", checkpoint: "هل شعر العميل أنك فهمته قبل الرد؟" },
+    ],
+  },
+  ethical_persuasion_boundaries: {
+    en: [
+      { microAction: "Write one ethical persuasion sentence that guides without pressuring.", consultationDrill: "Connect legal risk, client goal, and responsible next step.", checkpoint: "Did the client remain free to decide?" },
+      { microAction: "Identify one line you will not cross in consultation conversion.", consultationDrill: "Replace pressure with clarity, documentation, and next-step structure.", checkpoint: "Was the decision path ethical?" },
+      { microAction: "Prepare a response when a client asks for unrealistic assurance.", consultationDrill: "Acknowledge the concern and explain what can be responsibly assessed.", checkpoint: "Did you protect both trust and professional duty?" },
+      { microAction: "Ask permission before recommending the next step.", consultationDrill: "Say, 'Based on what you shared, may I outline the responsible route?'", checkpoint: "Did consent strengthen the recommendation?" },
+      { microAction: "Document the basis for one recommendation.", consultationDrill: "Tie it to facts, risk, scope, and client objective.", checkpoint: "Could the recommendation be justified later?" },
+      { microAction: "Remove one manipulative phrase from your consultation language.", consultationDrill: "Replace urgency pressure with consequence clarity.", checkpoint: "Did the language stay professional?" },
+      { microAction: "Clarify that the client owns the decision after receiving advice.", consultationDrill: "Explain options and consequences, then ask how they wish to proceed.", checkpoint: "Did guidance preserve client autonomy?" },
+    ],
+    ar: [
+      { microAction: "اكتب جملة إقناع مهني توجه دون ضغط.", consultationDrill: "اربط المخاطر القانونية، هدف العميل، والخطوة المسؤولة التالية.", checkpoint: "هل بقي العميل حرًا في القرار؟" },
+      { microAction: "حدد حدًا واحدًا لن تتجاوزه في تحويل الاستشارة إلى اتفاق.", consultationDrill: "استبدل الضغط بالوضوح والتوثيق وهيكل الخطوة التالية.", checkpoint: "هل بقي مسار القرار أخلاقيًا؟" },
+      { microAction: "حضّر ردًا عندما يطلب العميل طمأنة غير واقعية.", consultationDrill: "اعترف بالقلق واشرح ما يمكن تقييمه بمسؤولية.", checkpoint: "هل حميت الثقة والواجب المهني معًا؟" },
+      { microAction: "اطلب الإذن قبل توصية الخطوة التالية.", consultationDrill: "قل: بناءً على ما ذكرته، هل تسمح لي بتوضيح المسار المسؤول؟", checkpoint: "هل عزز الإذن قوة التوصية؟" },
+      { microAction: "وثّق أساس توصية واحدة.", consultationDrill: "اربطها بالوقائع والمخاطر والنطاق وهدف العميل.", checkpoint: "هل يمكن تبرير التوصية لاحقًا؟" },
+      { microAction: "احذف عبارة ضغط من لغة الاستشارة.", consultationDrill: "استبدل ضغط الاستعجال بوضوح العواقب.", checkpoint: "هل بقيت اللغة مهنية؟" },
+      { microAction: "وضح أن القرار النهائي يبقى للعميل بعد تلقي الرأي.", consultationDrill: "اشرح الخيارات والعواقب، ثم اسأل كيف يرغب في المتابعة.", checkpoint: "هل حفظ التوجيه استقلال قرار العميل؟" },
+    ],
+  },
+  consultation_closing_engagement: {
+    en: [
+      { microAction: "Prepare a closing summary with issue, risk, route, scope, and next step.", consultationDrill: "Use it in the final five minutes of one consultation.", checkpoint: "Did the client know exactly what happens next?" },
+      { microAction: "Ask a direct professional decision question.", consultationDrill: "Say, 'Are you ready to move into the engagement agreement and begin the next step?'", checkpoint: "Did you avoid leaving the decision vague?" },
+      { microAction: "Write one transition from advice to representation.", consultationDrill: "Connect the legal need to scope of work and first action.", checkpoint: "Did the transition feel natural?" },
+      { microAction: "Prepare a response when the client asks to delay.", consultationDrill: "Ask what must be clarified before they can decide.", checkpoint: "Did delay become a specific issue?" },
+      { microAction: "Create a final-minute checklist for consultations.", consultationDrill: "Confirm decision owner, documents needed, agreement route, and timing.", checkpoint: "Was the closing complete?" },
+      { microAction: "Practice closing without apologizing for the professional step.", consultationDrill: "Use calm language and stop after the decision question.", checkpoint: "Did confidence remain steady?" },
+      { microAction: "Send the engagement agreement within the promised window.", consultationDrill: "Attach only what the client needs to act clearly.", checkpoint: "Did speed support trust and decision momentum?" },
+    ],
+    ar: [
+      { microAction: "حضّر ملخص إغلاق يتضمن المسألة، المخاطر، المسار، النطاق، والخطوة التالية.", consultationDrill: "استخدمه في آخر خمس دقائق من استشارة واحدة.", checkpoint: "هل عرف العميل بدقة ماذا يحدث بعد ذلك؟" },
+      { microAction: "اطرح سؤال قرار مهنيًا مباشرًا.", consultationDrill: "قل: هل أنت مستعد لاعتماد اتفاق التمثيل والبدء بالخطوة التالية؟", checkpoint: "هل تجنبت ترك القرار غامضًا؟" },
+      { microAction: "اكتب انتقالًا واحدًا من الرأي إلى التمثيل.", consultationDrill: "اربط الحاجة القانونية بنطاق العمل وأول إجراء.", checkpoint: "هل بدا الانتقال طبيعيًا؟" },
+      { microAction: "حضّر ردًا عندما يطلب العميل التأجيل.", consultationDrill: "اسأل ما الذي يجب توضيحه قبل أن يستطيع القرار.", checkpoint: "هل أصبح التأجيل مسألة محددة؟" },
+      { microAction: "أنشئ قائمة تحقق للدقائق الأخيرة من الاستشارة.", consultationDrill: "أكد صاحب القرار، المستندات المطلوبة، مسار الاتفاق، والتوقيت.", checkpoint: "هل كان الإغلاق مكتملًا؟" },
+      { microAction: "تدرّب على الإغلاق دون الاعتذار عن الخطوة المهنية.", consultationDrill: "استخدم لغة هادئة وتوقف بعد سؤال القرار.", checkpoint: "هل بقيت الثقة ثابتة؟" },
+      { microAction: "أرسل اتفاق التمثيل ضمن الزمن الذي وعدت به.", consultationDrill: "أرفق فقط ما يحتاجه العميل للتصرف بوضوح.", checkpoint: "هل دعمت السرعة الثقة وحركة القرار؟" },
+    ],
+  },
+  post_consultation_follow_up: {
+    en: [
+      { microAction: "Write a follow-up template with context, legal risk, recommended next step, and deadline.", consultationDrill: "Send it after one consultation without vague check-in language.", checkpoint: "Did the follow-up guide the decision?" },
+      { microAction: "Send one follow-up within 30 minutes of a consultation.", consultationDrill: "Reference the client’s stated concern and the agreed next step.", checkpoint: "Did the client receive clear momentum?" },
+      { microAction: "Create a follow-up tracker with date, matter, decision stage, and next action.", consultationDrill: "Update it for all open consultations today.", checkpoint: "Can you see every pending decision?" },
+      { microAction: "Prepare one useful insight for a hesitant client.", consultationDrill: "Send clarification that helps the decision, not a reminder only.", checkpoint: "Did the message add professional value?" },
+      { microAction: "Ask for a dated decision step.", consultationDrill: "Offer two reasonable times to review the engagement agreement or missing questions.", checkpoint: "Did timing become specific?" },
+      { microAction: "Review one old consultation that went silent.", consultationDrill: "Send a respectful closure or reactivation note based on legal risk and next step.", checkpoint: "Did you clean the open loop?" },
+      { microAction: "Document the follow-up outcome immediately.", consultationDrill: "Record replied, pending, declined, engaged, or needs clarification.", checkpoint: "Is the file status accurate?" },
+    ],
+    ar: [
+      { microAction: "اكتب قالب متابعة يتضمن السياق، المخاطر القانونية، الخطوة الموصى بها، والموعد.", consultationDrill: "أرسله بعد استشارة واحدة دون لغة متابعة غامضة.", checkpoint: "هل وجّهت المتابعة القرار؟" },
+      { microAction: "أرسل متابعة واحدة خلال 30 دقيقة من الاستشارة.", consultationDrill: "اذكر قلق العميل المعلن والخطوة التالية المتفق عليها.", checkpoint: "هل تلقى العميل زخمًا واضحًا؟" },
+      { microAction: "أنشئ سجل متابعة يتضمن التاريخ، الملف، مرحلة القرار، والخطوة التالية.", consultationDrill: "حدّثه لكل الاستشارات المفتوحة اليوم.", checkpoint: "هل ترى كل قرار معلق؟" },
+      { microAction: "حضّر فكرة مفيدة لعميل متردد.", consultationDrill: "أرسل توضيحًا يساعد القرار لا تذكيرًا فقط.", checkpoint: "هل أضافت الرسالة قيمة مهنية؟" },
+      { microAction: "اطلب خطوة قرار بتاريخ واضح.", consultationDrill: "اقترح وقتين مناسبين لمراجعة اتفاق التمثيل أو الأسئلة المتبقية.", checkpoint: "هل أصبح التوقيت محددًا؟" },
+      { microAction: "راجع استشارة قديمة توقفت دون رد.", consultationDrill: "أرسل رسالة إغلاق أو إعادة تفعيل محترمة مبنية على المخاطر والخطوة التالية.", checkpoint: "هل أغلقت الحلقة المفتوحة؟" },
+      { microAction: "وثّق نتيجة المتابعة فورًا.", consultationDrill: "سجل: رد، معلق، اعتذر، تم الاتفاق، أو يحتاج توضيحًا.", checkpoint: "هل حالة الملف دقيقة؟" },
+    ],
+  },
+  emotional_difficult_clients: {
+    en: [
+      { microAction: "Prepare a grounding phrase for emotional clients.", consultationDrill: "Acknowledge emotion, then return to facts, risk, and next step.", checkpoint: "Did you calm the room without absorbing the emotion?" },
+      { microAction: "Write one boundary phrase for disrespectful communication.", consultationDrill: "Use it calmly and explain the standard needed for effective representation.", checkpoint: "Did the boundary protect the consultation?" },
+      { microAction: "Ask an unrealistic client what outcome they believe is certain.", consultationDrill: "Separate desired outcome from legally responsible assessment.", checkpoint: "Did expectation become more realistic?" },
+      { microAction: "Document one difficult-client behavior in neutral language.", consultationDrill: "Record facts, not judgment, after the consultation.", checkpoint: "Would the note be professional if reviewed later?" },
+      { microAction: "Create a pause routine for escalating conversations.", consultationDrill: "Pause, summarize, narrow the issue, and ask one controlled question.", checkpoint: "Did escalation reduce?" },
+      { microAction: "Prepare one redirect from blame to evidence.", consultationDrill: "Ask what document, witness, or timeline supports the point.", checkpoint: "Did the conversation return to proof?" },
+      { microAction: "Decide one condition that must be met before accepting a difficult client.", consultationDrill: "State the condition clearly before the engagement agreement.", checkpoint: "Did the client accept the working standard?" },
+    ],
+    ar: [
+      { microAction: "حضّر عبارة تهدئة للعميل الانفعالي.", consultationDrill: "اعترف بالمشاعر، ثم أعد الحديث إلى الوقائع والمخاطر والخطوة التالية.", checkpoint: "هل هدأت الأجواء دون امتصاص الانفعال؟" },
+      { microAction: "اكتب عبارة حدود للتواصل غير المحترم.", consultationDrill: "استخدمها بهدوء واشرح المعيار المطلوب لتمثيل فعال.", checkpoint: "هل حمى الحد الاستشارة؟" },
+      { microAction: "اسأل العميل غير الواقعي عن النتيجة التي يعتقد أنها مؤكدة.", consultationDrill: "افصل بين النتيجة المرغوبة والتقييم القانوني المسؤول.", checkpoint: "هل أصبحت التوقعات أكثر واقعية؟" },
+      { microAction: "وثّق سلوك عميل صعب بلغة محايدة.", consultationDrill: "سجل الوقائع لا الأحكام بعد الاستشارة.", checkpoint: "هل ستكون الملاحظة مهنية إذا روجعت لاحقًا؟" },
+      { microAction: "أنشئ روتين توقف عند تصاعد المحادثة.", consultationDrill: "توقف، لخص، ضيق المسألة، واطرح سؤالًا منضبطًا.", checkpoint: "هل انخفض التصعيد؟" },
+      { microAction: "حضّر انتقالًا من اللوم إلى الدليل.", consultationDrill: "اسأل عن المستند أو الشاهد أو التسلسل الزمني الذي يدعم النقطة.", checkpoint: "هل عادت المحادثة إلى الإثبات؟" },
+      { microAction: "حدد شرطًا واحدًا يجب توفره قبل قبول عميل صعب.", consultationDrill: "اذكر الشرط بوضوح قبل اتفاق التمثيل.", checkpoint: "هل قبل العميل معيار العمل؟" },
+    ],
+  },
+  client_experience_referral_growth: {
+    en: [
+      { microAction: "Map the client experience from inquiry to post-consultation follow-up.", consultationDrill: "Mark one point where trust can be strengthened today.", checkpoint: "Did you improve one client touchpoint?" },
+      { microAction: "Write a closing note that thanks the client and confirms the next professional step.", consultationDrill: "Send it after one consultation or engagement conversation.", checkpoint: "Did the client receive clarity and respect?" },
+      { microAction: "Ask one satisfied client what made the process feel clear.", consultationDrill: "Use the answer to improve your consultation structure.", checkpoint: "Did feedback reveal a repeatable strength?" },
+      { microAction: "Prepare a referral request that protects professionalism.", consultationDrill: "Ask only after value has been delivered and explain the suitable referral profile.", checkpoint: "Did the request feel appropriate?" },
+      { microAction: "Create one post-matter reflection question.", consultationDrill: "Ask what the client wished they understood earlier.", checkpoint: "Did you learn how to improve future guidance?" },
+      { microAction: "Review one client communication for tone and clarity.", consultationDrill: "Rewrite it to be calmer, shorter, and more decision-oriented.", checkpoint: "Would a stressed client understand it quickly?" },
+      { microAction: "Set one client-experience standard for this week.", consultationDrill: "Choose response clarity, next-step certainty, document guidance, or follow-up rhythm.", checkpoint: "Was the standard visible in real client communication?" },
+    ],
+    ar: [
+      { microAction: "ارسم تجربة العميل من الاستفسار إلى المتابعة بعد الاستشارة.", consultationDrill: "حدد نقطة واحدة يمكن تقوية الثقة فيها اليوم.", checkpoint: "هل حسّنت نقطة تواصل واحدة مع العميل؟" },
+      { microAction: "اكتب رسالة ختامية تشكر العميل وتؤكد الخطوة المهنية التالية.", consultationDrill: "أرسلها بعد استشارة أو نقاش اتفاق تمثيل.", checkpoint: "هل تلقى العميل وضوحًا واحترامًا؟" },
+      { microAction: "اسأل عميلًا راضيًا ما الذي جعل العملية واضحة.", consultationDrill: "استخدم الإجابة لتحسين هيكل الاستشارة.", checkpoint: "هل كشف الرأي قوة قابلة للتكرار؟" },
+      { microAction: "حضّر طلب إحالة يحافظ على المهنية.", consultationDrill: "اطلبه فقط بعد تقديم قيمة واشرح نوع الإحالة المناسبة.", checkpoint: "هل بدا الطلب مناسبًا؟" },
+      { microAction: "أنشئ سؤال مراجعة بعد انتهاء الملف.", consultationDrill: "اسأل ما الذي كان العميل يتمنى فهمه مبكرًا.", checkpoint: "هل تعلمت كيف تحسن التوجيه مستقبلًا؟" },
+      { microAction: "راجع تواصلًا واحدًا مع عميل من حيث النبرة والوضوح.", consultationDrill: "أعد كتابته ليكون أهدأ وأقصر وأكثر توجيهًا للقرار.", checkpoint: "هل يفهمه عميل متوتر بسرعة؟" },
+      { microAction: "حدد معيار تجربة عميل لهذا الأسبوع.", consultationDrill: "اختر وضوح الرد، يقين الخطوة التالية، إرشاد المستندات، أو إيقاع المتابعة.", checkpoint: "هل ظهر المعيار في تواصل حقيقي مع العميل؟" },
+    ],
+  },
+};
+
+function getLawyerMriTreatmentKey(input: string | undefined): LawyerMriCompetencyKey {
+  const normalized = normalizeCompetencySafe(input || "");
+  return LAWYER_MRI_COMPETENCY_KEYS.includes(normalized as LawyerMriCompetencyKey)
+    ? (normalized as LawyerMriCompetencyKey)
+    : "legal_inquiry_handling";
+}
+
+function getLawyerTreatmentDrills(competencyId: string | undefined, ar: boolean) {
+  const key = getLawyerMriTreatmentKey(competencyId);
+  return LAWYER_TREATMENT_DRILLS[key][ar ? "ar" : "en"];
+}
+
+function getLawyerTreatmentPhase(day: number, ar: boolean) {
+  if (day <= 14) return ar ? "الأيام 1–14: تثبيت إطار الاستشارة" : "Days 1–14: Stabilize the Consultation Frame";
+  if (day <= 30) return ar ? "الأيام 15–30: تشخيص الحاجة القانونية الحقيقية" : "Days 15–30: Diagnose the Real Legal Need";
+  if (day <= 45) return ar ? "الأيام 31–45: بناء الثقة والهيبة المهنية" : "Days 31–45: Build Trust and Professional Authority";
+  if (day <= 60) return ar ? "الأيام 46–60: توضيح القيمة القانونية وأتعاب المحاماة" : "Days 46–60: Clarify Legal Value and Professional Fees";
+  if (day <= 75) return ar ? "الأيام 61–75: معالجة الاعتراضات وقرار التمثيل" : "Days 61–75: Handle Objections and Engagement Decisions";
+  return ar ? "الأيام 76–90: تنظيم المتابعة وتجربة العميل والإحالات" : "Days 76–90: Systemize Follow-Up, Client Experience, and Referrals";
+}
+
+function buildLawyerConversionTreatmentPlan(
+  weakestRows: CompetencyRow[],
+  strongestRow: CompetencyRow | null,
+  lang: Language
+): LawyerTreatmentDay[] {
+  const ar = lang === "ar";
+  const fallbackRows = LAWYER_MRI_COMPETENCY_KEYS.slice(0, 6).map((key) => ({
+    competencyId: key,
+    label: COMPETENCY_LABELS[key]?.[ar ? "ar" : "en"] || key.replace(/_/g, " "),
+  })) as CompetencyRow[];
+  const weak = weakestRows.length ? weakestRows : fallbackRows;
+  const strongest = strongestRow?.label || (ar ? "أقوى منطقة لديك" : "your strongest area");
+
+  const integrationTemplates = ar
+    ? [
+        {
+          micro: (w: string, s: string) => `استخدم قوتك في ${s} لدعم فجوة ${w} داخل الاستشارة.`,
+          drill: () => "ابدأ من السلوك الأقوى لديك، ثم أضف سؤالًا أو توضيحًا يعالج الفجوة الأضعف.",
+          check: "هل أصبح مسار الاستشارة أكثر توازنًا؟",
+        },
+        {
+          micro: () => "اكتب جملة ختامية تساعد العميل على اتخاذ القرار دون ضغط، مع توضيح المخاطر القانونية والخطوة المهنية التالية.",
+          drill: () => "استخدم الجملة عند تلخيص المخاطر والخطوة التالية للعميل.",
+          check: "هل ساعد الربط العميل على فهم القرار؟",
+        },
+        {
+          micro: (w: string, s: string) => `حضّر مثالًا مهنيًا يثبت ${s} ويقوي ${w}.`,
+          drill: () => "استخدم المثال دون كشف تفاصيل سرية أو وعد بنتيجة.",
+          check: "هل زاد المثال الثقة دون مبالغة؟",
+        },
+        {
+          micro: (w: string, s: string) => `اختر استشارة تحتاج ${w} وادخلها بثقة ${s}.`,
+          drill: () => "طبّق السلوكين معًا: هيكل واضح، سؤال مناسب، وخطوة مهنية محددة.",
+          check: "هل خرج العميل بخطوة قرار أوضح؟",
+        },
+      ]
+    : [
+        {
+          micro: (w: string, s: string) => `Use your strength in ${s} to support the weaker area: ${w}.`,
+          drill: () => "Start with your strongest consultation behavior, then deliberately add one question or explanation that repairs the weaker area.",
+          check: "Did the consultation path become more balanced?",
+        },
+        {
+          micro: () => "Write one closing sentence that helps the client decide without pressure, while making the legal risk and next professional step clear.",
+          drill: () => "Use that sentence when summarizing legal risk and the next professional step.",
+          check: "Did the connection help the client understand the decision?",
+        },
+        {
+          micro: (w: string, s: string) => `Prepare one professional example that proves ${s} and strengthens ${w}.`,
+          drill: () => "Use the example without revealing confidential detail or promising an outcome.",
+          check: "Did the example build trust without overclaiming?",
+        },
+        {
+          micro: (w: string, s: string) => `Choose one consultation that needs ${w} and enter it through your confidence in ${s}.`,
+          drill: () => "Apply both behaviors together: clear structure, appropriate question, and defined professional step.",
+          check: "Did the client leave with a clearer decision step?",
+        },
+      ];
+
+  const rhythmTemplates = ar
+    ? [
+        ["راجع استشاراتك المفتوحة وحدد لكل واحدة خطوة مهنية تالية.", "صنّف كل ملف: يحتاج توضيحًا، اتفاق تمثيل، مستندات، أو إغلاقًا محترمًا.", "هل لا توجد استشارة معلقة بلا مسار؟"],
+        ["ثبت روتينًا قبل كل استشارة: هدف، نطاق، سؤال تشخيص، وخطوة قرار.", "استخدم الروتين في أول استشارة اليوم.", "هل دخلت الاستشارة بإطار أوضح؟"],
+        ["راجع متابعة واحدة مؤجلة.", "أرسل متابعة قصيرة بسياق، مخاطر، وخطوة مهنية محددة.", "هل تحولت المتابعة إلى قرار أو توضيح؟"],
+        ["اختر مسألة تحتاج تبسيطًا قانونيًا.", "اشرحها في ثلاث جمل: الوضع، المخاطر، والخطوة التالية.", "هل يستطيع العميل فهمها دون مصطلحات ثقيلة؟"],
+        ["راجع اتفاق تمثيل أرسلته مؤخرًا.", "تأكد أن النطاق، المسؤوليات، والمستندات المطلوبة واضحة.", "هل يستطيع العميل التحرك دون أسئلة أساسية؟"],
+        ["اكتب درسًا واحدًا من آخر استشارة صعبة.", "حوّله إلى قاعدة عمل للاستشارة التالية.", "هل أصبحت القاعدة قابلة للتطبيق اليوم؟"],
+        ["راجع عميلًا راضيًا أو ملفًا ناجح الإدارة.", "حدد السلوك المهني الذي صنع الثقة وكرره اليوم.", "هل يمكنك إعادة إنتاج هذا السلوك؟"],
+        ["اختر محادثة فيها تردد.", "اسأل عن الجزء غير الواضح: النطاق، المخاطر، الأتعاب، أو التوقيت.", "هل أصبح التردد محددًا؟"],
+        ["نظّف لغة رسالة واحدة.", "اجعلها أهدأ، أقصر، وأكثر ارتباطًا بمسار القرار المهني.", "هل أصبحت الرسالة أسهل على عميل متوتر؟"],
+        ["حدد معيارًا أسبوعيًا لتجربة العميل.", "طبقه في كل استشارة: وضوح، سرعة، توثيق، أو متابعة.", "هل ظهر المعيار في العمل الحقيقي؟"],
+        ["راجع الحد المهني الأكثر أهمية لديك.", "اذكره بوضوح في موقف مناسب دون اعتذار.", "هل دعم الحد الثقة المهنية؟"],
+        ["اختم استشارة واحدة بسؤال قرار واضح.", "اسأل إن كان العميل مستعدًا لاعتماد اتفاق التمثيل والبدء بالخطوة التالية.", "هل انتهت الاستشارة بقرار أو سبب واضح للتأجيل؟"],
+        ["وثّق سبب قبول أو رفض ملف واحد.", "اكتب السبب بلغة مهنية مرتبطة بالنطاق والمخاطر والملاءمة.", "هل تستطيع الدفاع عن القرار مهنيًا؟"],
+        ["راجع أفضل عادة بنيتها في الخطة.", "كررها في موقفين اليوم.", "هل أصبحت العادة أسهل من الأسبوع الأول؟"],
+        ["اكتب خطة الأسبوع التالي بثلاث عادات فقط.", "اختر عادة للاستقبال، عادة للاستشارة، وعادة للمتابعة.", "هل لديك نظام يستمر بعد اليوم 90؟"],
+      ]
+    : [
+        ["Review your open consultations and define one professional next step for each.", "Classify each matter as needing clarification, engagement agreement, documents, or respectful closure.", "Is every consultation attached to a path?"],
+        ["Stabilize a pre-consultation routine: goal, scope, diagnostic question, and decision step.", "Use the routine in your first consultation today.", "Did you enter with a clearer frame?"],
+        ["Review one delayed follow-up.", "Send a short follow-up with context, legal risk, and a defined professional step.", "Did the follow-up become a decision or clarification path?"],
+        ["Choose one matter that needs simpler legal explanation.", "Explain it in three sentences: position, risk, and next step.", "Could the client understand it without heavy legal language?"],
+        ["Review one engagement agreement you sent recently.", "Check that scope, responsibilities, and required documents are clear.", "Can the client act without basic confusion?"],
+        ["Write one lesson from the last difficult consultation.", "Turn it into an operating rule for the next consultation.", "Can you apply the rule today?"],
+        ["Review one satisfied client or well-managed matter.", "Identify the professional behavior that created trust and repeat it today.", "Can you reproduce that behavior?"],
+        ["Choose one hesitant client conversation.", "Ask which part is unclear: scope, risk, professional legal fees, or timing.", "Did the hesitation become specific?"],
+        ["Clean up one client message.", "Make it calmer, shorter, and more connected to the client decision path.", "Would a stressed client understand it quickly?"],
+        ["Set one client-experience standard for the week.", "Apply it in every consultation: clarity, speed, documentation, or follow-up.", "Was the standard visible in real work?"],
+        ["Review your most important professional boundary.", "State it clearly in one relevant situation without apology.", "Did the boundary support trust?"],
+        ["Close one consultation with a clear decision question.", "Ask whether the client is ready to approve the engagement agreement and begin the next step.", "Did the consultation end with a decision or a clear reason for delay?"],
+        ["Document why you accepted or declined one matter.", "Write the reason in professional language tied to scope, risk, and fit.", "Could you defend the decision professionally?"],
+        ["Review the strongest habit you built in this plan.", "Repeat it in two situations today.", "Is the habit easier than it was in week one?"],
+        ["Write next week's plan with only three habits.", "Choose one inquiry habit, one consultation habit, and one follow-up habit.", "Do you have a system that continues after day 90?"],
+      ];
+
+  const days: LawyerTreatmentDay[] = [];
+
+  for (let i = 0; i < 42; i++) {
+    const row = weak[Math.floor(i / 7) % weak.length];
+    const drills = getLawyerTreatmentDrills(row?.competencyId, ar);
+    const drill = drills[i % drills.length];
+    const day = i + 1;
+    days.push({
+      day,
+      phase: getLawyerTreatmentPhase(day, ar),
+      week: Math.floor(i / 7) + 1,
+      focus: row?.label || (ar ? "أولوية تحويل قانونية" : "Legal conversion priority"),
+      microAction: drill.microAction,
+      consultationDrill: drill.consultationDrill,
+      checkpoint: drill.checkpoint,
+    });
+  }
+
+  for (let i = 0; i < 28; i++) {
+    const row = weak[i % weak.length];
+    const focus = row?.label || (ar ? "أولوية تحويل قانونية" : "Legal conversion priority");
+    const template = integrationTemplates[i % integrationTemplates.length];
+    const day = i + 43;
+    days.push({
+      day,
+      phase: getLawyerTreatmentPhase(day, ar),
+      week: Math.floor((i + 42) / 7) + 1,
+      focus,
+      microAction: template.micro(focus, strongest),
+      consultationDrill: template.drill(),
+      checkpoint: template.check,
+    });
+  }
+
+  for (let i = 0; i < 20; i++) {
+    const focus = i % 2 === 0 ? strongest : weak[i % weak.length]?.label || (ar ? "إيقاع تحويل قانوني" : "Legal conversion rhythm");
+    const [microAction, consultationDrill, checkpoint] = rhythmTemplates[i % rhythmTemplates.length];
+    const day = i + 71;
+    days.push({
+      day,
+      phase: getLawyerTreatmentPhase(day, ar),
+      week: Math.floor((i + 70) / 7) + 1,
+      focus,
+      microAction,
+      consultationDrill,
       checkpoint,
     });
   }
@@ -2437,6 +2959,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const outdoorSalesFitnessPlan = outdoorSalesMri
     ? buildOutdoorSalesFitnessPlan(weakestSixForTreatment, topThreeStrengths[0] || null, lang)
     : [];
+  const lawyerTreatmentPlan = lawyerClientConversionMri
+    ? buildLawyerConversionTreatmentPlan(weakestSixForTreatment, topThreeStrengths[0] || null, lang)
+    : [];
 
   const reportTitle =
     (ar
@@ -3199,6 +3724,16 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             : "A daily field-development plan based on your weakest sales muscles. Each day gives you one small action to practice in real selling situations."
         )}
         <OutdoorSalesFitnessPlanSection days={outdoorSalesFitnessPlan} lang={lang} />
+      </>
+    ) : lawyerClientConversionMri ? (
+      <>
+        {sectionTitle(
+          ar ? "خطة علاج تحويل الاستشارات القانونية خلال 90 يومًا" : "90-Day Legal Client Conversion Treatment Plan",
+          ar
+            ? "خطة يومية عملية مبنية على أضعف مناطق تحويل الاستشارة لديك. كل يوم يمنحك إجراءً مصغّرًا وتطبيقًا داخل الاستشارة القانونية ومؤشر تحقق واضح."
+            : "A daily professional treatment plan based on your weakest consultation-conversion areas. Each day gives you one micro-action, one legal consultation drill, and one proof of execution."
+        )}
+        <LawyerTreatmentPlanSection days={lawyerTreatmentPlan} lang={lang} />
       </>
     ) : (
       <>
@@ -4246,6 +4781,131 @@ function PrescriptionPhase({
       <p className="mt-3 text-sm sm:text-base text-slate-700 leading-relaxed rtl-text">
         {ar ? bodyAr : bodyEn}
       </p>
+    </div>
+  );
+}
+
+function LawyerTreatmentPlanSection({
+  days,
+  lang,
+}: {
+  days: LawyerTreatmentDay[];
+  lang: Language;
+}) {
+  const ar = lang === "ar";
+  const phases = Array.from(
+    days.reduce((groups, day) => {
+      const phaseDays = groups.get(day.phase) || [];
+      phaseDays.push(day);
+      groups.set(day.phase, phaseDays);
+      return groups;
+    }, new Map<string, LawyerTreatmentDay[]>())
+  );
+
+  return (
+    <div className="space-y-6">
+      {phases.map(([phase, phaseDays]) => {
+        const startDay = phaseDays[0]?.day || 1;
+        const endDay = phaseDays[phaseDays.length - 1]?.day || startDay;
+        const weeks = Array.from(
+          phaseDays.reduce((groups, day) => {
+            const weekDays = groups.get(day.week) || [];
+            weekDays.push(day);
+            groups.set(day.week, weekDays);
+            return groups;
+          }, new Map<number, LawyerTreatmentDay[]>())
+        );
+
+        return (
+          <div
+            key={phase}
+            className="avoid-break rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 sm:p-5 shadow-sm"
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-xs font-black uppercase tracking-widest text-slate-500 rtl-text">
+                  {ar ? "مرحلة علاجية" : "Treatment Phase"}
+                </div>
+                <h3 className="mt-1 text-lg sm:text-xl font-black text-slate-950 rtl-text">
+                  {phase}
+                </h3>
+              </div>
+              <div className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-black text-slate-600">
+                {ar ? `الأيام ${startDay}-${endDay}` : `Days ${startDay}-${endDay}`}
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-4">
+              {weeks.map(([week, weekDays]) => (
+                <div key={week} className="rounded-2xl border border-slate-200 bg-white p-3 sm:p-4">
+                  <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <h4 className="text-sm font-black text-slate-900 rtl-text">
+                      {ar ? `الأسبوع ${week}` : `Week ${week}`}
+                    </h4>
+                    <span className="text-xs font-bold text-slate-500 rtl-text">
+                      {ar
+                        ? `الأيام ${weekDays[0]?.day}-${weekDays[weekDays.length - 1]?.day}`
+                        : `Days ${weekDays[0]?.day}-${weekDays[weekDays.length - 1]?.day}`}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
+                    {weekDays.map((day) => (
+                      <article
+                        key={day.day}
+                        className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm"
+                      >
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="text-[11px] font-black uppercase tracking-widest text-slate-500 rtl-text">
+                              {ar ? "اليوم" : "Day"} {day.day}
+                            </div>
+                            <h5 className="mt-1 text-base font-black text-slate-950 rtl-text">
+                              {day.focus}
+                            </h5>
+                          </div>
+                          <span className="inline-flex w-fit rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white">
+                            {ar ? "تطبيق مهني" : "Professional drill"}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-3">
+                          <div className="rounded-2xl bg-slate-100 p-3">
+                            <div className="text-[11px] font-black uppercase tracking-widest text-slate-600 rtl-text">
+                              {ar ? "الإجراء المصغّر" : "Micro-Action"}
+                            </div>
+                            <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-700 rtl-text">
+                              {day.microAction}
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl bg-indigo-50 p-3">
+                            <div className="text-[11px] font-black uppercase tracking-widest text-indigo-700 rtl-text">
+                              {ar ? "التطبيق داخل الاستشارة القانونية" : "Legal Consultation Drill"}
+                            </div>
+                            <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-700 rtl-text">
+                              {day.consultationDrill}
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl bg-emerald-50 p-3">
+                            <div className="text-[11px] font-black uppercase tracking-widest text-emerald-700 rtl-text">
+                              {ar ? "مؤشر التحقق" : "Checkpoint"}
+                            </div>
+                            <p className="mt-1 text-sm font-semibold leading-relaxed text-slate-700 rtl-text">
+                              {day.checkpoint}
+                            </p>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
