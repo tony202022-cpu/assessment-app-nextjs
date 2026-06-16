@@ -3727,13 +3727,22 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       </>
     ) : lawyerClientConversionMri ? (
       <>
+        <LawyerPlanPersonalizationBox
+          weakestRows={weakestSixForTreatment}
+          strongestRow={topThreeStrengths[0] || null}
+          lang={lang}
+        />
         {sectionTitle(
           ar ? "خطة علاج تحويل الاستشارات القانونية خلال 90 يومًا" : "90-Day Legal Client Conversion Treatment Plan",
           ar
             ? "خطة يومية عملية مبنية على أضعف مناطق تحويل الاستشارة لديك. كل يوم يمنحك إجراءً مصغّرًا وتطبيقًا داخل الاستشارة القانونية ومؤشر تحقق واضح."
             : "A daily professional treatment plan based on your weakest consultation-conversion areas. Each day gives you one micro-action, one legal consultation drill, and one proof of execution."
         )}
-        <LawyerTreatmentPlanSection days={lawyerTreatmentPlan} lang={lang} />
+        <LawyerTreatmentPlanSection
+          days={lawyerTreatmentPlan}
+          lang={lang}
+          supportFocus={topThreeStrengths[0]?.label || (ar ? "أقوى منطقة داعمة لديك" : "Your strongest leverage area")}
+        />
       </>
     ) : (
       <>
@@ -4226,6 +4235,16 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
 </section>
 </>
+)}
+
+{lawyerClientConversionMri && (
+  <section className="avoid-break rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl">
+    <p className="text-sm sm:text-base font-bold leading-relaxed text-slate-700 rtl-text">
+      {ar
+        ? "تم إعداد هذا التقرير بناءً على إجابات هذا المشارك ونمط نتائجه التشخيصية، ولا يُعد بديلًا عن تشخيص محامٍ آخر أو عضو آخر في الفريق."
+        : "This report was generated from this participant’s assessment responses and score pattern. It should not be treated as a substitute diagnosis for another lawyer or team member."}
+    </p>
+  </section>
 )}
 
       </main>
@@ -4785,12 +4804,74 @@ function PrescriptionPhase({
   );
 }
 
+function LawyerPlanPersonalizationBox({
+  weakestRows,
+  strongestRow,
+  lang,
+}: {
+  weakestRows: CompetencyRow[];
+  strongestRow: CompetencyRow | null;
+  lang: Language;
+}) {
+  const ar = lang === "ar";
+
+  return (
+    <div className="avoid-break mb-6 rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-slate-50 p-5 sm:p-6 shadow-sm">
+      <div className="text-xs font-black uppercase tracking-widest text-indigo-700 rtl-text">
+        {ar ? "تخصيص الخطة" : "Plan Personalization"}
+      </div>
+      <h3 className="mt-2 text-xl sm:text-2xl font-black text-slate-950 rtl-text">
+        {ar ? "لماذا تم بناء خطة الـ 90 يومًا بهذه الطريقة؟" : "Why This 90-Day Plan Was Generated for You"}
+      </h3>
+      <p className="mt-3 text-sm sm:text-base font-semibold leading-relaxed text-slate-700 rtl-text">
+        {ar
+          ? "تم بناء هذه الخطة بناءً على أضعف ست كفاءات ظهرت في نتائجك، مع استخدام أقوى منطقة لديك كرافعة دعم. لذلك لا تُعرض الخطة كقائمة عامة، بل كمسار علاجي يبدأ بالمناطق الأكثر احتمالًا لإضعاف الثقة، أو السيطرة على الاستشارة، أو الثقة في أتعاب المحاماة، أو المتابعة، أو قرار التمثيل بناءً على نتائجك."
+          : "This treatment plan is based on your weakest six Lawyer Client Conversion MRI competencies and your strongest leverage area. The sequence below is not a generic checklist. It prioritizes the areas most likely to leak client trust, consultation control, fee confidence, follow-up discipline, or engagement commitment based on your own results."}
+      </p>
+
+      <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_0.7fr]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="text-sm font-black text-slate-950 rtl-text">
+            {ar ? "مناطق العلاج ذات الأولوية:" : "Your Priority Treatment Areas:"}
+          </div>
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {weakestRows.map((row) => (
+              <div key={row.competencyId} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2">
+                <span className="text-sm font-bold text-slate-700 rtl-text">{row.label}</span>
+                <span className="shrink-0 rounded-full bg-slate-950 px-2.5 py-1 text-xs font-black text-white">
+                  {row.percentage}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <div className="text-sm font-black text-emerald-900 rtl-text">
+            {ar ? "أقوى منطقة داعمة لديك:" : "Your Strongest Leverage Area:"}
+          </div>
+          <div className="mt-3 rounded-xl bg-white px-3 py-3">
+            <div className="text-sm font-bold text-slate-800 rtl-text">
+              {strongestRow?.label || (ar ? "أقوى منطقة لديك" : "Your strongest area")}
+            </div>
+            <div className="mt-2 inline-flex rounded-full bg-emerald-700 px-3 py-1 text-xs font-black text-white">
+              {strongestRow?.percentage ?? 0}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LawyerTreatmentPlanSection({
   days,
   lang,
+  supportFocus,
 }: {
   days: LawyerTreatmentDay[];
   lang: Language;
+  supportFocus: string;
 }) {
   const ar = lang === "ar";
   const phases = Array.from(
@@ -4807,6 +4888,9 @@ function LawyerTreatmentPlanSection({
       {phases.map(([phase, phaseDays]) => {
         const startDay = phaseDays[0]?.day || 1;
         const endDay = phaseDays[phaseDays.length - 1]?.day || startDay;
+        const primaryFocuses = Array.from(new Set(phaseDays.map((day) => day.focus).filter(Boolean)))
+          .filter((focus) => focus !== supportFocus)
+          .slice(0, 3);
         const weeks = Array.from(
           phaseDays.reduce((groups, day) => {
             const weekDays = groups.get(day.week) || [];
@@ -4832,6 +4916,30 @@ function LawyerTreatmentPlanSection({
               </div>
               <div className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-black text-slate-600">
                 {ar ? `الأيام ${startDay}-${endDay}` : `Days ${startDay}-${endDay}`}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="text-[11px] font-black uppercase tracking-widest text-slate-500 rtl-text">
+                  {ar ? "محور العلاج الأساسي" : "Primary Treatment Focus"}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(primaryFocuses.length ? primaryFocuses : [phaseDays[0]?.focus || (ar ? "أولوية العلاج" : "Treatment priority")]).map((focus) => (
+                    <span key={focus} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700 rtl-text">
+                      {focus}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
+                <div className="text-[11px] font-black uppercase tracking-widest text-emerald-700 rtl-text">
+                  {ar ? "محور الدعم" : "Support Focus"}
+                </div>
+                <div className="mt-2 rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-900 rtl-text">
+                  {supportFocus}
+                </div>
               </div>
             </div>
 
