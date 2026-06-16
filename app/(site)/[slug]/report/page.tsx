@@ -2367,6 +2367,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const businessHealth = isBusinessHealthAssessment(slug, (attempt as any).assessment_id);
   const outdoorSalesMri = isOutdoorSalesMriReport(slug, (attempt as any).assessment_id);
   const outdoorSalesScan = isOutdoorSalesScanReport(slug, (attempt as any).assessment_id);
+  const lawyerClientConversionMri =
+    slug === "lawyer-client-conversion-mri" ||
+    (attempt as any).assessment_id === "lawyer_client_conversion_mri";
 
   const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
   const comps = Array.isArray((assessment as any)?.config?.competencies)
@@ -3588,7 +3591,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </section>
         )}
 
-{!outdoorSalesMri && !outdoorSalesScan && (
+{!outdoorSalesMri && !outdoorSalesScan && !lawyerClientConversionMri && (
 <>
 {/* ENTERPRISE CTA */}
 

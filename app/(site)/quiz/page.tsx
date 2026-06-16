@@ -22,6 +22,7 @@ const latinFont = Inter({
 // ✅ DB truth (menu IDs)
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
+const LAWYER_MRI_ASSESSMENT_ID = "lawyer_client_conversion_mri";
 
 // DO NOT TOUCH — shuffle logic
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -358,13 +359,17 @@ useEffect(() => {
     const answersToSubmit = answersOverride || selectedAnswers;
     const isOutdoorScan =
       assessmentId === SCAN_ASSESSMENT_ID || slug === "outdoor-scan" || slug === "scan";
+    const shouldPadUnanswered =
+      isOutdoorScan ||
+      assessmentId === LAWYER_MRI_ASSESSMENT_ID ||
+      slug === "lawyer-client-conversion-mri";
     const answersByQuestionId = new Map(
       answersToSubmit
         .filter((a) => a?.questionId)
         .map((a) => [String(a.questionId), a])
     );
     const paddedAnswers =
-      isOutdoorScan && questions.length
+      shouldPadUnanswered && questions.length
         ? questions.map((q, index) => {
             const existing = answersByQuestionId.get(String((q as any).id)) || answersToSubmit[index];
             return {
