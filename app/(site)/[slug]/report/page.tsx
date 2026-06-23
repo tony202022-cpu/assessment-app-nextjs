@@ -254,15 +254,15 @@ function healthLabel(overall: number, lang: Language) {
 
 function lawyerHealthLabel(overall: number, lang: Language) {
   if (lang === "ar") {
-    if (overall >= 75) return "منطقة تحويل عملاء قوية";
+    if (overall >= 75) return "مستوى صحة تجربة العميل القانونية قوي";
     if (overall >= 50) return "منطقة فرصة واضحة في تجربة العميل";
-    if (overall >= 30) return "منطقة إنذار في تجربة العميل";
+    if (overall >= 30) return "منطقة تحتاج إلى تدخل مهني";
     return "منطقة تتطلب تدخلاً عاجلاً في الاستشارات";
   }
 
-  if (overall >= 75) return "Strong Client Conversion Zone";
-  if (overall >= 50) return "Clear Client Conversion Opportunity Zone";
-  if (overall >= 30) return "Client Conversion Warning Zone";
+  if (overall >= 75) return "Strong Legal Client Experience Health Zone";
+  if (overall >= 50) return "Clear Legal Client Experience Opportunity Zone";
+  if (overall >= 30) return "Legal Client Experience Needs Professional Attention";
   return "High Consultation Leakage Zone";
 }
 
@@ -444,7 +444,7 @@ function businessHealthCommercialMeaning(tier: Tier, label: string, lang: Langua
 
 function lawyerOverallMeaning(overall: number, tier: Tier, lang: Language) {
   if (lang === "ar") {
-    if (tier === "Strength") return "الصورة العامة تشير إلى تجربة عميل قانونية قوية تساعد العميل على الفهم والثقة واتخاذ الخطوة القانونية المناسبة. المطلوب الآن هو تحويل هذه القوة إلى نظام ثابت لا يعتمد على قوة القضية وحدها.";
+    if (tier === "Strength") return "الصورة العامة تشير إلى تجربة عميل قانونية قوية تساعد العميل على الفهم والثقة واتخاذ الخطوة القانونية المناسبة. المطلوب الآن هو تثبيت هذه القوة في نظام مهني لا يعتمد على قوة القضية وحدها.";
     if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس مهني يمكن البناء عليه، لكن بعض نقاط الاحتكاك في الثقة أو شرح القيمة أو عرض أتعاب المحاماة أو المتابعة قد تجعل العميل يتردد أو تتوقف رحلته.";
     if (tier === "Threat") return "الصورة العامة تظهر إنذارًا مهنيًا. بعض سلوكيات الاستشارة قد تُضعف ثقة العميل أو تقلل وضوح القيمة أو تجعل أتعاب المحاماة تبدو منفصلة عن حجم المخاطر والعمل القانوني المطلوب.";
     return "الصورة العامة تظهر فجوة واضحة في تجربة العميل القانونية. هذا لا يعني ضعفك كمحامٍ، بل يعني أن خبرتك القانونية قد لا تظهر للعميل بطريقة تجعله يثق ويفهم الخطوة القانونية المناسبة.";
@@ -1388,7 +1388,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "أنشئ سؤال فحص تعارض مصالح للاستفسارات الواردة.", consultationDrill: "اطلب أسماء الأطراف ذات الصلة قبل سماع تفاصيل حساسة.", checkpoint: "هل تم فحص الاستفسار قبل توسع التفاصيل السرية؟" },
       { microAction: "اكتب جملة توضح ما تغطيه الاستشارة وما لا تغطيه.", consultationDrill: "استخدمها في بداية الاستفسار التالي.", checkpoint: "هل فهم العميل حدود الاستشارة؟" },
       { microAction: "حضّر قالب ملاحظة يتضمن مصدر الاستفسار، المسألة، الاستعجال، والخطوة التالية.", consultationDrill: "املأه أثناء استفسار واحد بدل الاعتماد على الذاكرة.", checkpoint: "هل يستطيع مهني آخر فهم المسألة من ملاحظتك؟" },
-      { microAction: "حدد استفسارًا واحدًا يجب تحويله أو رفضه مبكرًا.", consultationDrill: "اشرح الحد المهني بوضوح ووجّه العميل إلى المسار الأنسب.", checkpoint: "هل تجنبت إدخال ملف غير مناسب؟" },
+      { microAction: "حدد استفسارًا واحدًا يجب توجيهه أو رفضه مبكرًا.", consultationDrill: "اشرح الحد المهني بوضوح ووجّه العميل إلى المسار الأنسب.", checkpoint: "هل تجنبت إدخال ملف غير مناسب؟" },
       { microAction: "حدد زمن استجابة معياريًا للاستفسارات اليوم.", consultationDrill: "استجب ضمن هذا الزمن بمسار استشارة واضح أو حد مهني واضح.", checkpoint: "هل انتقل كل استفسار إلى خطوة محددة؟" },
     ],
   },
@@ -1397,7 +1397,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "Write a 60-second opening script for your next consultation.", consultationDrill: "Start with purpose, agenda, confidentiality boundary, and decision path.", checkpoint: "Did the client know how the consultation would run?" },
       { microAction: "Prepare three agenda items before the client speaks in detail.", consultationDrill: "Name the agenda and ask permission to guide the sequence.", checkpoint: "Did you lead the structure without sounding controlling?" },
       { microAction: "Create one interruption phrase for clients who jump between facts.", consultationDrill: "Use it to pause, sequence the facts, and return to the legal issue.", checkpoint: "Did the conversation become easier to follow?" },
-      { microAction: "Define the consultation outcome before the meeting starts.", consultationDrill: "Say whether the goal is assessment, legal options, next step, or engagement readiness.", checkpoint: "Did the consultation have a clear destination?" },
+      { microAction: "Define the consultation outcome before the meeting starts.", consultationDrill: "Say whether the goal is assessment, legal options, next step, or readiness for the appropriate legal path.", checkpoint: "Did the consultation have a clear destination?" },
       { microAction: "Prepare a time-frame statement for long stories.", consultationDrill: "Tell the client how you will use the available time and when you will ask clarifying questions.", checkpoint: "Did time stay protected?" },
       { microAction: "Write one authority-building opening line without boasting.", consultationDrill: "Use professional calm, process clarity, and listening discipline.", checkpoint: "Did authority come from structure rather than ego?" },
       { microAction: "Close the opening by confirming the client’s main concern.", consultationDrill: "Reflect the issue in one sentence before moving into diagnosis.", checkpoint: "Did the client feel heard before analysis began?" },
@@ -1406,7 +1406,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "اكتب افتتاحية مدتها 60 ثانية للاستشارة التالية.", consultationDrill: "ابدأ بالهدف، جدول الاستشارة، حدود السرية، ومسار القرار المهني.", checkpoint: "هل عرف العميل كيف ستسير الاستشارة؟" },
       { microAction: "حضّر ثلاثة محاور قبل أن يدخل العميل في التفاصيل.", consultationDrill: "اذكر المحاور واطلب الإذن بقيادة التسلسل.", checkpoint: "هل قدت الهيكل دون أن تبدو متسلطًا؟" },
       { microAction: "أنشئ عبارة مقاطعة مهنية عندما ينتقل العميل بين الوقائع.", consultationDrill: "استخدمها لإيقاف التشتت، ترتيب الوقائع، والعودة للمسألة القانونية.", checkpoint: "هل أصبحت المحادثة أسهل في المتابعة؟" },
-      { microAction: "حدد نتيجة الاستشارة قبل بدايتها.", consultationDrill: "وضح إن كان الهدف تقييمًا، خيارات قانونية، خطوة تالية، أو جاهزية لاتفاق التمثيل.", checkpoint: "هل كان للاستشارة اتجاه واضح؟" },
+      { microAction: "حدد نتيجة الاستشارة قبل بدايتها.", consultationDrill: "وضح إن كان الهدف تقييمًا، خيارات قانونية، خطوة تالية، أو جاهزية للمسار القانوني المناسب.", checkpoint: "هل كان للاستشارة اتجاه واضح؟" },
       { microAction: "حضّر جملة لإدارة الوقت عندما يطول السرد.", consultationDrill: "اشرح للعميل كيف ستستخدم الوقت ومتى ستطرح أسئلة توضيحية.", checkpoint: "هل بقي الوقت محميًا؟" },
       { microAction: "اكتب افتتاحية تبني الهيبة المهنية دون مبالغة.", consultationDrill: "استخدم الهدوء المهني، وضوح العملية، وانضباط الاستماع.", checkpoint: "هل جاءت الهيبة من الهيكل لا من الاستعراض؟" },
       { microAction: "اختم الافتتاح بتأكيد القلق الأساسي لدى العميل.", consultationDrill: "اعكس المسألة في جملة واحدة قبل الانتقال للتشخيص.", checkpoint: "هل شعر العميل أنه مسموع قبل بدء التحليل؟" },
@@ -1440,16 +1440,16 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "Ask what the client expects from the lawyer-client relationship.", consultationDrill: "Listen for cooperation, responsiveness, decision style, and boundary issues.", checkpoint: "Did you understand client fit beyond the legal issue?" },
       { microAction: "Create a matter-fit note with accept, pause, refer, or decline.", consultationDrill: "Classify one consultation immediately after it ends.", checkpoint: "Was the next route professionally clear?" },
       { microAction: "Ask what evidence the client can provide this week.", consultationDrill: "Tie case viability to available proof, not only the client’s narrative.", checkpoint: "Did evidence support the matter?" },
-      { microAction: "Define one boundary that must exist before engagement.", consultationDrill: "State it calmly before discussing the engagement agreement.", checkpoint: "Did the client accept the working boundary?" },
+      { microAction: "Define one boundary that must exist before the next legal step.", consultationDrill: "State it calmly before discussing the professional agreement.", checkpoint: "Did the client accept the working boundary?" },
     ],
     ar: [
       { microAction: "اكتب معاييرك الدنيا لقبول ملف جديد.", consultationDrill: "افحص نوع المسألة، الأدلة، الاستعجال، تعاون العميل، وملاءمة نطاق العمل.", checkpoint: "هل يطابق الملف معيار القبول المهني؟" },
       { microAction: "حضّر جملة اعتذار محترمة للملفات غير المناسبة.", consultationDrill: "استخدمها عندما تكون المسألة خارج تخصصك أو مستوى المخاطر المقبول.", checkpoint: "هل حميت المكتب دون إحراج العميل؟" },
-      { microAction: "حدد علامة خطر واحدة قبل اقتراح التمثيل.", consultationDrill: "اسأل عن المواعيد، محام سابق، مستندات مفقودة، أو توقعات غير واقعية.", checkpoint: "هل ظهرت المخاطر قبل الالتزام؟" },
+      { microAction: "حدد علامة خطر واحدة قبل اقتراح المسار القانوني.", consultationDrill: "اسأل عن المواعيد، محام سابق، مستندات مفقودة، أو توقعات غير واقعية.", checkpoint: "هل ظهرت المخاطر قبل قرار الاستمرار؟" },
       { microAction: "اسأل العميل ماذا يتوقع من علاقة المحامي والعميل.", consultationDrill: "استمع للتعاون، سرعة الاستجابة، أسلوب القرار، ومشكلات الحدود.", checkpoint: "هل فهمت ملاءمة العميل خارج المسألة القانونية؟" },
       { microAction: "أنشئ ملاحظة ملاءمة: قبول، توقف، إحالة، أو اعتذار.", consultationDrill: "صنّف استشارة واحدة فور انتهائها.", checkpoint: "هل أصبح المسار التالي واضحًا مهنيًا؟" },
       { microAction: "اسأل عن الدليل الذي يستطيع العميل توفيره هذا الأسبوع.", consultationDrill: "اربط جدوى الملف بالأدلة المتاحة لا بسرد العميل فقط.", checkpoint: "هل يدعم الدليل المسألة؟" },
-      { microAction: "حدد حدًا مهنيًا واحدًا يجب وجوده قبل اتفاق التمثيل.", consultationDrill: "اذكره بهدوء قبل مناقشة الاتفاق.", checkpoint: "هل قبل العميل حد العمل؟" },
+      { microAction: "حدد حدًا مهنيًا واحدًا يجب وجوده قبل الخطوة القانونية التالية.", consultationDrill: "اذكره بهدوء قبل مناقشة الإجراء المناسب.", checkpoint: "هل قبل العميل حد العمل؟" },
     ],
   },
   client_trust_professional_authority: {
@@ -1500,7 +1500,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "Turn one legal task into a client outcome.", consultationDrill: "Explain the task through clarity, risk control, leverage, or decision quality.", checkpoint: "Did the work feel tied to client benefit?" },
       { microAction: "Prepare one proof story from a similar matter without revealing confidential detail.", consultationDrill: "Use it to show process value, not guaranteed result.", checkpoint: "Did the example build trust ethically?" },
       { microAction: "Ask which outcome matters most: speed, protection, leverage, closure, or certainty.", consultationDrill: "Use the answer to frame the legal path.", checkpoint: "Did the value match the client’s priority?" },
-      { microAction: "Write a one-sentence value summary before the engagement discussion.", consultationDrill: "Say what the client gains in clarity, protection, and next-step control.", checkpoint: "Did the client understand the reason to proceed?" },
+      { microAction: "Write a one-sentence value summary before discussing the next legal step.", consultationDrill: "Say what the client gains in clarity, protection, and next-step control.", checkpoint: "Did the client understand the reason to proceed?" },
     ],
     ar: [
       { microAction: "اكتب قيمة ملف قانوني واحد كخفض مخاطر أو تحسين قرار أو منع ضرر.", consultationDrill: "استخدم هذا الإطار قبل مناقشة أتعاب المحاماة.", checkpoint: "هل ربط العميل العمل بنتيجة مهمة؟" },
@@ -1514,12 +1514,12 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
   },
   fee_presentation_retainer_confidence: {
     en: [
-      { microAction: "Prepare a professional legal-fee explanation tied to scope of work.", consultationDrill: "Present scope, responsibilities, payment terms, and engagement agreement in one sequence.", checkpoint: "Did the discussion feel structured and confident?" },
+      { microAction: "Prepare a professional legal-fee explanation tied to scope of work.", consultationDrill: "Present scope, responsibilities, payment terms, and the appropriate legal procedure in one sequence.", checkpoint: "Did the discussion feel structured and confident?" },
       { microAction: "Write one sentence that separates legal fees from outcome promises.", consultationDrill: "Explain that fees cover professional work, analysis, preparation, and representation within scope.", checkpoint: "Did you avoid implying a guaranteed result?" },
-      { microAction: "Create a scope checklist before discussing the engagement agreement.", consultationDrill: "Confirm what is included, what is excluded, and what requires separate approval.", checkpoint: "Did the client understand the boundary of work?" },
+      { microAction: "Create a scope checklist before discussing the next legal step.", consultationDrill: "Confirm what is included, what is excluded, and what requires separate approval.", checkpoint: "Did the client understand the boundary of work?" },
       { microAction: "Practice saying the professional legal fees without apology.", consultationDrill: "Pause after stating them and let the client process the information.", checkpoint: "Did you stay calm during silence?" },
       { microAction: "Prepare one response for: I need to think about it.", consultationDrill: "Ask what part of the scope, risk, or decision needs clarification.", checkpoint: "Did you uncover the real hesitation?" },
-      { microAction: "Write the next administrative step after verbal approval.", consultationDrill: "Move to engagement agreement, required documents, and first action.", checkpoint: "Did verbal interest become a defined process?" },
+      { microAction: "Write the next administrative step after verbal approval.", consultationDrill: "Move to the appropriate professional procedure, required documents, and first action.", checkpoint: "Did verbal interest become a defined process?" },
       { microAction: "Review one past consultation where fees felt uncomfortable.", consultationDrill: "Rewrite the explanation around scope, legal risk, and client decision quality.", checkpoint: "Is the new explanation more professional?" },
     ],
     ar: [
@@ -1549,7 +1549,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "اشرح مخاطر اختيار شروط تمثيل غير واضحة.", consultationDrill: "ناقش التوثيق، المسؤولية، التواصل، ودعم القرار.", checkpoint: "هل رأى العميل مخاطر النطاق الغامض؟" },
       { microAction: "حضّر عبارة غير دفاعية عند الضغط على الأتعاب.", consultationDrill: "اذكر ما تستطيع إدخاله بمسؤولية، ثم توقف عن التنازل ضد نفسك.", checkpoint: "هل حميت الهيبة المهنية؟" },
       { microAction: "اقترح تعديل نطاق فقط إذا كان مهنيًا وسليمًا.", consultationDrill: "خفف أو مرحل العمل حسب النطاق، لا عبر إضعاف المسؤولية.", checkpoint: "هل حافظ التعديل على الجودة والحدود؟" },
-      { microAction: "اسأل إن كان العميل يريد أقل التزام أم المسار القانوني الأنسب.", consultationDrill: "استخدم الإجابة لتوجيه نقاش القرار.", checkpoint: "هل وضّح العميل معيار قراره؟" },
+      { microAction: "اسأل إن كان العميل يريد أقل إجراء أم المسار القانوني الأنسب.", consultationDrill: "استخدم الإجابة لتوجيه نقاش القرار.", checkpoint: "هل وضّح العميل معيار قراره؟" },
     ],
   },
   trust_risk_outcome_objections: {
@@ -1575,7 +1575,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
   ethical_persuasion_boundaries: {
     en: [
       { microAction: "Write one ethical persuasion sentence that guides without pressuring.", consultationDrill: "Connect legal risk, client goal, and responsible next step.", checkpoint: "Did the client remain free to decide?" },
-      { microAction: "Identify one line you will not cross in consultation conversion.", consultationDrill: "Replace pressure with clarity, documentation, and next-step structure.", checkpoint: "Was the decision path ethical?" },
+      { microAction: "Identify one line you will not cross while guiding the consultation.", consultationDrill: "Replace pressure with clarity, documentation, and next-step structure.", checkpoint: "Was the decision path ethical?" },
       { microAction: "Prepare a response when a client asks for unrealistic assurance.", consultationDrill: "Acknowledge the concern and explain what can be responsibly assessed.", checkpoint: "Did you protect both trust and professional duty?" },
       { microAction: "Ask permission before recommending the next step.", consultationDrill: "Say, 'Based on what you shared, may I outline the responsible route?'", checkpoint: "Did consent strengthen the recommendation?" },
       { microAction: "Document the basis for one recommendation.", consultationDrill: "Tie it to facts, risk, scope, and client objective.", checkpoint: "Could the recommendation be justified later?" },
@@ -1584,7 +1584,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
     ],
     ar: [
       { microAction: "اكتب جملة إقناع مهني توجه دون ضغط.", consultationDrill: "اربط المخاطر القانونية، هدف العميل، والخطوة المسؤولة التالية.", checkpoint: "هل بقي العميل حرًا في القرار؟" },
-      { microAction: "حدد حدًا واحدًا لن تتجاوزه في تحويل الاستشارة إلى اتفاق.", consultationDrill: "استبدل الضغط بالوضوح والتوثيق وهيكل الخطوة التالية.", checkpoint: "هل بقي مسار القرار أخلاقيًا؟" },
+      { microAction: "حدد حدًا واحدًا لن تتجاوزه عند توجيه العميل إلى الخطوة القانونية التالية.", consultationDrill: "استبدل الضغط بالوضوح والتوثيق وهيكل الخطوة التالية.", checkpoint: "هل بقي مسار القرار أخلاقيًا؟" },
       { microAction: "حضّر ردًا عندما يطلب العميل طمأنة غير واقعية.", consultationDrill: "اعترف بالقلق واشرح ما يمكن تقييمه بمسؤولية.", checkpoint: "هل حميت الثقة والواجب المهني معًا؟" },
       { microAction: "اطلب الإذن قبل توصية الخطوة التالية.", consultationDrill: "قل: بناءً على ما ذكرته، هل تسمح لي بتوضيح المسار المسؤول؟", checkpoint: "هل عزز الإذن قوة التوصية؟" },
       { microAction: "وثّق أساس توصية واحدة.", consultationDrill: "اربطها بالوقائع والمخاطر والنطاق وهدف العميل.", checkpoint: "هل يمكن تبرير التوصية لاحقًا؟" },
@@ -1595,12 +1595,12 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
   consultation_closing_engagement: {
     en: [
       { microAction: "Prepare a closing summary with issue, risk, route, scope, and next step.", consultationDrill: "Use it in the final five minutes of one consultation.", checkpoint: "Did the client know exactly what happens next?" },
-      { microAction: "Ask a direct professional decision question.", consultationDrill: "Say, 'Are you ready to move into the engagement agreement and begin the next step?'", checkpoint: "Did you avoid leaving the decision vague?" },
+      { microAction: "Ask a direct professional decision question.", consultationDrill: "Say, 'Are you ready to move into the appropriate legal procedure and begin the next step?'", checkpoint: "Did you avoid leaving the decision vague?" },
       { microAction: "Write one transition from advice to representation.", consultationDrill: "Connect the legal need to scope of work and first action.", checkpoint: "Did the transition feel natural?" },
       { microAction: "Prepare a response when the client asks to delay.", consultationDrill: "Ask what must be clarified before they can decide.", checkpoint: "Did delay become a specific issue?" },
       { microAction: "Create a final-minute checklist for consultations.", consultationDrill: "Confirm decision owner, documents needed, agreement route, and timing.", checkpoint: "Was the closing complete?" },
       { microAction: "Practice closing without apologizing for the professional step.", consultationDrill: "Use calm language and stop after the decision question.", checkpoint: "Did confidence remain steady?" },
-      { microAction: "Send the engagement agreement within the promised window.", consultationDrill: "Attach only what the client needs to act clearly.", checkpoint: "Did speed support trust and decision momentum?" },
+      { microAction: "Send the next-step documents within the promised window.", consultationDrill: "Attach only what the client needs to act clearly.", checkpoint: "Did speed support trust and decision momentum?" },
     ],
     ar: [
       { microAction: "حضّر ملخص إغلاق يتضمن المسألة، المخاطر، المسار، النطاق، والخطوة التالية.", consultationDrill: "استخدمه في آخر خمس دقائق من استشارة واحدة.", checkpoint: "هل عرف العميل بدقة ماذا يحدث بعد ذلك؟" },
@@ -1618,7 +1618,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "Send one follow-up within 30 minutes of a consultation.", consultationDrill: "Reference the client’s stated concern and the agreed next step.", checkpoint: "Did the client receive clear momentum?" },
       { microAction: "Create a follow-up tracker with date, matter, decision stage, and next action.", consultationDrill: "Update it for all open consultations today.", checkpoint: "Can you see every pending decision?" },
       { microAction: "Prepare one useful insight for a hesitant client.", consultationDrill: "Send clarification that helps the decision, not a reminder only.", checkpoint: "Did the message add professional value?" },
-      { microAction: "Ask for a dated decision step.", consultationDrill: "Offer two reasonable times to review the engagement agreement or missing questions.", checkpoint: "Did timing become specific?" },
+      { microAction: "Ask for a dated decision step.", consultationDrill: "Offer two reasonable times to review the next-step documents or missing questions.", checkpoint: "Did timing become specific?" },
       { microAction: "Review one old consultation that went silent.", consultationDrill: "Send a respectful closure or reactivation note based on legal risk and next step.", checkpoint: "Did you clean the open loop?" },
       { microAction: "Document the follow-up outcome immediately.", consultationDrill: "Record replied, pending, declined, engaged, or needs clarification.", checkpoint: "Is the file status accurate?" },
     ],
@@ -1640,7 +1640,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
       { microAction: "Document one difficult-client behavior in neutral language.", consultationDrill: "Record facts, not judgment, after the consultation.", checkpoint: "Would the note be professional if reviewed later?" },
       { microAction: "Create a pause routine for escalating conversations.", consultationDrill: "Pause, summarize, narrow the issue, and ask one controlled question.", checkpoint: "Did escalation reduce?" },
       { microAction: "Prepare one redirect from blame to evidence.", consultationDrill: "Ask what document, witness, or timeline supports the point.", checkpoint: "Did the conversation return to proof?" },
-      { microAction: "Decide one condition that must be met before accepting a difficult client.", consultationDrill: "State the condition clearly before the engagement agreement.", checkpoint: "Did the client accept the working standard?" },
+      { microAction: "Decide one condition that must be met before accepting a difficult client.", consultationDrill: "State the condition clearly before the next legal step.", checkpoint: "Did the client accept the working standard?" },
     ],
     ar: [
       { microAction: "حضّر عبارة تهدئة للعميل الانفعالي.", consultationDrill: "اعترف بالمشاعر، ثم أعد الحديث إلى الوقائع والمخاطر والخطوة التالية.", checkpoint: "هل هدأت الأجواء دون امتصاص الانفعال؟" },
@@ -1655,7 +1655,7 @@ const LAWYER_TREATMENT_DRILLS: Record<LawyerMriCompetencyKey, { en: LawyerTreatm
   client_experience_referral_growth: {
     en: [
       { microAction: "Map the client experience from inquiry to post-consultation follow-up.", consultationDrill: "Mark one point where trust can be strengthened today.", checkpoint: "Did you improve one client touchpoint?" },
-      { microAction: "Write a closing note that thanks the client and confirms the next professional step.", consultationDrill: "Send it after one consultation or engagement conversation.", checkpoint: "Did the client receive clarity and respect?" },
+      { microAction: "Write a closing note that thanks the client and confirms the next professional step.", consultationDrill: "Send it after one consultation or next-step conversation.", checkpoint: "Did the client receive clarity and respect?" },
       { microAction: "Ask one satisfied client what made the process feel clear.", consultationDrill: "Use the answer to improve your consultation structure.", checkpoint: "Did feedback reveal a repeatable strength?" },
       { microAction: "Prepare a referral request that protects professionalism.", consultationDrill: "Ask only after value has been delivered and explain the suitable referral profile.", checkpoint: "Did the request feel appropriate?" },
       { microAction: "Create one post-matter reflection question.", consultationDrill: "Ask what the client wished they understood earlier.", checkpoint: "Did you learn how to improve future guidance?" },
@@ -1773,18 +1773,18 @@ function buildLawyerConversionTreatmentPlan(
         ["اكتب خطة الأسبوع التالي بثلاث عادات فقط.", "اختر عادة للاستقبال، عادة للاستشارة، وعادة للمتابعة.", "هل لديك نظام يستمر بعد اليوم 90؟"],
       ]
     : [
-        ["Review your open consultations and define one professional next step for each.", "Classify each matter as needing clarification, engagement agreement, documents, or respectful closure.", "Is every consultation attached to a path?"],
+        ["Review your open consultations and define one professional next step for each.", "Classify each matter as needing clarification, next-step documents, required information, or respectful closure.", "Is every consultation attached to a path?"],
         ["Stabilize a pre-consultation routine: goal, scope, diagnostic question, and decision step.", "Use the routine in your first consultation today.", "Did you enter with a clearer frame?"],
         ["Review one delayed follow-up.", "Send a short follow-up with context, legal risk, and a defined professional step.", "Did the follow-up become a decision or clarification path?"],
         ["Choose one matter that needs simpler legal explanation.", "Explain it in three sentences: position, risk, and next step.", "Could the client understand it without heavy legal language?"],
-        ["Review one engagement agreement you sent recently.", "Check that scope, responsibilities, and required documents are clear.", "Can the client act without basic confusion?"],
+        ["Review one next-step document you sent recently.", "Check that scope, responsibilities, and required documents are clear.", "Can the client act without basic confusion?"],
         ["Write one lesson from the last difficult consultation.", "Turn it into an operating rule for the next consultation.", "Can you apply the rule today?"],
         ["Review one satisfied client or well-managed matter.", "Identify the professional behavior that created trust and repeat it today.", "Can you reproduce that behavior?"],
         ["Choose one hesitant client conversation.", "Ask which part is unclear: scope, risk, professional legal fees, or timing.", "Did the hesitation become specific?"],
         ["Clean up one client message.", "Make it calmer, shorter, and more connected to the client decision path.", "Would a stressed client understand it quickly?"],
         ["Set one client-experience standard for the week.", "Apply it in every consultation: clarity, speed, documentation, or follow-up.", "Was the standard visible in real work?"],
         ["Review your most important professional boundary.", "State it clearly in one relevant situation without apology.", "Did the boundary support trust?"],
-        ["Close one consultation with a clear decision question.", "Ask whether the client is ready to approve the engagement agreement and begin the next step.", "Did the consultation end with a decision or a clear reason for delay?"],
+        ["Close one consultation with a clear decision question.", "Ask whether the client is ready to approve the appropriate legal procedure and begin the next step.", "Did the consultation end with a decision or a clear reason for delay?"],
         ["Document why you accepted or declined one matter.", "Write the reason in professional language tied to scope, risk, and fit.", "Could you defend the decision professionally?"],
         ["Review the strongest habit you built in this plan.", "Repeat it in two situations today.", "Is the habit easier than it was in week one?"],
         ["Write next week's plan with only three habits.", "Choose one inquiry habit, one consultation habit, and one follow-up habit.", "Do you have a system that continues after day 90?"],
@@ -1801,7 +1801,7 @@ function buildLawyerConversionTreatmentPlan(
       day,
       phase: getLawyerTreatmentPhase(day, ar),
       week: Math.floor(i / 7) + 1,
-      focus: row?.label || (ar ? "أولوية تحويل قانونية" : "Legal conversion priority"),
+      focus: row?.label || (ar ? "أولوية تجربة العميل القانونية" : "Legal client experience priority"),
       microAction: drill.microAction,
       consultationDrill: drill.consultationDrill,
       checkpoint: drill.checkpoint,
@@ -1810,7 +1810,7 @@ function buildLawyerConversionTreatmentPlan(
 
   for (let i = 0; i < 28; i++) {
     const row = weak[i % weak.length];
-    const focus = row?.label || (ar ? "أولوية تحويل قانونية" : "Legal conversion priority");
+    const focus = row?.label || (ar ? "أولوية تجربة العميل القانونية" : "Legal client experience priority");
     const template = integrationTemplates[i % integrationTemplates.length];
     const day = i + 43;
     days.push({
@@ -1825,7 +1825,7 @@ function buildLawyerConversionTreatmentPlan(
   }
 
   for (let i = 0; i < 20; i++) {
-    const focus = i % 2 === 0 ? strongest : weak[i % weak.length]?.label || (ar ? "إيقاع تحويل قانوني" : "Legal conversion rhythm");
+    const focus = i % 2 === 0 ? strongest : weak[i % weak.length]?.label || (ar ? "إيقاع تجربة العميل القانونية" : "Legal client experience rhythm");
     const [microAction, consultationDrill, checkpoint] = rhythmTemplates[i % rhythmTemplates.length];
     const day = i + 71;
     days.push({
@@ -2762,7 +2762,7 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
       if (overall < 75) {
         return {
           title: "نمط فرصة قانونية غير مكتملة يحتاج إلى خطوة قانونية أوضح",
-          body: `الأداء المهني ليس ضعيفًا، لكنه ليس محميًا بما يكفي. المطلوب هو تحويل أقوى المناطق (${strongestNames}) إلى عادات استشارة ثابتة، واستخدامها لدعم أضعف المناطق (${weakestNames}).`,
+          body: `الأداء المهني ليس ضعيفًا، لكنه ليس محميًا بما يكفي. المطلوب هو بناء عادات استشارة ثابتة حول أقوى المناطق (${strongestNames})، واستخدامها لدعم أضعف المناطق (${weakestNames}).`,
         };
       }
       return {
@@ -2785,8 +2785,8 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
     }
     if (overall < 75) {
       return {
-        title: "Unfinished Legal Engagement Pattern Requiring Systemization",
-        body: `Your professional performance is not broken, but it is not protected enough. The treatment is to turn the strongest areas (${strongestNames}) into repeatable consultation habits and use them to support the weakest areas (${weakestNames}).`,
+        title: "Unfinished Legal Client Experience Pattern Requiring Systemization",
+        body: `Your professional performance is not broken, but it is not protected enough. The guidance plan is to build repeatable consultation habits around the strongest areas (${strongestNames}) and use them to support the weakest areas (${weakestNames}).`,
       };
     }
     return {
@@ -3067,7 +3067,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       overall: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الشركة" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       overallMarker: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الأعمال" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
-      health: lawyer ? "منطقة صحة تجربة العميل" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
+      health: lawyer ? "مستوى صحة تجربة العميل القانونية" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
       bloodPanel: mri
         ? lawyer ? "لوحة إياس™ لتجربة العميل القانونية عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
         : lawyer ? "مؤشر صحة رحلة العميل القانونية: النتيجة العامة + المؤشرات المهنية" : businessHealth ? "لوحة صحة الشركة: النتيجة العامة + العلامات الحيوية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
@@ -3584,7 +3584,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               empty={ar ? "لا توجد نقاط قوة واضحة حتى الآن." : "No clear strengths yet."}
               explanation={
                 ar
-                  ? lawyer ? "هذه المناطق يمكن تحويلها إلى عادات مهنية ثابتة تعزز الثقة، وضوح الاستشارة، والخطوة القانونية التالية." : "هذه المناطق يمكن تحويلها إلى عادات ثابتة تدعم بقية الأداء."
+                  ? lawyer ? "هذه المناطق يمكن تثبيتها كعادات مهنية ثابتة تعزز الثقة، وضوح الاستشارة، والخطوة القانونية التالية." : "هذه المناطق يمكن تحويلها إلى عادات ثابتة تدعم بقية الأداء."
                   : lawyer ? "These areas can be turned into repeatable professional habits that strengthen trust, consultation clarity, and next legal steps." : "These areas can be turned into repeatable habits that support the rest of the performance."
               }
               lang={lang}
