@@ -47,22 +47,22 @@ const MRI_PAYMENT_URL_AR =
 
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
-  // Lawyer Client Conversion assessments
-  legal_inquiry_handling: { en: "Legal Inquiry Handling", ar: "التعامل مع الاستفسار القانوني" },
-  consultation_opening_control: { en: "Consultation Opening & Control", ar: "افتتاح الاستشارة والسيطرة عليها" },
-  legal_need_diagnosis: { en: "Legal Need Diagnosis", ar: "تشخيص الحاجة القانونية الحقيقية" },
-  case_qualification_client_fit: { en: "Case Qualification & Client Fit", ar: "تأهيل القضية وملاءمة العميل" },
-  client_trust_professional_authority: { en: "Client Trust & Professional Authority", ar: "ثقة العميل والهيبة المهنية" },
-  explaining_legal_strategy_simply: { en: "Explaining Legal Strategy Simply", ar: "شرح الاستراتيجية القانونية ببساطة" },
-  legal_value_framing: { en: "Legal Value Framing", ar: "تأطير القيمة القانونية" },
-  fee_presentation_retainer_confidence: { en: "Fee Presentation & Retainer Confidence", ar: "عرض أتعاب المحاماة والثقة في اتفاق التمثيل" },
-  fee_comparison_objections: { en: "Fee & Comparison Objections", ar: "اعتراضات أتعاب المحاماة والمقارنة" },
-  trust_risk_outcome_objections: { en: "Trust, Risk & Outcome Objections", ar: "اعتراضات الثقة والمخاطر والنتائج" },
-  ethical_persuasion_boundaries: { en: "Ethical Persuasion & Professional Boundaries", ar: "الإقناع المهني الأخلاقي والحدود المهنية" },
-  consultation_closing_engagement: { en: "Consultation Closing & Engagement Commitment", ar: "إغلاق الاستشارة والالتزام بالتعاقد" },
-  post_consultation_follow_up: { en: "Follow-Up Discipline After Consultation", ar: "انضباط المتابعة بعد الاستشارة" },
-  emotional_difficult_clients: { en: "Managing Emotional, Difficult or Unrealistic Clients", ar: "إدارة العملاء الانفعاليين أو الصعبين أو غير الواقعيين" },
-  client_experience_referral_growth: { en: "Client Experience, Satisfaction & Referral Growth", ar: "تجربة العميل والرضا ونمو الإحالات" },
+  // Lawyer Client Experience assessments
+  legal_inquiry_handling: { en: "First Legal Inquiry Response", ar: "الاستجابة الأولى للاستفسار القانوني" },
+  consultation_opening_control: { en: "Consultation Opening & Conversation Structure", ar: "إدارة بداية الاستشارة وتنظيم الحوار" },
+  legal_need_diagnosis: { en: "Understanding the Client’s Real Legal Need", ar: "فهم الحاجة القانونية الحقيقية للعميل" },
+  case_qualification_client_fit: { en: "Matter Qualification & Appropriate Legal Service", ar: "تحديد ملاءمة الحالة والخدمة القانونية المناسبة" },
+  client_trust_professional_authority: { en: "Client Trust & Professional Reassurance", ar: "بناء ثقة العميل والطمأنة المهنية" },
+  explaining_legal_strategy_simply: { en: "Explaining the Legal Path Clearly", ar: "شرح المسار القانوني بلغة واضحة ومفهومة" },
+  legal_value_framing: { en: "Client Clarity, Trust & Legal Guidance", ar: "وضوح العميل وثقته والتوجيه القانوني" },
+  fee_presentation_retainer_confidence: { en: "Professional Legal Fees", ar: "أتعاب المحاماة" },
+  fee_comparison_objections: { en: "Managing Fee Comparison & Hesitation", ar: "التعامل مع مقارنة أتعاب المحاماة والتردد" },
+  trust_risk_outcome_objections: { en: "Managing Client Anxiety, Risk & Expectations", ar: "إدارة القلق والمخاطر وتوقعات النتائج" },
+  ethical_persuasion_boundaries: { en: "Ethical Guidance Without Pressure", ar: "التوجيه المهني الأخلاقي دون ضغط" },
+  consultation_closing_engagement: { en: "Next Legal Step & Agreement", ar: "توضيح الخطوة القانونية التالية والاتفاق على الإجراء" },
+  post_consultation_follow_up: { en: "Professional Follow-Up After Consultation", ar: "المتابعة المهنية بعد الاستشارة" },
+  emotional_difficult_clients: { en: "Managing Stressed, Difficult or Unrealistic Clients", ar: "إدارة العملاء المتوترين أو الصعبين أو غير الواقعيين" },
+  client_experience_referral_growth: { en: "Client Experience, Relationship Continuity & Platform Trust", ar: "تجربة العميل واستمرارية العلاقة والثقة في المنصة" },
 
   // SME Business Health assessments
   strategic_direction_business_clarity: { en: "Strategic Direction & Business Clarity", ar: "الاتجاه الاستراتيجي ووضوح الشركة" },
@@ -667,8 +667,8 @@ function ResultsContent() {
     titleFromDb ||
     (isLawyer
       ? ar
-        ? "نتائج Lawyer Client Conversion MRI"
-        : "Lawyer Client Conversion MRI Results"
+        ? "نتائج إياس™ لتجربة العميل القانونية"
+        : "EYĀS™ Legal Client Experience MRI Results"
       : isBusinessHealth
       ? ar
         ? "نتائج Business Health MRI للشركات الصغيرة والمتوسطة"
@@ -683,8 +683,8 @@ function ResultsContent() {
 
   const heroSubtitle = isLawyer
     ? ar
-      ? "هذه صفحة النتائج السريعة لتشخيص تحويل العملاء للمحامين. التقرير الكامل يوضح هدر ونزيف الاستشارات القانونية المدفوعة ، الثقة، أتعاب المحاماة، الاعتراضات، وخطوات العلاج المهني."
-      : "This is your quick legal client-conversion dashboard. The full report shows consultation leaks, trust signals, professional-fee confidence, objections, and treatment steps."
+      ? "هذه صفحة النتائج السريعة لتشخيص تجربة العميل القانونية. التقرير الكامل يوضح نقاط الاحتكاك في رحلة العميل، الثقة، أتعاب المحاماة، الاعتراضات، وخطوات التوجيه المهني."
+      : "This is your quick legal client experience dashboard. The full report shows client journey friction points, trust signals, professional-fee confidence, objections, and professional guidance steps."
     : isBusinessHealth
     ? ar
       ? "هذه صفحة النتائج السريعة لصحة الشركة. التقرير الكامل يوضح نسبة الهدر والنزيف، المخاطر، العلامات الحيوية، وأولويات خارطة الطريق."
@@ -820,7 +820,7 @@ const mriLinkReady =
                       {overallPct}%
                     </div>
                    <div className="mt-2 text-[10px] sm:text-xs font-black uppercase tracking-wide text-blue-100 px-6 leading-tight">
-                      {isLawyer ? (ar ? "مؤشر تحويل العملاء" : "Client Conversion Score") : isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
+                      {isLawyer ? (ar ? "مؤشر تجربة العميل" : "Client Experience Score") : isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
                     </div>
                     <div className="mt-4">
                       <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black shadow-xl ${tierBadgeColor(overallTier)}`}>
@@ -850,26 +850,26 @@ const mriLinkReady =
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
           <QuickSignalCard
             ar={ar}
-            title={ar ? "أقوى إشارة" : "Strongest Signal"}
+            title={isLawyer ? (ar ? "أقوى رافعة في تجربة العميل القانونية" : "Client Experience Priorities") : ar ? "أقوى إشارة" : "Strongest Signal"}
             icon={<TrendingUp size={22} />}
             row={strongest}
             getLabel={getCompetencyLabel}
             body={
               ar
-                ? "هذه المنطقة يمكن استخدامها كرافعة للأداء."
+                ? isLawyer ? "هذه المنطقة يمكن استخدامها كرافعة في تجربة العميل القانونية." : "هذه المنطقة يمكن استخدامها كرافعة للأداء."
                 : "This area can be used as leverage for better performance."
             }
           />
 
           <QuickSignalCard
             ar={ar}
-            title={ar ? "أكبر هدر ونزيف مخفي" : "Biggest Hidden Leak"}
+            title={isLawyer ? (ar ? "أبرز نقطة احتكاك في تجربة العميل القانونية" : "Areas Requiring Attention") : ar ? "أكبر هدر ونزيف مخفي" : "Biggest Hidden Leak"}
             icon={<ShieldAlert size={22} />}
             row={weakest}
             getLabel={getCompetencyLabel}
             body={
               ar
-                ? "هذه المنطقة غالبًا تحتاج إلى علاج سريع قبل أن تستمر في اهدار الفرص."
+                ? isLawyer ? "هذه المنطقة تحتاج إلى تطوير قبل أن تزيد تردد العميل أو توقف رحلة العميل." : "هذه المنطقة غالبًا تحتاج إلى علاج سريع قبل أن تستمر في اهدار الفرص."
                 : "This area likely needs fast correction before it keeps leaking opportunities."
             }
           />
@@ -902,7 +902,7 @@ const mriLinkReady =
             </div>
             <div>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
-                {isLawyer ? (ar ? "لوحة تحويل العملاء القانونية السريعة" : "Quick Legal Client Conversion Panel") : isBusinessHealth ? (ar ? "لوحة صحة الشركة السريعة" : "Quick Business Health Panel") : isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
+                {isLawyer ? (ar ? "لوحة تجربة العميل القانونية السريعة" : "Quick Legal Client Experience Panel") : isBusinessHealth ? (ar ? "لوحة صحة الشركة السريعة" : "Quick Business Health Panel") : isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
               </h3>
               <div className="text-sm text-slate-500 mt-1 rtl-text">
                 {isBusinessHealth
@@ -923,7 +923,7 @@ const mriLinkReady =
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <HealthMarkerCard
               ar={ar}
-              label={isLawyer ? (ar ? "مؤشر صحة تحويل العملاء للمحامين" : "Legal Client Conversion Health Score") : isBusinessHealth ? (ar ? "مؤشر صحة الشركة" : "SME Business Health Score") : isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
+              label={isLawyer ? (ar ? "مؤشر صحة رحلة العميل القانونية" : "Legal Client Journey Health Index") : isBusinessHealth ? (ar ? "مؤشر صحة الشركة" : "SME Business Health Score") : isSalesManager ? (ar ? "مؤشر صحة إدارة المبيعات العام" : "Overall Sales Management Score") : (ar ? "مؤشر الصحة البيعية العام" : "Overall Sales Health Score")}
               percentage={overallPct}
               tier={overallTier}
               subtitle={isBusinessHealth ? (ar ? "القراءة المجمعة للعلامات الحيوية للشركة" : "Combined reading of the company’s vital signs") : ar ? "القراءة المجمعة لكل التشخيص" : "Combined reading of the full scan"}
@@ -1005,13 +1005,13 @@ const mriLinkReady =
               {!isOutdoorScan && (
               <PreviewActionCard
                 ar={ar}
-                title={ar ? "لا تترك الهدر والنزيف بلا علاج" : "Do not leave the leak untreated"}
+                title={isLawyer ? (ar ? "لا تترك نقاط الاحتكاك بلا علاج" : "Do not leave client friction untreated") : ar ? "لا تترك الهدر والنزيف بلا علاج" : "Do not leave the leak untreated"}
                 body={
                   ar
-                    ? "إذا كشف التشخيص إشارة إنذار، فالخطوة التالية هي التشخيص الكامل والوصفة العلاجية."
+                    ? isLawyer ? "إذا كشف التشخيص نقطة احتكاك، فالخطوة التالية هي التقرير الكامل وخطة التوجيه المهني." : "إذا كشف التشخيص إشارة إنذار، فالخطوة التالية هي التشخيص الكامل والوصفة العلاجية."
                     : "If the scan exposed a warning sign, the next step is the full diagnosis and treatment prescription."
                 }
-                buttonText={isLawyer ? (ar ? "احصل على Lawyer Client Conversion MRI الكامل" : "Get My Full Lawyer Client Conversion MRI") : ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
+                buttonText={isLawyer ? (ar ? "احصل على إياس™ لتجربة العميل القانونية الكامل" : "Get My Full EYĀS™ Legal Client Experience MRI") : ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
                href={
   mriLinkReady
     ? (ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL)
@@ -1146,10 +1146,10 @@ const mriLinkReady =
                     : "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, forecasting, accountability, and team execution."
                   : ar
                   ? isLawyer
-                    ? "تقرير Lawyer Client Conversion MRI المتقدم هو أداة تشخيص وعلاج كاملة لرحلة الاستفسار القانوني، الاستشارة، أتعاب المحاماة، الاعتراضات، قرار التعاقد، وتجربة العميل."
+                    ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة لرحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، الاستشارة، أتعاب المحاماة، الاعتراضات، وتجربة العميل."
                     : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي."
                   : isLawyer
-                    ? "The Advanced Lawyer Client Conversion MRI is a full diagnostic and treatment tool for legal inquiries, consultations, professional fees, objections, engagement decisions, and client experience."
+                    ? "The Advanced EYĀS™ Legal Client Experience MRI is a full diagnostic and professional guidance tool for legal inquiries, consultations, professional fees, objections, next legal steps, and client experience."
                     : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body."}
               </p>
 
@@ -1196,14 +1196,14 @@ const mriLinkReady =
                   <div className="mt-5 space-y-3">
                     {(ar
                       ? [
-                          isLawyer ? "تقرير Lawyer Client Conversion MRI شخصي مفصل مبني على إجاباتك ونتائجك" : isSalesManager ? "تقرير Sales Manager MRI شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
+                          isLawyer ? "تقرير إياس™ لتجربة العميل القانونية شخصي مفصل مبني على إجاباتك ونتائجك" : isSalesManager ? "تقرير Sales Manager MRI شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
                           isSalesManager ? "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في إدارة فريق المبيعات" : "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
                           "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
                           "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
                           "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
                         ]
                       : [
-                          isLawyer ? "A personalized Lawyer Client Conversion MRI report based on your answers and scores" : isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
+                          isLawyer ? "A personalized EYĀS™ Legal Client Experience MRI report based on your answers and scores" : isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
                           isSalesManager ? "A full diagnostic and treatment tool examining 15 sales-management competencies" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
                           "A practical 90-day performance prescription without sitting through a long training course",
                           "A day-by-day correction path showing what to do and what to stop doing",
@@ -1243,8 +1243,8 @@ const mriLinkReady =
     >
       🚀 {isLawyer
         ? (ar
-            ? "احصل على تقرير Lawyer Client Conversion MRI الكامل"
-            : "Get My Full Lawyer Client Conversion MRI")
+            ? "احصل على تقرير إياس™ لتجربة العميل القانونية الكامل"
+            : "Get My Full EYĀS™ Legal Client Experience MRI")
         : (ar
             ? "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا"
             : "Get My Full Sales MRI & 90-Day Prescription")}

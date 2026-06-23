@@ -48,22 +48,22 @@ type CompetencyRow = {
 };
 
 const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
-  // Lawyer Client Conversion assessments
-  legal_inquiry_handling: { en: "Legal Inquiry Handling", ar: "التعامل مع الاستفسار القانوني" },
-  consultation_opening_control: { en: "Consultation Opening & Control", ar: "افتتاح الاستشارة والسيطرة عليها" },
-  legal_need_diagnosis: { en: "Legal Need Diagnosis", ar: "تشخيص الحاجة القانونية الحقيقية" },
-  case_qualification_client_fit: { en: "Case Qualification & Client Fit", ar: "تأهيل القضية وملاءمة العميل" },
-  client_trust_professional_authority: { en: "Client Trust & Professional Authority", ar: "ثقة العميل والهيبة المهنية" },
-  explaining_legal_strategy_simply: { en: "Explaining Legal Strategy Simply", ar: "شرح الاستراتيجية القانونية ببساطة" },
-  legal_value_framing: { en: "Legal Value Framing", ar: "تأطير القيمة القانونية" },
-  fee_presentation_retainer_confidence: { en: "Fee Presentation & Retainer Confidence", ar: "عرض أتعاب المحاماة والثقة في اتفاق التمثيل" },
-  fee_comparison_objections: { en: "Fee & Comparison Objections", ar: "اعتراضات أتعاب المحاماة والمقارنة" },
-  trust_risk_outcome_objections: { en: "Trust, Risk & Outcome Objections", ar: "اعتراضات الثقة والمخاطر والنتائج" },
-  ethical_persuasion_boundaries: { en: "Ethical Persuasion & Professional Boundaries", ar: "الإقناع المهني الأخلاقي والحدود المهنية" },
-  consultation_closing_engagement: { en: "Consultation Closing & Engagement Commitment", ar: "إغلاق الاستشارة والالتزام بالتعاقد" },
-  post_consultation_follow_up: { en: "Follow-Up Discipline After Consultation", ar: "انضباط المتابعة بعد الاستشارة" },
-  emotional_difficult_clients: { en: "Managing Emotional, Difficult or Unrealistic Clients", ar: "إدارة العملاء الانفعاليين أو الصعبين أو غير الواقعيين" },
-  client_experience_referral_growth: { en: "Client Experience, Satisfaction & Referral Growth", ar: "تجربة العميل والرضا ونمو الإحالات" },
+  // Lawyer Client Experience assessments
+  legal_inquiry_handling: { en: "First Legal Inquiry Response", ar: "الاستجابة الأولى للاستفسار القانوني" },
+  consultation_opening_control: { en: "Consultation Opening & Conversation Structure", ar: "إدارة بداية الاستشارة وتنظيم الحوار" },
+  legal_need_diagnosis: { en: "Understanding the Client’s Real Legal Need", ar: "فهم الحاجة القانونية الحقيقية للعميل" },
+  case_qualification_client_fit: { en: "Matter Qualification & Appropriate Legal Service", ar: "تحديد ملاءمة الحالة والخدمة القانونية المناسبة" },
+  client_trust_professional_authority: { en: "Client Trust & Professional Reassurance", ar: "بناء ثقة العميل والطمأنة المهنية" },
+  explaining_legal_strategy_simply: { en: "Explaining the Legal Path Clearly", ar: "شرح المسار القانوني بلغة واضحة ومفهومة" },
+  legal_value_framing: { en: "Client Clarity, Trust & Legal Guidance", ar: "وضوح العميل وثقته والتوجيه القانوني" },
+  fee_presentation_retainer_confidence: { en: "Professional Legal Fees", ar: "أتعاب المحاماة" },
+  fee_comparison_objections: { en: "Managing Fee Comparison & Hesitation", ar: "التعامل مع مقارنة أتعاب المحاماة والتردد" },
+  trust_risk_outcome_objections: { en: "Managing Client Anxiety, Risk & Expectations", ar: "إدارة القلق والمخاطر وتوقعات النتائج" },
+  ethical_persuasion_boundaries: { en: "Ethical Guidance Without Pressure", ar: "التوجيه المهني الأخلاقي دون ضغط" },
+  consultation_closing_engagement: { en: "Next Legal Step & Agreement", ar: "توضيح الخطوة القانونية التالية والاتفاق على الإجراء" },
+  post_consultation_follow_up: { en: "Professional Follow-Up After Consultation", ar: "المتابعة المهنية بعد الاستشارة" },
+  emotional_difficult_clients: { en: "Managing Stressed, Difficult or Unrealistic Clients", ar: "إدارة العملاء المتوترين أو الصعبين أو غير الواقعيين" },
+  client_experience_referral_growth: { en: "Client Experience, Relationship Continuity & Platform Trust", ar: "تجربة العميل واستمرارية العلاقة والثقة في المنصة" },
 
   // SME Business Health assessments
   strategic_direction_business_clarity: { en: "Strategic Direction & Business Clarity", ar: "الاتجاه الاستراتيجي ووضوح الشركة" },
@@ -255,8 +255,8 @@ function healthLabel(overall: number, lang: Language) {
 function lawyerHealthLabel(overall: number, lang: Language) {
   if (lang === "ar") {
     if (overall >= 75) return "منطقة تحويل عملاء قوية";
-    if (overall >= 50) return "منطقة فرصة واضحة لتحويل العملاء";
-    if (overall >= 30) return "منطقة إنذار في تحويل العملاء";
+    if (overall >= 50) return "منطقة فرصة واضحة في تجربة العميل";
+    if (overall >= 30) return "منطقة إنذار في تجربة العميل";
     return "منطقة تتطلب تدخلاً عاجلاً في الاستشارات";
   }
 
@@ -444,27 +444,27 @@ function businessHealthCommercialMeaning(tier: Tier, label: string, lang: Langua
 
 function lawyerOverallMeaning(overall: number, tier: Tier, lang: Language) {
   if (lang === "ar") {
-    if (tier === "Strength") return "الصورة العامة تشير إلى قدرة قوية على تحويل الاستشارات القانونية إلى تعاقدات مهنية بثقة ووضوح. المطلوب الآن هو تحويل هذه القوة إلى نظام ثابت لا يعتمد على قوة القضية وحدها.";
-    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس مهني يمكن البناء عليه، لكن بعض الهدر والنزيف في الثقة أو شرح القيمة أو عرض أتعاب المحاماة أو المتابعة قد تجعل العميل يتردد أو يذهب لمحامٍ آخر.";
+    if (tier === "Strength") return "الصورة العامة تشير إلى تجربة عميل قانونية قوية تساعد العميل على الفهم والثقة واتخاذ الخطوة القانونية المناسبة. المطلوب الآن هو تحويل هذه القوة إلى نظام ثابت لا يعتمد على قوة القضية وحدها.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. لديك أساس مهني يمكن البناء عليه، لكن بعض نقاط الاحتكاك في الثقة أو شرح القيمة أو عرض أتعاب المحاماة أو المتابعة قد تجعل العميل يتردد أو تتوقف رحلته.";
     if (tier === "Threat") return "الصورة العامة تظهر إنذارًا مهنيًا. بعض سلوكيات الاستشارة قد تُضعف ثقة العميل أو تقلل وضوح القيمة أو تجعل أتعاب المحاماة تبدو منفصلة عن حجم المخاطر والعمل القانوني المطلوب.";
-    return "الصورة العامة تظهر فجوة واضحة في تحويل الاستشارات إلى تعاقدات قانونية. هذا لا يعني ضعفك كمحامٍ، بل يعني أن خبرتك القانونية قد لا تظهر للعميل بطريقة تجعله يثق، يقرر، ويلتزم.";
+    return "الصورة العامة تظهر فجوة واضحة في تجربة العميل القانونية. هذا لا يعني ضعفك كمحامٍ، بل يعني أن خبرتك القانونية قد لا تظهر للعميل بطريقة تجعله يثق ويفهم الخطوة القانونية المناسبة.";
   }
-  if (tier === "Strength") return "Your legal client-conversion health is strong. The next step is to turn your strongest consultation behaviors into a repeatable professional engagement system.";
-  if (tier === "Opportunity") return "Your legal client-conversion health has a useful base, but some leaks may still be limiting client trust, legal-value clarity, professional-fee confidence, or engagement commitment.";
-  if (tier === "Threat") return "Your legal client-conversion health is showing warning signals. Some consultation behaviors may be weakening trust, urgency, fee confidence, or the client’s decision to engage you.";
-  return "Your legal client-conversion health is showing a clear gap. This is not a judgment on your legal ability; it means your expertise may not be becoming visible enough for the client to trust, decide, and engage.";
+  if (tier === "Strength") return "Your legal client experience health is strong. The next step is to turn your strongest consultation behaviors into a repeatable professional guidance system.";
+  if (tier === "Opportunity") return "Your legal client experience health has a useful base, but some friction points may still be limiting client trust, legal-value clarity, professional-fee confidence, or next-step clarity.";
+  if (tier === "Threat") return "Your legal client experience health is showing warning signals. Some consultation behaviors may be weakening trust, urgency, fee confidence, or the client’s next legal step.";
+  return "Your legal client experience health is showing a clear gap. This is not a judgment on your legal ability; it means your expertise may not be becoming visible enough for the client to trust and understand the right legal path.";
 }
 
 function lawyerCommercialMeaning(tier: Tier, label: string, lang: Language) {
   if (lang === "ar") {
-    if (tier === "Strength") return `تشير نتيجة ${label} إلى جانب مهني قوي يساعد العميل على فهمك والثقة بك واتخاذ قرار التعاقد بثبات.`;
+    if (tier === "Strength") return `تشير نتيجة ${label} إلى جانب مهني قوي يساعد العميل على فهمك والثقة بك واتخاذ الخطوة القانونية التالية بوضوح.`;
     if (tier === "Opportunity") return `تشير نتيجة ${label} إلى أساس جيد، لكنه يحتاج إلى وضوح أكبر حتى لا يفقد العميل الثقة أو يتردد عند مناقشة أتعاب المحاماة أو خطوات القضية.`;
-    if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تُضعف تحويل الاستشارة إلى تعاقد إذا لم يتم علاجها بطريقة مهنية وأخلاقية.`;
+    if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تُضعف تجربة العميل القانونية إذا لم يتم تطويرها بطريقة مهنية وأخلاقية.`;
     return `تشير نتيجة ${label} إلى فجوة واضحة قد تجعل خبرتك القانونية أقل ظهورًا للعميل، أو تجعل العميل يقارن أتعاب المحاماة دون فهم القيمة والمخاطر والمسار القانوني.`;
   }
-  if (tier === "Strength") return `${label} is currently a professional strength. It helps potential clients understand you, trust your judgment, and move toward engagement with greater confidence.`;
-  if (tier === "Opportunity") return `${label} has a useful foundation, but it needs more clarity before it can reliably protect trust, professional-fee confidence, and engagement commitment.`;
-  if (tier === "Threat") return `${label} is creating a warning signal. If left untreated, it may weaken consultation conversion, client confidence, or the decision to formally engage you.`;
+  if (tier === "Strength") return `${label} is currently a professional strength. It helps potential clients understand you, trust your judgment, and move toward the right next legal step with greater confidence.`;
+  if (tier === "Opportunity") return `${label} has a useful foundation, but it needs more clarity before it can reliably protect trust, professional-fee confidence, and next-step commitment.`;
+  if (tier === "Threat") return `${label} is creating a warning signal. If left untreated, it may weaken the legal client experience, client confidence, or the next legal step.`;
   return `${label} is showing a clear professional gap. This area may be making your legal expertise less visible to the client or causing the client to compare legal fees without understanding value, risk, and strategy.`;
 }
 
@@ -2686,7 +2686,7 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
         start: `Start choosing one repeatable behavior connected to ${row.label} and apply it in every relevant legal inquiry, consultation, fee discussion, or follow-up.`,
         drill: `For 7 days, write one correction action before every situation where ${row.label} matters in the client journey.`,
         metric: `Daily execution of the selected ${row.label} correction behavior.`,
-        bonus: "Lawyer Client Conversion Treatment Guide",
+        bonus: "Legal Client Experience Guidance Guide",
       }
     : {
         leakage: `${row.label} may be creating hidden friction in the sales process, especially when pressure rises or the buyer becomes less responsive.`,
@@ -2706,7 +2706,7 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
         start: `ابدأ باختيار سلوك واحد متكرر مرتبط بـ ${row.label} وطبقه في كل استفسار قانوني أو استشارة أو نقاش حول أتعاب المحاماة أو متابعة.`,
         drill: `لمدة 7 أيام، اكتب إجراء تصحيح واحد قبل كل موقف تكون فيه ${row.label} مهمة في رحلة العميل.`,
         metric: `التنفيذ اليومي لسلوك التصحيح المختار في ${row.label}.`,
-        bonus: "دليل علاج تحويل العملاء للمحامين",
+        bonus: "دليل توجيه تجربة العميل القانونية",
       }
     : {
         leakage: `قد تسبب ${row.label} احتكاكًا خفيًا في عملية البيع، خصوصًا عندما يرتفع الضغط أو تقل استجابة العميل.`,
@@ -2749,37 +2749,37 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
     if (lang === "ar") {
       if (overall < 30) {
         return {
-          title: "نمط هدر ونزيف حاد في كسب الاستشارات القانونية",
-          body: `الصورة الحالية تشير إلى أن المشكلة ليست في كفاءة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة هدر ونزيف تبدأ من أول استفسار وتنتهي بتردد العميل أو ضياع قرار التعاقد. لا تبدأ بكل شيء. ابدأ بأول هدر ونزيف في رحلة العميل وعالجه كنظام مهني.`,
+          title: "نمط احتكاك حاد في تجربة العميل القانونية",
+          body: `الصورة الحالية تشير إلى أن المشكلة ليست في كفاءة واحدة فقط. أضعف المناطق (${weakestNames}) قد تخلق سلسلة نقاط احتكاك تبدأ من أول استفسار وتنتهي بتردد العميل أو توقف رحلة العميل. لا تبدأ بكل شيء. ابدأ بأبرز نقطة احتكاك في رحلة العميل وطوّرها كنظام مهني.`,
         };
       }
       if (overall < 50) {
         return {
-          title: "نمط إنذار في تحويل العملاء يحتاج إلى ضبط الاستشارة",
+          title: "نمط إنذار في تجربة العميل يحتاج إلى ضبط الاستشارة",
           body: `هناك خبرة قانونية موجودة، لكنها لا تظهر للعميل بثبات تحت ضغط الاستشارة أو أتعاب المحاماة أو المقارنة مع محامٍ آخر. أضعف المناطق (${weakestNames}) تحتاج إلى علاج مبكر، بينما يمكن استخدام أقوى المناطق (${strongestNames}) كرافعة مهنية.`,
         };
       }
       if (overall < 75) {
         return {
-          title: "نمط فرصة قانونية غير مكتملة يحتاج إلى نظام تعاقد أوضح",
+          title: "نمط فرصة قانونية غير مكتملة يحتاج إلى خطوة قانونية أوضح",
           body: `الأداء المهني ليس ضعيفًا، لكنه ليس محميًا بما يكفي. المطلوب هو تحويل أقوى المناطق (${strongestNames}) إلى عادات استشارة ثابتة، واستخدامها لدعم أضعف المناطق (${weakestNames}).`,
         };
       }
       return {
-        title: "نمط قوة في تحويل العملاء يحتاج إلى حماية وتوسيع",
-        body: `قدرتك العامة على تحويل الاستشارات إلى تعاقدات قوية. الخطر ليس الضعف، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير مهنية يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تتحول إلى هدر ونزيف لاحق.`,
+        title: "نمط قوة في تجربة العميل القانونية يحتاج إلى حماية وتوسيع",
+        body: `قدرتك العامة على توجيه رحلة العميل القانونية قوية. الخطر ليس الضعف، بل التراخي. استخدم أقوى المناطق (${strongestNames}) كمعايير مهنية يومية، وراقب أضعف المناطق (${weakestNames}) حتى لا تتحول إلى نقاط احتكاك لاحقًا.`,
       };
     }
 
     if (overall < 30) {
       return {
-        title: "High-Leakage Legal Client Conversion Pattern",
-        body: `The current pattern suggests the issue is not one isolated skill. The weakest areas (${weakestNames}) may be creating a leakage chain that begins with the first legal inquiry and ends with hesitation, comparison, or no engagement decision. Do not start everywhere. Start with the first consultation leak and build treatment around it.`,
+        title: "High-Friction Legal Client Experience Pattern",
+        body: `The current pattern suggests the issue is not one isolated skill. The weakest areas (${weakestNames}) may be creating a friction chain that begins with the first legal inquiry and ends with hesitation, comparison, or no clear next legal step. Do not start everywhere. Start with the first client journey friction point and build guidance around it.`,
       };
     }
     if (overall < 50) {
       return {
-        title: "Legal Client Conversion Warning Pattern",
+        title: "Legal Client Experience Warning Pattern",
         body: `There is legal expertise in the system, but it may not be showing clearly and consistently under consultation pressure, professional-fee discussion, or comparison with another lawyer. The weakest areas (${weakestNames}) need early treatment, while the strongest areas (${strongestNames}) can be used as professional leverage.`,
       };
     }
@@ -2790,8 +2790,8 @@ function getPatternArchetype(overall: number, weakest: CompetencyRow[], stronges
       };
     }
     return {
-      title: "Strong Legal Client Conversion Pattern Requiring Protection",
-      body: `Your overall ability to convert consultations into professional engagements is strong. The danger is not failure; it is drift. Use the strongest areas (${strongestNames}) as daily professional standards and monitor the weakest areas (${weakestNames}) so they do not become future leakage.`,
+      title: "Strong Legal Client Experience Pattern Requiring Protection",
+      body: `Your overall ability to guide the legal client journey is strong. The danger is not failure; it is drift. Use the strongest areas (${strongestNames}) as daily professional standards and monitor the weakest areas (${weakestNames}) so they do not become future friction points.`,
     };
   }
 
@@ -2969,12 +2969,12 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
     (mri
       ? ar
-        ? lawyer ? "تقرير Lawyer Client Conversion MRI المتقدم" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
-        : lawyer ? "Advanced Lawyer Client Conversion MRI Report" : businessHealth ? "Advanced SME Business Health MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
+        ? lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
+        : lawyer ? "Advanced EYĀS™ Legal Client Experience MRI Report" : businessHealth ? "Advanced SME Business Health MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
       : lawyer
       ? ar
-        ? "فحص تحويل العملاء للمحامين"
-        : "Lawyer Client Conversion Scan"
+        ? "تشخيص تجربة العميل القانونية"
+        : "Legal Client Experience Diagnostic"
       : salesManager
       ? ar
         ? "فحص مدير المبيعات القيادي"
@@ -2994,106 +2994,106 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     en: {
       back: "Back to Results",
       badge: mri
-        ? lawyer ? "Forensic Legal Client Conversion Diagnostic" : businessHealth ? "Forensic SME Business Health Diagnostic" : "Full Diagnostic & Treatment Tool"
-        : lawyer ? "Lawyer Client Conversion Blood Test" : businessHealth ? "SME Business Health Vital Signs Check" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
+        ? lawyer ? "Legal Client Experience Diagnostic" : businessHealth ? "Forensic SME Business Health Diagnostic" : "Full Diagnostic & Treatment Tool"
+        : lawyer ? "Legal Client Experience Diagnostic" : businessHealth ? "SME Business Health Vital Signs Check" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
       subtitle: mri
         ? lawyer
-          ? "A personalized Lawyer Client Conversion MRI designed to diagnose how legal inquiries become paid professional engagements  from first inquiry to consultation, legal-value clarity, professional fees, objections, and follow-up."
+          ? "A personalized EYĀS™ Legal Client Experience MRI designed to diagnose the legal client journey from first inquiry to the appropriate next legal step, including consultation clarity, legal-value clarity, professional fees, objections, and follow-up."
           : businessHealth
           ? "A personalized SME Business Health MRI designed to diagnose where the company is leaking cash, customers, team energy, execution discipline, owner time, and growth readiness then turn the findings into a practical business revamp roadmap."
           : salesManager
           ? "A personalized Sales Manager MRI designed to diagnose leadership patterns, team performance leaks, and management treatment priorities."
           : "A personalized Sales MRI designed to diagnose the full sales performance body and turn the findings into a practical treatment plan."
         : lawyer
-        ? "A fast diagnostic scan of your legal consultation conversion health from first impression to client trust, fee confidence, objections, and engagement commitment."
+        ? "A fast diagnostic scan of your legal client experience health from first impression to client trust, fee confidence, objections, and next legal step clarity."
         : businessHealth
         ? "A fast business health scan that checks the company’s vital signs across direction, revenue, marketing, cash, operations, people, owner dependency, and growth readiness."
         : salesManager
         ? "A fast leadership scan of your sales-management health like a blood test for the way you coach, inspect, forecast, motivate, and hold the team accountable."
         : "A fast diagnostic scan of your sales performance body like a blood test for field sales.",
-      overall: lawyer ? "Legal Client Conversion Health Score" : businessHealth ? "SME Business Health Score" : salesManager ? "Overall Sales Management Health Score" : "Overall Sales Health Score",
-      overallMarker: lawyer ? "Legal Client Conversion Index" : businessHealth ? "Business Health Index" : salesManager ? "Overall Sales Management Index" : "Overall Sales Health Index",
+      overall: lawyer ? "Legal Client Journey Health Index" : businessHealth ? "SME Business Health Score" : salesManager ? "Overall Sales Management Health Score" : "Overall Sales Health Score",
+      overallMarker: lawyer ? "Legal Client Journey Health Index" : businessHealth ? "Business Health Index" : salesManager ? "Overall Sales Management Index" : "Overall Sales Health Index",
       participant: "Participant Identity",
-      health: lawyer ? "Client Conversion Health Zone" : businessHealth ? "Business Health Temperature" : salesManager ? "Management Health Zone" : "Sales Health Zone",
+      health: lawyer ? "Client Experience Health Zone" : businessHealth ? "Business Health Temperature" : salesManager ? "Management Health Zone" : "Sales Health Zone",
       bloodPanel: mri
-        ? lawyer ? "15-Competency Lawyer Client Conversion MRI Panel" : businessHealth ? "12-Area SME Business Health MRI Panel" : salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
-        : lawyer ? "Lawyer Client Conversion Panel: Overall Score + Professional Markers" : businessHealth ? "SME Business Health Panel: Overall Score + Vital Signs" : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
+        ? lawyer ? "15-Competency EYĀS™ Legal Client Experience MRI Panel" : businessHealth ? "12-Area SME Business Health MRI Panel" : salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
+        : lawyer ? "Legal Client Journey Health Index: Overall Score + Professional Markers" : businessHealth ? "SME Business Health Panel: Overall Score + Vital Signs" : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
       bloodPanelSub: mri
         ? lawyer
-          ? "This deep diagnostic examines the full legal client journey across 15 competencies to reveal where consultation trust, legal-value clarity, professional-fee confidence, engagement commitment, and client experience may be leaking."
+          ? "This deep diagnostic examines the full legal client journey across 15 competencies to reveal where consultation trust, legal-value clarity, professional-fee confidence, next legal step clarity, and client experience may need attention."
           : businessHealth
           ? "This deep diagnostic examines the business across 12 health areas to reveal where revenue, cash, customers, operations, people, owner dependency, risk, visibility, and growth readiness may be leaking."
           : salesManager
           ? "This is your deep management diagnostic panel. It examines the wider sales-manager role across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
           : "This is your deep diagnostic panel. It examines the wider sales performance body across 15 competencies to reveal strengths, leaks, root patterns, and treatment priorities."
         : lawyer
-        ? "This panel combines your overall client-conversion score with core markers that reveal where you create trust, where clients hesitate, and what needs professional treatment."
+        ? "This panel combines your Legal Client Journey Health Index with core markers that reveal where you create trust, where clients hesitate, and what needs professional guidance."
         : businessHealth
         ? "This panel combines your overall business health score with the core areas that reveal where the company is stable, where it is leaking, and what needs executive treatment."
         : salesManager
         ? "This panel combines your overall management score with seven core markers that reveal where your leadership is strong, where the team may be leaking performance, and what needs attention."
         : "This panel combines your overall sales health score with the seven core markers that reveal where performance is strong, where it is leaking, and what needs treatment.",
-      strongest: lawyer ? "Strongest Legal Conversion Signal" : businessHealth ? "Strongest Business Health Signal" : salesManager ? "Strongest Management Signal" : "Strongest Signal",
-      weakest: lawyer ? "Biggest Hidden Consultation Leak" : businessHealth ? "Biggest Hidden Business Leak" : salesManager ? "Biggest Hidden Team Performance Leak" : "Biggest Hidden Revenue Leak",
+      strongest: lawyer ? "Client Experience Priorities" : businessHealth ? "Strongest Business Health Signal" : salesManager ? "Strongest Management Signal" : "Strongest Signal",
+      weakest: lawyer ? "Areas Requiring Attention" : businessHealth ? "Biggest Hidden Business Leak" : salesManager ? "Biggest Hidden Team Performance Leak" : "Biggest Hidden Revenue Leak",
       commercial: lawyer ? "Professional Interpretation" : businessHealth ? "Business Health Interpretation" : salesManager ? "Management Interpretation" : "Commercial Interpretation",
-      swot: lawyer ? "Lawyer Client Conversion SWOT Analysis" : businessHealth ? "SME Business Health SWOT Analysis" : "Strategic SWOT Analysis",
-      actions: mri ? (lawyer ? "Professional Treatment Priorities" : businessHealth ? "Business Revamp Treatment Priorities" : "Personal Treatment Priorities") : "Priority Execution Plan",
-      prescriptionHeadline: lawyer ? "Your Legal MRI Shows the Consultation Leaks. The Treatment Plan Shows What to Fix First." : businessHealth ? "Your Business Health MRI Shows the Leaks. The Roadmap Shows What to Stabilize and Revamp First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
-      prescriptionSubhead: lawyer ? "The Advanced Lawyer Client Conversion MRI is a full diagnostic and treatment tool for legal inquiries, consultations, client trust, professional fees, objections, engagement commitment, and client experience." : businessHealth ? "The Advanced SME Business Health MRI is a full diagnostic and roadmap tool for owners and general managers who want to stabilize leaks, strengthen the operating system, and identify the next revamp priorities." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
-      prescriptionCta: lawyer ? "Get My Full Lawyer Client Conversion MRI" : businessHealth ? "Get My SME Business Health Roadmap" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
+      swot: lawyer ? "Legal Client Experience SWOT Analysis" : businessHealth ? "SME Business Health SWOT Analysis" : "Strategic SWOT Analysis",
+      actions: mri ? (lawyer ? "Professional Guidance Plan" : businessHealth ? "Business Revamp Treatment Priorities" : "Personal Treatment Priorities") : "Priority Execution Plan",
+      prescriptionHeadline: lawyer ? "Your Legal Client Experience MRI Shows the Friction Points. The Guidance Plan Shows What to Address First." : businessHealth ? "Your Business Health MRI Shows the Leaks. The Roadmap Shows What to Stabilize and Revamp First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
+      prescriptionSubhead: lawyer ? "The Advanced EYĀS™ Legal Client Experience MRI is a full diagnostic and professional guidance tool for legal inquiries, consultations, client trust, professional legal fees, objections, next legal steps, and client experience." : businessHealth ? "The Advanced SME Business Health MRI is a full diagnostic and roadmap tool for owners and general managers who want to stabilize leaks, strengthen the operating system, and identify the next revamp priorities." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
+      prescriptionCta: lawyer ? "Get My Full EYĀS™ Legal Client Experience MRI" : businessHealth ? "Get My SME Business Health Roadmap" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
       enterpriseTitle: lawyer ? "For Law Firms, Managing Partners & Legal Platforms" : businessHealth ? "For SME Owners, General Managers & Partners" : salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
       enterpriseCta: lawyer ? "Diagnose the Lawyer Before You Train the Lawyer" : businessHealth ? "Diagnose the Business Before You Revamp the Business" : "Diagnose the Team Before You Train the Team",
     },
     ar: {
       back: "العودة إلى النتائج",
       badge: mri
-        ? lawyer ? "تشخيص عميق ودقيق لتحويل العملاء للمحامين" : businessHealth ? "تشخيص عميق ودقيق لصحة الشركات الصغيرة والمتوسطة" : "أداة تشخيص وعلاج كاملة"
-        : lawyer ? "SCAN تحويل العملاء للمحامين" : businessHealth ? "SCAN العلامات الحيوية لصحة الشركة" : salesManager ? "SCAN قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
+        ? lawyer ? "تشخيص تجربة العميل القانونية" : businessHealth ? "تشخيص عميق ودقيق لصحة الشركات الصغيرة والمتوسطة" : "أداة تشخيص وعلاج كاملة"
+        : lawyer ? "تشخيص تجربة العميل القانونية" : businessHealth ? "SCAN العلامات الحيوية لصحة الشركة" : salesManager ? "SCAN قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
       subtitle: mri
         ? lawyer
-          ? "تقرير Lawyer Client Conversion MRI شخصي لتشخيص كيف تتحول الاستفسارات القانونية إلى تعاقدات مهنية مدفوعة  من أول استفسار إلى الاستشارة، وضوح القيمة القانونية، أتعاب المحاماة، الاعتراضات، والمتابعة."
+          ? "تقرير إياس™ لتجربة العميل القانونية شخصي لتشخيص رحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، مروراً بالاستشارة، وضوح القيمة القانونية، أتعاب المحاماة، الاعتراضات، والمتابعة."
           : businessHealth
           ? "تقرير SME Business Health MRI شخصي لتشخيص أين تهدر الشركة السيولة، العملاء، طاقة الفريق، انضباط التنفيذ، وقت المالك، وجاهزية النمو  ثم تحويل النتائج إلى خارطة طريق عملية لتقوية الشركة."
           : salesManager
           ? "تقرير Sales Manager MRI شخصي لتشخيص أنماط القيادة، وهدر ونزيف في أداء الفريق، وأولويات العلاج الإداري."
           : "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
         : lawyer
-        ? "SCAN سريع لصحة تحويل الاستشارات القانونية  من الانطباع الأول إلى ثقة العميل، عرض أتعاب المحاماة، الاعتراضات، وقرار التعاقد."
+        ? "تشخيص سريع لصحة تجربة العميل القانونية من الانطباع الأول إلى ثقة العميل، عرض أتعاب المحاماة، الاعتراضات، والخطوة القانونية التالية."
         : businessHealth
         ? "SCAN سريع للعلامات الحيوية للشركة عبر الاتجاه، الإيرادات، التسويق، السيولة، العمليات، الأفراد، اعتماد الشركة على المالك، وجاهزية النمو."
         : salesManager
         ? "SCAN قيادي سريع لصحة إدارتك لفريق المبيعات كأنه تحليل دم لطريقة التدريب، SCAN مسار التدفّق، التوقع، التحفيز، والمساءلة."
         : "SCAN تشخيصي سريع لجسم أدائك البيعي  كأنه تحليل دم مهني وظيفي لمندوبي المبيعات.",
-      overall: lawyer ? "مؤشر صحة تحويل العملاء للمحامين" : businessHealth ? "مؤشر صحة الشركة" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
-      overallMarker: lawyer ? "مؤشر تحويل الاستشارات إلى تعاقدات" : businessHealth ? "مؤشر صحة الأعمال" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
+      overall: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الشركة" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
+      overallMarker: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الأعمال" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
-      health: lawyer ? "منطقة صحة تحويل العملاء" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
+      health: lawyer ? "منطقة صحة تجربة العميل" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
       bloodPanel: mri
-        ? lawyer ? "لوحة Lawyer Client Conversion MRI عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
-        : lawyer ? "لوحة تحويل العملاء للمحامين: النتيجة العامة + المؤشرات المهنية" : businessHealth ? "لوحة صحة الشركة: النتيجة العامة + العلامات الحيوية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
+        ? lawyer ? "لوحة إياس™ لتجربة العميل القانونية عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
+        : lawyer ? "مؤشر صحة رحلة العميل القانونية: النتيجة العامة + المؤشرات المهنية" : businessHealth ? "لوحة صحة الشركة: النتيجة العامة + العلامات الحيوية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
       bloodPanelSub: mri
         ? lawyer
-          ? "يفحص هذا التشخيص العميق رحلة العميل القانوني عبر ١٥ كفاءة ليكشف أين قد تتسرّب ثقة العميل، وضوح القيمة القانونية، الثقة في عرض أتعاب المحاماة، قرار التعاقد، وتجربة العميل."
+          ? "يفحص هذا التشخيص العميق رحلة العميل القانونية عبر ١٥ كفاءة ليكشف أين تحتاج ثقة العميل، وضوح القيمة القانونية، أتعاب المحاماة، الخطوة القانونية التالية، وتجربة العميل إلى تطوير."
           : businessHealth
           ? "يفحص هذا التشخيص العميق الشركة عبر ١٢ منطقة صحية ليكشف أين قد تتسرب الإيرادات، السيولة، العملاء، العمليات، الأفراد، وقت المالك، المخاطر، وضوح الإدارة، وجاهزية النمو."
           : salesManager
           ? "هذه لوحة تشخيص إداري عميق تفحص دور مدير المبيعات عبر ١٥ كفاءة لكشف نقاط القوة، الهدر والنزيف، الأسباب الجذرية، وأولويات العلاج."
           : "هذه لوحة تشخيص عميق تفحص جسم الأداء البيعي عبر ١٥ كفاءة لكشف نقاط القوة، الهدر والنزيف، الأسباب الجذرية، وأولويات العلاج."
         : lawyer
-        ? "تجمع هذه اللوحة بين نتيجة تحويل العملاء والمؤشرات الأساسية التي تكشف أين تصنع الثقة، أين يتردد العميل، وما الذي يحتاج إلى علاج مهني."
+        ? "تجمع هذه اللوحة بين مؤشر صحة رحلة العميل القانونية والمؤشرات الأساسية التي تكشف أين تصنع الثقة، أين يتردد العميل، وما الذي يحتاج إلى توجيه مهني."
         : businessHealth
         ? "تجمع هذه اللوحة بين مؤشر صحة الشركة والمناطق الأساسية التي تكشف أين الشركة مستقرة، أين تتسرب، وما الذي يحتاج إلى علاج تنفيذي."
         : salesManager
         ? "تجمع هذه اللوحة بين نتيجتك الإدارية العامة وسبعة مؤشرات قيادية تكشف أين قيادتك قوية، أين يتسرّب أداء الفريق، وما الذي يحتاج إلى انتباه."
         : "تجمع هذه اللوحة بين مؤشر صحتك البيعية والسبعة مؤشرات الأساسية التي تكشف أين الأداء قوي، أين يتسرب، وما الذي يحتاج إلى علاج.",
-      strongest: lawyer ? "أقوى إشارة في تحويل العملاء" : businessHealth ? "أقوى إشارة في صحة الشركة" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
-      weakest: lawyer ? "أكبر هدر ونزيف مخفي في الاستشارة القانونية" : businessHealth ? "أكبر هدر ونزيف خفي في الشركة" : salesManager ? "أكبر هدر ونزيف مخفي في أداء الفريق" : "أكبر هدر ونزيف مخفي في الإيرادات",
+      strongest: lawyer ? "أولويات تجربة العميل" : businessHealth ? "أقوى إشارة في صحة الشركة" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
+      weakest: lawyer ? "مجالات تحتاج إلى تطوير" : businessHealth ? "أكبر هدر ونزيف خفي في الشركة" : salesManager ? "أكبر هدر ونزيف مخفي في أداء الفريق" : "أكبر هدر ونزيف مخفي في الإيرادات",
       commercial: lawyer ? "التفسير المهني" : businessHealth ? "تفسير صحة الشركة" : salesManager ? "التفسير الإداري" : "التفسير العملي",
-      swot: lawyer ? "تحليل SWOT لتحويل العملاء للمحامين" : businessHealth ? "تحليل SWOT لصحة الشركة" : "تحليل SWOT الاستراتيجي",
-      actions: mri ? (lawyer ? "أولويات العلاج المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
-      prescriptionHeadline: lawyer ? "تقريرك يكشف هدر ونزيف. وخطة العلاج توضّح ما يجب إصلاحه أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "ال SCAN القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: lawyer ? "تقرير Advanced Lawyer Client Conversion MRI هو أداة تشخيص وعلاج كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، قرار التعاقد، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، مسار التدفّق، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
-      prescriptionCta: lawyer ? "احصل على Lawyer Client Conversion MRI الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
+      swot: lawyer ? "تحليل SWOT لتجربة العميل القانونية" : businessHealth ? "تحليل SWOT لصحة الشركة" : "تحليل SWOT الاستراتيجي",
+      actions: mri ? (lawyer ? "خطة التوجيه المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
+      prescriptionHeadline: lawyer ? "تقريرك يكشف نقاط الاحتكاك. وخطة التوجيه توضّح ما يجب تطويره أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "ال SCAN القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
+      prescriptionSubhead: lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، مسار التدفّق، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionCta: lawyer ? "احصل على إياس™ لتجربة العميل القانونية الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
       enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "لأصحاب الشركات الصغيرة والمتوسطة والمدراء العامين والشركاء" : salesManager ? "لمدراء المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمدراء المبيعات وأصحاب الشركات",
       enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : businessHealth ? "شخّص الشركة قبل أن تعيد بناءها" : "شخّص الفريق قبل أن تدرّبه",
     },
@@ -3216,8 +3216,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               <p className="mt-5 text-base sm:text-xl text-blue-100 leading-relaxed max-w-4xl rtl-text">
                 {lawyer
                   ? ar
-                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لطريقة تحويل الاستفسارات القانونية إلى تعاقدات مهنية. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم أنماط الاستشارة، ثقة العميل، عرض أتعاب المحاماة، قرار التعاقد، وأولويات العلاج التي يجب التعامل معها أولًا."
-                    : "This personalized report gives you a deeper view of your legal client-conversion body. It does not simply tell you where the score is low; it helps you understand consultation patterns, client-trust risks, professional-fee confidence, engagement decisions, and the treatment priorities that should be corrected first."
+                    ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لتجربة العميل القانونية. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم أنماط الاستشارة، ثقة العميل، عرض أتعاب المحاماة، الخطوة القانونية التالية، وأولويات التوجيه التي يجب التعامل معها أولًا."
+                    : "This personalized report gives you a deeper view of your legal client experience. It does not simply tell you where the score is low; it helps you understand consultation patterns, client-trust risks, professional-fee confidence, next legal steps, and the guidance priorities that should be addressed first."
                   : businessHealth
                   ? ar
                     ? "يعرض هذا التقرير الشخصي المفصل صورة أعمق لصحة الشركة كنظام كامل. إنه لا يكتفي بإخبارك أين انخفضت الدرجة، بل يساعدك على فهم مصادر الهدر والنزيف في السيولة، العملاء، العمليات، الأفراد، وقت المالك، المخاطر، وجاهزية النمو  ثم يحوّلها إلى أولويات تقوية وخارطة طريق عملية."
@@ -3237,8 +3237,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   body={
                     lawyer
                       ? ar
-                        ? "يفحص التقرير ١٥ كفاءة لتحويل الاستشارات القانونية إلى تعاقدات بدل الاكتفاء بالمؤشرات السريعة."
-                        : "The report examines 15 legal client-conversion competencies instead of stopping at basic markers."
+                        ? "يفحص التقرير ١٥ كفاءة في تجربة العميل القانونية بدل الاكتفاء بالمؤشرات السريعة."
+                        : "The report examines 15 legal client experience competencies instead of stopping at basic markers."
                       : businessHealth
                       ? ar
                         ? "يفحص التقرير ١٢ منطقة حيوية في صحة الشركة بدل الاكتفاء بمؤشرات عامة أو انطباعات سريعة."
@@ -3257,8 +3257,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   body={
                     lawyer
                       ? ar
-                        ? "أولويات العلاج مبنية على إجاباتك ودرجاتك في رحلة الاستفسار القانوني والاستشارة وأتعاب المحاماة وقرار التعاقد، وليست نصائح عامة."
-                        : "The legal client-conversion treatment priorities are built from your answers and scores across inquiry, consultation, professional fees, and engagement decisions not from generic advice."
+                        ? "أولويات التوجيه مبنية على إجاباتك ودرجاتك في رحلة الاستفسار القانوني والاستشارة وأتعاب المحاماة والخطوة القانونية التالية، وليست نصائح عامة."
+                        : "The legal client experience guidance priorities are built from your answers and scores across inquiry, consultation, professional fees, and next legal steps, not from generic advice."
                       : salesManager
                       ? ar
                         ? "ترتيب أولويات العلاج الإداري مبني على إجاباتك ودرجاتك، وليس على نصائح عامة للقيادة."
@@ -3345,8 +3345,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               <p className="mt-4 text-sm font-semibold text-slate-700 leading-relaxed rtl-text">
                 {lawyer
                   ? ar
-                    ? "القراءة المجمعة لمؤشرات تحويل الاستشارات القانونية إلى تعاقدات."
-                    : "The combined reading of your full legal client-conversion MRI."
+                    ? "القراءة المجمعة لمؤشرات تجربة العميل القانونية."
+                    : "The combined reading of your full legal client experience MRI."
                   : businessHealth
                   ? ar
                     ? "القراءة المجمعة لمناطق صحة الشركة الاثنتي عشرة."
@@ -3420,8 +3420,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   <p className="mt-4 text-sm text-slate-700 leading-relaxed rtl-text">
                     {lawyer
                       ? ar
-                        ? "هذه المنطقة قد تكون سببًا جذريًا في خسارة الاستشارة وضياعها أو ضعف الثقة أو تأخر قرار التعاقد. ابدأ علاجها قبل محاولة إصلاح كل شيء."
-                        : "This area may be a root contributor to consultation leakage, weak client trust, professional-fee hesitation, or delayed engagement decisions. Treat it before trying to fix everything."
+                        ? "هذه المنطقة قد تكون سببًا جذريًا في تردد العميل أو ضعف الثقة أو تأخر الخطوة القانونية التالية. ابدأ تطويرها قبل محاولة إصلاح كل شيء."
+                        : "This area may be a root contributor to client hesitation, weak client trust, professional-fee hesitation, or delayed next legal steps. Address it before trying to fix everything."
                       : businessHealth
                       ? ar
                         ? "هذه المنطقة قد تكون سببًا جذريًا في هدر ونزيف في السيولة أو العملاء أو طاقة الفريق أو وقت المالك أو جاهزية النمو. ابدأ علاجها قبل محاولة إصلاح كل شيء."
@@ -3450,8 +3450,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             description={
               lawyer
                 ? ar
-                  ? "هذه هي المنطقة التي يمكن استخدامها كرافعة مهنية، لأنها تكشف سلوكًا يساعد العميل المحتمل على الثقة بك وفهم قيمتك القانونية واتخاذ قرار التعاقد."
-                  : "This is the area you can use as professional leverage because it reveals a behavior that supports client trust, legal-value clarity, and engagement confidence."
+                  ? "هذه هي المنطقة التي يمكن استخدامها كرافعة مهنية، لأنها تكشف سلوكًا يساعد العميل المحتمل على الثقة بك وفهم قيمتك القانونية واتخاذ الخطوة القانونية التالية."
+                  : "This is the area you can use as professional leverage because it reveals a behavior that supports client trust, legal-value clarity, and next-step confidence."
                 : businessHealth
                 ? ar
                   ? "هذه هي المنطقة التي يمكن استخدامها كرافعة تنفيذية، لأنها تكشف جزءًا من الشركة يمكن أن يساعد في تثبيت السيولة، العملاء، الفريق، أو قابلية النمو."
@@ -3473,8 +3473,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             description={
               lawyer
                 ? ar
-                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه زعزعة الثقة أو وضوح القيمة القانونية أو قرار التعاقد قبل أن يصبح واضحًا."
-                  : "This is not just a low score. It is often where consultation leakage, weak client trust, unclear legal value, or delayed engagement decisions begin before they become obvious."
+                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه تردد العميل أو ضعف الثقة أو عدم وضوح القيمة القانونية قبل أن يصبح واضحًا."
+                  : "This is not just a low score. It is often where client hesitation, weak client trust, unclear legal value, or delayed next legal steps begin before they become obvious."
                 : businessHealth
                 ? ar
                   ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر ونزيف في الشركة قبل أن يظهر في السيولة، العملاء، العمليات، الفريق، أو وقت المالك."
@@ -3499,8 +3499,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             <p className="mt-2 text-sm sm:text-base text-blue-100 leading-relaxed rtl-text">
               {lawyer
                 ? ar
-                  ? "قراءة مهنية مختصرة لما قد يحدث داخل رحلة الاستشارة، الثقة، أتعاب المحاماة، وقرار التعاقد."
-                  : "A practical professional reading of what may be happening inside the legal inquiry, consultation, trust, fee, and engagement journey."
+                  ? "قراءة مهنية مختصرة لما قد يحدث داخل رحلة الاستشارة، الثقة، أتعاب المحاماة، والخطوة القانونية التالية."
+                  : "A practical professional reading of what may be happening inside the legal inquiry, consultation, trust, fee, and next-step journey."
                 : salesManager
                 ? ar
                   ? "قراءة إدارية مختصرة لما قد يحدث داخل الفريق ومسار التدفّق."
@@ -3515,8 +3515,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               body={
                 lawyer
                   ? ar
-                    ? "العميل المحتمل لا يرى نتيجتك. هو يختبر وضوحك، هدوءك، قدرتك على تشخيص المشكلة القانونية، شرح الخيارات، عرض أتعاب المحاماة بثقة، وتحديد خطوة التعاقد التالية."
-                    : "Potential clients do not see your score. They experience your clarity, calm authority, legal diagnosis, explanation of options, confidence in presenting professional fees, and ability to guide the next engagement step."
+                    ? "العميل المحتمل لا يرى نتيجتك. هو يختبر وضوحك، هدوءك، قدرتك على تشخيص المشكلة القانونية، شرح الخيارات، عرض أتعاب المحاماة بثقة، وتحديد الخطوة القانونية التالية."
+                    : "Potential clients do not see your score. They experience your clarity, calm authority, legal diagnosis, explanation of options, confidence in presenting professional fees, and ability to guide the next legal step."
                   : businessHealth
                   ? ar
                     ? "الشركة لا تعيش نتيجتك كرقم. هي تعيشها كتدفق نقدي مضغوط، عملاء يتسربون، عمليات تعتمد على الأشخاص، فريق ينتظر التوجيه، وقرارات تحتاج إلى رؤية أوضح."
@@ -3532,27 +3532,27 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             />
 
             <DarkInsight
-              title={ar ? "أين يحدث الهدر والنزيف" : "Where leakage happens"}
+              title={lawyer ? (ar ? "أين تظهر نقاط الاحتكاك" : "Where friction happens") : ar ? "أين يحدث الهدر والنزيف" : "Where leakage happens"}
               body={
                 weakest
                   ? ar
                     ? lawyer
-                      ? `أكبر هدر ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على ثقة العميل، وضوح الاستشارة القانونية، عرض أتعاب المحاماة، أو قرار التعاقد قبل أن يظهر السبب الحقيقي.`
+                      ? `أبرز نقطة احتكاك ظاهرة الآن مرتبطة بـ ${weakest.label}. هذه المنطقة قد تؤثر على ثقة العميل، وضوح الاستشارة القانونية، عرض أتعاب المحاماة، أو الخطوة القانونية التالية قبل أن يظهر السبب الحقيقي.`
                       : businessHealth
                       ? `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تستنزف السيولة أو العملاء أو وقت المالك أو طاقة الفريق أو جاهزية النمو قبل أن يظهر السبب الحقيقي.`
                       : salesManager
                       ? `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على أداء الفريق أو وضوح مسار التدفّق أو الانضباط قبل أن يظهر السبب الحقيقي.`
                       : `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
                     : lawyer
-                    ? `The clearest leakage signal is currently connected to ${weakest.label}. This area may weaken client trust, consultation clarity, professional fee confidence, or the engagement decision before the real reason is visible.`
+                    ? `The clearest friction signal is currently connected to ${weakest.label}. This area may weaken client trust, consultation clarity, professional fee confidence, or the next legal step before the real reason is visible.`
                     : businessHealth
                     ? `The clearest business leak is currently connected to ${weakest.label}. This area may quietly drain cash, customers, owner time, team energy, operating discipline, or growth readiness before the root cause becomes obvious.`
                     : salesManager
                     ? `The clearest leakage signal is currently connected to ${weakest.label}. This area may weaken team performance, pipeline clarity, or execution discipline before the real reason is visible.`
                     : `The clearest leakage signal is currently connected to ${weakest.label}. This area may stall or weaken opportunities before the real reason is visible.`
                   : ar
-                  ? "لا توجد بيانات كافية لتحديد منطقة الهدر والنزيف."
-                  : "There is not enough data to identify the leakage area."
+                  ? lawyer ? "لا توجد بيانات كافية لتحديد نقطة الاحتكاك." : "لا توجد بيانات كافية لتحديد منطقة الهدر والنزيف."
+                  : lawyer ? "There is not enough data to identify the friction area." : "There is not enough data to identify the leakage area."
               }
             />
 
@@ -3572,8 +3572,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           {sectionTitle(
             t.swot,
             ar
-              ? lawyer ? "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج داخل رحلة تحويل الاستشارة القانونية إلى تعاقد مهني." : businessHealth ? "ليس مجرد تصنيف للمناطق، بل قراءة لما تعنيه النتائج داخل صحة الشركة واستقرارها وقابليتها للنمو." : "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج في الأداء البيعي الحقيقي."
-              : lawyer ? "Not just a category list but a practical reading of what the results mean inside the legal consultation-to-engagement journey." : businessHealth ? "Not just a category list but a practical reading of what the results mean inside the company’s health, stability, and growth system." : "Not just a category list but a practical reading of what the results mean in real sales performance."
+              ? lawyer ? "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج داخل تجربة العميل القانونية." : businessHealth ? "ليس مجرد تصنيف للمناطق، بل قراءة لما تعنيه النتائج داخل صحة الشركة واستقرارها وقابليتها للنمو." : "ليس مجرد تصنيف للكفاءات، بل قراءة لما تعنيه النتائج في الأداء البيعي الحقيقي."
+              : lawyer ? "Not just a category list but a practical reading of what the results mean inside the legal client experience journey." : businessHealth ? "Not just a category list but a practical reading of what the results mean inside the company’s health, stability, and growth system." : "Not just a category list but a practical reading of what the results mean in real sales performance."
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -3584,8 +3584,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               empty={ar ? "لا توجد نقاط قوة واضحة حتى الآن." : "No clear strengths yet."}
               explanation={
                 ar
-                  ? lawyer ? "هذه المناطق يمكن تحويلها إلى عادات مهنية ثابتة تعزز الثقة، وضوح الاستشارة، وقرار التعاقد." : "هذه المناطق يمكن تحويلها إلى عادات ثابتة تدعم بقية الأداء."
-                  : lawyer ? "These areas can be turned into repeatable professional habits that strengthen trust, consultation clarity, and engagement decisions." : "These areas can be turned into repeatable habits that support the rest of the performance."
+                  ? lawyer ? "هذه المناطق يمكن تحويلها إلى عادات مهنية ثابتة تعزز الثقة، وضوح الاستشارة، والخطوة القانونية التالية." : "هذه المناطق يمكن تحويلها إلى عادات ثابتة تدعم بقية الأداء."
+                  : lawyer ? "These areas can be turned into repeatable professional habits that strengthen trust, consultation clarity, and next legal steps." : "These areas can be turned into repeatable habits that support the rest of the performance."
               }
               lang={lang}
             />
@@ -3598,8 +3598,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               explanation={
                 lawyer
                   ? ar
-                    ? "هذه المناطق ليست ضعيفة، لكنها تحتاج إلى صياغة مهنية أوضح حتى تزيد الثقة وتدعم قرار التعاقد."
-                    : "These areas are not broken, but they need clearer professional structure before they reliably improve trust and engagement decisions."
+                    ? "هذه المناطق ليست ضعيفة، لكنها تحتاج إلى صياغة مهنية أوضح حتى تزيد الثقة وتدعم الخطوة القانونية التالية."
+                    : "These areas are not broken, but they need clearer professional structure before they reliably improve trust and next-step decisions."
                   : ar
                   ? "هذه المناطق ليست ضعيفة، لكنها تحتاج إلى تنظيم وممارسة حتى تصبح مصدر قوة."
                   : "These areas are not broken, but they need structure and practice before they become strengths."
@@ -3615,8 +3615,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               explanation={
                 lawyer
                   ? ar
-                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب زعزعة في ثقة العميل، وضوح الاستشارة، عرض أتعاب المحاماة، أو قرار التعاقد."
-                    : "These are warning signals. If left untreated, they may create leakage in client trust, consultation clarity, professional-fee confidence, or engagement decisions."
+                    ? "هذه إشارات إنذار. إذا تُركت دون تطوير، قد تسبب زعزعة في ثقة العميل، وضوح الاستشارة، عرض أتعاب المحاماة، أو الخطوة القانونية التالية."
+                    : "These are warning signals. If left unaddressed, they may create friction in client trust, consultation clarity, professional-fee confidence, or next legal steps."
                   : salesManager
                   ? ar
                     ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً ونزيفاً في وضوح مسار التدفّق، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
@@ -3640,8 +3640,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               explanation={
                 lawyer
                   ? ar
-                    ? "هذه المناطق تحتاج إلى علاج مهني مباشر، لأنها غالبًا تؤثر على الانطباع الأول، ثقة العميل، وضوح القيمة القانونية، أو قرار التعاقد."
-                    : "These areas need direct professional treatment because they often affect first impressions, client trust, legal-value clarity, or engagement decision progress."
+                    ? "هذه المناطق تحتاج إلى تطوير مهني مباشر، لأنها غالبًا تؤثر على الانطباع الأول، ثقة العميل، وضوح القيمة القانونية، أو الخطوة القانونية التالية."
+                    : "These areas need direct professional guidance because they often affect first impressions, client trust, legal-value clarity, or next-step progress."
                   : salesManager
                   ? ar
                     ? "هذه المناطق تحتاج إلى تدخل إداري مباشر، لأنها غالبًا تؤثر على التدريب، المساءلة، وضوح التوقعات، أو تنفيذ الفريق."
@@ -3733,10 +3733,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           lang={lang}
         />
         {sectionTitle(
-          ar ? "خطة علاج تحويل الاستشارات القانونية خلال 90 يومًا" : "90-Day Legal Client Conversion Treatment Plan",
+          ar ? "خطة التوجيه المهني لتجربة العميل القانونية خلال 90 يومًا" : "90-Day Legal Client Experience Guidance Plan",
           ar
-            ? "خطة يومية عملية مبنية على أضعف مناطق تحويل الاستشارة لديك. كل يوم يمنحك إجراءً مصغّرًا وتطبيقًا داخل الاستشارة القانونية ومؤشر تحقق واضح."
-            : "A daily professional treatment plan based on your weakest consultation-conversion areas. Each day gives you one micro-action, one legal consultation drill, and one proof of execution."
+            ? "خطة يومية عملية مبنية على أضعف مناطق تجربة العميل القانونية لديك. كل يوم يمنحك إجراءً مصغّرًا وتطبيقًا داخل الاستشارة القانونية ومؤشر تحقق واضح."
+            : "A daily professional guidance plan based on your weakest legal client experience areas. Each day gives you one micro-action, one legal consultation drill, and one proof of execution."
         )}
         <LawyerTreatmentPlanSection
           days={lawyerTreatmentPlan}
@@ -3753,8 +3753,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           : "90-Day SME Business Health Treatment Roadmap"
         : lawyer
         ? ar
-          ? "وصفة تحويل الاستشارات القانونية خلال ٩٠ يومًا"
-          : "90-Day Legal Client Conversion Treatment Plan"
+          ? "خطة التوجيه المهني لتجربة العميل القانونية خلال ٩٠ يومًا"
+          : "90-Day Legal Client Experience Guidance Plan"
         : salesManager
         ? ar
           ? "خطة علاج إدارة المبيعات خلال ٩٠ يومًا"
@@ -3768,8 +3768,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           : "This is not a training course. It is an execution roadmap based on your business health signals, biggest leaks, and stabilization priorities."
         : lawyer
         ? ar
-          ? "هذه ليست دورة تدريبية. إنها خطة علاج مهنية مبنية على نسبة خسارات الاستشارات والعملاء  وأولويات تحويل العميل إلى تعاقد."
-          : "This is not a training course. It is a professional treatment plan based on your consultation leaks and client-engagement priorities."
+          ? "هذه ليست دورة تدريبية. إنها خطة توجيه مهنية مبنية على نقاط الاحتكاك في الاستشارة وأولويات تجربة العميل."
+          : "This is not a training course. It is a professional guidance plan based on consultation friction and legal client experience priorities."
         : salesManager
         ? ar
           ? "هذه ليست دورة تدريبية. إنها خطة علاج إدارية مبنية على هدر ونزيف في القيادة وأولويات أداء الفريق."
@@ -3786,18 +3786,18 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         titleEn={
           businessHealth
             ? "Days 1–30: Stop the Business Leakage"
-            : "Days 1–30: Stop the Leakage"
+            : lawyer ? "Days 1–30: Reduce the Friction" : "Days 1–30: Stop the Leakage"
         }
         titleAr={
           businessHealth
             ? "الأيام ١–٣٠: أوقف الهدر والنزيف في  الشركة"
-            : "الأيام ١–٣٠: أوقف الهدر والنزيف"
+            : lawyer ? "الأيام ١–٣٠: قلّل نقاط الاحتكاك" : "الأيام ١–٣٠: أوقف الهدر والنزيف"
         }
         bodyEn={
           businessHealth
             ? `Focus first on ${topThreeRisks[0]?.label || "your weakest business health area"}. Reduce the issue most likely leaking cash, customers, execution, owner time, or growth capacity, then build a simple correction rhythm the business can repeat weekly.`
             : lawyer
-            ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the consultation behavior most likely leaking client trust, professional-fee confidence, or engagement commitment, then build a simple correction routine you can repeat daily.`
+            ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the consultation behavior most likely creating client hesitation, weakening professional-fee confidence, or delaying the next legal step, then build a simple correction routine you can repeat daily.`
             : salesManager
             ? `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the management behavior most likely leaking team performance, then build a simple correction rhythm you can repeat weekly.`
             : `Focus first on ${topThreeRisks[0]?.label || "your lowest score"}. Reduce the behavior that is most likely leaking opportunities, then build a simple correction routine you can repeat daily.`
@@ -3806,7 +3806,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           businessHealth
             ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف مجال في صحة الشركة"}. قلّل المشكلة التي قد تسرّب السيولة، العملاء، التنفيذ، وقت المالك، أو قدرة الشركة على النمو، ثم ابنِ إيقاع تصحيح بسيط يمكن تكراره أسبوعيًا.`
             : lawyer
-            ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل سلوك الاستشارة الذي قد يسرّب ثقة العميل أو الثقة في أتعاب المحاماة أو الالتزام بالتعاقد، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
+            ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل سلوك الاستشارة الذي قد يضعف ثقة العميل أو الثقة في أتعاب المحاماة أو وضوح الخطوة القانونية التالية، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
             : salesManager
             ? `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الإداري الذي قد يسبب أكبر هدر ونزيف في أداء الفريق، ثم ابنِ إيقاع تصحيح بسيط يمكنك تكراره أسبوعيًا.`
             : `ابدأ أولًا بـ ${topThreeRisks[0]?.label || "أضعف نتيجة لديك"}. قلّل السلوك الذي قد يسبب أكبر هدر ونزيف للفرص، ثم ابنِ روتين تصحيح بسيط يمكنك تكراره يوميًا.`
@@ -3838,7 +3838,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           businessHealth
             ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strongest business health area"}, to support the weaker areas and create a more stable operating rhythm across revenue, cash, customers, people, and execution.`
             : lawyer
-            ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker consultation behaviors and create a more stable inquiry-to-engagement rhythm.`
+            ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker consultation behaviors and create a more stable inquiry-to-next-step rhythm.`
             : salesManager
             ? `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support weaker management behaviors and create a more stable team execution rhythm.`
             : `Use your stronger areas, especially ${topThreeStrengths[0]?.label || "your strengths"}, to support the weaker behaviors and create a more stable sales rhythm.`
@@ -3847,7 +3847,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           businessHealth
             ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "أقوى مجال في صحة الشركة"}، لدعم المجالات الأضعف وبناء إيقاع تشغيل أكثر ثباتًا في الإيرادات، السيولة، العملاء، الأشخاص، والتنفيذ.`
             : lawyer
-            ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم سلوكيات الاستشارة الأضعف وبناء إيقاع أكثر ثباتًا من الاستفسار إلى التعاقد.`
+            ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم سلوكيات الاستشارة الأضعف وبناء إيقاع أكثر ثباتًا من الاستفسار إلى الخطوة القانونية المناسبة.`
             : salesManager
             ? `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الإدارية الأضعف وبناء إيقاع تنفيذ أكثر ثباتًا داخل الفريق.`
             : `استخدم مناطق قوتك، خاصة ${topThreeStrengths[0]?.label || "نقاط قوتك"}، لدعم السلوكيات الأضعف وبناء إيقاع بيعي أكثر ثباتًا.`
@@ -3871,7 +3871,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           businessHealth
             ? "Turn the corrected priorities into a business operating system: review the numbers, inspect customer flow, strengthen accountability, reduce owner dependency, and protect the business from avoidable risk."
             : lawyer
-            ? "Turn the corrected behaviors into a legal client-conversion operating system: open consultations better, diagnose needs better, explain legal value better, present professional fees better, and follow up with more confidence."
+            ? "Turn the corrected behaviors into a legal client experience operating system: open consultations better, diagnose needs better, explain legal value better, present professional fees better, and guide the next step with more confidence."
             : salesManager
             ? "Turn the corrected behaviors into a sales-management operating system: coach better, inspect better, forecast better, and hold the team accountable with more clarity."
             : "Turn the corrected behaviors into a personal sales operating system: prepare better, ask better, follow up better, and close with more control."
@@ -3880,7 +3880,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           businessHealth
             ? "حوّل الأولويات المصححة إلى نظام تشغيل للشركة: راجع الأرقام، افحص تدفق العملاء، قوِّ المساءلة، خفّف اعتماد الشركة على المالك، واحمِ العمل من المخاطر التي يمكن تجنبها."
             : lawyer
-            ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتحويل العملاء للمحامين: افتح الاستشارات بشكل أفضل، شخّص الاحتياج أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، وتابع بوضوح أقوى."
+            ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتجربة العميل القانونية: افتح الاستشارات بشكل أفضل، شخّص الاحتياج أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، ووجّه الخطوة القانونية التالية بوضوح أقوى."
             : salesManager
             ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص مسار التدفّق أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر."
             : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."
@@ -4089,8 +4089,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                           ]
                         : [
                             "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
-                            lawyer ? "A full diagnostic and treatment tool examining 15 competencies in your legal client-conversion body" : salesManager ? "A full diagnostic and treatment tool examining 15 competencies in your sales-management leadership body" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
-                            lawyer ? "The root patterns behind unclear consultations, weak trust, professional fee resistance, and delayed engagement decisions" : "The root patterns behind stalled deals, weak momentum, and hidden leakage",
+                            lawyer ? "A full diagnostic and professional guidance tool examining 15 competencies in your legal client experience" : salesManager ? "A full diagnostic and treatment tool examining 15 competencies in your sales-management leadership body" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
+                            lawyer ? "The root patterns behind unclear consultations, weak trust, professional fee resistance, and delayed next legal steps" : "The root patterns behind stalled deals, weak momentum, and hidden leakage",
                             "A clear priority order of what to correct first instead of guessing",
                             "A practical 90-day performance prescription without sitting through a long training course",
                             "A day-by-day correction path showing what to do and what to stop doing",
@@ -4444,14 +4444,14 @@ function MriDetailedTreatmentSection({
     <section className="rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8">
       {sectionTitle(
         lawyer
-          ? ar ? "صفحات علاج تحويل الاستشارة القانونية حسب نمطك" : "Legal Client Conversion Treatment Pages Based on Your Pattern"
+          ? ar ? "صفحات توجيه تجربة العميل القانونية حسب نمطك" : "Legal Client Experience Guidance Pages Based on Your Pattern"
           : businessHealth
           ? ar ? "صفحات علاج صحة الشركة حسب نمطك" : "Business Health Treatment Pages Based on Your Pattern"
           : ar ? "صفحات العلاج التفصيلية حسب نمطك" : "Detailed Treatment Pages Based on Your Pattern",
         lawyer
           ? ar
-            ? "التقرير لا يكرر نفس النص لكل محامٍ. يتم توسيع أضعف ٦ مناطق لديك في رحلة الاستفسار والاستشارة وأتعاب المحاماة وقرار التعاقد، بينما تظهر بقية الكفاءات كملخصات حماية أو رافعة."
-            : "This report does not repeat the same advice for every lawyer. Your weakest 6 areas in the inquiry, consultation, professional-fee, and engagement journey are expanded into treatment pages, while the remaining competencies appear as compact leverage or protection summaries."
+            ? "التقرير لا يكرر نفس النص لكل محامٍ. يتم توسيع أضعف ٦ مناطق لديك في رحلة الاستفسار والاستشارة وأتعاب المحاماة والخطوة القانونية التالية، بينما تظهر بقية الكفاءات كملخصات حماية أو رافعة."
+            : "This report does not repeat the same advice for every lawyer. Your weakest 6 areas in the inquiry, consultation, professional-fee, and next-step journey are expanded into guidance pages, while the remaining competencies appear as compact leverage or protection summaries."
           : businessHealth
           ? ar
             ? "التقرير لا يكرر نفس النص لكل شركة. يتم توسيع أضعف ٦ مجالات في صحة الشركة إلى صفحات علاج، بينما تظهر بقية المجالات كملخصات حماية أو رافعة."
@@ -4463,7 +4463,7 @@ function MriDetailedTreatmentSection({
 
       <div className="avoid-break rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-6 sm:p-7 shadow-xl mb-6">
         <div className="inline-flex rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs font-black uppercase tracking-widest text-blue-100">
-          {lawyer ? (ar ? "نمط تحويل العملاء القانونيين" : "Legal Client Conversion Pattern") : businessHealth ? (ar ? "نمط صحة الشركة" : "Business Health Pattern") : (ar ? "نمط الأداء العام" : "Overall Performance Pattern")}
+          {lawyer ? (ar ? "نمط تجربة العميل القانونية" : "Legal Client Experience Pattern") : businessHealth ? (ar ? "نمط صحة الشركة" : "Business Health Pattern") : (ar ? "نمط الأداء العام" : "Overall Performance Pattern")}
         </div>
         <h3 className="mt-4 text-2xl sm:text-3xl font-black leading-tight rtl-text">
           {pattern.title}
@@ -4475,15 +4475,15 @@ function MriDetailedTreatmentSection({
         <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
           <MiniPatternBox
             ar={ar}
-            labelEn={lawyer ? "Primary consultation leak" : businessHealth ? "Primary business leak" : "Primary leakage"}
-            labelAr={lawyer ? "خسارة العميل والاستشارة الأساسي" : businessHealth ? "هدر الشركة الأساسي" : "الهدر الأساسي"}
+            labelEn={lawyer ? "Primary client friction point" : businessHealth ? "Primary business leak" : "Primary leakage"}
+            labelAr={lawyer ? "نقطة الاحتكاك الأساسية" : businessHealth ? "هدر الشركة الأساسي" : "الهدر الأساسي"}
             value={weakestSix[0]?.label || "—"}
             value2={weakestSix[0] ? `${weakestSix[0].percentage}% · ${getTierLabel(weakestSix[0].tier, lang)}` : ""}
           />
           <MiniPatternBox
             ar={ar}
-            labelEn={lawyer ? "Secondary engagement risk" : businessHealth ? "Secondary business risk" : "Secondary risk"}
-            labelAr={lawyer ? "خطر التعاقد الثاني" : businessHealth ? "خطر الشركة الثاني" : "الخطر الثاني"}
+            labelEn={lawyer ? "Secondary next-step risk" : businessHealth ? "Secondary business risk" : "Secondary risk"}
+            labelAr={lawyer ? "خطر الخطوة القانونية التالية" : businessHealth ? "خطر الشركة الثاني" : "الخطر الثاني"}
             value={weakestSix[1]?.label || "—"}
             value2={weakestSix[1] ? `${weakestSix[1].percentage}% · ${getTierLabel(weakestSix[1].tier, lang)}` : ""}
           />
@@ -4628,7 +4628,11 @@ function MriDeepTreatmentPage({
           body={detailedMeaningFor(row, lang)}
         />
         <TreatmentInsight
-          title={ar ? "أين يحدث الهدر والنزيف؟" : "Where leakage may happen"}
+          title={
+            LAWYER_COMPETENCY_IDS.has(row.competencyId)
+              ? ar ? "أين تظهر نقاط الاحتكاك؟" : "Where friction may happen"
+              : ar ? "أين يحدث الهدر والنزيف؟" : "Where leakage may happen"
+          }
           body={meta.leakage}
         />
         <TreatmentInsight
@@ -4825,8 +4829,8 @@ function LawyerPlanPersonalizationBox({
       </h3>
       <p className="mt-3 text-sm sm:text-base font-semibold leading-relaxed text-slate-700 rtl-text">
         {ar
-          ? "تم بناء هذه الخطة بناءً على أضعف ست كفاءات ظهرت في نتائجك، مع استخدام أقوى منطقة لديك كرافعة دعم. لذلك لا تُعرض الخطة كقائمة عامة، بل كمسار علاجي يبدأ بالمناطق الأكثر احتمالًا لإضعاف الثقة، أو السيطرة على الاستشارة، أو الثقة في أتعاب المحاماة، أو المتابعة، أو قرار التمثيل بناءً على نتائجك."
-          : "This treatment plan is based on your weakest six Lawyer Client Conversion MRI competencies and your strongest leverage area. The sequence below is not a generic checklist. It prioritizes the areas most likely to leak client trust, consultation control, fee confidence, follow-up discipline, or engagement commitment based on your own results."}
+          ? "تم بناء هذه الخطة بناءً على أضعف ست كفاءات ظهرت في نتائجك، مع استخدام أقوى منطقة لديك كرافعة دعم. لذلك لا تُعرض الخطة كقائمة عامة، بل كمسار توجيه يبدأ بالمناطق الأكثر احتمالًا لإضعاف الثقة، أو وضوح الاستشارة، أو الثقة في أتعاب المحاماة، أو المتابعة، أو الخطوة القانونية التالية بناءً على نتائجك."
+          : "This guidance plan is based on your weakest six EYĀS™ Legal Client Experience MRI competencies and your strongest leverage area. The sequence below is not a generic checklist. It prioritizes the areas most likely to create friction in client trust, consultation clarity, fee confidence, follow-up discipline, or next legal steps based on your own results."}
       </p>
 
       <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_0.7fr]">
