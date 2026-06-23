@@ -2913,7 +2913,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       return ar ? "التعامل مع الإدارة وبناء التوافق الداخلي" : "Managing Up & Internal Alignment";
     }
 
-    const meta = labelsFromConfig[key] || COMPETENCY_LABELS[key] || null;
+    const meta = COMPETENCY_LABELS[key] || labelsFromConfig[key] || null;
 
     if (meta) {
       return ar ? meta.ar || meta.en || key : meta.en || meta.ar || key;
