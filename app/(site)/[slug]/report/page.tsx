@@ -2,6 +2,7 @@
 import "server-only";
 import EmailReportButton from "@/components/EmailReportButton";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   getRecommendations,
@@ -85,7 +86,7 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
 
   // Sales Manager assessments
   sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
-  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية مسار الفرص البيعية وفحص الصفقات" },
+  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "وضوح مسار الفرص البيعية وفحص الصفقات" },
   pipeline_management_deal_inspection: { en: "Pipeline Management & Deal Inspection", ar: "إدارة مسار الفرص البيعية وفحص الصفقات" },
   forecast_judgment: { en: "Forecast Judgment", ar: "الحكم على التوقعات البيعية" },
   forecast_accuracy_judgment: { en: "Forecast Accuracy & Judgment", ar: "دقة التوقعات والحكم التجاري" },
@@ -678,7 +679,21 @@ function getPriorityRows(rows: CompetencyRow[]) {
   return [...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 3);
 }
 
-function sectionTitle(text: string, sub?: string) {
+function ArabicMriPhrase({ text }: { text: string }) {
+  return (
+    <>
+      <span dir="rtl">{text}</span>{" "}
+      <span
+        dir="ltr"
+        style={{ display: "inline-block", direction: "ltr", unicodeBidi: "isolate", marginRight: 8 }}
+      >
+        (MRI)
+      </span>
+    </>
+  );
+}
+
+function sectionTitle(text: ReactNode, sub?: ReactNode) {
   return (
     <div className="avoid-break mb-5">
       <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight rtl-text">
@@ -2973,12 +2988,14 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     : [];
 
   const reportTitle =
-    (ar
+    salesManager && ar && mri ? (
+      <ArabicMriPhrase text="تقرير التشخيص المتقدم لمدير المبيعات" />
+    ) : (ar
       ? (assessment as any)?.title_ar || (assessment as any)?.name_ar || ""
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
     (mri
       ? ar
-        ? lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير Sales Manager MRI المتقدم" : "تقرير Outdoor Sales MRI المتقدم"
+        ? lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير التشخيص المتقدم لمدير المبيعات" : "تقرير Outdoor Sales MRI المتقدم"
         : lawyer ? "Advanced EYĀS™ Legal Client Experience MRI Report" : businessHealth ? "Advanced SME Business Health MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
       : lawyer
       ? ar
@@ -3064,21 +3081,21 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           : businessHealth
           ? "تقرير SME Business Health MRI شخصي لتشخيص أين تهدر الشركة السيولة، العملاء، طاقة الفريق، انضباط التنفيذ، وقت المالك، وجاهزية النمو  ثم تحويل النتائج إلى خارطة طريق عملية لتقوية الشركة."
           : salesManager
-          ? "تقرير Sales Manager MRI شخصي لتشخيص أنماط القيادة، وهدر ونزيف في أداء الفريق، وأولويات العلاج الإداري."
+          ? "تقرير شخصي مفصل لتشخيص أنماط القيادة، وهدر ونزيف أداء الفريق، وأولويات التطوير الإداري."
           : "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
         : lawyer
         ? "تشخيص سريع لصحة تجربة العميل القانونية من الانطباع الأول إلى ثقة العميل، عرض أتعاب المحاماة، الاعتراضات، والخطوة القانونية التالية."
         : businessHealth
         ? "SCAN سريع للعلامات الحيوية للشركة عبر الاتجاه، الإيرادات، التسويق، السيولة، العمليات، الأفراد، اعتماد الشركة على المالك، وجاهزية النمو."
         : salesManager
-        ? "SCAN قيادي سريع لصحة إدارتك لفريق المبيعات كأنه تحليل دم لطريقة التدريب، SCAN مسار الفرص البيعية، التوقع، التحفيز، والمساءلة."
+        ? "تشخيص قيادي سريع لصحة إدارتك لفريق المبيعات يشمل التدريب، ومسار الفرص البيعية، والتوقع، والتحفيز، والمساءلة."
         : "SCAN تشخيصي سريع لجسم أدائك البيعي  كأنه تحليل دم مهني وظيفي لمندوبي المبيعات.",
       overall: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الشركة" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       overallMarker: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الأعمال" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       participant: "هوية المشارك",
       health: lawyer ? "مستوى صحة تجربة العميل القانونية" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
       bloodPanel: mri
-        ? lawyer ? "لوحة إياس™ لتجربة العميل القانونية عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة Sales Manager MRI عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
+        ? lawyer ? "لوحة إياس™ لتجربة العميل القانونية عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
         : lawyer ? "مؤشر صحة رحلة العميل القانونية: النتيجة العامة + المؤشرات المهنية" : businessHealth ? "لوحة صحة الشركة: النتيجة العامة + العلامات الحيوية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
       bloodPanelSub: mri
         ? lawyer
@@ -3098,11 +3115,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       strongest: lawyer ? "أولويات تجربة العميل" : businessHealth ? "أقوى إشارة في صحة الشركة" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
       weakest: lawyer ? "مجالات تحتاج إلى تطوير" : businessHealth ? "أكبر هدر ونزيف خفي في الشركة" : salesManager ? "أكبر هدر ونزيف مخفي في أداء الفريق" : "أكبر هدر ونزيف مخفي في الإيرادات",
       commercial: lawyer ? "التفسير المهني" : businessHealth ? "تفسير صحة الشركة" : salesManager ? "التفسير الإداري" : "التفسير العملي",
-      swot: lawyer ? "تحليل SWOT لتجربة العميل القانونية" : businessHealth ? "تحليل SWOT لصحة الشركة" : "تحليل SWOT الاستراتيجي",
+      swot: lawyer ? "تحليل SWOT لتجربة العميل القانونية" : businessHealth ? "تحليل SWOT لصحة الشركة" : salesManager ? "تحليل نقاط القوة والفرص والتهديدات والضعف" : "تحليل SWOT الاستراتيجي",
       actions: mri ? (lawyer ? "خطة التوجيه المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
-      prescriptionHeadline: lawyer ? "تقريرك يكشف نقاط الاحتكاك. وخطة التوجيه توضّح ما يجب تطويره أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "ال SCAN القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، مسار الفرص البيعية، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
-      prescriptionCta: lawyer ? "احصل على إياس™ لتجربة العميل القانونية الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
+      prescriptionHeadline: lawyer ? "تقريرك يكشف نقاط الاحتكاك. وخطة التوجيه توضّح ما يجب تطويره أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "التشخيص القيادي يكشف الأعراض، والتشخيص المتقدم يقدّم خطة التطوير." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
+      prescriptionSubhead: lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "أداة تشخيص وتطوير متكاملة تفحص التدريب، ومسار الفرص البيعية، والمساءلة، والتوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionCta: lawyer ? "احصل على إياس™ لتجربة العميل القانونية الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على تقرير التشخيص المتقدم لمدير المبيعات" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
       enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "لأصحاب الشركات الصغيرة والمتوسطة والمدراء العامين والشركاء" : salesManager ? "لمدراء المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمدراء المبيعات وأصحاب الشركات",
       enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : businessHealth ? "شخّص الشركة قبل أن تعيد بناءها" : "شخّص الفريق قبل أن تدرّبه",
     },
@@ -3175,7 +3192,12 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     {reportTitle}
                   </h1>
                   <p className="mt-4 text-base sm:text-xl text-blue-100 leading-relaxed max-w-3xl rtl-text">
-                    {t.subtitle}
+                    {salesManager && ar && mri ? (
+                      <>
+                        <ArabicMriPhrase text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />
+                        {" "}لتشخيص أنماط القيادة، وهدر ونزيف أداء الفريق، وأولويات التطوير الإداري.
+                      </>
+                    ) : t.subtitle}
                   </p>
                 </div>
 
@@ -3327,7 +3349,12 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
         {/* SALES HEALTH / MRI PANEL */}
         <section className={`${mri ? "web-diagnostic-panel-print-hide" : ""} rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8`}>
-          {sectionTitle(t.bloodPanel, t.bloodPanelSub)}
+          {sectionTitle(
+            salesManager && ar && mri ? (
+              <ArabicMriPhrase text="لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" />
+            ) : t.bloodPanel,
+            t.bloodPanelSub
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className={`avoid-break rounded-3xl border-2 ${tierSoftClass(overallTier)} p-5 shadow-sm`}>
@@ -3756,7 +3783,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     ) : salesManager ? (
       <>
         {sectionTitle(
-          ar ? "خطة التنفيذ الإداري للمبيعات خلال 90 يومًا" : "90-Day Sales Management Execution Plan",
+          ar ? "خطة التنفيذ الإداري لمدة ٩٠ يومًا" : "90-Day Sales Management Execution Plan",
           ar
             ? "خطة يومية لمدير المبيعات مبنية على أضعف ستة مجالات قيادية لديك. كل يوم يمنحك إجراءً إداريًا وسؤال فحص ودليل تنفيذ."
             : "A daily manager plan built from your weakest six leadership areas. Each day gives you one management action, one inspection question, and one proof of execution."
@@ -4018,11 +4045,22 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               </div>
 
               <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
-                {t.prescriptionHeadline}
+                {salesManager && ar ? (
+                  <>
+                    التشخيص القيادي يكشف الأعراض، أما{" "}
+                    <ArabicMriPhrase text="التشخيص المتقدم لمدير المبيعات" />
+                    {" "}فيقدّم خطة التطوير.
+                  </>
+                ) : t.prescriptionHeadline}
               </h2>
 
               <p className="mt-4 text-lg sm:text-2xl font-black leading-relaxed text-amber-200 max-w-4xl rtl-text">
-                {t.prescriptionSubhead}
+                {salesManager && ar ? (
+                  <>
+                    <ArabicMriPhrase text="أداة تشخيص وتطوير متكاملة" />
+                    {" "}تفحص ١٥ كفاءة إدارية في إدارة المبيعات، تشمل التدريب، ومسار الفرص البيعية، والمساءلة، والتوقعات، وتنفيذ الفريق.
+                  </>
+                ) : t.prescriptionSubhead}
               </p>
 
               <div className="mt-7 grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-6 items-stretch">
@@ -4077,15 +4115,25 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                             "اتجاه إعادة بناء لمدة ١٢ شهرًا يوضح ما يجب إصلاحه وتنظيمه وتفويضه وقياسه وحمايته",
                             "أدوات تنفيذ تساعد المالك أو المدير العام على التحرك بناءً على التشخيص وليس القراءة فقط",
                           ]
+                        : salesManager
+                        ? [
+                            <ArabicMriPhrase key="personal-report" text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />,
+                            <ArabicMriPhrase key="diagnostic-tool" text="أداة تشخيص وتطوير متكاملة تفحص ١٥ كفاءة إدارية في إدارة المبيعات" />,
+                            "كشف الأسباب الجذرية خلف ضعف التدريب، واضطراب مسار الفرص البيعية، ومخاطر التوقعات، وفجوات المساءلة",
+                            "ترتيب واضح لما يجب تطويره أولًا بدل التخمين",
+                            "خطة التنفيذ الإداري لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
+                            "مسار تصحيح يومي يوضح ما يجب فحصه وتدريبه وتعزيزه",
+                            "أدوات تنفيذ تساعدك على التطبيق وليس القراءة فقط",
+                          ]
                         : [
-                          "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
-                          salesManager ? "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم قيادتك لفريق المبيعات" : "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
-                          "كشف الأسباب الجذرية خلف تعثّر الصفقات وضعف الزخم",
-                          "ترتيب واضح لما يجب إصلاحه أولًا بدل التخمين",
-                          "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
-                          "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
-                          "٦ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
-                        ]
+                            "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
+                            "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
+                            "كشف الأسباب الجذرية خلف تعثّر الصفقات وضعف الزخم",
+                            "ترتيب واضح لما يجب إصلاحه أولًا بدل التخمين",
+                            "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
+                            "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
+                            "٦ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
+                          ]
                       : businessHealth
                         ? [
                             "A personalized, super-detailed SME Business Health MRI report based on your answers and scores",
@@ -4115,8 +4163,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                             "A day-by-day correction path showing what to do and what to stop doing",
                             "6 implementation bonuses that help you act, not just read",
                           ]
-                    ).map((x) => (
-                      <div key={x} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                    ).map((x, index) => (
+                      <div key={index} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
                         <div className="shrink-0 h-6 w-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-black">
                           ✓
                         </div>
@@ -4145,7 +4193,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     rel="noopener noreferrer"
                     className="print-hide mt-6 inline-flex w-full sm:w-auto items-center justify-center rounded-2xl bg-white text-slate-950 px-6 py-4 font-black shadow-xl hover:bg-amber-50 transition"
                   >
-                    🚀 {t.prescriptionCta}
+                    🚀{" "}
+                    {salesManager && ar ? (
+                      <ArabicMriPhrase text="احصل على تقرير التشخيص المتقدم لمدير المبيعات" />
+                    ) : t.prescriptionCta}
                   </a>
 
                 </div>

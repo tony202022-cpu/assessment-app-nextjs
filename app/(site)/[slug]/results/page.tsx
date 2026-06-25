@@ -80,8 +80,8 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
 
   // Sales Manager assessments
   sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
-  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية البايبلاين وفحص الصفقات" },
-  pipeline_management_deal_inspection: { en: "Pipeline Management & Deal Inspection", ar: "إدارة البايبلاين وفحص الصفقات" },
+  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "وضوح مسار الفرص البيعية وفحص الصفقات" },
+  pipeline_management_deal_inspection: { en: "Pipeline Management & Deal Inspection", ar: "إدارة مسار الفرص البيعية وفحص الصفقات" },
   forecast_judgment: { en: "Forecast Judgment", ar: "الحكم على التوقعات البيعية" },
   forecast_accuracy_judgment: { en: "Forecast Accuracy & Judgment", ar: "دقة التوقعات والحكم التجاري" },
   performance_accountability: { en: "Performance Accountability", ar: "المساءلة على الأداء" },
@@ -94,7 +94,8 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   handling_underperformance: { en: "Handling Underperformance", ar: "معالجة ضعف الأداء" },
   managing_difficult_salespeople: { en: "Managing Difficult Salespeople", ar: "إدارة مندوبي المبيعات الصعبين" },
   managing_top_performers: { en: "Managing Top Performers", ar: "إدارة أصحاب الأداء العالي" },
-  manager_communication_upward_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل المدير والتقارير للإدارة العليا" },
+  manager_communication_executive_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل مدير المبيعات والتقارير للإدارة العليا" },
+  manager_communication_upward_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل مدير المبيعات والتقارير للإدارة العليا" },
   decision_making_under_pressure: { en: "Decision-Making Under Pressure", ar: "اتخاذ القرار تحت الضغط" },
   prospecting_finding_new_clients: { en: "Prospecting & Finding New Clients", ar: "البحث عن عملاء جدد" },
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
@@ -176,6 +177,20 @@ function isProbablyScan(routeSlug?: string, attemptAssessmentId?: string | null,
   const c = String(configType || "").toLowerCase();
 
   return s.includes("scan") || a.includes("scan") || c === "scan" || a === SCAN_ASSESSMENT_ID;
+}
+
+function ArabicMriPhrase({ text }: { text: string }) {
+  return (
+    <>
+      <span dir="rtl">{text}</span>{" "}
+      <span
+        dir="ltr"
+        style={{ display: "inline-block", direction: "ltr", unicodeBidi: "isolate", marginRight: 8 }}
+      >
+        (MRI)
+      </span>
+    </>
+  );
 }
 
 function safePct(n: any) {
@@ -664,7 +679,9 @@ function ResultsContent() {
     (ar ? config?.title_ar || config?.name_ar || "" : config?.title_en || config?.name_en || "") || "";
 
   const heroTitle =
-    titleFromDb ||
+    isSalesManager && ar && isMri ? (
+      <ArabicMriPhrase text="نتائج التشخيص المتقدم لمدير المبيعات" />
+    ) : titleFromDb ||
     (isLawyer
       ? ar
         ? "نتائج إياس™ لتجربة العميل القانونية"
@@ -675,7 +692,7 @@ function ResultsContent() {
         : "SME Business Health MRI Results"
       : isSalesManager
       ? ar
-        ? "نتائج فحص مدير المبيعات"
+        ? "نتائج تشخيص مدير المبيعات"
         : "Sales Manager Scan Results"
       : ar
       ? "نتائج فحص المبيعات الميدانية"
@@ -902,7 +919,15 @@ const mriLinkReady =
             </div>
             <div>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
-                {isLawyer ? (ar ? "لوحة تجربة العميل القانونية السريعة" : "Quick Legal Client Experience Panel") : isBusinessHealth ? (ar ? "لوحة صحة الشركة السريعة" : "Quick Business Health Panel") : isSalesManager ? (ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel") : (ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel")}
+                {isLawyer ? (
+                  ar ? "لوحة تجربة العميل القانونية السريعة" : "Quick Legal Client Experience Panel"
+                ) : isBusinessHealth ? (
+                  ar ? "لوحة صحة الشركة السريعة" : "Quick Business Health Panel"
+                ) : isSalesManager ? (
+                  ar && isMri
+                    ? <ArabicMriPhrase text="لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" />
+                    : ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel"
+                ) : ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel"}
               </h3>
               <div className="text-sm text-slate-500 mt-1 rtl-text">
                 {isBusinessHealth
@@ -951,7 +976,7 @@ const mriLinkReady =
             </div>
             <div>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
-                {ar ? "لقطة SWOT سريعة" : "Quick SWOT Snapshot"}
+                {ar ? (isSalesManager ? "لقطة سريعة لنقاط القوة والفرص والتهديدات والضعف" : "لقطة SWOT سريعة") : "Quick SWOT Snapshot"}
               </h3>
               <div className="text-sm text-slate-500 mt-1 rtl-text">
                 {ar
@@ -994,7 +1019,9 @@ const mriLinkReady =
                 title={ar ? "افتح التقرير الكامل" : "Open the full report"}
                 body={
                   ar
-                    ? "اقرأ التفسير الكامل لكل مؤشر، تحليل SWOT، وخطوات التنفيذ السريعة."
+                    ? isSalesManager
+                      ? "اقرأ التفسير الكامل لكل مؤشر، وتحليل نقاط القوة والفرص والتهديدات والضعف، وخطوات التنفيذ السريعة."
+                      : "اقرأ التفسير الكامل لكل مؤشر، تحليل SWOT، وخطوات التنفيذ السريعة."
                     : "Read the full interpretation of each marker, SWOT, and the fast execution steps."
                 }
                 buttonText={ar ? "افتح التقرير التشخيصي الكامل" : "View Full Diagnostic Report"}
@@ -1011,7 +1038,17 @@ const mriLinkReady =
                     ? isLawyer ? "إذا كشف التشخيص نقطة احتكاك، فالخطوة التالية هي التقرير الكامل وخطة التوجيه المهني." : "إذا كشف التشخيص إشارة إنذار، فالخطوة التالية هي التشخيص الكامل والوصفة العلاجية."
                     : "If the scan exposed a warning sign, the next step is the full diagnosis and treatment prescription."
                 }
-                buttonText={isLawyer ? (ar ? "احصل على إياس™ لتجربة العميل القانونية الكامل" : "Get My Full EYĀS™ Legal Client Experience MRI") : ar ? "احصل على MRI الكامل ووصفة ٩٠ يومًا" : "Get Full Sales MRI & 90-Day Prescription"}
+                buttonText={
+                  isLawyer
+                    ? ar
+                      ? "احصل على إياس™ لتجربة العميل القانونية الكامل"
+                      : "Get My Full EYĀS™ Legal Client Experience MRI"
+                    : ar && isSalesManager
+                    ? <ArabicMriPhrase text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />
+                    : ar
+                    ? "احصل على التقرير الكامل ووصفة ٩٠ يومًا"
+                    : "Get Full Sales MRI & 90-Day Prescription"
+                }
                href={
   mriLinkReady
     ? (ar ? MRI_PAYMENT_URL_AR : MRI_PAYMENT_URL)
@@ -1132,7 +1169,11 @@ const mriLinkReady =
               <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
                 {isSalesManager
                   ? ar
-                    ? "التشخيص القيادي يكشف الأعراض. أما Sales Manager MRI فيعطيك خطة العلاج."
+                    ? <>
+                        التشخيص القيادي يكشف الأعراض، أما{" "}
+                        <ArabicMriPhrase text="التشخيص المتقدم لمدير المبيعات" />
+                        {" "}فيقدّم خطة التطوير.
+                      </>
                     : "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan."
                   : ar
                   ? "التشخيص الأولي هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية."
@@ -1142,7 +1183,10 @@ const mriLinkReady =
               <p className="mt-4 text-lg sm:text-2xl font-black leading-relaxed text-amber-200 max-w-4xl rtl-text">
                 {isSalesManager
                   ? ar
-                    ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، البايبلاين، التوقعات، المساءلة، وتنفيذ الفريق."
+                    ? <>
+                        <ArabicMriPhrase text="أداة تشخيص وتطوير متكاملة" />
+                        {" "}تفحص ١٥ كفاءة إدارية في إدارة المبيعات، تشمل التدريب، ومسار الفرص البيعية، والتوقعات، والمساءلة، وتنفيذ الفريق.
+                      </>
                     : "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, forecasting, accountability, and team execution."
                   : ar
                   ? isLawyer
@@ -1195,13 +1239,21 @@ const mriLinkReady =
 
                   <div className="mt-5 space-y-3">
                     {(ar
-                      ? [
-                          isLawyer ? "تقرير إياس™ لتجربة العميل القانونية شخصي مفصل مبني على إجاباتك ونتائجك" : isSalesManager ? "تقرير Sales Manager MRI شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
-                          isSalesManager ? "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في إدارة فريق المبيعات" : "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
-                          "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
-                          "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
-                          "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
-                        ]
+                      ? isSalesManager
+                        ? [
+                            <ArabicMriPhrase key="personal-report" text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />,
+                            <ArabicMriPhrase key="diagnostic-tool" text="أداة تشخيص وتطوير متكاملة تفحص ١٥ كفاءة إدارية في إدارة المبيعات" />,
+                            "خطة التنفيذ الإداري لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
+                            "مسار تصحيح يومي يوضح ما يجب فحصه وتدريبه وتعزيزه",
+                            "أدوات تنفيذ تساعدك على التطبيق وليس القراءة فقط",
+                          ]
+                        : [
+                            isLawyer ? "تقرير إياس™ لتجربة العميل القانونية شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
+                            "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
+                            "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
+                            "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
+                            "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
+                          ]
                       : [
                           isLawyer ? "A personalized EYĀS™ Legal Client Experience MRI report based on your answers and scores" : isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
                           isSalesManager ? "A full diagnostic and treatment tool examining 15 sales-management competencies" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
@@ -1209,8 +1261,8 @@ const mriLinkReady =
                           "A day-by-day correction path showing what to do and what to stop doing",
                           "5 implementation bonuses that help you act, not just read",
                         ]
-                    ).map((x) => (
-                      <div key={x} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                    ).map((x, index) => (
+                      <div key={index} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
                         <div className="shrink-0 h-6 w-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-black">
                           ✓
                         </div>
@@ -1246,7 +1298,9 @@ const mriLinkReady =
             ? "احصل على تقرير إياس™ لتجربة العميل القانونية الكامل"
             : "Get My Full EYĀS™ Legal Client Experience MRI")
         : (ar
-            ? "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا"
+            ? isSalesManager
+              ? <ArabicMriPhrase text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />
+              : "احصل على التقرير الكامل ووصفة الـ ٩٠ يومًا"
             : "Get My Full Sales MRI & 90-Day Prescription")}
     </a>
 
@@ -1255,7 +1309,13 @@ const mriLinkReady =
       style={{ textAlign: "center" }}
     >
       {ar
-        ? "انتقل إلى صفحة الـ MRI للاطلاع على التشخيص المتقدم، خطة الـ90 يومًا، والمكافآت التنفيذية."
+        ? isSalesManager
+          ? <>
+              انتقل إلى صفحة{" "}
+              <ArabicMriPhrase text="التشخيص المتقدم لمدير المبيعات" />
+              {" "}للاطلاع على خطة التنفيذ الإداري لمدة ٩٠ يومًا والأدوات التنفيذية.
+            </>
+          : "انتقل إلى صفحة التشخيص المتقدم للاطلاع على خطة الـ٩٠ يومًا والمكافآت التنفيذية."
         : "Continue to the MRI page to explore the advanced diagnosis, 90-day prescription, and executive bonuses."}
     </p>
   </div>
@@ -1281,13 +1341,20 @@ const mriLinkReady =
             <div className="flex items-center gap-3 mb-6">
               <Stethoscope className="text-white" size={28} />
               <h3 className="text-2xl sm:text-3xl font-black rtl-text">
-                {ar ? "تقرير MRI التشخيصي" : "MRI Diagnostic Report"}
+                {ar && isSalesManager ? (
+                  <ArabicMriPhrase text="التقرير التشخيصي المتقدم" />
+                ) : ar ? "التقرير التشخيصي" : "MRI Diagnostic Report"}
               </h3>
             </div>
 
             <p className="text-white/90 leading-relaxed rtl-text">
               {ar
-                ? isOutdoorMri
+                ? isSalesManager
+                  ? <>
+                      <ArabicMriPhrase text="تقرير التشخيص المتقدم لمدير المبيعات" />
+                      {" "}جاهز الآن. افتح التقرير للاطلاع على التشخيص التفصيلي، وأولويات التطوير، وتحليل نقاط القوة والفرص والتهديدات والضعف، وخطة التنفيذ الإداري لمدة ٩٠ يومًا.
+                    </>
+                  : isOutdoorMri
                   ? "تقرير Outdoor Sales MRI الكامل جاهز الآن. افتح التقرير الكامل للاطلاع على التشخيص التفصيلي، أولويات العلاج، تحليل SWOT، وخطة التنفيذ لمدة 90 يومًا."
                   : "هذا هو التقرير المتقدم. سيتم تطوير عرض MRI التفصيلي في المرحلة التالية."
                 : isOutdoorMri
@@ -1432,7 +1499,7 @@ function PreviewActionCard({
   ar: boolean;
   title: string;
   body: string;
-  buttonText: string;
+  buttonText: React.ReactNode;
   onClick?: () => void;
   href?: string;
   disabled?: boolean;
