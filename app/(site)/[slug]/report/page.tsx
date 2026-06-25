@@ -1,5 +1,6 @@
 // FILE: app/(site)/[slug]/report/page.tsx
 import "server-only";
+import ArabicSalesManagerMriTitle from "@/components/ArabicSalesManagerMriTitle";
 import EmailReportButton from "@/components/EmailReportButton";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -677,20 +678,6 @@ function getStrongest(rows: CompetencyRow[]) {
 
 function getPriorityRows(rows: CompetencyRow[]) {
   return [...rows].sort((a, b) => a.percentage - b.percentage).slice(0, 3);
-}
-
-function ArabicMriPhrase({ text }: { text: string }) {
-  return (
-    <>
-      <span dir="rtl">{text}</span>{" "}
-      <span
-        dir="ltr"
-        style={{ display: "inline-block", direction: "ltr", unicodeBidi: "isolate", marginRight: 8 }}
-      >
-        (MRI)
-      </span>
-    </>
-  );
 }
 
 function sectionTitle(text: ReactNode, sub?: ReactNode) {
@@ -2989,7 +2976,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
   const reportTitle =
     salesManager && ar && mri ? (
-      <ArabicMriPhrase text="تقرير التشخيص المتقدم لمدير المبيعات" />
+      <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لمدير المبيعات" />
     ) : (ar
       ? (assessment as any)?.title_ar || (assessment as any)?.name_ar || ""
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
@@ -3194,7 +3181,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   <p className="mt-4 text-base sm:text-xl text-blue-100 leading-relaxed max-w-3xl rtl-text">
                     {salesManager && ar && mri ? (
                       <>
-                        <ArabicMriPhrase text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />
+                        <ArabicSalesManagerMriTitle text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />
                         {" "}لتشخيص أنماط القيادة، وهدر ونزيف أداء الفريق، وأولويات التطوير الإداري.
                       </>
                     ) : t.subtitle}
@@ -3351,7 +3338,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         <section className={`${mri ? "web-diagnostic-panel-print-hide" : ""} rounded-3xl bg-white border border-slate-200 shadow-xl p-6 sm:p-8`}>
           {sectionTitle(
             salesManager && ar && mri ? (
-              <ArabicMriPhrase text="لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" />
+              <ArabicSalesManagerMriTitle text="لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" />
             ) : t.bloodPanel,
             t.bloodPanelSub
           )}
@@ -4048,7 +4035,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                 {salesManager && ar ? (
                   <>
                     التشخيص القيادي يكشف الأعراض، أما{" "}
-                    <ArabicMriPhrase text="التشخيص المتقدم لمدير المبيعات" />
+                    <ArabicSalesManagerMriTitle text="التشخيص المتقدم لمدير المبيعات" />
                     {" "}فيقدّم خطة التطوير.
                   </>
                 ) : t.prescriptionHeadline}
@@ -4057,7 +4044,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               <p className="mt-4 text-lg sm:text-2xl font-black leading-relaxed text-amber-200 max-w-4xl rtl-text">
                 {salesManager && ar ? (
                   <>
-                    <ArabicMriPhrase text="أداة تشخيص وتطوير متكاملة" />
+                    <ArabicSalesManagerMriTitle text="أداة تشخيص وتطوير متكاملة" />
                     {" "}تفحص ١٥ كفاءة إدارية في إدارة المبيعات، تشمل التدريب، ومسار الفرص البيعية، والمساءلة، والتوقعات، وتنفيذ الفريق.
                   </>
                 ) : t.prescriptionSubhead}
@@ -4117,8 +4104,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                           ]
                         : salesManager
                         ? [
-                            <ArabicMriPhrase key="personal-report" text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />,
-                            <ArabicMriPhrase key="diagnostic-tool" text="أداة تشخيص وتطوير متكاملة تفحص ١٥ كفاءة إدارية في إدارة المبيعات" />,
+                            <ArabicSalesManagerMriTitle key="personal-report" text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />,
+                            <ArabicSalesManagerMriTitle key="diagnostic-tool" text="أداة تشخيص وتطوير متكاملة تفحص ١٥ كفاءة إدارية في إدارة المبيعات" />,
                             "كشف الأسباب الجذرية خلف ضعف التدريب، واضطراب مسار الفرص البيعية، ومخاطر التوقعات، وفجوات المساءلة",
                             "ترتيب واضح لما يجب تطويره أولًا بدل التخمين",
                             "خطة التنفيذ الإداري لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
@@ -4195,7 +4182,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   >
                     🚀{" "}
                     {salesManager && ar ? (
-                      <ArabicMriPhrase text="احصل على تقرير التشخيص المتقدم لمدير المبيعات" />
+                      <ArabicSalesManagerMriTitle text="احصل على تقرير التشخيص المتقدم لمدير المبيعات" />
                     ) : t.prescriptionCta}
                   </a>
 

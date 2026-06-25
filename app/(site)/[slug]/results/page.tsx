@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useState } from "react";
+import ArabicSalesManagerMriTitle from "@/components/ArabicSalesManagerMriTitle";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/header";
@@ -177,20 +178,6 @@ function isProbablyScan(routeSlug?: string, attemptAssessmentId?: string | null,
   const c = String(configType || "").toLowerCase();
 
   return s.includes("scan") || a.includes("scan") || c === "scan" || a === SCAN_ASSESSMENT_ID;
-}
-
-function ArabicMriPhrase({ text }: { text: string }) {
-  return (
-    <>
-      <span dir="rtl">{text}</span>{" "}
-      <span
-        dir="ltr"
-        style={{ display: "inline-block", direction: "ltr", unicodeBidi: "isolate", marginRight: 8 }}
-      >
-        (MRI)
-      </span>
-    </>
-  );
 }
 
 function safePct(n: any) {
@@ -680,7 +667,7 @@ function ResultsContent() {
 
   const heroTitle =
     isSalesManager && ar && isMri ? (
-      <ArabicMriPhrase text="نتائج التشخيص المتقدم لمدير المبيعات" />
+      <ArabicSalesManagerMriTitle text="نتائج التشخيص المتقدم لمدير المبيعات" />
     ) : titleFromDb ||
     (isLawyer
       ? ar
@@ -925,7 +912,7 @@ const mriLinkReady =
                   ar ? "لوحة صحة الشركة السريعة" : "Quick Business Health Panel"
                 ) : isSalesManager ? (
                   ar && isMri
-                    ? <ArabicMriPhrase text="لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" />
+                    ? <ArabicSalesManagerMriTitle text="لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" />
                     : ar ? "لوحة صحة إدارة المبيعات السريعة" : "Quick Sales Management Panel"
                 ) : ar ? "لوحة الصحة البيعية السريعة" : "Quick Sales Health Panel"}
               </h3>
@@ -1044,7 +1031,7 @@ const mriLinkReady =
                       ? "احصل على إياس™ لتجربة العميل القانونية الكامل"
                       : "Get My Full EYĀS™ Legal Client Experience MRI"
                     : ar && isSalesManager
-                    ? <ArabicMriPhrase text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />
+                    ? <ArabicSalesManagerMriTitle text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />
                     : ar
                     ? "احصل على التقرير الكامل ووصفة ٩٠ يومًا"
                     : "Get Full Sales MRI & 90-Day Prescription"
@@ -1171,7 +1158,7 @@ const mriLinkReady =
                   ? ar
                     ? <>
                         التشخيص القيادي يكشف الأعراض، أما{" "}
-                        <ArabicMriPhrase text="التشخيص المتقدم لمدير المبيعات" />
+                        <ArabicSalesManagerMriTitle text="التشخيص المتقدم لمدير المبيعات" />
                         {" "}فيقدّم خطة التطوير.
                       </>
                     : "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan."
@@ -1184,7 +1171,7 @@ const mriLinkReady =
                 {isSalesManager
                   ? ar
                     ? <>
-                        <ArabicMriPhrase text="أداة تشخيص وتطوير متكاملة" />
+                        <ArabicSalesManagerMriTitle text="أداة تشخيص وتطوير متكاملة" />
                         {" "}تفحص ١٥ كفاءة إدارية في إدارة المبيعات، تشمل التدريب، ومسار الفرص البيعية، والتوقعات، والمساءلة، وتنفيذ الفريق.
                       </>
                     : "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, forecasting, accountability, and team execution."
@@ -1241,8 +1228,8 @@ const mriLinkReady =
                     {(ar
                       ? isSalesManager
                         ? [
-                            <ArabicMriPhrase key="personal-report" text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />,
-                            <ArabicMriPhrase key="diagnostic-tool" text="أداة تشخيص وتطوير متكاملة تفحص ١٥ كفاءة إدارية في إدارة المبيعات" />,
+                            <ArabicSalesManagerMriTitle key="personal-report" text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />,
+                            <ArabicSalesManagerMriTitle key="diagnostic-tool" text="أداة تشخيص وتطوير متكاملة تفحص ١٥ كفاءة إدارية في إدارة المبيعات" />,
                             "خطة التنفيذ الإداري لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
                             "مسار تصحيح يومي يوضح ما يجب فحصه وتدريبه وتعزيزه",
                             "أدوات تنفيذ تساعدك على التطبيق وليس القراءة فقط",
@@ -1299,7 +1286,7 @@ const mriLinkReady =
             : "Get My Full EYĀS™ Legal Client Experience MRI")
         : (ar
             ? isSalesManager
-              ? <ArabicMriPhrase text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />
+              ? <ArabicSalesManagerMriTitle text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />
               : "احصل على التقرير الكامل ووصفة الـ ٩٠ يومًا"
             : "Get My Full Sales MRI & 90-Day Prescription")}
     </a>
@@ -1312,7 +1299,7 @@ const mriLinkReady =
         ? isSalesManager
           ? <>
               انتقل إلى صفحة{" "}
-              <ArabicMriPhrase text="التشخيص المتقدم لمدير المبيعات" />
+              <ArabicSalesManagerMriTitle text="التشخيص المتقدم لمدير المبيعات" />
               {" "}للاطلاع على خطة التنفيذ الإداري لمدة ٩٠ يومًا والأدوات التنفيذية.
             </>
           : "انتقل إلى صفحة التشخيص المتقدم للاطلاع على خطة الـ٩٠ يومًا والمكافآت التنفيذية."
@@ -1342,7 +1329,7 @@ const mriLinkReady =
               <Stethoscope className="text-white" size={28} />
               <h3 className="text-2xl sm:text-3xl font-black rtl-text">
                 {ar && isSalesManager ? (
-                  <ArabicMriPhrase text="التقرير التشخيصي المتقدم" />
+                  <ArabicSalesManagerMriTitle text="التقرير التشخيصي المتقدم" />
                 ) : ar ? "التقرير التشخيصي" : "MRI Diagnostic Report"}
               </h3>
             </div>
@@ -1351,7 +1338,7 @@ const mriLinkReady =
               {ar
                 ? isSalesManager
                   ? <>
-                      <ArabicMriPhrase text="تقرير التشخيص المتقدم لمدير المبيعات" />
+                      <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لمدير المبيعات" />
                       {" "}جاهز الآن. افتح التقرير للاطلاع على التشخيص التفصيلي، وأولويات التطوير، وتحليل نقاط القوة والفرص والتهديدات والضعف، وخطة التنفيذ الإداري لمدة ٩٠ يومًا.
                     </>
                   : isOutdoorMri
