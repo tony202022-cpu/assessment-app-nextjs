@@ -6,23 +6,83 @@ function safeSlug(x: any) {
   return String(x || "").toLowerCase().trim();
 }
 
-function competencyCountFromConf(conf: any, slug: string) {
-  // 1) Best: competency_ids array length
-  if (Array.isArray(conf?.competency_ids)) return conf.competency_ids.length;
+type WelcomeCopy = {
+  titleEn: string;
+  subtitleEn: string;
+  competencyEn: string;
+  titleAr: string;
+  subtitleAr: string;
+  competencyAr: string;
+};
 
-  // 2) Sometimes stored inside config JSON
-  const cfg = conf?.config;
-  if (cfg && typeof cfg === "object") {
-    const ids = (cfg as any).competency_ids;
-    if (Array.isArray(ids)) return ids.length;
-    const n = (cfg as any).competency_count;
-    if (typeof n === "number" && Number.isFinite(n)) return n;
+function welcomeCopy(slug: string, assessmentId: string, conf: any): WelcomeCopy {
+  const s = safeSlug(slug);
+  const id = safeSlug(assessmentId);
+  const isLawyer = s === "lawyer-client-conversion-mri" || id === "lawyer_client_conversion_mri";
+  const isSalesManager = s === "sales-manager-mri" || id === "sales_manager_mri";
+  const isBusinessHealth = s === "sme-business-health-mri" || id === "sme_business_health_mri";
+  const isScan = s.includes("scan") || id.includes("scan");
+
+  if (isLawyer) {
+    return {
+      titleEn: "Client Acquisition Standard™",
+      subtitleEn:
+        "A 75-scenario diagnostic designed to assess how lawyers build trust, explain legal value, discuss professional fees, and guide prospective clients toward the right legal next step.",
+      competencyEn: "15 core competencies of legal client experience and professional client acquisition.",
+      titleAr: "معيار كسب الموكلين™",
+      subtitleAr:
+        "تشخيص متقدم من 75 موقفًا عمليًا لقياس كيفية بناء المحامي للثقة، وشرح القيمة القانونية، ومناقشة أتعاب المحاماة، وقيادة العميل نحو الخطوة القانونية المناسبة.",
+      competencyAr: "15 كفاءة أساسية في تجربة الموكل وكسب الموكلين بصورة مهنية.",
+    };
   }
 
-  // 3) Fallback based on slug naming (your rule)
-  const s = safeSlug(slug);
-  if (s.endsWith("mri") || s === "mri") return 15;
-  return 7;
+  if (isSalesManager) {
+    return {
+      titleEn: "Advanced Sales Manager MRI",
+      subtitleEn:
+        "A leadership diagnostic for sales managers covering coaching, pipeline inspection, forecast judgement, accountability, and team execution.",
+      competencyEn: "15 core competencies of sales-management leadership and team performance.",
+      titleAr: "التشخيص المتقدم لمدير المبيعات",
+      subtitleAr:
+        "تشخيص قيادي متقدم لمدير المبيعات يشمل التدريب، وفحص مسار الفرص البيعية، والحكم على التوقعات، والمساءلة، وتنفيذ الفريق.",
+      competencyAr: "15 كفاءة أساسية في قيادة إدارة المبيعات وأداء الفريق.",
+    };
+  }
+
+  if (isBusinessHealth) {
+    return {
+      titleEn: "SME Business Health MRI",
+      subtitleEn:
+        "A CEO-level diagnostic of business health across revenue, cash flow, operations, people, leadership, AI, automation, management visibility, and growth readiness.",
+      competencyEn: "12 business-health areas that reveal where the company is strong, exposed, or ready to rebuild.",
+      titleAr: "التشخيص المتقدم لصحة الشركات الصغيرة والمتوسطة",
+      subtitleAr:
+        "تشخيص على مستوى الرئيس التنفيذي لصحة الشركة عبر الإيرادات، والتدفق النقدي، والعمليات، والأفراد، والقيادة، والذكاء الاصطناعي، والأتمتة، ووضوح الإدارة، وجاهزية النمو.",
+      competencyAr: "12 مجالًا في صحة الشركة تكشف مواضع القوة والخطر وأولويات إعادة البناء.",
+    };
+  }
+
+  if (isScan) {
+    return {
+      titleEn: conf.title_en || conf.name_en || "Professional Sales Scan",
+      subtitleEn: "A focused, practical scan that gives you a quick view of your current sales-performance signals.",
+      competencyEn: "A concise diagnostic across the core competencies included in this scan.",
+      titleAr: conf.title_ar || conf.name_ar || "الفحص المهني للمبيعات",
+      subtitleAr: "فحص عملي ومركز يمنحك قراءة سريعة لمؤشرات أدائك البيعي الحالية.",
+      competencyAr: "تشخيص مختصر للكفاءات الأساسية التي يشملها هذا الفحص.",
+    };
+  }
+
+  return {
+    titleEn: conf.title_en || conf.name_en || "Advanced Outdoor Sales MRI",
+    subtitleEn:
+      "A professional field-sales diagnostic covering prospecting, customer conversations, needs diagnosis, objections, negotiation, follow-up, and execution discipline.",
+    competencyEn: "15 core competencies of professional outdoor and field-sales performance.",
+    titleAr: conf.title_ar || conf.name_ar || "التشخيص المتقدم للمبيعات الميدانية",
+    subtitleAr:
+      "تشخيص مهني للمبيعات الميدانية يشمل البحث عن العملاء، والمحادثات، وتشخيص الاحتياجات، والاعتراضات، والتفاوض، والمتابعة، وانضباط التنفيذ.",
+    competencyAr: "15 كفاءة أساسية في أداء المبيعات الميدانية بصورة مهنية.",
+  };
 }
 
 export default async function LanguageEntry({
@@ -49,17 +109,10 @@ export default async function LanguageEntry({
     notFound();
   }
 
-  const title =
-    conf.title_en ||
-    conf.name_en ||
-    conf.title_ar ||
-    conf.name_ar ||
-    "Assessment";
-
   const mins = Number(conf?.timer_minutes || 0);
   const qCount = Number(conf?.num_questions || 0);
 
-  const competencies = competencyCountFromConf(conf, slug);
+  const copy = welcomeCopy(slug, String(conf?.id || ""), conf);
 
   return (
     <main
@@ -77,35 +130,46 @@ export default async function LanguageEntry({
           {/* Header */}
           <div className="px-6 sm:px-8 pt-9 sm:pt-10 pb-6 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-white/80 text-sm font-semibold">
-              <span className="text-base">🧠</span>
               <span>Choose your language</span>
             </div>
 
             <h1 className="mt-6 text-[clamp(28px,7vw,48px)] font-extrabold tracking-tight text-white leading-tight">
-              {title}
+              {copy.titleEn}
             </h1>
 
-            {/* ✅ Dynamic competency count */}
             <p className="mt-3 text-[clamp(14px,3.8vw,18px)] font-medium text-white/80 leading-relaxed">
-              A powerful assessment to evaluate{" "}
-              <span className="text-white font-extrabold">{competencies}</span>{" "}
-              core competencies of outdoor salespeople.
+              {copy.subtitleEn}
             </p>
+            <p className="mt-3 text-sm sm:text-base font-bold text-amber-100/90 leading-relaxed">
+              {copy.competencyEn}
+            </p>
+
+            <div dir="rtl" className="mt-6 border-t border-white/10 pt-5">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white leading-relaxed">
+                {copy.titleAr}
+              </h2>
+              <p className="mt-2 text-sm sm:text-base text-white/75 leading-loose">
+                {copy.subtitleAr}
+              </p>
+              <p className="mt-2 text-sm font-bold text-amber-100/90 leading-relaxed">
+                {copy.competencyAr}
+              </p>
+            </div>
 
             {/* micro info row */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               {qCount > 0 && (
                 <div className="rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm text-white/85">
-                  ✅ {qCount} questions
+                  {qCount} questions
                 </div>
               )}
               {mins > 0 && (
                 <div className="rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm text-white/85">
-                  ⏱️ ~{mins} minutes
+                  ~{mins} minutes
                 </div>
               )}
               <div className="rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm text-white/85">
-                🔒 Private results
+                Private results
               </div>
             </div>
 
@@ -131,7 +195,7 @@ export default async function LanguageEntry({
                 href={`/${slug}/login?lang=ar${tokenQuery}`}
                 className="group h-14 md:h-16 rounded-2xl bg-white text-[#0b1b3a] text-lg font-extrabold flex items-center justify-center shadow-lg hover:bg-white/90 active:bg-white/80 transition"
               >
-                Arabic
+                العربية
                 <span className="ml-2 opacity-60 group-hover:opacity-100 transition">
                   →
                 </span>
