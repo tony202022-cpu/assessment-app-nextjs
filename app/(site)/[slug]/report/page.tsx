@@ -2991,6 +2991,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const reportTitle =
     lawyer && ar && mri ? (
       <ArabicLawyerBrand report />
+    ) : lawyer && !ar && mri ? (
+      "Client Acquisition Standard™ by Career Labs AI — Report"
     ) : salesManager && ar && mri ? (
       <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لمدير المبيعات" />
     ) : (ar

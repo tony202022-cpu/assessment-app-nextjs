@@ -690,7 +690,11 @@ function ResultsContent() {
     (ar ? config?.title_ar || config?.name_ar || "" : config?.title_en || config?.name_en || "") || "";
 
   const heroTitle =
-    isSalesManager && ar && isMri ? (
+    isLawyer && ar && isMri ? (
+      <ArabicLawyerBrand results />
+    ) : isLawyer && !ar && isMri ? (
+      "Client Acquisition Standard™ by Career Labs AI — Results"
+    ) : isSalesManager && ar && isMri ? (
       <ArabicSalesManagerMriTitle text="نتائج التشخيص المتقدم لمدير المبيعات" />
     ) : titleFromDb ||
     (isLawyer
