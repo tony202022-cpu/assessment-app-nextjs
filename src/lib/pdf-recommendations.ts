@@ -3,6 +3,8 @@
 // Keeps the same public exports used by the app:
 // Tier, Language, normalizeCompetencyId, tierFromPercentage, getRecommendations
 
+import { SALES_MANAGER_PLAN_PROFILES } from "@/lib/sales-manager-90day";
+
 export type Tier = "Strength" | "Opportunity" | "Threat" | "Weakness";
 export type Language = "en" | "ar";
 
@@ -54,7 +56,7 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     en: "Overall Sales Management Health",
     ar: "الصحة الإدارية العامة للمبيعات",
     leakageEn: "unclear coaching rhythm, weak pipeline inspection, soft accountability, and inconsistent team execution",
-    leakageAr: "غموض إيقاع التدريب، ضعف فحص البايبلاين، ليونة المساءلة، وعدم ثبات تنفيذ الفريق",
+    leakageAr: "غموض إيقاع التدريب، ضعف فحص مسار الفرص البيعية، ليونة المساءلة، وعدم ثبات تنفيذ الفريق",
     treatmentEn: "build a simple weekly management operating system around your lowest three leadership markers",
     treatmentAr: "بناء نظام إدارة أسبوعي بسيط حول أضعف ثلاثة مؤشرات قيادية لديك",
     drillEn: "review your top 3 management risks every Monday and choose one coaching, inspection, or accountability action before the first team interaction",
@@ -501,29 +503,29 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
   pipeline_visibility_deal_inspection: {
     id: "pipeline_visibility_deal_inspection",
     en: "Pipeline Visibility & Deal Inspection",
-    ar: "رؤية البايبلاين وفحص الصفقات",
+    ar: "رؤية مسار الفرص البيعية وفحص الصفقات",
     leakageEn: "hidden deal risk, unclear next steps, and pipeline confidence based on hope rather than evidence",
-    leakageAr: "مخاطر مخفية في الصفقات وخطوات تالية غير واضحة وثقة في البايبلاين مبنية على الأمل لا الدليل",
+    leakageAr: "مخاطر مخفية في الصفقات وخطوات تالية غير واضحة وثقة في مسار الفرص البيعية مبنية على الأمل لا الدليل",
     treatmentEn: "inspect deals through evidence: buyer pain, decision process, next step, risk, and commitment",
     treatmentAr: "فحص الصفقات عبر الدليل: ألم العميل، عملية القرار، الخطوة التالية، المخاطر، والالتزام",
     drillEn: "choose five active deals and ask each rep for evidence of pain, decision owner, next step, and risk",
     drillAr: "اختر خمس صفقات نشطة واطلب من كل مندوب دليل الألم وصاحب القرار والخطوة التالية والمخاطر",
     metricEn: "percentage of pipeline with dated next steps and verified decision process",
-    metricAr: "نسبة البايبلاين الذي يحتوي على خطوات تالية بتاريخ وعملية قرار مؤكدة",
+    metricAr: "نسبة مسار الفرص البيعية الذي يحتوي على خطوات تالية بتاريخ وعملية قرار مؤكدة",
   },
 
   pipeline_management_deal_inspection: {
     id: "pipeline_management_deal_inspection",
     en: "Pipeline Management & Deal Inspection",
-    ar: "إدارة البايبلاين وفحص الصفقات",
+    ar: "إدارة مسار الفرص البيعية وفحص الصفقات",
     leakageEn: "pipeline movement based on optimism rather than disciplined deal inspection",
-    leakageAr: "حركة البايبلاين مبنية على التفاؤل بدل فحص الصفقات بانضباط",
+    leakageAr: "حركة مسار الفرص البيعية مبنية على التفاؤل بدل فحص الصفقات بانضباط",
     treatmentEn: "manage the pipeline by stage evidence, deal quality, risk, and next-step commitment",
-    treatmentAr: "إدارة البايبلاين حسب دليل المرحلة وجودة الصفقة والمخاطر والتزام الخطوة التالية",
+    treatmentAr: "إدارة مسار الفرص البيعية حسب دليل المرحلة وجودة الصفقة والمخاطر والتزام الخطوة التالية",
     drillEn: "review the top ten opportunities and remove or re-stage any deal without a confirmed next action",
     drillAr: "راجع أهم عشر فرص وأعد تصنيف أو أزل أي صفقة بلا إجراء تالٍ مؤكد",
     metricEn: "pipeline value supported by verified buyer commitments",
-    metricAr: "قيمة البايبلاين المدعومة بالتزامات مؤكدة من العميل",
+    metricAr: "قيمة مسار الفرص البيعية المدعومة بالتزامات مؤكدة من العميل",
   },
 
   forecast_judgment: {
@@ -694,8 +696,8 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     metricAr: "أصحاب الأداء العالي الذين تم الحفاظ عليهم وتحديهم واستخدامهم كنماذج إيجابية",
   },
 
-  manager_communication_upward_reporting: {
-    id: "manager_communication_upward_reporting",
+  manager_communication_executive_reporting: {
+    id: "manager_communication_executive_reporting",
     en: "Manager Communication & Executive Reporting",
     ar: "تواصل المدير والتقارير للإدارة العليا",
     leakageEn: "senior leaders receiving late surprises, unclear risks, or reports without clear management judgment",
@@ -721,6 +723,9 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     metricEn: "pressure decisions made with criteria rather than reaction",
     metricAr: "قرارات الضغط التي اتخذت بناءً على معايير لا رد فعل",
   },
+
+  // The attached Sales Manager package is the canonical source for these 15 profiles.
+  ...SALES_MANAGER_PLAN_PROFILES,
 
   legal_inquiry_handling: {
     id: "legal_inquiry_handling",
@@ -1007,8 +1012,9 @@ const ALIASES: Record<string, string> = {
   difficult_salespeople: "managing_difficult_salespeople",
   managing_top_performers: "managing_top_performers",
   top_performers: "managing_top_performers",
-  manager_communication_upward_reporting: "manager_communication_upward_reporting",
-  executive_reporting: "manager_communication_upward_reporting",
+  manager_communication_executive_reporting: "manager_communication_executive_reporting",
+  manager_communication_upward_reporting: "manager_communication_executive_reporting",
+  executive_reporting: "manager_communication_executive_reporting",
   decision_making_under_pressure: "decision_making_under_pressure",
 
   prospecting_finding_new_clients: "prospecting_finding_new_clients",
@@ -1113,7 +1119,7 @@ function isManagerProfile(id: string): boolean {
     "handling_underperformance",
     "managing_difficult_salespeople",
     "managing_top_performers",
-    "manager_communication_upward_reporting",
+    "manager_communication_executive_reporting",
     "decision_making_under_pressure",
     "sales_manager_overall",
   ]).has(key);

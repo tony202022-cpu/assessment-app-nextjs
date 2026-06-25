@@ -10,6 +10,10 @@ import {
   normalizeCompetencyId,
   tierFromPercentage,
 } from "@/lib/pdf-recommendations";
+import {
+  buildSalesManager90DayPlan,
+  type SalesManagerPlanDay,
+} from "@/lib/sales-manager-90day";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -81,8 +85,8 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
 
   // Sales Manager assessments
   sales_coaching_rep_development: { en: "Sales Coaching & Rep Development", ar: "تدريب وتطوير مندوبي المبيعات" },
-  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية مسار التدفّق وفحص الصفقات" },
-  pipeline_management_deal_inspection: { en: "Pipeline Management & Deal Inspection", ar: "إدارة مسار التدفّق وفحص الصفقات" },
+  pipeline_visibility_deal_inspection: { en: "Pipeline Visibility & Deal Inspection", ar: "رؤية مسار الفرص البيعية وفحص الصفقات" },
+  pipeline_management_deal_inspection: { en: "Pipeline Management & Deal Inspection", ar: "إدارة مسار الفرص البيعية وفحص الصفقات" },
   forecast_judgment: { en: "Forecast Judgment", ar: "الحكم على التوقعات البيعية" },
   forecast_accuracy_judgment: { en: "Forecast Accuracy & Judgment", ar: "دقة التوقعات والحكم التجاري" },
   performance_accountability: { en: "Performance Accountability", ar: "المساءلة على الأداء" },
@@ -95,7 +99,8 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   handling_underperformance: { en: "Handling Underperformance", ar: "معالجة ضعف الأداء" },
   managing_difficult_salespeople: { en: "Managing Difficult Salespeople", ar: "إدارة مندوبي المبيعات الصعبين" },
   managing_top_performers: { en: "Managing Top Performers", ar: "إدارة أصحاب الأداء العالي" },
-  manager_communication_upward_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل المدير والتقارير للإدارة العليا" },
+  manager_communication_executive_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل مدير المبيعات والتقارير للإدارة العليا" },
+  manager_communication_upward_reporting: { en: "Manager Communication & Executive Reporting", ar: "تواصل مدير المبيعات والتقارير للإدارة العليا" },
   decision_making_under_pressure: { en: "Decision-Making Under Pressure", ar: "اتخاذ القرار تحت الضغط" },
   prospecting_finding_new_clients: { en: "Prospecting & Finding New Clients", ar: "البحث عن عملاء جدد" },
   mental_toughness: { en: "Mental Toughness", ar: "الصلابة الذهنية" },
@@ -337,7 +342,7 @@ function overallCommercialMeaning(overall: number, tier: Tier, lang: Language) {
 function managerOverallMeaning(overall: number, tier: Tier, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return "الصورة العامة تشير إلى قيادة مبيعات قوية. المطلوب الآن هو تحويل نقاط القوة إلى نظام إدارة يومي يحمي أداء الفريق ويضاعف أثره.";
-    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس إداري يمكن البناء عليه، لكن بعض الهدر والنزيف في التدريب أو مسار التدفّق أو المساءلة قد تحد من نتائج الفريق.";
+    if (tier === "Opportunity") return "الصورة العامة جيدة لكنها غير مكتملة. هناك أساس إداري يمكن البناء عليه، لكن بعض الهدر والنزيف في التدريب أو مسار الفرص البيعية أو المساءلة قد تحد من نتائج الفريق.";
     if (tier === "Threat") return "الصورة العامة تظهر إنذارًا إداريًا. بعض أنماط القيادة قد تخلق هدراً ونزيفا في أداء الفريق أو التوقعات أو الانضباط، وتحتاج إلى تصحيح عملي سريع.";
     return "الصورة العامة تظهر فجوة قيادية واضحة. هذا لا يعني الفشل، لكنه يعني أن الفريق يحتاج إلى قيادة أكثر نظامًا في التدريب، المتابعة، المساءلة، وإدارة الأداء.";
   }
@@ -352,7 +357,7 @@ function managerCommercialMeaning(tier: Tier, label: string, lang: Language) {
   if (lang === "ar") {
     if (tier === "Strength") return `تشير نتيجة ${label} إلى جانب إداري قوي يمكن استخدامه كرافعة لتحسين أداء الفريق وبناء الثقة والانضباط.`;
     if (tier === "Opportunity") return `تشير نتيجة ${label} إلى أساس جيد، لكنه يحتاج إلى إيقاع إداري أكثر ثباتًا حتى لا يعتمد الفريق على الاجتهاد الفردي فقط.`;
-    if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تؤثر على أداء الفريق أو وضوح مسار التدفّق أو المساءلة إذا لم تُعالج بسرعة.`;
+    if (tier === "Threat") return `تشير نتيجة ${label} إلى منطقة إنذار قد تؤثر على أداء الفريق أو وضوح مسار الفرص البيعية أو المساءلة إذا لم تُعالج بسرعة.`;
     return `تشير نتيجة ${label} إلى فجوة إدارية واضحة قد تُضعف التدريب، المتابعة، الانضباط، أو قدرة الفريق على تحقيق الهدف.`;
   }
 
@@ -379,6 +384,7 @@ const SALES_MANAGER_COMPETENCY_IDS = new Set([
   "handling_underperformance",
   "managing_difficult_salespeople",
   "managing_top_performers",
+  "manager_communication_executive_reporting",
   "manager_communication_upward_reporting",
   "decision_making_under_pressure",
 ]);
@@ -1862,7 +1868,7 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
     handling_underperformance: "Underperformance management",
     managing_difficult_salespeople: "Difficult rep management",
     managing_top_performers: "Top performer management",
-    manager_communication_upward_reporting: "Executive communication",
+    manager_communication_executive_reporting: "Executive communication",
     decision_making_under_pressure: "Decision pressure",
     prospecting_finding_new_clients: "Pipeline creation",
     mental_toughness: "Mindset & pressure control",
@@ -1885,8 +1891,8 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
 
   const ar: Record<string, string> = {
     sales_coaching_rep_development: "التدريب وتطوير المندوبين",
-    pipeline_visibility_deal_inspection: "فحص مسار التدفّق والصفقات",
-    pipeline_management_deal_inspection: "فحص مسار التدفّق والصفقات",
+    pipeline_visibility_deal_inspection: "فحص مسار الفرص البيعية والصفقات",
+    pipeline_management_deal_inspection: "فحص مسار الفرص البيعية والصفقات",
     forecast_judgment: "الحكم على التوقعات",
     forecast_accuracy_judgment: "الحكم على التوقعات",
     performance_accountability: "المساءلة على الأداء",
@@ -1899,7 +1905,7 @@ function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
     handling_underperformance: "معالجة ضعف الأداء",
     managing_difficult_salespeople: "إدارة المندوبين الصعبين",
     managing_top_performers: "إدارة أصحاب الأداء العالي",
-    manager_communication_upward_reporting: "التواصل والتقارير للإدارة العليا",
+    manager_communication_executive_reporting: "التواصل والتقارير للإدارة العليا",
     decision_making_under_pressure: "اتخاذ القرار تحت الضغط",
     prospecting_finding_new_clients: "صناعة الفرص والعملاء الجدد",
     mental_toughness: "العقلية والتحكم تحت الضغط",
@@ -2295,7 +2301,7 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
       metric: "Top performers retained, stretched, and used as positive leverage.",
       bonus: "Top Performer Growth Plan",
     },
-    manager_communication_upward_reporting: {
+    manager_communication_executive_reporting: {
       leakage: "Senior leaders may lose confidence when reports are late, vague, or too optimistic.",
       root: "The root pattern is weak upward clarity: the manager reports numbers without enough risk, cause, and action.",
       stop: "Stop reporting only what happened.",
@@ -2479,22 +2485,22 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
       bonus: "دليل تدريب مندوبي المبيعات",
     },
     pipeline_visibility_deal_inspection: {
-      leakage: "قد يبدو مسار التدفّق صحيًا بينما تكون الصفقات ضعيفة أو قديمة أو بلا خطوات تالية حقيقية.",
+      leakage: "قد يبدو مسار الفرص البيعية صحيًا بينما تكون الصفقات ضعيفة أو قديمة أو بلا خطوات تالية حقيقية.",
       root: "السبب الجذري هو قبول النشاط كدليل بدل فحص التزام العميل، مسار القرار، والخطوة التالية.",
-      stop: "توقف عن مراجعة مسار التدفّق حسب قيمة الصفقة فقط.",
+      stop: "توقف عن مراجعة مسار الفرص البيعية حسب قيمة الصفقة فقط.",
       start: "ابدأ بفحص كل صفقة حسب مرحلة القرار، الوصول لصاحب القرار، المخاطر، والخطوة المؤرخة التالية.",
       drill: "اختر خمس صفقات واسأل: ما الدليل أن هذه الصفقة ما زالت حية؟",
       metric: "عدد الصفقات التي لها خطوة تالية مؤكدة والتزام واضح.",
-      bonus: "قائمة فحص مسار التدفّق",
+      bonus: "قائمة فحص مسار الفرص البيعية",
     },
     pipeline_management_deal_inspection: {
-      leakage: "قد يمتلئ مسار التدفّق بصفقات متفائلة بينما يضيع تركيز المدير عن الصفقات التي تحتاج تدخلًا حقيقيًا.",
+      leakage: "قد يمتلئ مسار الفرص البيعية بصفقات متفائلة بينما يضيع تركيز المدير عن الصفقات التي تحتاج تدخلًا حقيقيًا.",
       root: "السبب الجذري هو ضعف فرز الصفقات: لا يوجد فصل كافٍ بين الفرص الحقيقية والخطرة والميتة.",
       stop: "توقف عن التعامل مع كل الصفقات المفتوحة وكأنها متساوية.",
       start: "ابدأ بتصنيف الصفقات: تقدّم، إنقاذ، تأهيل للخروج، أو تدخل إداري.",
       drill: "راجع أهم 10 صفقات وضع لكل واحدة حالة فحص واضحة.",
-      metric: "مراجعة مسار التدفّق حسب الجودة والمخاطر والخطوة التالية لا القيمة فقط.",
-      bonus: "قائمة فحص مسار التدفّق",
+      metric: "مراجعة مسار الفرص البيعية حسب الجودة والمخاطر والخطوة التالية لا القيمة فقط.",
+      bonus: "قائمة فحص مسار الفرص البيعية",
     },
     forecast_judgment: {
       leakage: "قد تصبح التوقعات متفائلة لأن الفريق يرفع الأمل بدل الدليل.",
@@ -2542,7 +2548,7 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
       bonus: "إعادة ضبط طاقة الفريق",
     },
     sales_meeting_rhythm: {
-      leakage: "قد تستهلك الاجتماعات الوقت دون تغيير السلوك أو جودة مسار التدفّق أو الخطوات التالية.",
+      leakage: "قد تستهلك الاجتماعات الوقت دون تغيير السلوك أو جودة مسار الفرص البيعية أو الخطوات التالية.",
       root: "السبب الجذري هو انحراف الاجتماع: النقاش يحل محل القرار والمتابعة.",
       stop: "توقف عن إدارة اجتماعات تنتهي بلا مالك ولا موعد.",
       start: "ابدأ بتصميم كل اجتماع حول القرارات، العوائق، الالتزامات، والمتابعة.",
@@ -2555,7 +2561,7 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
       root: "السبب الجذري هو ضعف الهيكلة: الاجتماع يفتقد التحضير والفحص والتدريب والمساءلة.",
       stop: "توقف عن سؤال: كيف تسير الأمور فقط؟",
       start: "ابدأ باستخدام الاجتماعات الفردية لفحص الأولويات وتدريب سلوك واحد والاتفاق على فعل واحد.",
-      drill: "استخدم هيكلًا من ثلاث خطوات: مسار التدفّق، السلوك، الالتزام التالي.",
+      drill: "استخدم هيكلًا من ثلاث خطوات: مسار الفرص البيعية، السلوك، الالتزام التالي.",
       metric: "الاجتماعات الفردية التي تنتهي بإجراء قابل للقياس قبل الاجتماع التالي.",
       bonus: "قالب الاجتماع الفردي للمدير",
     },
@@ -2604,7 +2610,7 @@ function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: 
       metric: "الاحتفاظ بأصحاب الأداء العالي وتوسيع أثرهم الإيجابي.",
       bonus: "خطة نمو أصحاب الأداء العالي",
     },
-    manager_communication_upward_reporting: {
+    manager_communication_executive_reporting: {
       leakage: "قد تفقد الإدارة العليا الثقة عندما تكون التقارير متأخرة أو غامضة أو متفائلة أكثر من اللازم.",
       root: "السبب الجذري هو ضعف الوضوح للأعلى: يرفع المدير الأرقام دون شرح كافٍ للمخاطر والسبب والإجراء.",
       stop: "توقف عن رفع ما حدث فقط.",
@@ -2962,6 +2968,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const lawyerTreatmentPlan = lawyerClientConversionMri
     ? buildLawyerConversionTreatmentPlan(weakestSixForTreatment, topThreeStrengths[0] || null, lang)
     : [];
+  const salesManager90DayPlan = salesManager
+    ? buildSalesManager90DayPlan(weakestSixForTreatment, lang)
+    : [];
 
   const reportTitle =
     (ar
@@ -3062,7 +3071,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         : businessHealth
         ? "SCAN سريع للعلامات الحيوية للشركة عبر الاتجاه، الإيرادات، التسويق، السيولة، العمليات، الأفراد، اعتماد الشركة على المالك، وجاهزية النمو."
         : salesManager
-        ? "SCAN قيادي سريع لصحة إدارتك لفريق المبيعات كأنه تحليل دم لطريقة التدريب، SCAN مسار التدفّق، التوقع، التحفيز، والمساءلة."
+        ? "SCAN قيادي سريع لصحة إدارتك لفريق المبيعات كأنه تحليل دم لطريقة التدريب، SCAN مسار الفرص البيعية، التوقع، التحفيز، والمساءلة."
         : "SCAN تشخيصي سريع لجسم أدائك البيعي  كأنه تحليل دم مهني وظيفي لمندوبي المبيعات.",
       overall: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الشركة" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
       overallMarker: lawyer ? "مؤشر صحة رحلة العميل القانونية" : businessHealth ? "مؤشر صحة الأعمال" : salesManager ? "مؤشر صحة إدارة المبيعات العام" : "مؤشر الصحة البيعية العام",
@@ -3092,7 +3101,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       swot: lawyer ? "تحليل SWOT لتجربة العميل القانونية" : businessHealth ? "تحليل SWOT لصحة الشركة" : "تحليل SWOT الاستراتيجي",
       actions: mri ? (lawyer ? "خطة التوجيه المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
       prescriptionHeadline: lawyer ? "تقريرك يكشف نقاط الاحتكاك. وخطة التوجيه توضّح ما يجب تطويره أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "ال SCAN القيادي يكشف الأعراض. أما Manager MRI فيعطيك خطة العلاج." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، مسار التدفّق، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionSubhead: lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "تقرير Advanced Sales Manager MRI هو أداة تشخيص وعلاج كاملة للتدريب، مسار الفرص البيعية، المساءلة، التوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
       prescriptionCta: lawyer ? "احصل على إياس™ لتجربة العميل القانونية الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على Sales Manager MRI الكامل" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
       enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "لأصحاب الشركات الصغيرة والمتوسطة والمدراء العامين والشركاء" : salesManager ? "لمدراء المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمدراء المبيعات وأصحاب الشركات",
       enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : businessHealth ? "شخّص الشركة قبل أن تعيد بناءها" : "شخّص الفريق قبل أن تدرّبه",
@@ -3277,7 +3286,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                         : "The plan helps you know what to fix first in consultation opening, client trust, legal-value clarity, professional fees, and post-consultation follow-up."
                       : salesManager
                       ? ar
-                        ? "الخطة تساعدك على معرفة ما الذي يجب إصلاحه أولًا في التدريب، مسار التدفّق، المساءلة، وإيقاع الفريق."
+                        ? "الخطة تساعدك على معرفة ما الذي يجب إصلاحه أولًا في التدريب، مسار الفرص البيعية، المساءلة، وإيقاع الفريق."
                         : "The plan helps you know what to fix first in coaching, pipeline inspection, accountability, and team rhythm."
                       : ar
                       ? "الخطة تساعدك على معرفة ماذا تصلح أولًا، ماذا تتدرب عليه، وماذا تتوقف عن فعله."
@@ -3481,7 +3490,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   : "This is not just a low score. It is often where business leakage begins before it shows up clearly in cash, customers, operations, people, or owner time."
                 : salesManager
                 ? ar
-                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر ونزيف في أداء الفريق أو ضعف المساءلة أو اضطراب مسار التدفّق دون أن يكون واضحًا في البداية."
+                  ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر ونزيف في أداء الفريق أو ضعف المساءلة أو اضطراب مسار الفرص البيعية دون أن يكون واضحًا في البداية."
                   : "This is not just a low score. It is often where team-performance leakage, weak accountability, or pipeline confusion begins before it becomes obvious."
                 : ar
                 ? "هذه ليست مجرد نتيجة منخفضة. إنها غالبًا المكان الذي يبدأ فيه هدر ونزيف في الفرص دون أن يكون واضحًا في البداية."
@@ -3503,7 +3512,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                   : "A practical professional reading of what may be happening inside the legal inquiry, consultation, trust, fee, and next-step journey."
                 : salesManager
                 ? ar
-                  ? "قراءة إدارية مختصرة لما قد يحدث داخل الفريق ومسار التدفّق."
+                  ? "قراءة إدارية مختصرة لما قد يحدث داخل الفريق ومسار الفرص البيعية."
                   : "A practical management reading of what may be happening inside the team and pipeline."
                 : ar ? "قراءة عملية مختصرة لما قد يحدث في الميدان." : "A practical commercial reading of what may be happening in the field."}
             </p>
@@ -3523,7 +3532,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     : "The business does not experience your score as a number. It experiences it as cash pressure, customer leakage, people dependency, operational friction, scattered visibility, and decisions made without enough rhythm."
                   : salesManager
                   ? ar
-                    ? "الفريق لا يرى نتيجتك. هو يختبر طريقة تدريبك، فحصك للبايبلاين، وضوح المساءلة، وعدالة تعاملك مع الأداء الصعب."
+                    ? "الفريق لا يرى نتيجتك. هو يختبر طريقة تدريبك، فحصك لمسار الفرص البيعية، وضوح المساءلة، وعدالة تعاملك مع الأداء الصعب."
                     : "The team does not see your score. They experience your coaching rhythm, pipeline inspection, accountability clarity, and fairness with difficult performance."
                   : ar
                   ? "العميل لا يرى درجاتك. هو يشعر بطريقة افتتاحك، عمق أسئلتك، صبرك مع الاعتراضات، وقدرتك على المتابعة."
@@ -3541,7 +3550,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                       : businessHealth
                       ? `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تستنزف السيولة أو العملاء أو وقت المالك أو طاقة الفريق أو جاهزية النمو قبل أن يظهر السبب الحقيقي.`
                       : salesManager
-                      ? `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على أداء الفريق أو وضوح مسار التدفّق أو الانضباط قبل أن يظهر السبب الحقيقي.`
+                      ? `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تؤثر على أداء الفريق أو وضوح مسار الفرص البيعية أو الانضباط قبل أن يظهر السبب الحقيقي.`
                       : `أكبر هدر ونزيف ظاهر الآن مرتبط بـ ${weakest.label}. هذه المنطقة قد تجعل الفرص تتوقف أو تضعف قبل أن تعرف السبب الحقيقي.`
                     : lawyer
                     ? `The clearest friction signal is currently connected to ${weakest.label}. This area may weaken client trust, consultation clarity, professional fee confidence, or the next legal step before the real reason is visible.`
@@ -3619,7 +3628,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     : "These are warning signals. If left unaddressed, they may create friction in client trust, consultation clarity, professional-fee confidence, or next legal steps."
                   : salesManager
                   ? ar
-                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً ونزيفاً في وضوح مسار التدفّق، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
+                    ? "هذه إشارات إنذار. إذا تُركت دون علاج، قد تسبب هدراً ونزيفاً في وضوح مسار الفرص البيعية، المساءلة، جودة التوقعات، أو تنفيذ الفريق."
                     : "These are warning signals. If left untreated, they may create leakage in pipeline clarity, accountability, forecast quality, or team execution."
                   : businessHealth
                   ? ar
@@ -3743,6 +3752,16 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           lang={lang}
           supportFocus={topThreeStrengths[0]?.label || (ar ? "أقوى منطقة داعمة لديك" : "Your strongest leverage area")}
         />
+      </>
+    ) : salesManager ? (
+      <>
+        {sectionTitle(
+          ar ? "خطة التنفيذ الإداري للمبيعات خلال 90 يومًا" : "90-Day Sales Management Execution Plan",
+          ar
+            ? "خطة يومية لمدير المبيعات مبنية على أضعف ستة مجالات قيادية لديك. كل يوم يمنحك إجراءً إداريًا وسؤال فحص ودليل تنفيذ."
+            : "A daily manager plan built from your weakest six leadership areas. Each day gives you one management action, one inspection question, and one proof of execution."
+        )}
+        <SalesManager90DayPlanSection days={salesManager90DayPlan} lang={lang} />
       </>
     ) : (
       <>
@@ -3882,7 +3901,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
             : lawyer
             ? "حوّل السلوكيات المصححة إلى نظام تشغيل لتجربة العميل القانونية: افتح الاستشارات بشكل أفضل، شخّص الاحتياج أفضل، اشرح القيمة القانونية أفضل، اعرض أتعاب المحاماة بثقة أكبر، ووجّه الخطوة القانونية التالية بوضوح أقوى."
             : salesManager
-            ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص مسار التدفّق أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر."
+            ? "حوّل السلوكيات المصححة إلى نظام تشغيل لإدارة المبيعات: درّب أفضل، افحص مسار الفرص البيعية أفضل، توقّع أفضل، وحاسب الفريق بوضوح أكبر."
             : "حوّل السلوكيات المصححة إلى نظام تشغيل شخصي للبيع: حضّر أفضل، اسأل أفضل، تابع أفضل، وأغلق بتحكم أكبر."
         }
       />
@@ -4777,6 +4796,100 @@ function MriCompactSummaryCard({
   );
 }
 
+
+function SalesManager90DayPlanSection({
+  days,
+  lang,
+}: {
+  days: SalesManagerPlanDay[];
+  lang: Language;
+}) {
+  const ar = lang === "ar";
+  const phases = [
+    {
+      phase: 1 as const,
+      title: ar
+        ? "الأيام 1–30: تثبيت أضعف مجالين إداريين"
+        : "Days 1–30: Stabilise the two weakest management areas",
+    },
+    {
+      phase: 2 as const,
+      title: ar
+        ? "الأيام 31–60: بناء إيقاع فريق قابل للتكرار"
+        : "Days 31–60: Build repeatable team rhythm",
+    },
+    {
+      phase: 3 as const,
+      title: ar
+        ? "الأيام 61–90: تثبيت المعايير ومراجعة الأدلة وحماية الأداء"
+        : "Days 61–90: Embed standards, review evidence, and protect performance",
+    },
+  ];
+
+  return (
+    <div className="mt-6 space-y-8">
+      {phases.map(({ phase, title }) => {
+        const phaseDays = days.filter((day) => day.phase === phase);
+        return (
+          <div key={phase}>
+            <div className="avoid-break rounded-2xl bg-slate-950 px-5 py-4 text-white shadow-sm">
+              <h3 className="text-lg sm:text-xl font-black rtl-text">{title}</h3>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4">
+              {phaseDays.map((day) => (
+                <article
+                  key={day.day}
+                  className="avoid-break rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="text-xs font-black uppercase tracking-widest text-indigo-700 rtl-text">
+                        {ar ? `اليوم ${day.day}` : `Day ${day.day}`}
+                      </div>
+                      <h4 className="mt-1 text-lg font-black text-slate-950 rtl-text">
+                        {day.competencyLabel}
+                      </h4>
+                    </div>
+                    <span className="inline-flex w-fit rounded-full bg-indigo-100 px-3 py-1 text-xs font-black text-indigo-800">
+                      {ar ? "خطة يومية" : "Daily plan"}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <div className="text-xs font-black uppercase tracking-widest text-slate-500 rtl-text">
+                        {ar ? "الإجراء" : "Action"}
+                      </div>
+                      <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800 rtl-text">
+                        {day.action}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                      <div className="text-xs font-black uppercase tracking-widest text-amber-800 rtl-text">
+                        {ar ? "سؤال المدير" : "Manager question"}
+                      </div>
+                      <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800 rtl-text">
+                        {day.managerQuestion}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                      <div className="text-xs font-black uppercase tracking-widest text-emerald-800 rtl-text">
+                        {ar ? "دليل التنفيذ" : "Proof of execution"}
+                      </div>
+                      <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-800 rtl-text">
+                        {day.proof}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function PrescriptionPhase({
   ar,
