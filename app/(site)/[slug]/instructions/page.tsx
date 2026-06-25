@@ -245,27 +245,27 @@ export default function InstructionsPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-3 sm:py-10
+      className="min-h-screen flex items-start sm:items-center justify-center px-4 sm:px-6 pt-3 pb-5 sm:py-10
                  bg-gradient-to-br from-[#07111f] via-[#0b1d38] to-[#123468]"
       dir={dir}
     >
-      <div className="w-full sm:max-w-2xl rounded-3xl bg-white/10 backdrop-blur-xl shadow-2xl p-4 sm:p-10 space-y-3 sm:space-y-8 border border-white/15">
+      <div className="w-full sm:max-w-2xl rounded-3xl bg-white/10 backdrop-blur-xl shadow-2xl p-4 sm:p-10 space-y-3.5 sm:space-y-8 border border-white/15">
         {/* TITLE */}
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white">
+        <div className="space-y-1.5 text-center">
+          <h1 className="text-[1.7rem] sm:text-4xl font-extrabold text-white leading-tight">
             {ar ? "قبل أن تبدأ" : "Before You Begin"}
           </h1>
-          <p className="text-white/80 text-sm sm:text-lg leading-relaxed">
+          <p className={`${ar ? "text-[0.98rem]" : "text-[0.94rem]"} sm:text-lg text-white/90 leading-relaxed`}>
             {copy.subtitle}
           </p>
         </div>
 
         {/* INFO BOX */}
-        <div className="rounded-2xl bg-white/10 border border-white/20 p-3 sm:p-6 text-white/90">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:gap-4 text-xs sm:text-base">
-            <div>
-              <strong>{ar ? "التقييم بزمن محدد:" : "Timed assessment:"}</strong>{" "}
-              {mins > 0
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <InfoCell
+            label={ar ? "التقييم بزمن محدد" : "Timed assessment"}
+            value={
+              mins > 0
                 ? ar
                   ? `حوالي ${mins} دقيقة.`
                   : `About ${mins} minutes.`
@@ -275,38 +275,45 @@ export default function InstructionsPage() {
                   : "About 20 minutes."
                 : ar
                 ? "حوالي 90 دقيقة."
-                : "About 90 minutes."}
-            </div>
-
-            <div>
-              <strong>{ar ? "عدد الأسئلة:" : "Questions:"}</strong>{" "}
-              {qCount > 0 ? qCount : effectiveIsScan ? 30 : 75}
-            </div>
-
-            <div>
-              <strong>{ar ? "عدد الكفاءات:" : "Competencies:"}</strong>{" "}
-              {competencyCount}
-            </div>
-
-            <div>
-              <strong>{ar ? "نتائج خاصة" : "Private results"}</strong>
-            </div>
-          </div>
+                : "About 90 minutes."
+            }
+          />
+          <InfoCell
+            label={ar ? "عدد الأسئلة" : "Questions"}
+            value={String(qCount > 0 ? qCount : effectiveIsScan ? 30 : 75)}
+          />
+          <InfoCell
+            label={ar ? "عدد الكفاءات" : "Competencies"}
+            value={String(competencyCount)}
+          />
+          <InfoCell
+            label={ar ? "خصوصية النتائج" : "Results"}
+            value={ar ? "نتائج خاصة" : "Private"}
+          />
         </div>
 
         {/* RULES */}
-        <div className="space-y-2 text-white/95 text-sm sm:text-base leading-relaxed">
-          {copy.guidance.map((line) => (
-            <p key={line}>{line}</p>
+        <div className={`${ar ? "text-[0.96rem]" : "text-sm"} sm:text-base space-y-2 leading-relaxed`}>
+          {copy.guidance.map((line, index) => (
+            <p
+              key={line}
+              className={`${ar ? "border-r-2 pr-3 text-right" : "border-l-2 pl-3 text-left"} ${
+                index === 0
+                  ? "border-blue-300 text-white"
+                  : "border-blue-400/60 text-blue-100"
+              }`}
+            >
+              {line}
+            </p>
           ))}
 
-          <p className="rounded-xl border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs sm:text-sm text-amber-100 font-semibold">
+          <p className={`${ar ? "text-[0.98rem]" : "text-[0.94rem]"} sm:text-base mt-3 rounded-xl border-2 border-amber-300/70 bg-amber-300/15 px-3.5 py-2.5 text-amber-50 font-extrabold leading-relaxed shadow-[0_0_20px_rgba(251,191,36,0.08)]`}>
             {copy.warning}
           </p>
         </div>
 
         {/* CTA */}
-        <div>
+        <div className="pt-1.5">
           <Button
             className="w-full py-4 sm:py-5 text-base sm:text-lg font-bold rounded-2xl bg-amber-400 text-slate-900 hover:bg-amber-300 transition"
             onClick={goToQuiz}
@@ -319,6 +326,19 @@ export default function InstructionsPage() {
         <div className="text-center text-xs text-white/50">
           {ar ? "ستظهر نتائجك فور الانتهاء مع تقرير مفصل." : "Your results will appear immediately with a detailed report."}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-h-[58px] rounded-xl border border-white/15 bg-white/[0.07] px-3 py-2.5 flex flex-col justify-center">
+      <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-blue-200/80 leading-tight">
+        {label}
+      </div>
+      <div className="mt-1 text-sm sm:text-base font-extrabold text-white leading-tight">
+        {value}
       </div>
     </div>
   );
