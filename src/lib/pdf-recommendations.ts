@@ -142,12 +142,12 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
     ar: "التدفق النقدي والهوامش والرقابة المالية",
     leakageEn: "sales existing but cash staying tight because margins, costs, collections, and profit by offer are unclear",
     leakageAr: "وجود مبيعات مع بقاء النقد مضغوطًا بسبب غموض الهوامش والتكاليف والتحصيل والربح حسب العرض",
-    treatmentEn: "review cash flow, gross margin, net margin, overdue payments, cost creep, and profitability by product or service line",
-    treatmentAr: "مراجعة التدفق النقدي والهامش الإجمالي وصافي الهامش والمتأخرات وزحف التكاليف والربحية حسب المنتج أو الخدمة",
-    drillEn: "identify the top three cash leaks and top three profit contributors from the last 90 days",
-    drillAr: "حدد أكبر ثلاثة تسريبات نقدية وأكبر ثلاثة مصادر ربح من آخر 90 يومًا",
-    metricEn: "weekly cash visibility, margin by offer, overdue receivables, and net profit trend",
-    metricAr: "وضوح النقد الأسبوعي والهامش حسب العرض والمتأخرات واتجاه صافي الربح",
+    treatmentEn: "run a rolling 13-week cash forecast, debtor-ageing and collection review, payment-priority control, spending approvals, and gross and net margin analysis by offer and customer",
+    treatmentAr: "تشغيل توقع نقدي متجدد لثلاثة عشر أسبوعًا ومراجعة أعمار الديون والتحصيل وأولوية المدفوعات وموافقات الإنفاق وتحليل الهامش الإجمالي والصافي حسب العرض والعميل",
+    drillEn: "assign collection ownership for overdue receivables, calculate the cash conversion cycle, and model the working-capital impact before approving growth",
+    drillAr: "تعيين مسؤولية تحصيل الذمم المتأخرة وحساب دورة تحويل النقد وقياس أثر النمو على رأس المال العامل قبل اعتماده",
+    metricEn: "13-week cash visibility, overdue receivables, collection rate, gross and net margin, cash conversion cycle, and growth working-capital requirement",
+    metricAr: "وضوح النقد لثلاثة عشر أسبوعًا والذمم المتأخرة ونسبة التحصيل والهامش الإجمالي والصافي ودورة تحويل النقد ورأس المال العامل المطلوب للنمو",
   },
 
   operations_systems_process_discipline: {
@@ -208,8 +208,8 @@ const COMPETENCY_PROFILES: Record<string, CompetencyProfile> = {
 
   technology_data_management_visibility: {
     id: "technology_data_management_visibility",
-    en: "Technology, Data & Management Visibility",
-    ar: "التقنية والبيانات ووضوح الإدارة",
+    en: "Technology, AI, Automation & Management Visibility",
+    ar: "التقنية والذكاء الاصطناعي والأتمتة ووضوح الإدارة",
     leakageEn: "the owner not seeing the business clearly because data is scattered, late, manual, or missing",
     leakageAr: "عدم رؤية المالك للشركة بوضوح لأن البيانات متفرقة أو متأخرة أو يدوية أو ناقصة",
     treatmentEn: "build a simple weekly dashboard across revenue, cash, customers, operations, people, and risk",

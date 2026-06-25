@@ -16,6 +16,10 @@ import {
   buildSalesManager90DayPlan,
   type SalesManagerPlanDay,
 } from "@/lib/sales-manager-90day";
+import {
+  buildSmeBusinessRevival90DayPlan,
+  type SmeBusinessRevivalDay,
+} from "@/lib/sme-business-revival-90day";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -81,7 +85,7 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   people_roles_accountability: { en: "People, Roles & Accountability", ar: "الأفراد والأدوار والمساءلة" },
   leadership_decision_making_rhythm: { en: "Leadership & Decision-Making Rhythm", ar: "القيادة وإيقاع اتخاذ القرار" },
   products_services_value_proposition: { en: "Products, Services & Value Proposition", ar: "المنتجات والخدمات وعرض القيمة" },
-  technology_data_management_visibility: { en: "Technology, Data & Management Visibility", ar: "التقنية والبيانات ووضوح الإدارة" },
+  technology_data_management_visibility: { en: "Technology, AI, Automation & Management Visibility", ar: "التقنية والذكاء الاصطناعي والأتمتة ووضوح الإدارة" },
   risk_compliance_business_continuity: { en: "Risk, Compliance & Business Continuity", ar: "المخاطر والامتثال واستمرارية الأعمال" },
   growth_readiness_scalability: { en: "Growth Readiness & Scalability", ar: "جاهزية النمو وقابلية التوسع" },
 
@@ -2987,6 +2991,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const salesManager90DayPlan = salesManager
     ? buildSalesManager90DayPlan(weakestSixForTreatment, lang)
     : [];
+  const smeBusinessRevival90DayPlan = businessHealth
+    ? buildSmeBusinessRevival90DayPlan(weakestSixForTreatment, lang)
+    : [];
 
   const reportTitle =
     lawyer && ar && mri ? (
@@ -2995,12 +3002,16 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       "Client Acquisition Standard™ by Career Labs AI — Report"
     ) : salesManager && ar && mri ? (
       <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لمدير المبيعات" />
+    ) : businessHealth && ar && mri ? (
+      "تقرير صحة الشركات الصغيرة والمتوسطة"
+    ) : businessHealth && !ar && mri ? (
+      "SME Business Health MRI — Report"
     ) : (ar
       ? (assessment as any)?.title_ar || (assessment as any)?.name_ar || ""
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
     (mri
       ? ar
-        ? lawyer ? "تقرير معيار كسب الموكلين™ من Career Labs AI" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير التشخيص المتقدم لمدير المبيعات" : "تقرير Outdoor Sales MRI المتقدم"
+        ? lawyer ? "تقرير معيار كسب الموكلين™ من Career Labs AI" : businessHealth ? "تقرير صحة الشركات الصغيرة والمتوسطة" : salesManager ? "تقرير التشخيص المتقدم لمدير المبيعات" : "تقرير Outdoor Sales MRI المتقدم"
         : lawyer ? "Client Acquisition Standard™ by Career Labs AI Report" : businessHealth ? "Advanced SME Business Health MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
       : lawyer
       ? ar
@@ -3071,27 +3082,27 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       actions: mri ? (lawyer ? "Professional Guidance Plan" : businessHealth ? "Business Revamp Treatment Priorities" : "Personal Treatment Priorities") : "Priority Execution Plan",
       prescriptionHeadline: lawyer ? "Your Client Acquisition Standard™ Shows the Friction Points. The Guidance Plan Shows What to Address First." : businessHealth ? "Your Business Health MRI Shows the Leaks. The Roadmap Shows What to Stabilize and Revamp First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
       prescriptionSubhead: lawyer ? "Client Acquisition Standard™ by Career Labs AI is a full diagnostic and professional guidance tool for legal inquiries, consultations, client trust, professional legal fees, objections, next legal steps, and client experience." : businessHealth ? "The Advanced SME Business Health MRI is a full diagnostic and roadmap tool for owners and general managers who want to stabilize leaks, strengthen the operating system, and identify the next revamp priorities." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
-      prescriptionCta: lawyer ? "Get My Full Client Acquisition Standard™ Report" : businessHealth ? "Get My SME Business Health Roadmap" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
-      enterpriseTitle: lawyer ? "For Law Firms, Managing Partners & Legal Platforms" : businessHealth ? "For SME Owners, General Managers & Partners" : salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
-      enterpriseCta: lawyer ? "Diagnose the Lawyer Before You Train the Lawyer" : businessHealth ? "Diagnose the Business Before You Revamp the Business" : "Diagnose the Team Before You Train the Team",
+      prescriptionCta: lawyer ? "Get My Full Client Acquisition Standard™ Report" : businessHealth ? "" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
+      enterpriseTitle: lawyer ? "For Law Firms, Managing Partners & Legal Platforms" : businessHealth ? "" : salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
+      enterpriseCta: lawyer ? "Diagnose the Lawyer Before You Train the Lawyer" : businessHealth ? "" : "Diagnose the Team Before You Train the Team",
     },
     ar: {
       back: "العودة إلى النتائج",
       badge: mri
         ? lawyer ? "تشخيص تجربة العميل القانونية" : businessHealth ? "تشخيص عميق ودقيق لصحة الشركات الصغيرة والمتوسطة" : "أداة تشخيص وعلاج كاملة"
-        : lawyer ? "تشخيص تجربة العميل القانونية" : businessHealth ? "SCAN العلامات الحيوية لصحة الشركة" : salesManager ? "SCAN قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
+        : lawyer ? "تشخيص تجربة العميل القانونية" : businessHealth ? "فحص العلامات الحيوية لصحة الشركة" : salesManager ? "SCAN قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
       subtitle: mri
         ? lawyer
           ? "تقرير معيار كسب الموكلين™ من Career Labs AI لتشخيص رحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، مروراً بالاستشارة، وضوح القيمة القانونية، أتعاب المحاماة، الاعتراضات، والمتابعة."
           : businessHealth
-          ? "تقرير SME Business Health MRI شخصي لتشخيص أين تهدر الشركة السيولة، العملاء، طاقة الفريق، انضباط التنفيذ، وقت المالك، وجاهزية النمو  ثم تحويل النتائج إلى خارطة طريق عملية لتقوية الشركة."
+          ? "تقرير شخصي لصحة الشركات الصغيرة والمتوسطة يشخّص هدر السيولة والعملاء وطاقة الفريق وانضباط التنفيذ ووقت المالك وجاهزية النمو، ثم يحوّل النتائج إلى خارطة إنعاش عملية."
           : salesManager
           ? "تقرير شخصي مفصل لتشخيص أنماط القيادة، وهدر ونزيف أداء الفريق، وأولويات التطوير الإداري."
           : "تقرير Sales MRI شخصي مصمم لتشخيص الجسم البيعي الكامل وتحويل النتائج إلى خطة علاج عملية."
         : lawyer
         ? "تشخيص سريع لصحة تجربة العميل القانونية من الانطباع الأول إلى ثقة العميل، عرض أتعاب المحاماة، الاعتراضات، والخطوة القانونية التالية."
         : businessHealth
-        ? "SCAN سريع للعلامات الحيوية للشركة عبر الاتجاه، الإيرادات، التسويق، السيولة، العمليات، الأفراد، اعتماد الشركة على المالك، وجاهزية النمو."
+        ? "فحص سريع للعلامات الحيوية للشركة عبر الاتجاه والإيرادات والتسويق والسيولة والعمليات والأفراد واعتماد الشركة على المالك وجاهزية النمو."
         : salesManager
         ? "تشخيص قيادي سريع لصحة إدارتك لفريق المبيعات يشمل التدريب، ومسار الفرص البيعية، والتوقع، والتحفيز، والمساءلة."
         : "SCAN تشخيصي سريع لجسم أدائك البيعي  كأنه تحليل دم مهني وظيفي لمندوبي المبيعات.",
@@ -3100,7 +3111,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       participant: "هوية المشارك",
       health: lawyer ? "مستوى صحة تجربة العميل القانونية" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
       bloodPanel: mri
-        ? lawyer ? "لوحة معيار كسب الموكلين™ عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
+        ? lawyer ? "لوحة معيار كسب الموكلين™ عبر ١٥ كفاءة" : businessHealth ? "لوحة صحة الشركات الصغيرة والمتوسطة عبر ١٢ منطقة" : salesManager ? "لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
         : lawyer ? "مؤشر صحة رحلة العميل القانونية: النتيجة العامة + المؤشرات المهنية" : businessHealth ? "لوحة صحة الشركة: النتيجة العامة + العلامات الحيوية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
       bloodPanelSub: mri
         ? lawyer
@@ -3120,13 +3131,13 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       strongest: lawyer ? "أولويات تجربة العميل" : businessHealth ? "أقوى إشارة في صحة الشركة" : salesManager ? "أقوى إشارة إدارية" : "أقوى إشارة",
       weakest: lawyer ? "مجالات تحتاج إلى تطوير" : businessHealth ? "أكبر هدر ونزيف خفي في الشركة" : salesManager ? "أكبر هدر ونزيف مخفي في أداء الفريق" : "أكبر هدر ونزيف مخفي في الإيرادات",
       commercial: lawyer ? "التفسير المهني" : businessHealth ? "تفسير صحة الشركة" : salesManager ? "التفسير الإداري" : "التفسير العملي",
-      swot: lawyer ? "تحليل SWOT لتجربة العميل القانونية" : businessHealth ? "تحليل SWOT لصحة الشركة" : salesManager ? "تحليل نقاط القوة والفرص والتهديدات والضعف" : "تحليل SWOT الاستراتيجي",
+      swot: lawyer ? "تحليل SWOT لتجربة العميل القانونية" : businessHealth ? "تحليل نقاط القوة والفرص والتهديدات ونقاط الضعف لصحة الشركة" : salesManager ? "تحليل نقاط القوة والفرص والتهديدات والضعف" : "تحليل SWOT الاستراتيجي",
       actions: mri ? (lawyer ? "خطة التوجيه المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
       prescriptionHeadline: lawyer ? "تقريرك يكشف نقاط الاحتكاك. وخطة التوجيه توضّح ما يجب تطويره أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "التشخيص القيادي يكشف الأعراض، والتشخيص المتقدم يقدّم خطة التطوير." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: lawyer ? "معيار كسب الموكلين™ من Career Labs AI هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "أداة تشخيص وتطوير متكاملة تفحص التدريب، ومسار الفرص البيعية، والمساءلة، والتوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
-      prescriptionCta: lawyer ? "احصل على تقرير معيار كسب الموكلين™ الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على تقرير التشخيص المتقدم لمدير المبيعات" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
-      enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "لأصحاب الشركات الصغيرة والمتوسطة والمدراء العامين والشركاء" : salesManager ? "لمدراء المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمدراء المبيعات وأصحاب الشركات",
-      enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : businessHealth ? "شخّص الشركة قبل أن تعيد بناءها" : "شخّص الفريق قبل أن تدرّبه",
+      prescriptionSubhead: lawyer ? "معيار كسب الموكلين™ من Career Labs AI هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "أداة تشخيص وخارطة إنعاش لأصحاب الشركات والمديرين العامين الذين يريدون وقف الهدر وتقوية نظام التشغيل وتحديد أولويات إعادة بناء الشركة." : salesManager ? "أداة تشخيص وتطوير متكاملة تفحص التدريب، ومسار الفرص البيعية، والمساءلة، والتوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionCta: lawyer ? "احصل على تقرير معيار كسب الموكلين™ الكامل" : businessHealth ? "" : salesManager ? "احصل على تقرير التشخيص المتقدم لمدير المبيعات" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
+      enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "" : salesManager ? "لمدراء المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمدراء المبيعات وأصحاب الشركات",
+      enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : businessHealth ? "" : "شخّص الفريق قبل أن تدرّبه",
     },
   }[lang];
 
@@ -3164,7 +3175,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
 
 <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full lg:w-auto">
 
-  <EmailReportButton />
+  <EmailReportButton arabic={businessHealth && ar} />
 
   <Link
     href={`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${lang}`}
@@ -3243,7 +3254,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         {mri && (
           <section className="avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-indigo-950 via-slate-950 to-blue-950 text-white p-7 sm:p-10">
-              {!salesManager && (
+              {!salesManager && !businessHealth && (
                 <div className="inline-flex rounded-full bg-amber-400/20 border border-amber-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-amber-100">
                   {ar ? "تقرير مدفوع متقدم" : "Premium Advanced Report"}
                 </div>
@@ -3801,6 +3812,20 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
         <SalesManager90DayPlanSection days={salesManager90DayPlan} lang={lang} />
       </>
+    ) : businessHealth ? (
+      <>
+        {sectionTitle(
+          ar ? "خارطة إنعاش الأعمال" : "Business Revival Blueprint",
+          ar
+            ? "خطة شخصية مبنية على أضعف ست مناطق في صحة شركتك. تُعالج كل منطقة خلال خمسة عشر يومًا بإجراء تنفيذي للرئيس التنفيذي ومسؤول واضح ودليل ومقياس وقرار مطلوب."
+            : "A personalised revival plan built from your six weakest business-health areas. Each area receives a focused 15-day CEO intervention with ownership, proof, metrics, and decisions."
+        )}
+        <SmeBusinessRevivalPlanSection
+          days={smeBusinessRevival90DayPlan}
+          weakestSix={weakestSixForTreatment}
+          lang={lang}
+        />
+      </>
     ) : (
       <>
     {sectionTitle(
@@ -4048,7 +4073,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
 
         {/* SCAN-ONLY MRI PRESCRIPTION UPSELL */}
-        {!mri && !outdoorSalesScan && !salesManager && (
+        {!mri && !outdoorSalesScan && !salesManager && !businessHealth && (
           <section className="avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
               <div className="inline-flex rounded-full bg-rose-500/20 border border-rose-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-rose-100">
@@ -4220,7 +4245,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </section>
         )}
 
-{!outdoorSalesMri && !outdoorSalesScan && !lawyerClientConversionMri && !salesManager && (
+{!outdoorSalesMri && !outdoorSalesScan && !lawyerClientConversionMri && !salesManager && !businessHealth && (
 <>
 {/* ENTERPRISE CTA */}
 
@@ -4862,6 +4887,139 @@ function MriCompactSummaryCard({
   );
 }
 
+
+function SmeBusinessRevivalPlanSection({
+  days,
+  weakestSix,
+  lang,
+}: {
+  days: SmeBusinessRevivalDay[];
+  weakestSix: CompetencyRow[];
+  lang: Language;
+}) {
+  const ar = lang === "ar";
+  const phases = Array.from({ length: 6 }, (_, index) => {
+    const start = index * 15 + 1;
+    const end = start + 14;
+    return {
+      index,
+      start,
+      end,
+      title: weakestSix[index]?.label || (ar ? `الأولوية ${index + 1}` : `Priority ${index + 1}`),
+      days: days.filter((day) => day.day >= start && day.day <= end),
+    };
+  });
+
+  return (
+    <div className="space-y-8">
+      <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-900 p-6 sm:p-8 text-white shadow-xl">
+        <h3 className="text-2xl sm:text-3xl font-black rtl-text">
+          {ar ? "أكبر مصادر الهدر وأولويات الإنعاش الست" : "Top Business Leaks and Six Revival Priorities"}
+        </h3>
+        <p className="mt-3 text-emerald-100 leading-relaxed rtl-text">
+          {ar
+            ? "يبدأ التنفيذ بأضعف منطقة ثم ينتقل بالترتيب إلى المنطقة السادسة. لا تنتقل الشركة إلى توسيع النشاط قبل تثبيت المسؤولية والدليل والمقياس في الأولويات السابقة."
+            : "Execution starts with the weakest area and progresses in order through the sixth. The business should not expand activity before ownership, proof, and measurement are established in the earlier priorities."}
+        </p>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {weakestSix.slice(0, 6).map((row, index) => (
+            <div key={row.competencyId} className="rounded-2xl border border-white/15 bg-white/10 p-4">
+              <div className="text-xs font-black uppercase tracking-widest text-emerald-200 rtl-text">
+                {ar ? `الأيام ${index * 15 + 1}–${index * 15 + 15}` : `Days ${index * 15 + 1}–${index * 15 + 15}`}
+              </div>
+              <div className="mt-2 font-black rtl-text">{row.label}</div>
+              <div className="mt-1 text-sm text-emerald-100 force-ltr">{row.percentage}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {phases.map((phase) => (
+        <section key={phase.index} className="page-break rounded-3xl border border-slate-200 bg-slate-50 p-5 sm:p-7">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+            <div>
+              <div className="text-xs font-black uppercase tracking-widest text-emerald-700 rtl-text">
+                {ar ? `المرحلة ${phase.index + 1} من ٦` : `Phase ${phase.index + 1} of 6`}
+              </div>
+              <h3 className="mt-1 text-2xl sm:text-3xl font-black text-slate-950 rtl-text">{phase.title}</h3>
+            </div>
+            <div className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-black text-emerald-900 rtl-text">
+              {ar ? `الأيام ${phase.start}–${phase.end}` : `Days ${phase.start}–${phase.end}`}
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {phase.days.map((item) => (
+              <article key={item.day} className="avoid-break rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-black uppercase tracking-widest text-emerald-700 rtl-text">
+                      {ar ? `اليوم ${item.day}` : `Day ${item.day}`}
+                    </div>
+                    <h4 className="mt-1 text-xl font-black text-slate-950 rtl-text">{item.focus}</h4>
+                  </div>
+                  <span className="inline-flex self-start rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-700 rtl-text">
+                    {item.phase}
+                  </span>
+                </div>
+
+                <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <RevivalField label={ar ? "إجراء الرئيس التنفيذي" : "CEO Action"} value={item.ceoAction} />
+                  <RevivalField label={ar ? "المسؤول المباشر" : "Accountable Owner"} value={item.accountableOwner} />
+                  <RevivalField label={ar ? "الدليل المطلوب" : "Proof Required"} value={item.proofRequired} />
+                  <RevivalField label={ar ? "مقياس المتابعة" : "Metric"} value={item.metric} />
+                  <RevivalField label={ar ? "سؤال قرار الرئيس التنفيذي" : "CEO Decision Question"} value={item.ceoDecisionQuestion} />
+                  <RevivalField label={ar ? "ما الذي يجب إيقافه أو تغييره" : "What Must Stop or Change"} value={item.stopOrChange} />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <section className="rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-950 to-blue-950 p-6 sm:p-8 text-white shadow-xl">
+        <h3 className="text-2xl sm:text-3xl font-black rtl-text">
+          {ar ? "اتجاه إعادة البناء الاستراتيجي خلال اثني عشر شهرًا" : "12-Month Strategic Rebuild Direction"}
+        </h3>
+        <p className="mt-3 text-blue-100 leading-relaxed rtl-text">
+          {ar
+            ? "بعد إكمال خطة التسعين يومًا، تتحول الأولويات الست إلى برنامج إعادة بناء سنوي: الأشهر الثلاثة الأولى لتثبيت النقد والمسؤولية، والثلاثة التالية لتنظيم العمليات والرؤية الإدارية، والثلاثة التالية لتقوية الإيرادات والعملاء، والثلاثة الأخيرة لاختبار النمو المنضبط والاستمرارية."
+            : "After the 90-day plan, convert the six priorities into a yearly rebuild: the first quarter stabilises cash and accountability; the second systemises operations and management visibility; the third strengthens revenue and customers; the final quarter tests controlled growth and continuity."}
+        </p>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {(ar
+            ? [
+                ["الأشهر ١–٣", "تثبيت النقد والقرارات والمسؤولية"],
+                ["الأشهر ٤–٦", "تنظيم العمليات والبيانات والتفويض"],
+                ["الأشهر ٧–٩", "تقوية الإيرادات والعروض والاحتفاظ بالعملاء"],
+                ["الأشهر ١٠–١٢", "اختبار النمو والاستمرارية وحماية الهوامش"],
+              ]
+            : [
+                ["Months 1–3", "Stabilise cash, decisions, and accountability"],
+                ["Months 4–6", "Systemise operations, data, and delegation"],
+                ["Months 7–9", "Strengthen revenue, offers, and retention"],
+                ["Months 10–12", "Test growth, continuity, and margin protection"],
+              ]
+          ).map(([period, direction]) => (
+            <div key={period} className="rounded-2xl border border-white/15 bg-white/10 p-4">
+              <div className="text-sm font-black text-amber-200 rtl-text">{period}</div>
+              <div className="mt-2 text-sm font-bold text-white rtl-text">{direction}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function RevivalField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="text-xs font-black uppercase tracking-widest text-slate-500 rtl-text">{label}</div>
+      <p className="mt-2 text-sm sm:text-base font-bold text-slate-800 leading-relaxed rtl-text">{value}</p>
+    </div>
+  );
+}
 
 function SalesManager90DayPlanSection({
   days,

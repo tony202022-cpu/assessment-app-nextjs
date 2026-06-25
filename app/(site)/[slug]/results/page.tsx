@@ -75,7 +75,7 @@ const COMPETENCY_LABELS: Record<string, { en: string; ar: string }> = {
   people_roles_accountability: { en: "People, Roles & Accountability", ar: "الأفراد والأدوار والمساءلة" },
   leadership_decision_making_rhythm: { en: "Leadership & Decision-Making Rhythm", ar: "القيادة وإيقاع اتخاذ القرار" },
   products_services_value_proposition: { en: "Products, Services & Value Proposition", ar: "المنتجات والخدمات وعرض القيمة" },
-  technology_data_management_visibility: { en: "Technology, Data & Management Visibility", ar: "التقنية والبيانات ووضوح الإدارة" },
+  technology_data_management_visibility: { en: "Technology, AI, Automation & Management Visibility", ar: "التقنية والذكاء الاصطناعي والأتمتة ووضوح الإدارة" },
   risk_compliance_business_continuity: { en: "Risk, Compliance & Business Continuity", ar: "المخاطر والامتثال واستمرارية الأعمال" },
   growth_readiness_scalability: { en: "Growth Readiness & Scalability", ar: "جاهزية النمو وقابلية التوسع" },
 
@@ -696,6 +696,10 @@ function ResultsContent() {
       "Client Acquisition Standard™ by Career Labs AI — Results"
     ) : isSalesManager && ar && isMri ? (
       <ArabicSalesManagerMriTitle text="نتائج التشخيص المتقدم لمدير المبيعات" />
+    ) : isBusinessHealth && ar && isMri ? (
+      "نتائج صحة الشركات الصغيرة والمتوسطة"
+    ) : isBusinessHealth && !ar && isMri ? (
+      "SME Business Health MRI — Results"
     ) : titleFromDb ||
     (isLawyer
       ? ar
@@ -703,7 +707,7 @@ function ResultsContent() {
         : "Client Acquisition Standard™ by Career Labs AI Results"
       : isBusinessHealth
       ? ar
-        ? "نتائج Business Health MRI للشركات الصغيرة والمتوسطة"
+        ? "نتائج صحة الشركات الصغيرة والمتوسطة"
         : "SME Business Health MRI Results"
       : isSalesManager
       ? ar
@@ -852,7 +856,7 @@ const mriLinkReady =
                       {overallPct}%
                     </div>
                    <div className="mt-2 text-[10px] sm:text-xs font-black uppercase tracking-wide text-blue-100 px-6 leading-tight">
-                      {isLawyer ? (ar ? "مؤشر تجربة العميل" : "Client Experience Score") : isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
+                      {isLawyer ? (ar ? "مؤشر تجربة العميل" : "Client Experience Score") : isBusinessHealth ? (ar ? "مؤشر صحة الشركة" : "Business Health Score") : isSalesManager ? (ar ? "مؤشر صحة الإدارة" : "Management Health Score") : (ar ? "مؤشر الصحة البيعية" : "Sales Health Score")}
                     </div>
                     <div className="mt-4">
                       <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black shadow-xl ${tierBadgeColor(overallTier)}`}>
@@ -882,26 +886,26 @@ const mriLinkReady =
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
           <QuickSignalCard
             ar={ar}
-            title={isLawyer ? (ar ? "أقوى رافعة في تجربة العميل القانونية" : "Client Experience Priorities") : ar ? "أقوى إشارة" : "Strongest Signal"}
+            title={isLawyer ? (ar ? "أقوى رافعة في تجربة العميل القانونية" : "Client Experience Priorities") : isBusinessHealth ? (ar ? "أقوى رافعة في صحة الشركة" : "Strongest Business Health Lever") : ar ? "أقوى إشارة" : "Strongest Signal"}
             icon={<TrendingUp size={22} />}
             row={strongest}
             getLabel={getCompetencyLabel}
             body={
               ar
-                ? isLawyer ? "هذه المنطقة يمكن استخدامها كرافعة في تجربة العميل القانونية." : "هذه المنطقة يمكن استخدامها كرافعة للأداء."
+                ? isLawyer ? "هذه المنطقة يمكن استخدامها كرافعة في تجربة العميل القانونية." : isBusinessHealth ? "يمكن استخدام هذه المنطقة لتثبيت أضعف أجزاء الشركة ودعم خطة الإنعاش." : "هذه المنطقة يمكن استخدامها كرافعة للأداء."
                 : "This area can be used as leverage for better performance."
             }
           />
 
           <QuickSignalCard
             ar={ar}
-            title={isLawyer ? (ar ? "أبرز نقطة احتكاك في تجربة العميل القانونية" : "Areas Requiring Attention") : ar ? "أكبر هدر ونزيف مخفي" : "Biggest Hidden Leak"}
+            title={isLawyer ? (ar ? "أبرز نقطة احتكاك في تجربة العميل القانونية" : "Areas Requiring Attention") : isBusinessHealth ? (ar ? "أكبر مصدر هدر في صحة الشركة" : "Biggest Business Health Leak") : ar ? "أكبر هدر ونزيف مخفي" : "Biggest Hidden Leak"}
             icon={<ShieldAlert size={22} />}
             row={weakest}
             getLabel={getCompetencyLabel}
             body={
               ar
-                ? isLawyer ? "هذه المنطقة تحتاج إلى تطوير قبل أن تزيد تردد العميل أو توقف رحلة العميل." : "هذه المنطقة غالبًا تحتاج إلى علاج سريع قبل أن تستمر في اهدار الفرص."
+                ? isLawyer ? "هذه المنطقة تحتاج إلى تطوير قبل أن تزيد تردد العميل أو توقف رحلة العميل." : isBusinessHealth ? "هذه المنطقة هي نقطة البداية في خارطة إنعاش الأعمال لأنها قد تستنزف النقد أو العملاء أو وقت المالك أو القدرة على النمو." : "هذه المنطقة غالبًا تحتاج إلى علاج سريع قبل أن تستمر في اهدار الفرص."
                 : "This area likely needs fast correction before it keeps leaking opportunities."
             }
           />
@@ -991,7 +995,7 @@ const mriLinkReady =
             </div>
             <div>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 rtl-text">
-                {ar ? (isSalesManager ? "لقطة سريعة لنقاط القوة والفرص والتهديدات والضعف" : "لقطة SWOT سريعة") : "Quick SWOT Snapshot"}
+                {ar ? (isSalesManager ? "لقطة سريعة لنقاط القوة والفرص والتهديدات والضعف" : isBusinessHealth ? "لقطة سريعة لنقاط القوة والفرص والتهديدات ونقاط الضعف" : "لقطة SWOT سريعة") : "Quick SWOT Snapshot"}
               </h3>
               <div className="text-sm text-slate-500 mt-1 rtl-text">
                 {ar
@@ -1044,7 +1048,7 @@ const mriLinkReady =
                 icon={<FileText size={22} />}
               />
 
-              {!isOutdoorScan && !isSalesManager && (
+              {!isOutdoorScan && !isSalesManager && !isBusinessHealth && (
               <PreviewActionCard
                 ar={ar}
                 title={isLawyer ? (ar ? "لا تترك نقاط الاحتكاك بلا علاج" : "Do not leave client friction untreated") : ar ? "لا تترك الهدر والنزيف بلا علاج" : "Do not leave the leak untreated"}
@@ -1174,7 +1178,7 @@ const mriLinkReady =
         )}
 
         {/* MRI PRESCRIPTION CARD */}
-        {isScan && !isOutdoorScan && !isSalesManager && (
+        {isScan && !isOutdoorScan && !isSalesManager && !isBusinessHealth && (
           <section className="print-hide rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
               <div className="inline-flex rounded-full bg-rose-500/20 border border-rose-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-rose-100">
@@ -1358,6 +1362,8 @@ const mriLinkReady =
               <h3 className="text-2xl sm:text-3xl font-black rtl-text">
                 {ar && isSalesManager ? (
                   <ArabicSalesManagerMriTitle text="التقرير التشخيصي المتقدم" />
+                ) : ar && isBusinessHealth ? (
+                  "التقرير التشخيصي لصحة الشركة"
                 ) : ar ? "التقرير التشخيصي" : "MRI Diagnostic Report"}
               </h3>
             </div>
@@ -1369,6 +1375,8 @@ const mriLinkReady =
                       <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لمدير المبيعات" />
                       {" "}جاهز الآن. افتح التقرير للاطلاع على التشخيص التفصيلي، وأولويات التطوير، وتحليل نقاط القوة والفرص والتهديدات والضعف، وخطة التنفيذ الإداري لمدة ٩٠ يومًا.
                     </>
+                  : isBusinessHealth
+                  ? "تقرير صحة الشركة جاهز الآن. افتح التقرير للاطلاع على التفسير العام وأكبر مصادر الهدر وأضعف ست أولويات وخارطة إنعاش الأعمال وخطة التنفيذ اليومية لمدة تسعين يومًا واتجاه إعادة البناء خلال اثني عشر شهرًا."
                   : isOutdoorMri
                   ? "تقرير Outdoor Sales MRI الكامل جاهز الآن. افتح التقرير الكامل للاطلاع على التشخيص التفصيلي، أولويات العلاج، تحليل SWOT، وخطة التنفيذ لمدة 90 يومًا."
                   : "هذا هو التقرير المتقدم. سيتم تطوير عرض MRI التفصيلي في المرحلة التالية."
