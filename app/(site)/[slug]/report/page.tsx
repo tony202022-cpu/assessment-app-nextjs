@@ -3243,9 +3243,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         {mri && (
           <section className="avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-indigo-950 via-slate-950 to-blue-950 text-white p-7 sm:p-10">
-              <div className="inline-flex rounded-full bg-amber-400/20 border border-amber-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-amber-100">
-                {ar ? "تقرير مدفوع متقدم" : "Premium Advanced Report"}
-              </div>
+              {!salesManager && (
+                <div className="inline-flex rounded-full bg-amber-400/20 border border-amber-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-amber-100">
+                  {ar ? "تقرير مدفوع متقدم" : "Premium Advanced Report"}
+                </div>
+              )}
 
               <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
                 {ar
@@ -4046,7 +4048,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         )}
 
         {/* SCAN-ONLY MRI PRESCRIPTION UPSELL */}
-        {!mri && !outdoorSalesScan && (
+        {!mri && !outdoorSalesScan && !salesManager && (
           <section className="avoid-break rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
               <div className="inline-flex rounded-full bg-rose-500/20 border border-rose-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-rose-100">
@@ -4218,7 +4220,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </section>
         )}
 
-{!outdoorSalesMri && !outdoorSalesScan && !lawyerClientConversionMri && (
+{!outdoorSalesMri && !outdoorSalesScan && !lawyerClientConversionMri && !salesManager && (
 <>
 {/* ENTERPRISE CTA */}
 

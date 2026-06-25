@@ -1044,7 +1044,7 @@ const mriLinkReady =
                 icon={<FileText size={22} />}
               />
 
-              {!isOutdoorScan && (
+              {!isOutdoorScan && !isSalesManager && (
               <PreviewActionCard
                 ar={ar}
                 title={isLawyer ? (ar ? "لا تترك نقاط الاحتكاك بلا علاج" : "Do not leave client friction untreated") : ar ? "لا تترك الهدر والنزيف بلا علاج" : "Do not leave the leak untreated"}
@@ -1174,7 +1174,7 @@ const mriLinkReady =
         )}
 
         {/* MRI PRESCRIPTION CARD */}
-        {isScan && !isOutdoorScan && (
+        {isScan && !isOutdoorScan && !isSalesManager && (
           <section className="print-hide rounded-3xl overflow-hidden shadow-2xl border border-indigo-200">
             <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white p-7 sm:p-10">
               <div className="inline-flex rounded-full bg-rose-500/20 border border-rose-300/30 px-4 py-2 text-xs font-black uppercase tracking-widest text-rose-100">
