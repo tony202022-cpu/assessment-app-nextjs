@@ -180,6 +180,30 @@ function isProbablyScan(routeSlug?: string, attemptAssessmentId?: string | null,
   return s.includes("scan") || a.includes("scan") || c === "scan" || a === SCAN_ASSESSMENT_ID;
 }
 
+function ArabicLawyerBrand({
+  report = false,
+  results = false,
+}: {
+  report?: boolean;
+  results?: boolean;
+}) {
+  return (
+    <span dir="rtl">
+      {results
+        ? "نتائج معيار كسب الموكلين™ من"
+        : report
+        ? "تقرير معيار كسب الموكلين™ من"
+        : "معيار كسب الموكلين™ من"}{" "}
+      <span
+        dir="ltr"
+        style={{ direction: "ltr", unicodeBidi: "isolate", display: "inline-block", whiteSpace: "nowrap" }}
+      >
+        Career Labs AI
+      </span>
+    </span>
+  );
+}
+
 function safePct(n: any) {
   const v = Math.round(Number(n) || 0);
   return Math.max(0, Math.min(100, v));
@@ -671,8 +695,8 @@ function ResultsContent() {
     ) : titleFromDb ||
     (isLawyer
       ? ar
-        ? "نتائج إياس™ لتجربة العميل القانونية"
-        : "EYĀS™ Legal Client Experience MRI Results"
+        ? <ArabicLawyerBrand results />
+        : "Client Acquisition Standard™ by Career Labs AI Results"
       : isBusinessHealth
       ? ar
         ? "نتائج Business Health MRI للشركات الصغيرة والمتوسطة"
@@ -1028,8 +1052,8 @@ const mriLinkReady =
                 buttonText={
                   isLawyer
                     ? ar
-                      ? "احصل على إياس™ لتجربة العميل القانونية الكامل"
-                      : "Get My Full EYĀS™ Legal Client Experience MRI"
+                      ? "احصل على تقرير معيار كسب الموكلين™ الكامل"
+                      : "Get My Full Client Acquisition Standard™ Report"
                     : ar && isSalesManager
                     ? <ArabicSalesManagerMriTitle text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />
                     : ar
@@ -1177,10 +1201,10 @@ const mriLinkReady =
                     : "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, forecasting, accountability, and team execution."
                   : ar
                   ? isLawyer
-                    ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة لرحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، الاستشارة، أتعاب المحاماة، الاعتراضات، وتجربة العميل."
+                    ? <><ArabicLawyerBrand /> هو أداة تشخيص وتوجيه كاملة لرحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، الاستشارة، أتعاب المحاماة، الاعتراضات، وتجربة العميل.</>
                     : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي."
                   : isLawyer
-                    ? "The Advanced EYĀS™ Legal Client Experience MRI is a full diagnostic and professional guidance tool for legal inquiries, consultations, professional fees, objections, next legal steps, and client experience."
+                    ? "Client Acquisition Standard™ by Career Labs AI is a full diagnostic and professional guidance tool for legal inquiries, consultations, professional fees, objections, next legal steps, and client experience."
                     : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body."}
               </p>
 
@@ -1235,14 +1259,14 @@ const mriLinkReady =
                             "أدوات تنفيذ تساعدك على التطبيق وليس القراءة فقط",
                           ]
                         : [
-                            isLawyer ? "تقرير إياس™ لتجربة العميل القانونية شخصي مفصل مبني على إجاباتك ونتائجك" : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
+                            isLawyer ? <ArabicLawyerBrand report /> : "تقرير Sales MRI شخصي مفصل من حوالي ٣٠ صفحة مبني على إجاباتك ونتائجك",
                             "أداة تشخيص وعلاج كاملة تفحص ١٥ كفاءة في جسم أدائك البيعي",
                             "وصفة أداء عملية لمدة ٩٠ يومًا دون الجلوس في دورة تدريبية طويلة",
                             "مسار تصحيح يومي يساعدك على معرفة ماذا تفعل وماذا تتوقف عن فعله",
                             "٥ مكافآت تنفيذية تساعدك على التطبيق وليس القراءة فقط",
                           ]
                       : [
-                          isLawyer ? "A personalized EYĀS™ Legal Client Experience MRI report based on your answers and scores" : isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
+                          isLawyer ? "A personalized Client Acquisition Standard™ by Career Labs AI report based on your answers and scores" : isSalesManager ? "A personalized Sales Manager MRI report based on your answers and scores" : "A personalized, super-detailed Sales MRI report of around 30 pages based on your answers and scores",
                           isSalesManager ? "A full diagnostic and treatment tool examining 15 sales-management competencies" : "A full diagnostic and treatment tool examining 15 competencies in your sales performance body",
                           "A practical 90-day performance prescription without sitting through a long training course",
                           "A day-by-day correction path showing what to do and what to stop doing",
@@ -1282,8 +1306,8 @@ const mriLinkReady =
     >
       🚀 {isLawyer
         ? (ar
-            ? "احصل على تقرير إياس™ لتجربة العميل القانونية الكامل"
-            : "Get My Full EYĀS™ Legal Client Experience MRI")
+            ? "احصل على تقرير معيار كسب الموكلين™ الكامل"
+            : "Get My Full Client Acquisition Standard™ Report")
         : (ar
             ? isSalesManager
               ? <ArabicSalesManagerMriTitle text="احصل على التقرير الكامل وخطة التنفيذ الإداري لمدة ٩٠ يومًا" />

@@ -691,6 +691,20 @@ function sectionTitle(text: ReactNode, sub?: ReactNode) {
   );
 }
 
+function ArabicLawyerBrand({ report = false }: { report?: boolean }) {
+  return (
+    <span dir="rtl">
+      {report ? "تقرير معيار كسب الموكلين™ من" : "معيار كسب الموكلين™ من"}{" "}
+      <span
+        dir="ltr"
+        style={{ direction: "ltr", unicodeBidi: "isolate", display: "inline-block", whiteSpace: "nowrap" }}
+      >
+        Career Labs AI
+      </span>
+    </span>
+  );
+}
+
 type SalesFitnessDay = {
   day: number;
   phase: string;
@@ -2975,15 +2989,17 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     : [];
 
   const reportTitle =
-    salesManager && ar && mri ? (
+    lawyer && ar && mri ? (
+      <ArabicLawyerBrand report />
+    ) : salesManager && ar && mri ? (
       <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لمدير المبيعات" />
     ) : (ar
       ? (assessment as any)?.title_ar || (assessment as any)?.name_ar || ""
       : (assessment as any)?.title_en || (assessment as any)?.name_en || "") ||
     (mri
       ? ar
-        ? lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير التشخيص المتقدم لمدير المبيعات" : "تقرير Outdoor Sales MRI المتقدم"
-        : lawyer ? "Advanced EYĀS™ Legal Client Experience MRI Report" : businessHealth ? "Advanced SME Business Health MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
+        ? lawyer ? "تقرير معيار كسب الموكلين™ من Career Labs AI" : businessHealth ? "تقرير Business Health MRI للشركات الصغيرة والمتوسطة" : salesManager ? "تقرير التشخيص المتقدم لمدير المبيعات" : "تقرير Outdoor Sales MRI المتقدم"
+        : lawyer ? "Client Acquisition Standard™ by Career Labs AI Report" : businessHealth ? "Advanced SME Business Health MRI Report" : salesManager ? "Advanced Sales Manager MRI Report" : "Advanced Outdoor Sales MRI Report"
       : lawyer
       ? ar
         ? "تشخيص تجربة العميل القانونية"
@@ -3011,7 +3027,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         : lawyer ? "Legal Client Experience Diagnostic" : businessHealth ? "SME Business Health Vital Signs Check" : salesManager ? "Sales Manager Leadership Blood Test" : "Sales Performance Blood Test",
       subtitle: mri
         ? lawyer
-          ? "A personalized EYĀS™ Legal Client Experience MRI designed to diagnose the legal client journey from first inquiry to the appropriate next legal step, including consultation clarity, legal-value clarity, professional fees, objections, and follow-up."
+          ? "A personalized Client Acquisition Standard™ by Career Labs AI report designed to diagnose the legal client journey from first inquiry to the appropriate next legal step, including consultation clarity, legal-value clarity, professional fees, objections, and follow-up."
           : businessHealth
           ? "A personalized SME Business Health MRI designed to diagnose where the company is leaking cash, customers, team energy, execution discipline, owner time, and growth readiness then turn the findings into a practical business revamp roadmap."
           : salesManager
@@ -3029,7 +3045,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       participant: "Participant Identity",
       health: lawyer ? "Client Experience Health Zone" : businessHealth ? "Business Health Temperature" : salesManager ? "Management Health Zone" : "Sales Health Zone",
       bloodPanel: mri
-        ? lawyer ? "15-Competency EYĀS™ Legal Client Experience MRI Panel" : businessHealth ? "12-Area SME Business Health MRI Panel" : salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
+        ? lawyer ? "15-Competency Client Acquisition Standard™ Panel" : businessHealth ? "12-Area SME Business Health MRI Panel" : salesManager ? "15-Competency Sales Manager MRI Panel" : "15-Competency Sales MRI Panel"
         : lawyer ? "Legal Client Journey Health Index: Overall Score + Professional Markers" : businessHealth ? "SME Business Health Panel: Overall Score + Vital Signs" : salesManager ? "Sales Manager Panel: Overall Score + 7 Leadership Markers" : "Sales Health Panel: Overall Score + 7 Core Markers",
       bloodPanelSub: mri
         ? lawyer
@@ -3051,9 +3067,9 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       commercial: lawyer ? "Professional Interpretation" : businessHealth ? "Business Health Interpretation" : salesManager ? "Management Interpretation" : "Commercial Interpretation",
       swot: lawyer ? "Legal Client Experience SWOT Analysis" : businessHealth ? "SME Business Health SWOT Analysis" : "Strategic SWOT Analysis",
       actions: mri ? (lawyer ? "Professional Guidance Plan" : businessHealth ? "Business Revamp Treatment Priorities" : "Personal Treatment Priorities") : "Priority Execution Plan",
-      prescriptionHeadline: lawyer ? "Your Legal Client Experience MRI Shows the Friction Points. The Guidance Plan Shows What to Address First." : businessHealth ? "Your Business Health MRI Shows the Leaks. The Roadmap Shows What to Stabilize and Revamp First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
-      prescriptionSubhead: lawyer ? "The Advanced EYĀS™ Legal Client Experience MRI is a full diagnostic and professional guidance tool for legal inquiries, consultations, client trust, professional legal fees, objections, next legal steps, and client experience." : businessHealth ? "The Advanced SME Business Health MRI is a full diagnostic and roadmap tool for owners and general managers who want to stabilize leaks, strengthen the operating system, and identify the next revamp priorities." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
-      prescriptionCta: lawyer ? "Get My Full EYĀS™ Legal Client Experience MRI" : businessHealth ? "Get My SME Business Health Roadmap" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
+      prescriptionHeadline: lawyer ? "Your Client Acquisition Standard™ Shows the Friction Points. The Guidance Plan Shows What to Address First." : businessHealth ? "Your Business Health MRI Shows the Leaks. The Roadmap Shows What to Stabilize and Revamp First." : salesManager ? "Your Leadership Scan Shows the Symptoms. The Manager MRI Gives You the Treatment Plan." : "Your Scan Is the Blood Test. The MRI Gives You the Prescription.",
+      prescriptionSubhead: lawyer ? "Client Acquisition Standard™ by Career Labs AI is a full diagnostic and professional guidance tool for legal inquiries, consultations, client trust, professional legal fees, objections, next legal steps, and client experience." : businessHealth ? "The Advanced SME Business Health MRI is a full diagnostic and roadmap tool for owners and general managers who want to stabilize leaks, strengthen the operating system, and identify the next revamp priorities." : salesManager ? "The Advanced Sales Manager MRI is a full diagnostic and treatment tool for coaching, pipeline, accountability, forecasting, and team execution." : "The Advanced Outdoor Sales MRI is a full diagnostic and treatment tool for your sales performance body.",
+      prescriptionCta: lawyer ? "Get My Full Client Acquisition Standard™ Report" : businessHealth ? "Get My SME Business Health Roadmap" : salesManager ? "Get My Full Sales Manager MRI" : "Get My Full Sales MRI & 90-Day Prescription",
       enterpriseTitle: lawyer ? "For Law Firms, Managing Partners & Legal Platforms" : businessHealth ? "For SME Owners, General Managers & Partners" : salesManager ? "For Sales Directors, CEOs & Business Owners" : "For Sales Managers & Business Owners",
       enterpriseCta: lawyer ? "Diagnose the Lawyer Before You Train the Lawyer" : businessHealth ? "Diagnose the Business Before You Revamp the Business" : "Diagnose the Team Before You Train the Team",
     },
@@ -3064,7 +3080,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         : lawyer ? "تشخيص تجربة العميل القانونية" : businessHealth ? "SCAN العلامات الحيوية لصحة الشركة" : salesManager ? "SCAN قيادي لمدير المبيعات" : "فحص دم لأداء المبيعات",
       subtitle: mri
         ? lawyer
-          ? "تقرير إياس™ لتجربة العميل القانونية شخصي لتشخيص رحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، مروراً بالاستشارة، وضوح القيمة القانونية، أتعاب المحاماة، الاعتراضات، والمتابعة."
+          ? "تقرير معيار كسب الموكلين™ من Career Labs AI لتشخيص رحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، مروراً بالاستشارة، وضوح القيمة القانونية، أتعاب المحاماة، الاعتراضات، والمتابعة."
           : businessHealth
           ? "تقرير SME Business Health MRI شخصي لتشخيص أين تهدر الشركة السيولة، العملاء، طاقة الفريق، انضباط التنفيذ، وقت المالك، وجاهزية النمو  ثم تحويل النتائج إلى خارطة طريق عملية لتقوية الشركة."
           : salesManager
@@ -3082,7 +3098,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       participant: "هوية المشارك",
       health: lawyer ? "مستوى صحة تجربة العميل القانونية" : businessHealth ? "درجة حرارة صحة الشركة" : salesManager ? "منطقة الصحة الإدارية" : "منطقة الصحة البيعية",
       bloodPanel: mri
-        ? lawyer ? "لوحة إياس™ لتجربة العميل القانونية عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
+        ? lawyer ? "لوحة معيار كسب الموكلين™ عبر ١٥ كفاءة" : businessHealth ? "لوحة SME Business Health MRI عبر ١٢ منطقة" : salesManager ? "لوحة التشخيص المتقدم لمدير المبيعات عبر ١٥ كفاءة" : "لوحة MRI التشخيصية عبر ١٥ كفاءة"
         : lawyer ? "مؤشر صحة رحلة العميل القانونية: النتيجة العامة + المؤشرات المهنية" : businessHealth ? "لوحة صحة الشركة: النتيجة العامة + العلامات الحيوية" : salesManager ? "لوحة مدير المبيعات: النتيجة العامة + ٧ مؤشرات قيادية" : "لوحة الصحة البيعية: النتيجة العامة + ٧ مؤشرات أساسية",
       bloodPanelSub: mri
         ? lawyer
@@ -3105,8 +3121,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
       swot: lawyer ? "تحليل SWOT لتجربة العميل القانونية" : businessHealth ? "تحليل SWOT لصحة الشركة" : salesManager ? "تحليل نقاط القوة والفرص والتهديدات والضعف" : "تحليل SWOT الاستراتيجي",
       actions: mri ? (lawyer ? "خطة التوجيه المهني" : businessHealth ? "أولويات علاج وإعادة تقوية الشركة" : "أولويات العلاج الشخصية") : "خطة التنفيذ ذات الأولوية",
       prescriptionHeadline: lawyer ? "تقريرك يكشف نقاط الاحتكاك. وخطة التوجيه توضّح ما يجب تطويره أولًا." : businessHealth ? "تقرير صحة الشركة يكشف الهدر والنزيف. وخارطة الطريق توضّح ما يجب تثبيته وتقويته أولًا." : salesManager ? "التشخيص القيادي يكشف الأعراض، والتشخيص المتقدم يقدّم خطة التطوير." : "ال SCAN  هو تحليل الدم. أما الـ MRI فيعطيك الوصفة العلاجية.",
-      prescriptionSubhead: lawyer ? "تقرير إياس™ لتجربة العميل القانونية المتقدم هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "أداة تشخيص وتطوير متكاملة تفحص التدريب، ومسار الفرص البيعية، والمساءلة، والتوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
-      prescriptionCta: lawyer ? "احصل على إياس™ لتجربة العميل القانونية الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على تقرير التشخيص المتقدم لمدير المبيعات" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
+      prescriptionSubhead: lawyer ? "معيار كسب الموكلين™ من Career Labs AI هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، الاستشارة، ثقة العميل، أتعاب المحاماة، الاعتراضات، الخطوة القانونية التالية، وتجربة العميل." : businessHealth ? "تقرير Advanced SME Business Health MRI هو أداة تشخيص وخارطة طريق لأصحاب الشركات والمدراء العامين الذين يريدون تثبيت الهدر، تقوية نظام التشغيل، وتحديد أولويات إعادة بناء الشركة." : salesManager ? "أداة تشخيص وتطوير متكاملة تفحص التدريب، ومسار الفرص البيعية، والمساءلة، والتوقعات، وتنفيذ الفريق." : "تقرير Advanced Outdoor Sales MRI هو أداة تشخيص وعلاج كاملة لجسم أدائك البيعي.",
+      prescriptionCta: lawyer ? "احصل على تقرير معيار كسب الموكلين™ الكامل" : businessHealth ? "احصل على خارطة طريق صحة الشركة" : salesManager ? "احصل على تقرير التشخيص المتقدم لمدير المبيعات" : "احصل على تقرير MRI الكامل ووصفة الـ ٩٠ يومًا",
       enterpriseTitle: lawyer ? "لشركات المحاماة والشركاء الإداريين والمنصات القانونية" : businessHealth ? "لأصحاب الشركات الصغيرة والمتوسطة والمدراء العامين والشركاء" : salesManager ? "لمدراء المبيعات والرؤساء التنفيذيين وأصحاب الشركات" : "لمدراء المبيعات وأصحاب الشركات",
       enterpriseCta: lawyer ? "شخّص المحامي قبل أن تدرّبه" : businessHealth ? "شخّص الشركة قبل أن تعيد بناءها" : "شخّص الفريق قبل أن تدرّبه",
     },
@@ -3179,7 +3195,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
                     {reportTitle}
                   </h1>
                   <p className="mt-4 text-base sm:text-xl text-blue-100 leading-relaxed max-w-3xl rtl-text">
-                    {salesManager && ar && mri ? (
+                    {lawyer && ar && mri ? (
+                      <>
+                        <ArabicLawyerBrand report /> لتشخيص رحلة العميل من الاستفسار إلى الخطوة القانونية المناسبة، مروراً بالاستشارة، ووضوح القيمة القانونية، وأتعاب المحاماة، والاعتراضات، والمتابعة.
+                      </>
+                    ) : salesManager && ar && mri ? (
                       <>
                         <ArabicSalesManagerMriTitle text="تقرير شخصي مفصل للتشخيص المتقدم لمدير المبيعات" />
                         {" "}لتشخيص أنماط القيادة، وهدر ونزيف أداء الفريق، وأولويات التطوير الإداري.
@@ -4032,7 +4052,11 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
               </div>
 
               <h2 className="mt-5 text-3xl sm:text-5xl font-black leading-tight rtl-text">
-                {salesManager && ar ? (
+                {lawyer && ar ? (
+                  <>
+                    <ArabicLawyerBrand /> هو أداة تشخيص وتوجيه كاملة للاستفسارات القانونية، والاستشارة، وثقة العميل، وأتعاب المحاماة، والاعتراضات، والخطوة القانونية التالية، وتجربة العميل.
+                  </>
+                ) : salesManager && ar ? (
                   <>
                     التشخيص القيادي يكشف الأعراض، أما{" "}
                     <ArabicSalesManagerMriTitle text="التشخيص المتقدم لمدير المبيعات" />
@@ -4981,7 +5005,7 @@ function LawyerPlanPersonalizationBox({
       <p className="mt-3 text-sm sm:text-base font-semibold leading-relaxed text-slate-700 rtl-text">
         {ar
           ? "تم بناء هذه الخطة بناءً على أضعف ست كفاءات ظهرت في نتائجك، مع استخدام أقوى منطقة لديك كرافعة دعم. لذلك لا تُعرض الخطة كقائمة عامة، بل كمسار توجيه يبدأ بالمناطق الأكثر احتمالًا لإضعاف الثقة، أو وضوح الاستشارة، أو الثقة في أتعاب المحاماة، أو المتابعة، أو الخطوة القانونية التالية بناءً على نتائجك."
-          : "This guidance plan is based on your weakest six EYĀS™ Legal Client Experience MRI competencies and your strongest leverage area. The sequence below is not a generic checklist. It prioritizes the areas most likely to create friction in client trust, consultation clarity, fee confidence, follow-up discipline, or next legal steps based on your own results."}
+          : "This guidance plan is based on your weakest six Client Acquisition Standard™ competencies and your strongest leverage area. The sequence below is not a generic checklist. It prioritizes the areas most likely to create friction in client trust, consultation clarity, fee confidence, follow-up discipline, or next legal steps based on your own results."}
       </p>
 
       <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_0.7fr]">
