@@ -697,7 +697,7 @@ function ResultsContent() {
     ) : isSalesManager && ar && isMri ? (
       <ArabicSalesManagerMriTitle text="نتائج التشخيص المتقدم لمدير المبيعات" />
     ) : isBusinessHealth && ar && isMri ? (
-      "نتائج صحة الشركات الصغيرة والمتوسطة"
+      <ArabicSalesManagerMriTitle text="نتائج التشخيص المتقدم لصحة الشركات الصغيرة والمتوسطة" />
     ) : isBusinessHealth && !ar && isMri ? (
       "SME Business Health MRI — Results"
     ) : titleFromDb ||

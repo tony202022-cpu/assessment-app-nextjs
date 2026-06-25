@@ -3003,7 +3003,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     ) : salesManager && ar && mri ? (
       <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لمدير المبيعات" />
     ) : businessHealth && ar && mri ? (
-      "تقرير صحة الشركات الصغيرة والمتوسطة"
+      <ArabicSalesManagerMriTitle text="تقرير التشخيص المتقدم لصحة الشركات الصغيرة والمتوسطة" />
     ) : businessHealth && !ar && mri ? (
       "SME Business Health MRI — Report"
     ) : (ar
