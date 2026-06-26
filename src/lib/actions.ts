@@ -2,6 +2,7 @@
 
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import { isPaidMriAssessmentId, isTokenBackedPaidAttempt } from "@/lib/paid-mri-access";
 
 export type Language = "ar" | "en";
 export type Tier = "Strength" | "Opportunity" | "Threat" | "Weakness";
@@ -137,7 +138,7 @@ export async function submitQuiz(
   // --------------------------------------------------
   const { data: existing, error: attemptErr } = await supabase
     .from("quiz_attempts")
-    .select("id, assessment_id, language, answers, competency_results, total_percentage")
+    .select("id, assessment_id, language, answers, competency_results, total_percentage, access_token_id, company_id")
     .eq("id", attemptId)
     .maybeSingle();
 
@@ -161,6 +162,10 @@ export async function submitQuiz(
   // Hard safety: prevent mixing assessments
   if (existing.assessment_id && existing.assessment_id !== assessmentId) {
     throw new Error("Assessment mismatch for this attempt.");
+  }
+
+  if (isPaidMriAssessmentId(assessmentId) && !isTokenBackedPaidAttempt(existing)) {
+    throw new Error("This paid assessment requires an authorised access token.");
   }
 
   // Normalize assessment_id + language ONLY if missing

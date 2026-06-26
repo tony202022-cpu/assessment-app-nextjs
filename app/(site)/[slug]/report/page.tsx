@@ -20,6 +20,7 @@ import {
   buildSmeBusinessRevival90DayPlan,
   type SmeBusinessRevivalDay,
 } from "@/lib/sme-business-revival-90day";
+import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -2903,6 +2904,23 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           >
             {ar ? "العودة إلى النتائج" : "Back to Results"}
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (isPaidMriSlug(slug) && !isAuthorizedPaidMriAttempt(slug, attempt)) {
+    return (
+      <div className="min-h-screen bg-slate-950 p-8 text-center text-white">
+        <div className="max-w-2xl mx-auto rounded-3xl border border-white/15 bg-white/10 p-8 shadow-xl">
+          <h1 className="text-3xl font-black">
+            {urlLang === "ar" ? "رابط التقرير غير صالح" : "Report access blocked"}
+          </h1>
+          <p className="mt-4 text-white/75">
+            {urlLang === "ar"
+              ? "هذا التقرير المدفوع يتطلب محاولة مصرح بها ومطابقة لهذا التشخيص."
+              : "This paid report requires an authorised attempt for this exact diagnostic."}
+          </p>
         </div>
       </div>
     );

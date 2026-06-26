@@ -5,6 +5,11 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Button } from "@/components/ui/button";
+import {
+  expectedPaidMriAssessmentId,
+  isAuthorizedPaidMriAttempt,
+  isPaidMriSlug,
+} from "@/lib/paid-mri-access";
 
 type Lang = "en" | "ar";
 
@@ -169,6 +174,7 @@ export default function InstructionsPage() {
   const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [conf, setConf] = useState<any>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => setHydrated(true), []);
 
@@ -202,6 +208,31 @@ export default function InstructionsPage() {
           return;
         }
 
+        if (isPaidMriSlug(slug)) {
+          if (!attemptId) {
+            router.replace(`/${encodeURIComponent(slug)}/login?lang=${encodeURIComponent(urlLang)}`);
+            return;
+          }
+
+          const expectedAssessmentId = expectedPaidMriAssessmentId(slug);
+          const { data: attempt, error: attemptError } = await supabase
+            .from("quiz_attempts")
+            .select("id, assessment_id, access_token_id, company_id")
+            .eq("id", attemptId)
+            .maybeSingle();
+
+          if (
+            attemptError ||
+            !attempt ||
+            String(data.id) !== expectedAssessmentId ||
+            !isAuthorizedPaidMriAttempt(slug, attempt)
+          ) {
+            setAccessDenied(true);
+            return;
+          }
+        }
+
+        setAccessDenied(false);
         setConf(data);
       } finally {
         setLoading(false);
@@ -209,11 +240,27 @@ export default function InstructionsPage() {
     };
 
     load();
-  }, [slug, router]);
+  }, [slug, router, attemptId, urlLang]);
 
   if (!hydrated) return null;
   if (!slug) return null;
   if (loading) return null;
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 px-6 text-center text-white">
+        <div className="max-w-md rounded-3xl border border-white/15 bg-white/10 p-8 shadow-2xl">
+          <h1 className="text-2xl font-extrabold">
+            {urlLang === "ar" ? "رابط الدخول غير صالح" : "Access link required"}
+          </h1>
+          <p className="mt-3 text-white/75">
+            {urlLang === "ar"
+              ? "هذا التقييم المدفوع يتطلب رابط دخول صالح ومخصص لهذا التشخيص."
+              : "This paid assessment requires a valid access link for this exact diagnostic."}
+          </p>
+        </div>
+      </div>
+    );
+  }
   if (!conf) return null;
 
   const ar = (language || urlLang) === "ar";

@@ -36,6 +36,7 @@ import {
   Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
 
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
 const SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
@@ -593,6 +594,14 @@ function ResultsContent() {
       if (cancelled) return;
 
       const att = attRes.data ?? null;
+
+      if (isPaidMriSlug(routeSlug) && !isAuthorizedPaidMriAttempt(routeSlug, att)) {
+        setAttempt(null);
+        setConfig(null);
+        setLoading(false);
+        return;
+      }
+
       setAttempt(att);
 
       try {

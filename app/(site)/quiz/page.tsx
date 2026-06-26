@@ -8,6 +8,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { toast } from "sonner";
 import { submitQuiz } from "@/lib/actions";
 import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import { isPaidMriAssessmentId, isTokenBackedPaidAttempt } from "@/lib/paid-mri-access";
 
 const arabicFont = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
@@ -169,6 +170,31 @@ const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(nu
 
       setLoading(true);
 
+      if (isPaidMriAssessmentId(assessmentId)) {
+        const { data: attempt, error: attemptError } = await supabase
+          .from("quiz_attempts")
+          .select("id, assessment_id, access_token_id, company_id")
+          .eq("id", attemptId)
+          .maybeSingle();
+
+        if (
+          attemptError ||
+          !attempt ||
+          String((attempt as any).assessment_id || "").toLowerCase() !==
+            String(assessmentId || "").toLowerCase() ||
+          !isTokenBackedPaidAttempt(attempt)
+        ) {
+          toast.error(
+            isArabic
+              ? "هذا التقييم المدفوع يتطلب رابط دخول صالح."
+              : "This paid assessment requires a valid access link."
+          );
+          setLoading(false);
+          router.replace(`/${slug || "scan"}`);
+          return;
+        }
+      }
+
       const base = supabase.from("questions").select("*");
 
       // Attempt 1: assessment_id
@@ -237,7 +263,7 @@ const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(nu
     };
 
     fetchQuestions();
-  }, [assessmentId, questionLimit, isArabic, attemptId, timeLimitSeconds]);
+  }, [assessmentId, questionLimit, isArabic, attemptId, timeLimitSeconds, router, slug]);
 
 // ✅ 3) Timer (deadline-based, survives leaving the page)
 useEffect(() => {

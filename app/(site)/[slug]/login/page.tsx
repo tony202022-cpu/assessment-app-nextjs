@@ -8,6 +8,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { isPaidMriSlug } from "@/lib/paid-mri-access";
 
 type Lang = "en" | "ar";
 
@@ -242,6 +243,14 @@ export default function LoginPage() {
 
     // ✅ NORMAL / NON-TOKEN FLOW
     // This keeps the existing slug kitchen working for scans and any assessment that does not use bulk credits.
+    if (isPaidMriSlug(slug)) {
+      throw new Error(
+        ar
+          ? "هذا التقييم مدفوع ويتطلب رابط دخول صالح."
+          : "This paid assessment requires a valid access token link."
+      );
+    }
+
     const payload = {
       assessment_id: assessmentId,
       language: urlLang,
