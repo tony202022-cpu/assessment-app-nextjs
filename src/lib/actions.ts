@@ -283,6 +283,7 @@ export async function submitQuiz(
       answers: normalized,
       competency_results,
       total_percentage,
+      completed_at: new Date().toISOString(),
     })
     .eq("id", attemptId);
 
