@@ -210,7 +210,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
-      <section className="bg-slate-950 text-white">
+      <section className="bg-[#F3F6FA] text-[#071A3D]">
         <div className="mx-auto max-w-[1500px] px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
           <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
             <div>
@@ -223,21 +223,21 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
                 Outdoor Sales MRI Results
               </h1>
-              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-blue-300/20 bg-blue-400/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-blue-200">
+              <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#D7E1EF] bg-[#E8EEF7] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#173B70]">
                 <ShieldCheck size={15} /> Private Manager / HR Dashboard
               </div>
-              <div className="mt-4 flex items-center gap-2 text-slate-300">
-                <Building2 size={18} className="text-blue-300" />
+              <div className="mt-4 flex items-center gap-2 text-[#53627A]">
+                <Building2 size={18} className="text-[#173B70]" />
                 <span className="font-semibold">{company.name || "Company"}</span>
               </div>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+            <div className="rounded-2xl border border-[#DCE4EF] bg-white px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#53627A]">
                 Completion
               </p>
               <p className="mt-1 text-2xl font-black">
                 {completedCount}{" "}
-                <span className="text-base text-slate-400">of {attempts.length}</span>
+                <span className="text-base text-[#53627A]">of {attempts.length}</span>
               </p>
             </div>
           </div>
