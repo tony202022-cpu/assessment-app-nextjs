@@ -214,15 +214,13 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
         <div className="mx-auto max-w-[1500px] px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
           <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
             <div>
-              <div className="w-fit overflow-hidden rounded-xl bg-white px-3 py-2">
-                <img
-                  src="/brand/careerlabs-ai-logo.png"
-                  alt="Career Labs AI"
-                  width={150}
-                  className="h-auto w-[150px] object-contain"
-                />
-              </div>
-              <h1 className="mt-5 text-3xl font-black tracking-tight sm:text-4xl">
+              <img
+                src="/brand/careerlabs-ai-logo.png"
+                alt="Career Labs AI"
+                width={210}
+                className="h-auto w-[150px] object-contain sm:w-[190px] lg:w-[210px]"
+              />
+              <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
                 Outdoor Sales MRI Results
               </h1>
               <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-blue-300/20 bg-blue-400/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-blue-200">
