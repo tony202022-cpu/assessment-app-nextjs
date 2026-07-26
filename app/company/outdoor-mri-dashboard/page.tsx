@@ -266,7 +266,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
           />
         </section>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-[#fbfaf7] shadow-sm">
           <div className="flex flex-col justify-between gap-3 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
             <div>
               <h2 className="text-xl font-black">Participant results</h2>
@@ -288,102 +288,135 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-[1460px] w-full border-collapse text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <tr>
-                    <th className="px-5 py-4 font-bold">Participant</th>
-                    <th className="px-5 py-4 font-bold">Email</th>
-                    <th className="px-5 py-4 font-bold">Company</th>
-                    <th className="px-5 py-4 font-bold">Status</th>
-                    <th className="px-5 py-4 font-bold">Started</th>
-                    <th className="px-5 py-4 font-bold">Completed</th>
-                    <th className="px-5 py-4 font-bold">Overall</th>
-                    <th className="px-5 py-4 font-bold">Weakest 6 competencies</th>
-                    <th className="px-5 py-4 font-bold">Report</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {attempts.map((attempt) => {
-                    const completed = isCompleted(attempt);
-                    const weakCompetencies = weakestSix(attempt.competency_results);
-                    const reportUrl = company.is_offline_activated
-                      ? `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}&managerToken=${encodeURIComponent(managerToken)}`
-                      : `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}`;
+            <div className="grid gap-5 p-4 sm:p-6">
+              {attempts.map((attempt) => {
+                const completed = isCompleted(attempt);
+                const weakCompetencies = weakestSix(attempt.competency_results);
+                const reportUrl = company.is_offline_activated
+                  ? `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}&managerToken=${encodeURIComponent(managerToken)}`
+                  : `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}`;
 
-                    return (
-                      <tr key={attempt.id} className="align-top hover:bg-slate-50/70">
-                        <td className="px-5 py-5 font-bold text-slate-900">
-                          {attempt.full_name || "—"}
-                        </td>
-                        <td className="px-5 py-5 text-slate-600">
-                          {attempt.user_email || "—"}
-                        </td>
-                        <td className="px-5 py-5 text-slate-600">
-                          {attempt.company || "—"}
-                        </td>
-                        <td className="px-5 py-5">
+                return (
+                  <article
+                    key={attempt.id}
+                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                  >
+                    <div className="flex flex-col gap-5 border-b border-slate-200 p-5 sm:p-6 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span
                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
                               completed
                                 ? "bg-emerald-50 text-emerald-700"
-                                : "bg-amber-50 text-amber-700"
+                                : "bg-amber-50 text-amber-800"
                             }`}
                           >
                             {completed ? "Completed" : "Started / In Progress"}
                           </span>
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-5 text-slate-600">
-                          {formatDate(attempt.created_at)}
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-5 text-slate-600">
-                          {completed ? formatDate(attempt.completed_at) : "—"}
-                        </td>
-                        <td className="px-5 py-5">
-                          <span className="text-lg font-black text-slate-950">
+                          {completed && (
+                            <span className="text-xs font-semibold text-slate-500">
+                              {formatDate(attempt.completed_at)}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="mt-3 break-words text-xl font-black tracking-tight text-slate-950">
+                          {attempt.full_name || "—"}
+                        </h3>
+                        <p className="mt-1 break-all text-sm text-slate-600">
+                          {attempt.user_email || "—"}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0">
+                        {completed ? (
+                          <a
+                            href={reportUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            referrerPolicy="no-referrer"
+                            className="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-amber-700 sm:w-auto"
+                          >
+                            View Report <ExternalLink size={16} />
+                          </a>
+                        ) : (
+                          <span className="inline-flex rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-400">
+                            Report not available
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,2.2fr)]">
+                      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                        <div className="rounded-xl bg-slate-50 px-4 py-3">
+                          <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                            Company
+                          </dt>
+                          <dd className="mt-1 break-words text-sm font-bold text-slate-900">
+                            {attempt.company || "—"}
+                          </dd>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-4 py-3">
+                          <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                            Started
+                          </dt>
+                          <dd className="mt-1 text-sm font-bold text-slate-900">
+                            {formatDate(attempt.created_at)}
+                          </dd>
+                        </div>
+                        <div className="rounded-xl bg-slate-950 px-4 py-3 text-white">
+                          <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                            Overall
+                          </dt>
+                          <dd className="mt-1 text-2xl font-black">
                             {completed
                               ? `${Math.round(Number(attempt.total_percentage) || 0)}%`
                               : "—"}
-                          </span>
-                        </td>
-                        <td className="px-5 py-5">
-                          {weakCompetencies.length ? (
-                            <div className="flex max-w-xl flex-wrap gap-1.5">
-                              {weakCompetencies.map((competency) => (
-                                <span
-                                  key={competency.id}
-                                  className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700"
-                                >
-                                  {competency.label} · {competency.percentage}%
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-slate-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-5">
-                          {completed ? (
-                            <a
-                              href={reportUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              referrerPolicy="no-referrer"
-                              className="inline-flex items-center gap-2 whitespace-nowrap rounded-xl bg-slate-950 px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-blue-700"
-                            >
-                              View report <ExternalLink size={14} />
-                            </a>
-                          ) : (
+                          </dd>
+                        </div>
+                      </dl>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center justify-between gap-4">
+                          <h4 className="text-sm font-black uppercase tracking-[0.14em] text-slate-800">
+                            Development Priorities
+                          </h4>
+                          {weakCompetencies.length > 0 && (
                             <span className="text-xs font-semibold text-slate-400">
-                              Not available
+                              Lowest six
                             </span>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+
+                        {weakCompetencies.length ? (
+                          <ol className="mt-3 grid gap-2 sm:grid-cols-2">
+                            {weakCompetencies.map((competency, index) => (
+                              <li
+                                key={competency.id}
+                                className="flex min-w-0 items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/60 px-3 py-2.5"
+                              >
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-xs font-black text-amber-300">
+                                  {index + 1}
+                                </span>
+                                <span className="min-w-0 flex-1 break-words text-sm font-semibold leading-5 text-slate-800">
+                                  {competency.label}
+                                </span>
+                                <span className="shrink-0 rounded-lg bg-white px-2 py-1 text-xs font-black text-slate-700 shadow-sm">
+                                  {competency.percentage}%
+                                </span>
+                              </li>
+                            ))}
+                          </ol>
+                        ) : (
+                          <div className="mt-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-400">
+                            Development priorities will appear after completion.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>
