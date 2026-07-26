@@ -238,6 +238,7 @@ export default function LoginPage() {
       return {
         attemptId: json.attemptId as string,
         alreadySubmitted: !!json.alreadySubmitted,
+        isOfflineActivated: json.isOfflineActivated === true,
       };
     }
 
@@ -284,7 +285,15 @@ export default function LoginPage() {
         typeof result === "string" ? result : result.attemptId;
 
       if (typeof result !== "string" && result.alreadySubmitted) {
-        router.replace(`/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${urlLang}`);
+        router.replace(
+          result.isOfflineActivated
+            ? `/outdoor-mri/completed?attemptId=${encodeURIComponent(
+                attemptId
+              )}&alreadyCompleted=1`
+            : `/${slug}/results?attemptId=${encodeURIComponent(
+                attemptId
+              )}&lang=${urlLang}`
+        );
         return;
       }
 

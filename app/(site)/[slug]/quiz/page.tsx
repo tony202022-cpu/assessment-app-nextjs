@@ -1,6 +1,7 @@
 import QuizPage from "../../quiz/page";
 import { createClient } from "@supabase/supabase-js";
 import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
+import { isOfflineActivatedOutdoorMriAttempt } from "@/lib/offline-attempt-access";
 
 function getSupabaseAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -47,6 +48,7 @@ export default async function SlugQuizPage({
   const slug = String(params?.slug || "").toLowerCase().trim();
   const lang = searchParams?.lang === "ar" ? "ar" : "en";
   const attemptId = String(searchParams?.attemptId || "").trim();
+  let offlineCorporate = false;
 
   if (isPaidMriSlug(slug)) {
     if (!attemptId) {
@@ -63,7 +65,9 @@ export default async function SlugQuizPage({
     if (!attempt || !isAuthorizedPaidMriAttempt(slug, attempt)) {
       return <BlockedPaidAssessment lang={lang} />;
     }
+
+    offlineCorporate = await isOfflineActivatedOutdoorMriAttempt(attemptId);
   }
 
-  return <QuizPage />;
+  return <QuizPage offlineCorporate={offlineCorporate} />;
 }
