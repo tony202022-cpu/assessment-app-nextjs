@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { isOfflineActivatedOutdoorMriAttempt } from "@/lib/offline-attempt-access";
 
 function getSupabaseAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -105,11 +106,14 @@ export async function POST(req: Request) {
       (Array.isArray(attempt?.competency_results) &&
         attempt.competency_results.length > 0) ||
       Number(attempt?.total_percentage || 0) > 0;
+    const isOfflineActivated =
+      await isOfflineActivatedOutdoorMriAttempt(row.attempt_id);
 
     return NextResponse.json({
       attemptId: row.attempt_id,
       creditsRemaining: row.credits_remaining,
       alreadySubmitted,
+      isOfflineActivated,
     });
   } catch (e: any) {
     return NextResponse.json(

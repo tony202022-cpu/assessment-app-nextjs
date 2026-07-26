@@ -49,7 +49,11 @@ function deadlineKey(attemptId: string) {
   return `quiz_deadline_ms:${attemptId}`;
 }
 
-export default function QuizPage() {
+export default function QuizPage({
+  offlineCorporate = false,
+}: {
+  offlineCorporate?: boolean;
+} = {}) {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -418,9 +422,11 @@ useEffect(() => {
       // ✅ NEW: clear deadline so a new attempt starts fresh
       clearStoredDeadline();
 
-      window.location.href = `/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(
-        urlLang
-      )}`;
+      window.location.href = offlineCorporate
+        ? `/outdoor-mri/completed?attemptId=${encodeURIComponent(attemptId)}`
+        : `/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(
+            urlLang
+          )}`;
     } catch (e: any) {
       toast.error((isArabic ? "فشل الحفظ: " : "Failed to save: ") + (e?.message || "Unknown error"));
       finishLockRef.current = false;

@@ -3,6 +3,7 @@ import "server-only";
 import ArabicSalesManagerMriTitle from "@/components/ArabicSalesManagerMriTitle";
 import EmailReportButton from "@/components/EmailReportButton";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -21,6 +22,10 @@ import {
   type SmeBusinessRevivalDay,
 } from "@/lib/sme-business-revival-90day";
 import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
+import {
+  getOfflineAttemptContext,
+  isAuthorizedOfflineManager,
+} from "@/lib/offline-attempt-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,7 +51,12 @@ const OUTDOOR_SCAN_MRI_URL_AR =
 
 type PageProps = {
   params: { slug: string };
-  searchParams?: { attemptId?: string; lang?: string; v?: string };
+  searchParams?: {
+    attemptId?: string;
+    lang?: string;
+    v?: string;
+    managerToken?: string;
+  };
 };
 
 type CompetencyRow = {
@@ -2924,6 +2934,21 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         </div>
       </div>
     );
+  }
+
+  const offlineContext = await getOfflineAttemptContext(attemptId);
+  if (offlineContext?.isOfflineActivated) {
+    const managerToken = searchParams?.managerToken?.trim() || "";
+    const managerAuthorized = await isAuthorizedOfflineManager(
+      attemptId,
+      managerToken,
+    );
+
+    if (!managerAuthorized) {
+      redirect(
+        `/outdoor-mri/completed?attemptId=${encodeURIComponent(attemptId)}`,
+      );
+    }
   }
 
   const assessment = await getAssessmentConfigServer(supabase, slug);

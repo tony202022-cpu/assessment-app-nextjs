@@ -30,6 +30,7 @@ type CompanyRow = {
   name: string | null;
   package_size: number | null;
   credits_balance: number | null;
+  is_offline_activated: boolean;
 };
 
 type AttemptRow = {
@@ -174,7 +175,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
 
   const { data: companyData, error: companyError } = await supabase
     .from("companies")
-    .select("id, name, package_size, credits_balance")
+    .select("id, name, package_size, credits_balance, is_offline_activated")
     .eq("manager_token", managerToken)
     .maybeSingle();
 
@@ -306,7 +307,9 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
                   {attempts.map((attempt) => {
                     const completed = isCompleted(attempt);
                     const weakCompetencies = weakestSix(attempt.competency_results);
-                    const reportUrl = `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}`;
+                    const reportUrl = company.is_offline_activated
+                      ? `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}&managerToken=${encodeURIComponent(managerToken)}`
+                      : `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}`;
 
                     return (
                       <tr key={attempt.id} className="align-top hover:bg-slate-50/70">

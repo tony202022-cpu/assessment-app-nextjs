@@ -7,6 +7,8 @@ declare
   v_result record;
   v_company_count integer;
   v_token_count integer;
+  v_other_company_id uuid;
+  v_other_is_offline boolean;
 begin
   select * into v_result
   from public.activate_offline_company(
@@ -28,7 +30,8 @@ begin
   from public.companies
   where id = v_result.company_id
     and package_size = 25
-    and credits_balance = 25;
+    and credits_balance = 25
+    and is_offline_activated = true;
 
   select count(*) into v_token_count
   from public.access_tokens
@@ -39,6 +42,22 @@ begin
 
   if v_company_count <> 1 or v_token_count <> 1 then
     raise exception 'atomic company/token relationship assertion failed';
+  end if;
+
+  insert into public.companies (
+    name, billing_email, credits_balance, package_size
+  )
+  values (
+    'Codex Non-Offline Default Test',
+    'non-offline-default@example.invalid',
+    1,
+    1
+  )
+  returning id, is_offline_activated
+  into v_other_company_id, v_other_is_offline;
+
+  if v_other_company_id is null or v_other_is_offline is distinct from false then
+    raise exception 'non-offline company default FALSE assertion failed';
   end if;
 
   perform public.activate_offline_company(
