@@ -22,6 +22,11 @@ import {
   type SmeBusinessRevivalDay,
 } from "@/lib/sme-business-revival-90day";
 import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
+import { cookies } from "next/headers";
+import {
+  DEVELOPER_TEST_ACCESS_COOKIE,
+  readDeveloperTestAccess,
+} from "@/lib/admin-assessment-access";
 import {
   getOfflineAttemptContext,
   isAuthorizedOfflineManager,
@@ -2919,7 +2924,19 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     );
   }
 
-  if (isPaidMriSlug(slug) && !isAuthorizedPaidMriAttempt(slug, attempt)) {
+  const developerAccess = readDeveloperTestAccess(
+    cookies().get(DEVELOPER_TEST_ACCESS_COOKIE)?.value,
+  );
+  const authenticatedDeveloperUserId =
+    developerAccess?.attemptId === attemptId &&
+    developerAccess?.assessmentId === (attempt as any).assessment_id
+      ? developerAccess.userId
+      : "";
+
+  if (
+    isPaidMriSlug(slug) &&
+    !isAuthorizedPaidMriAttempt(slug, attempt, authenticatedDeveloperUserId)
+  ) {
     return (
       <div className="min-h-screen bg-slate-950 p-8 text-center text-white">
         <div className="max-w-2xl mx-auto rounded-3xl border border-white/15 bg-white/10 p-8 shadow-xl">
