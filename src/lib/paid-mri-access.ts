@@ -23,7 +23,11 @@ export function isPaidMriAssessmentId(assessmentId: any) {
 }
 
 export function isTokenBackedPaidAttempt(attempt: any) {
-  return !!(attempt?.access_token_id || attempt?.company_id);
+  return !!(
+    attempt?.access_token_id ||
+    attempt?.company_id ||
+    attempt?.is_developer_test === true
+  );
 }
 
 export function isAuthorizedPaidMriAttempt(slug: any, attempt: any) {

@@ -217,7 +217,7 @@ export default function InstructionsPage() {
           const expectedAssessmentId = expectedPaidMriAssessmentId(slug);
           const { data: attempt, error: attemptError } = await supabase
             .from("quiz_attempts")
-            .select("id, assessment_id, access_token_id, company_id")
+            .select("id, assessment_id, access_token_id, company_id, is_developer_test")
             .eq("id", attemptId)
             .maybeSingle();
 

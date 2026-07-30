@@ -138,7 +138,7 @@ export async function submitQuiz(
   // --------------------------------------------------
   const { data: existing, error: attemptErr } = await supabase
     .from("quiz_attempts")
-    .select("id, assessment_id, language, answers, competency_results, total_percentage, access_token_id, company_id")
+    .select("id, assessment_id, language, answers, competency_results, total_percentage, access_token_id, company_id, is_developer_test")
     .eq("id", attemptId)
     .maybeSingle();
 
