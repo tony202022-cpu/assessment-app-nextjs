@@ -3,6 +3,11 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { isPaidMriAssessmentId, isTokenBackedPaidAttempt } from "@/lib/paid-mri-access";
+import { cookies } from "next/headers";
+import {
+  DEVELOPER_TEST_ACCESS_COOKIE,
+  readDeveloperTestAccess,
+} from "@/lib/admin-assessment-access";
 
 export type Language = "ar" | "en";
 export type Tier = "Strength" | "Opportunity" | "Threat" | "Weakness";
@@ -138,7 +143,7 @@ export async function submitQuiz(
   // --------------------------------------------------
   const { data: existing, error: attemptErr } = await supabase
     .from("quiz_attempts")
-    .select("id, assessment_id, language, answers, competency_results, total_percentage, access_token_id, company_id, is_developer_test")
+    .select("id, assessment_id, language, answers, competency_results, total_percentage, user_id, access_token_id, company_id, is_developer_test")
     .eq("id", attemptId)
     .maybeSingle();
 
@@ -164,7 +169,19 @@ export async function submitQuiz(
     throw new Error("Assessment mismatch for this attempt.");
   }
 
-  if (isPaidMriAssessmentId(assessmentId) && !isTokenBackedPaidAttempt(existing)) {
+  const developerAccess = readDeveloperTestAccess(
+    cookies().get(DEVELOPER_TEST_ACCESS_COOKIE)?.value,
+  );
+  const authenticatedDeveloperUserId =
+    developerAccess?.attemptId === attemptId &&
+    developerAccess?.assessmentId === assessmentId
+      ? developerAccess.userId
+      : "";
+
+  if (
+    isPaidMriAssessmentId(assessmentId) &&
+    !isTokenBackedPaidAttempt(existing, authenticatedDeveloperUserId)
+  ) {
     throw new Error("This paid assessment requires an authorised access token.");
   }
 

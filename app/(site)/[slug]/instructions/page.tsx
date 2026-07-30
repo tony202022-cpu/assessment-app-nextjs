@@ -215,9 +215,11 @@ export default function InstructionsPage() {
           }
 
           const expectedAssessmentId = expectedPaidMriAssessmentId(slug);
+          const { data: authData } = await supabase.auth.getUser();
+          const authenticatedUserId = authData.user?.id || "";
           const { data: attempt, error: attemptError } = await supabase
             .from("quiz_attempts")
-            .select("id, assessment_id, access_token_id, company_id, is_developer_test")
+            .select("id, assessment_id, user_id, access_token_id, company_id, is_developer_test")
             .eq("id", attemptId)
             .maybeSingle();
 
@@ -225,10 +227,27 @@ export default function InstructionsPage() {
             attemptError ||
             !attempt ||
             String(data.id) !== expectedAssessmentId ||
-            !isAuthorizedPaidMriAttempt(slug, attempt)
+            !isAuthorizedPaidMriAttempt(slug, attempt, authenticatedUserId)
           ) {
             setAccessDenied(true);
             return;
+          }
+
+          if (attempt.is_developer_test === true) {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token || "";
+            const binding = await fetch("/api/admin/assessment-access/bind", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ attemptId, slug }),
+            });
+            if (!binding.ok) {
+              setAccessDenied(true);
+              return;
+            }
           }
         }
 

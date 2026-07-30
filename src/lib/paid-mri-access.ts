@@ -22,20 +22,35 @@ export function isPaidMriAssessmentId(assessmentId: any) {
   return Object.values(PAID_MRI_ASSESSMENT_BY_SLUG).includes(id);
 }
 
-export function isTokenBackedPaidAttempt(attempt: any) {
-  return !!(
-    attempt?.access_token_id ||
-    attempt?.company_id ||
-    attempt?.is_developer_test === true
+export function isDeveloperTestAttemptOwner(attempt: any, authenticatedUserId: any) {
+  const attemptUserId = normalizeAccessSlug(attempt?.user_id);
+  const currentUserId = normalizeAccessSlug(authenticatedUserId);
+  return (
+    attempt?.is_developer_test === true &&
+    !!attemptUserId &&
+    !!currentUserId &&
+    attemptUserId === currentUserId
   );
 }
 
-export function isAuthorizedPaidMriAttempt(slug: any, attempt: any) {
+export function isTokenBackedPaidAttempt(attempt: any, authenticatedUserId?: any) {
+  return !!(
+    attempt?.access_token_id ||
+    attempt?.company_id ||
+    isDeveloperTestAttemptOwner(attempt, authenticatedUserId)
+  );
+}
+
+export function isAuthorizedPaidMriAttempt(
+  slug: any,
+  attempt: any,
+  authenticatedUserId?: any,
+) {
   const expectedAssessmentId = expectedPaidMriAssessmentId(slug);
   if (!expectedAssessmentId) return true;
 
   return (
     normalizeAccessSlug(attempt?.assessment_id) === expectedAssessmentId &&
-    isTokenBackedPaidAttempt(attempt)
+    isTokenBackedPaidAttempt(attempt, authenticatedUserId)
   );
 }

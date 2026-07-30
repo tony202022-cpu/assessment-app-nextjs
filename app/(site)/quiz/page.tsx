@@ -177,16 +177,18 @@ const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(nu
       if (isPaidMriAssessmentId(assessmentId)) {
         const { data: attempt, error: attemptError } = await supabase
           .from("quiz_attempts")
-          .select("id, assessment_id, access_token_id, company_id")
+          .select("id, assessment_id, user_id, access_token_id, company_id, is_developer_test")
           .eq("id", attemptId)
           .maybeSingle();
+        const { data: authData } = await supabase.auth.getUser();
+        const authenticatedUserId = authData.user?.id || "";
 
         if (
           attemptError ||
           !attempt ||
           String((attempt as any).assessment_id || "").toLowerCase() !==
             String(assessmentId || "").toLowerCase() ||
-          !isTokenBackedPaidAttempt(attempt)
+          !isTokenBackedPaidAttempt(attempt, authenticatedUserId)
         ) {
           toast.error(
             isArabic

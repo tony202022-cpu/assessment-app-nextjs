@@ -1,12 +1,19 @@
 import "server-only";
 
-import { createHash, randomBytes, randomUUID } from "crypto";
+import {
+  createHash,
+  createHmac,
+  randomBytes,
+  randomUUID,
+  timingSafeEqual,
+} from "crypto";
 import {
   PAID_MRI_ASSESSMENT_BY_SLUG,
   normalizeAccessSlug,
 } from "@/lib/paid-mri-access";
 
 export const DEVELOPER_TEST_LAUNCH_SECONDS = 60 * 60;
+export const DEVELOPER_TEST_ACCESS_COOKIE = "developer_test_attempt_access";
 const LOCAL_DEVELOPER_TEST_BASE_URL = "http://localhost:32100";
 
 export function getDeveloperTestBaseUrl(
@@ -125,4 +132,69 @@ export function generateDeveloperLaunchToken() {
 
 export function hashDeveloperLaunchToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
+}
+
+type DeveloperTestAccess = {
+  attemptId: string;
+  userId: string;
+  assessmentId: string;
+  expires: number;
+};
+
+function developerTestAccessSecret(env = process.env) {
+  return String(env.ADMIN_ACTIVATION_SECRET || "");
+}
+
+export function createDeveloperTestAccess(
+  value: Omit<DeveloperTestAccess, "expires">,
+  now = Date.now(),
+) {
+  const secret = developerTestAccessSecret();
+  if (secret.length < 24) {
+    throw new Error("Developer Test access signing is not configured.");
+  }
+  const payload: DeveloperTestAccess = {
+    ...value,
+    expires: Math.floor(now / 1000) + DEVELOPER_TEST_LAUNCH_SECONDS,
+  };
+  const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const signature = createHmac("sha256", secret).update(encoded).digest("base64url");
+  return `${encoded}.${signature}`;
+}
+
+export function readDeveloperTestAccess(
+  value: string | undefined,
+  now = Date.now(),
+): DeveloperTestAccess | null {
+  if (!value) return null;
+  const secret = developerTestAccessSecret();
+  if (secret.length < 24) return null;
+  const [encoded, signature] = value.split(".");
+  if (!encoded || !signature) return null;
+  const expected = createHmac("sha256", secret).update(encoded).digest("base64url");
+  const actualBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+  if (
+    actualBuffer.length !== expectedBuffer.length ||
+    !timingSafeEqual(actualBuffer, expectedBuffer)
+  ) {
+    return null;
+  }
+  try {
+    const payload = JSON.parse(
+      Buffer.from(encoded, "base64url").toString("utf8"),
+    ) as DeveloperTestAccess;
+    if (
+      !payload.attemptId ||
+      !payload.userId ||
+      !payload.assessmentId ||
+      !Number.isInteger(payload.expires) ||
+      payload.expires <= Math.floor(now / 1000)
+    ) {
+      return null;
+    }
+    return payload;
+  } catch {
+    return null;
+  }
 }

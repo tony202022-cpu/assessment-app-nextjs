@@ -2,6 +2,11 @@ import QuizPage from "../../quiz/page";
 import { createClient } from "@supabase/supabase-js";
 import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
 import { isOfflineActivatedOutdoorMriAttempt } from "@/lib/offline-attempt-access";
+import { cookies } from "next/headers";
+import {
+  DEVELOPER_TEST_ACCESS_COOKIE,
+  readDeveloperTestAccess,
+} from "@/lib/admin-assessment-access";
 
 function getSupabaseAdmin() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -58,11 +63,23 @@ export default async function SlugQuizPage({
     const supabase = getSupabaseAdmin();
     const { data: attempt } = await supabase
       .from("quiz_attempts")
-      .select("id, assessment_id, access_token_id, company_id, is_developer_test")
+      .select("id, assessment_id, user_id, access_token_id, company_id, is_developer_test")
       .eq("id", attemptId)
       .maybeSingle();
 
-    if (!attempt || !isAuthorizedPaidMriAttempt(slug, attempt)) {
+    const developerAccess = readDeveloperTestAccess(
+      cookies().get(DEVELOPER_TEST_ACCESS_COOKIE)?.value,
+    );
+    const authenticatedDeveloperUserId =
+      developerAccess?.attemptId === attemptId &&
+      developerAccess?.assessmentId === attempt?.assessment_id
+        ? developerAccess.userId
+        : "";
+
+    if (
+      !attempt ||
+      !isAuthorizedPaidMriAttempt(slug, attempt, authenticatedDeveloperUserId)
+    ) {
       return <BlockedPaidAssessment lang={lang} />;
     }
 

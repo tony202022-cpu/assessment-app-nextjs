@@ -35,6 +35,19 @@ function loadAdminAccessModule() {
   return module.exports;
 }
 
+function loadPaidAccessModule() {
+  const source = read("src/lib/paid-mri-access.ts");
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  const module = { exports: {} };
+  new Function("module", "exports", compiled)(module, module.exports);
+  return module.exports;
+}
+
 const slugs = [
   "outdoor-mri",
   "sales-manager-mri",
@@ -106,7 +119,81 @@ test("existing paid guards accept only token, company, or explicit developer mar
   assert.match(instructions, /is_developer_test/);
   assert.match(quiz, /is_developer_test/);
   assert.match(actions, /is_developer_test/);
-  assert.match(actions, /isTokenBackedPaidAttempt\(existing\)/);
+  assert.match(
+    actions,
+    /isTokenBackedPaidAttempt\(existing, authenticatedDeveloperUserId\)/,
+  );
+});
+
+test("Developer Test authorization is assessment-matched and user-bound", () => {
+  const {
+    isAuthorizedPaidMriAttempt,
+    isTokenBackedPaidAttempt,
+  } = loadPaidAccessModule();
+  const developerAttempt = {
+    assessment_id: "outdoor_sales_mri",
+    is_developer_test: true,
+    user_id: "developer-user-a",
+    company_id: null,
+    access_token_id: null,
+  };
+
+  assert.equal(
+    isAuthorizedPaidMriAttempt(
+      "outdoor-mri",
+      developerAttempt,
+      "developer-user-a",
+    ),
+    true,
+  );
+  assert.equal(
+    isAuthorizedPaidMriAttempt(
+      "outdoor-mri",
+      developerAttempt,
+      "developer-user-b",
+    ),
+    false,
+  );
+  assert.equal(
+    isAuthorizedPaidMriAttempt(
+      "sales-manager-mri",
+      developerAttempt,
+      "developer-user-a",
+    ),
+    false,
+  );
+  assert.equal(
+    isTokenBackedPaidAttempt({
+      assessment_id: "outdoor_sales_mri",
+      is_developer_test: false,
+      user_id: "unpaid-user",
+    }, "unpaid-user"),
+    false,
+  );
+  assert.equal(isTokenBackedPaidAttempt({ access_token_id: "paid-token" }), true);
+  assert.equal(isTokenBackedPaidAttempt({ company_id: "company-id" }), true);
+});
+
+test("Developer Test authorization survives instructions, Continue, quiz, submit, and report", () => {
+  const instructions = read("app/(site)/[slug]/instructions/page.tsx");
+  const quizWrapper = read("app/(site)/[slug]/quiz/page.tsx");
+  const quiz = read("app/(site)/quiz/page.tsx");
+  const actions = read("src/lib/actions.ts");
+  const results = read("app/(site)/[slug]/results/ResultsClient.tsx");
+  const report = read("app/(site)/[slug]/report/page.tsx");
+  const binding = read("app/api/admin/assessment-access/bind/route.ts");
+
+  assert.match(instructions, /supabase\.auth\.getUser\(\)/);
+  assert.match(instructions, /\/api\/admin\/assessment-access\/bind/);
+  assert.match(instructions, /attemptId=\$\{encodeURIComponent\(attemptId\)\}/);
+  assert.match(binding, /supabase\.auth\.getUser\(accessToken\)/);
+  assert.match(binding, /isAuthorizedPaidMriAttempt\(slug, attempt, userId\)/);
+  assert.match(quizWrapper, /readDeveloperTestAccess/);
+  assert.match(quiz, /is_developer_test/);
+  assert.match(quiz, /isTokenBackedPaidAttempt\(attempt, authenticatedUserId\)/);
+  assert.match(actions, /readDeveloperTestAccess/);
+  assert.match(results, /authenticatedUserId/);
+  assert.match(report, /readDeveloperTestAccess/);
 });
 
 test("history is developer-only and exposes launch/report links by status", () => {

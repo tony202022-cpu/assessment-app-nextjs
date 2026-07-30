@@ -590,12 +590,17 @@ function ResultsContent() {
         .select("*")
         .eq("id", attemptId)
         .maybeSingle();
+      const { data: authData } = await supabase.auth.getUser();
+      const authenticatedUserId = authData.user?.id || "";
 
       if (cancelled) return;
 
       const att = attRes.data ?? null;
 
-      if (isPaidMriSlug(routeSlug) && !isAuthorizedPaidMriAttempt(routeSlug, att)) {
+      if (
+        isPaidMriSlug(routeSlug) &&
+        !isAuthorizedPaidMriAttempt(routeSlug, att, authenticatedUserId)
+      ) {
         setAttempt(null);
         setConfig(null);
         setLoading(false);
