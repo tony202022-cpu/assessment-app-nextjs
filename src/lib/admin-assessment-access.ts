@@ -7,6 +7,41 @@ import {
 } from "@/lib/paid-mri-access";
 
 export const DEVELOPER_TEST_LAUNCH_SECONDS = 60 * 60;
+const LOCAL_DEVELOPER_TEST_BASE_URL = "http://localhost:32100";
+
+export function getDeveloperTestBaseUrl(
+  env: Record<string, string | undefined> = process.env,
+  nodeEnv: string | undefined = process.env.NODE_ENV,
+) {
+  const configured = String(env.APP_BASE_URL || "").trim();
+  if (!configured) {
+    if (nodeEnv !== "production") return LOCAL_DEVELOPER_TEST_BASE_URL;
+    throw new Error("APP_BASE_URL is required in production.");
+  }
+
+  let url: URL;
+  try {
+    url = new URL(configured);
+  } catch {
+    throw new Error("APP_BASE_URL must be a valid absolute URL.");
+  }
+
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password ||
+    url.pathname !== "/" ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error("APP_BASE_URL must contain only an HTTP(S) origin.");
+  }
+  if (nodeEnv === "production" && url.protocol !== "https:") {
+    throw new Error("APP_BASE_URL must use HTTPS in production.");
+  }
+
+  return url.origin;
+}
 
 export type DeveloperTestLanguage = "en" | "ar";
 

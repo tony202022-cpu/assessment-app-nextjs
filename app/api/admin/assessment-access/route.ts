@@ -3,6 +3,7 @@ import {
   DEVELOPER_TEST_LAUNCH_SECONDS,
   generateDeveloperLaunchToken,
   generateDeveloperTestIdentity,
+  getDeveloperTestBaseUrl,
   hashDeveloperLaunchToken,
   supportedDeveloperTestAssessment,
   validateDeveloperTestSelection,
@@ -17,9 +18,9 @@ import { consumeRateLimit } from "@/lib/offline-company-rate-limit";
 
 export const dynamic = "force-dynamic";
 
-function sameOrigin(request: NextRequest): boolean {
+function sameOrigin(request: NextRequest, appBaseUrl: string): boolean {
   const origin = request.headers.get("origin");
-  return !origin || origin === request.nextUrl.origin;
+  return !origin || origin === appBaseUrl;
 }
 
 function clientKey(request: NextRequest): string {
@@ -114,9 +115,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const appBaseUrl = getDeveloperTestBaseUrl();
     const [assessments, history] = await Promise.all([
       loadAssessments(supabase),
-      loadHistory(supabase, request.nextUrl.origin),
+      loadHistory(supabase, appBaseUrl),
     ]);
     return NextResponse.json(
       { assessments, history },
@@ -129,7 +131,20 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) {
+  let appBaseUrl: string;
+  try {
+    appBaseUrl = getDeveloperTestBaseUrl();
+  } catch (error) {
+    console.error(
+      "Developer Test Mode base URL configuration error:",
+      error instanceof Error ? error.message : "invalid APP_BASE_URL",
+    );
+    return NextResponse.json(
+      { error: "Developer Test Mode application URL is not configured safely." },
+      { status: 500 },
+    );
+  }
+  if (!sameOrigin(request, appBaseUrl)) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   }
   if (!isAdmin(request)) {
@@ -232,7 +247,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       status: "ready",
       launchValid: true,
-      launchUrl: `${request.nextUrl.origin}/api/admin/assessment-access/launch?token=${encodeURIComponent(
+      launchUrl: `${appBaseUrl}/api/admin/assessment-access/launch?token=${encodeURIComponent(
         launchToken,
       )}`,
       reportUrl: null,

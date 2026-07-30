@@ -1,8 +1,39 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import test from "node:test";
+import ts from "typescript";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const nodeRequire = createRequire(import.meta.url);
+
+function loadAdminAccessModule() {
+  const source = read("src/lib/admin-assessment-access.ts");
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+      esModuleInterop: true,
+    },
+  }).outputText;
+  const module = { exports: {} };
+  const localRequire = (id) => {
+    if (id === "server-only") return {};
+    if (id === "@/lib/paid-mri-access") {
+      return {
+        PAID_MRI_ASSESSMENT_BY_SLUG: {},
+        normalizeAccessSlug: (value) => String(value || "").toLowerCase().trim(),
+      };
+    }
+    return nodeRequire(id);
+  };
+  new Function("require", "module", "exports", compiled)(
+    localRequire,
+    module,
+    module.exports,
+  );
+  return module.exports;
+}
 
 const slugs = [
   "outdoor-mri",
@@ -37,7 +68,7 @@ test("generation is automatic, exactly one attempt, and passwordless", () => {
   assert.match(route, /create_developer_test_attempt/);
   assert.doesNotMatch(route, /p_attempts|attemptsGranted/);
   assert.match(launch, /auth\.admin\.generateLink/);
-  assert.match(launch, /\/auth\/callback/);
+  assert.match(launch, /options: \{ redirectTo: redirectUrl \}/);
   assert.match(consolePage, /Generate Fresh Test Attempt/);
   assert.match(consolePage, /Launch Assessment/);
   assert.doesNotMatch(consolePage, /type="email"/);
@@ -103,6 +134,40 @@ test("launch consumption is atomic and rejects used or expired links", () => {
   assert.match(launch, /\.is\("used_at", null\)/);
   assert.match(launch, /\.gt\("launch_expires_at", consumedAt\)/);
   assert.match(launch, /already been used/);
+  assert.match(launch, /\{ status: 410 \}/);
+});
+
+test("trusted application base URL is production-safe and host-independent", () => {
+  const { getDeveloperTestBaseUrl } = loadAdminAccessModule();
+  const route = read("app/api/admin/assessment-access/route.ts");
+  const launch = read("app/api/admin/assessment-access/launch/route.ts");
+
+  assert.equal(
+    getDeveloperTestBaseUrl(
+      { APP_BASE_URL: "https://app.careerlabsai.com" },
+      "production",
+    ),
+    "https://app.careerlabsai.com",
+  );
+  assert.equal(getDeveloperTestBaseUrl({}, "development"), "http://localhost:32100");
+  assert.throws(
+    () => getDeveloperTestBaseUrl({}, "production"),
+    /APP_BASE_URL is required in production/,
+  );
+  assert.throws(
+    () =>
+      getDeveloperTestBaseUrl(
+        { APP_BASE_URL: "http://localhost:32100" },
+        "production",
+      ),
+    /must use HTTPS in production/,
+  );
+
+  assert.doesNotMatch(route, /request\.nextUrl\.origin/);
+  assert.doesNotMatch(launch, /request\.nextUrl\.origin/);
+  assert.match(route, /getDeveloperTestBaseUrl/);
+  assert.match(launch, /getDeveloperTestBaseUrl/);
+  assert.match(launch, /`\$\{appBaseUrl\}\$\{nextPath\}`/);
 });
 
 test("admin protections and rate limits remain required", () => {

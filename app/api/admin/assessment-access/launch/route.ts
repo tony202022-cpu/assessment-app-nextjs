@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hashDeveloperLaunchToken } from "@/lib/admin-assessment-access";
+import {
+  getDeveloperTestBaseUrl,
+  hashDeveloperLaunchToken,
+} from "@/lib/admin-assessment-access";
 import {
   getSupabaseAdmin,
   isValidAdminSession,
@@ -41,6 +44,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "The test service is not configured." }, { status: 500 });
   }
 
+  let appBaseUrl: string;
+  try {
+    appBaseUrl = getDeveloperTestBaseUrl();
+  } catch (error) {
+    console.error(
+      "Developer Test Mode base URL configuration error:",
+      error instanceof Error ? error.message : "invalid APP_BASE_URL",
+    );
+    return NextResponse.json(
+      { error: "Developer Test Mode application URL is not configured safely." },
+      { status: 500 },
+    );
+  }
+
   const consumedAt = new Date().toISOString();
   let query = supabase
     .from("developer_test_attempts")
@@ -65,13 +82,11 @@ export async function GET(request: NextRequest) {
   const nextPath = `/${test.assessment_slug}/instructions?lang=${encodeURIComponent(
     test.language,
   )}&attemptId=${encodeURIComponent(test.attempt_id)}`;
-  const callbackUrl = `${request.nextUrl.origin}/auth/callback?next=${encodeURIComponent(
-    nextPath,
-  )}`;
+  const redirectUrl = `${appBaseUrl}${nextPath}`;
   const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
     type: "magiclink",
     email: test.participant_email,
-    options: { redirectTo: callbackUrl },
+    options: { redirectTo: redirectUrl },
   });
 
   if (linkError || !linkData?.properties?.action_link) {
