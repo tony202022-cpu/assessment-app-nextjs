@@ -48,6 +48,14 @@ test("sample uses the fixed 39 percent structure without email delivery", () => 
   assert.doesNotMatch(client, /EmailReportButton|Send My Report|إرسال.*البريد/);
 });
 
+test("sample headings use explicit readable colors on dark and light backgrounds", () => {
+  assert.match(client, /tone\?: "light" \| "dark"/);
+  assert.match(client, /isDark \? "text-blue-200" : "text-blue-700"/);
+  assert.match(client, /isDark \? "text-white" : "text-slate-950"/);
+  assert.match(client, /isDark \? "text-slate-200" : "text-slate-600"/);
+  assert.equal((client.match(/tone="dark"/g) || []).length, 3);
+});
+
 test("existing paid and Developer Test report authorization remains protected", () => {
   assert.match(protectedReport, /isAuthorizedPaidMriAttempt/);
   assert.match(protectedReport, /readDeveloperTestAccess/);

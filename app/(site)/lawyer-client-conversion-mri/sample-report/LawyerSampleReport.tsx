@@ -45,16 +45,30 @@ function SectionHeading({
   eyebrow,
   title,
   body,
+  tone = "light",
 }: {
   eyebrow: string;
   title: string;
   body?: string;
+  tone?: "light" | "dark";
 }) {
+  const isDark = tone === "dark";
+
   return (
     <header className="mb-6">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-700">{eyebrow}</p>
-      <h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">{title}</h2>
-      {body && <p className="mt-3 max-w-4xl leading-8 text-slate-600">{body}</p>}
+      <p
+        className={`text-xs font-black uppercase tracking-[0.18em] ${isDark ? "text-blue-200" : "text-blue-700"}`}
+      >
+        {eyebrow}
+      </p>
+      <h2 className={`mt-2 text-2xl font-black sm:text-3xl ${isDark ? "text-white" : "text-slate-950"}`}>
+        {title}
+      </h2>
+      {body && (
+        <p className={`mt-3 max-w-4xl leading-8 ${isDark ? "text-slate-200" : "text-slate-600"}`}>
+          {body}
+        </p>
+      )}
     </header>
   );
 }
@@ -272,6 +286,7 @@ function ExecutiveReport() {
           eyebrow="خريطة السبب الجذري"
           title="أين يحدث التسرب؟"
           body="المشكلة ليست في نقطة واحدة، بل في انتقال القيمة بين مراحل الرحلة."
+          tone="dark"
         />
         <div className="grid gap-4 md:grid-cols-4">
           {[
@@ -315,7 +330,7 @@ function ExecutiveReport() {
       </section>
 
       <section className="sample-section rounded-3xl border border-blue-200 bg-blue-950 p-6 text-white shadow-xl sm:p-8">
-        <SectionHeading eyebrow="ملخص النمط" title="نمط تجربة العميل الحالي" />
+        <SectionHeading eyebrow="ملخص النمط" title="نمط تجربة العميل الحالي" tone="dark" />
         <p className="max-w-5xl text-lg leading-9 text-blue-100">
           النمط الحالي هو «خبرة قانونية أقوى من تجربة الشراء المهنية». يستطيع المحامي
           شرح المسار القانوني بوضوح ويحافظ على الحدود الأخلاقية، لكن العميل قد يصل إلى
@@ -366,7 +381,7 @@ function ExecutiveReport() {
       </section>
 
       <section className="sample-section rounded-3xl border border-indigo-200 bg-gradient-to-br from-indigo-950 to-blue-900 p-6 text-white shadow-xl sm:p-8">
-        <SectionHeading eyebrow="نظرة 90 يومًا" title="خارطة طريق من صفحة واحدة" />
+        <SectionHeading eyebrow="نظرة 90 يومًا" title="خارطة طريق من صفحة واحدة" tone="dark" />
         <div className="grid gap-4 md:grid-cols-4">
           {[
             ["الأيام 1–21", "إصلاح تقديم الأتعاب، صياغة القيمة، وبناء الثقة."],
