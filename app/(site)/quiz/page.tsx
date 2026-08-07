@@ -424,9 +424,11 @@ useEffect(() => {
       // ✅ NEW: clear deadline so a new attempt starts fresh
       clearStoredDeadline();
 
+      const destination = isOutdoorScan ? "report" : "results";
+
       window.location.href = offlineCorporate
         ? `/outdoor-mri/completed?attemptId=${encodeURIComponent(attemptId)}`
-        : `/${slug}/results?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(
+        : `/${slug}/${destination}?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(
             urlLang
           )}`;
     } catch (e: any) {
