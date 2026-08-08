@@ -31,6 +31,7 @@ import {
   getOfflineAttemptContext,
   isAuthorizedOfflineManager,
 } from "@/lib/offline-attempt-access";
+import { ApprovedOutdoorSalesScanReport } from "../../outdoor-scan/report-preview/ApprovedOutdoorSalesScanReport";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -2978,6 +2979,10 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
   const lawyerClientConversionMri =
     slug === "lawyer-client-conversion-mri" ||
     (attempt as any).assessment_id === "lawyer_client_conversion_mri";
+
+  if (outdoorSalesScan) {
+    return <ApprovedOutdoorSalesScanReport attemptId={attemptId} attempt={attempt} lang={lang} />;
+  }
 
   const labelsFromConfig: Record<string, { en: string; ar: string }> = {};
   const comps = Array.isArray((assessment as any)?.config?.competencies)
