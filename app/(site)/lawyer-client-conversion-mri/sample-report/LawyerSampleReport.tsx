@@ -169,7 +169,10 @@ export default function LawyerSampleReport() {
         </div>
 
         {mode === "executive" ? (
-          <ExecutiveReport />
+          <>
+            <SampleDiagnosticIntroduction />
+            <ExecutiveReport />
+          </>
         ) : (
           <ImplementationGuide phaseGroups={phaseGroups} />
         )}
@@ -183,6 +186,156 @@ export default function LawyerSampleReport() {
           العودة إلى أعلى التقرير
         </button>
       </main>
+    </div>
+  );
+}
+
+const SAMPLE_SCENARIOS = [
+  {
+    question:
+      "يرسل عميل محتمل رسالة: «أحتاج محاميًا بشكل عاجل. كم أتعاب المحاماة لديكم؟» ما الرد الأول الأكثر مهنية؟",
+    answers: [
+      ["أ", "تقدّر الاستعجال، تطرح سؤالين لتأهيل المسألة، وتدعوه لاستشارة قصيرة منظمة قبل تحديد أتعاب المحاماة بدقة."],
+      ["ب", "تعطي نطاقًا مبدئيًا للأتعاب مع توضيح أنه يعتمد على النطاق والمستندات والخطر القانوني."],
+      ["ج", "تطلب منه إرسال المستندات الأساسية حتى يستطيع المكتب تقييم المسألة لاحقًا."],
+      ["د", "تقول إن الأتعاب تعتمد على تفاصيل القضية وتطلب منه شرح ما حدث."],
+    ],
+  },
+  {
+    question:
+      "يقول العميل في نهاية الاستشارة: «أحتاج إلى التفكير.» كيف تتعامل مع الموقف بطريقة تحفظ الثقة وتمنع ضياع القرار؟",
+    answers: [
+      ["أ", "تحترم موقفه، تسأل عمّا يحتاج إلى توضيح تحديدًا، تشرح أثر التأخير على المخاطر القانونية، وتتفق على موعد متابعة للقرار."],
+      ["ب", "تسأله إن كان يحتاج توضيحًا حول النطاق أو أتعاب المحاماة أو الخطوة القانونية التالية."],
+      ["ج", "تلخص له أهم المخاطر مرة أخرى وتترك له مساحة لاتخاذ القرار بهدوء."],
+      ["د", "تقول له: بالطبع، خذ وقتك، وسنكون متاحين متى قررت."],
+    ],
+  },
+] as const;
+
+function SampleDiagnosticIntroduction() {
+  return (
+    <div className="space-y-8" data-sample-diagnostic-introduction>
+      <section className="sample-card overflow-hidden rounded-[2rem] border border-amber-300/30 bg-gradient-to-br from-[#07111f] via-[#0b1d38] to-[#153d74] p-6 text-white shadow-2xl sm:p-10">
+        <div className="mx-auto max-w-5xl">
+          <p className="text-sm font-black text-amber-300">تجربة التشخيص</p>
+          <h1 className="mt-3 text-3xl font-black sm:text-4xl">كيف يعمل التشخيص؟</h1>
+          <div className="mt-5 space-y-4 text-base leading-8 text-blue-100 sm:text-lg sm:leading-9">
+            <p>
+              هذا التشخيص لا يقيس المعرفة القانونية، ولا يختبر قدرة المحامي على حفظ
+              المعلومات أو استرجاعها.
+            </p>
+            <p>هو يقيس طريقة تصرف المحامي في مواقف فعلية تؤثر على:</p>
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {[
+                "فهم احتياج العميل",
+                "بناء الثقة",
+                "إدارة الاستشارة",
+                "توضيح القيمة المهنية",
+                "التعامل مع الاعتراضات",
+                "المتابعة",
+                "وتحويل الاستفسار إلى علاقة مهنية دون أن يبدو المحامي وكأنه يمارس البيع التقليدي.",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 rounded-xl bg-white/5 px-4 py-3">
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-amber-300" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="rounded-2xl border border-amber-300/25 bg-amber-300/10 px-5 py-4 font-black text-amber-100">
+              فيما يلي سؤالان فقط من أصل 75 موقفاً عملياً يتضمنها التشخيص.
+            </p>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-8 grid max-w-5xl gap-6">
+          {SAMPLE_SCENARIOS.map((scenario, scenarioIndex) => (
+            <article
+              key={scenario.question}
+              data-sample-scenario
+              className="rounded-3xl border border-white/15 bg-white p-5 text-slate-950 shadow-xl sm:p-7"
+            >
+              <p className="text-xs font-black text-blue-700">الموقف التشخيصي {scenarioIndex + 1}</p>
+              <h2 className="mt-2 text-xl font-black leading-9 sm:text-2xl sm:leading-10">
+                {scenario.question}
+              </h2>
+              <div className="mt-5 grid gap-3">
+                {scenario.answers.map(([label, answer]) => (
+                  <div
+                    key={label}
+                    dir="rtl"
+                    data-sample-answer
+                    className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-right"
+                  >
+                    <span
+                      data-answer-label={label}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0b1d38] font-black text-amber-300"
+                    >
+                      {label}
+                    </span>
+                    <p className="m-0 flex-1 pt-1 leading-8 text-slate-700">{answer}</p>
+                  </div>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-8 max-w-5xl rounded-3xl border border-amber-300/30 bg-[#07111f]/70 p-6 sm:p-8">
+          <h2 className="text-2xl font-black text-white">لماذا هذه الأسئلة مختلفة؟</h2>
+          <p className="mt-4 leading-8 text-blue-100">
+            قد تبدو الفروق بين الإجابات بسيطة، لكنها تكشف أنماطاً مختلفة تماماً في طريقة
+            تفكير المحامي وتصرفه.
+          </p>
+          <p className="mt-3 leading-8 text-blue-100">
+            التشخيص لا يبحث فقط عن &quot;الإجابة الصحيحة&quot;، بل يحلل كيفية تعامل المحامي
+            مع الموقف من عدة زوايا، مثل:
+          </p>
+          <ul className="mt-4 space-y-3 text-blue-50">
+            {[
+              "هل يبدأ بفهم احتياج العميل أم يقفز مباشرة إلى الأتعاب؟",
+              "هل يبني الثقة قبل تقديم الحل؟",
+              "هل يدير قرار العميل أم يترك الفرصة تضيع؟",
+              "هل يحافظ على قيمته المهنية دون أن يبدو وكأنه يضغط للبيع؟",
+              "هل يحوّل الاستشارة إلى خطوة منظمة تقود إلى قرار واضح؟",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-3">
+                <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-amber-300" />
+                <span className="leading-7">{item}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-5 rounded-2xl bg-white/10 px-5 py-4 font-black leading-8 text-amber-100">
+            ولهذا فإن 75 موقفاً عملياً تعطي صورة أعمق بكثير من اختبار تقليدي أو مجموعة
+            أسئلة مباشرة.
+          </p>
+        </div>
+      </section>
+
+      <section
+        data-report-transition
+        className="sample-card rounded-3xl border border-blue-200 bg-white p-6 text-center shadow-lg sm:p-9"
+      >
+        <p className="text-sm font-black text-blue-700">من تجربة التشخيص إلى التقرير</p>
+        <h2 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
+          ماذا يحصل المحامي بعد إكمال التشخيص؟
+        </h2>
+        <p className="mx-auto mt-4 max-w-4xl leading-8 text-slate-600">
+          بعد الإجابة عن المواقف التشخيصية، تقوم المنصة بتحليل النتائج وتحويلها إلى تقرير
+          تنفيذي يوضح نقاط القوة، نقاط الضعف، الأسباب الجذرية، وأولويات التطوير.
+        </p>
+        <p className="mx-auto mt-4 max-w-4xl rounded-2xl bg-blue-50 px-5 py-4 font-black leading-8 text-blue-950">
+          النموذج التالي يوضح شكل التقرير الذي يحصل عليه المشارك بعد إكمال التشخيص.
+        </p>
+      </section>
+
+      <div className="flex items-center gap-4" data-report-preview-divider>
+        <div className="h-px flex-1 bg-gradient-to-l from-blue-400 to-transparent" />
+        <span className="rounded-full bg-[#07111f] px-5 py-2 text-sm font-black text-amber-300">
+          نموذج التقرير التنفيذي
+        </span>
+        <div className="h-px flex-1 bg-gradient-to-r from-blue-400 to-transparent" />
+      </div>
     </div>
   );
 }

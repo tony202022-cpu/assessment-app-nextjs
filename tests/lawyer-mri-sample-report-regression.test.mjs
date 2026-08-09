@@ -71,3 +71,20 @@ test("sample adds no payment, company, credit, purchase, or scoring behavior", (
     /Stripe|checkout|purchase|coupon|credit_transactions|company_id|access_token_id|submitQuiz|tierFromPercentage/,
   );
 });
+
+test("sample scenarios are static, RTL, and separated before the report", () => {
+  assert.equal((client.match(/data-sample-scenario/g) || []).length, 1);
+  assert.match(client, /SAMPLE_SCENARIOS\.map/);
+  assert.equal((client.match(/question:/g) || []).length, 2);
+  for (const label of ["أ", "ب", "ج", "د"]) {
+    assert.match(client, new RegExp(`\\["${label}",`));
+  }
+  assert.match(client, /dir="rtl"[\s\S]*data-sample-answer/);
+  assert.match(client, /className="flex items-start gap-4[^"]*text-right"/);
+  assert.doesNotMatch(client.match(/const SAMPLE_SCENARIOS[\s\S]*?as const;/)?.[0] || "", /\["[ABCD]",/);
+  assert.doesNotMatch(client.match(/const SAMPLE_SCENARIOS[\s\S]*?as const;/)?.[0] || "", /score|correct|weight|competency|questionId/i);
+  assert.ok(client.indexOf("<SampleDiagnosticIntroduction />") < client.indexOf("<ExecutiveReport />"));
+  assert.match(client, /data-report-transition/);
+  assert.match(client, /data-report-preview-divider/);
+  assert.match(client, /تقرير معيار كسب الموكلين™/);
+});
