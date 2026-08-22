@@ -244,14 +244,18 @@ export default function LoginPage() {
 
     // ✅ NORMAL / NON-TOKEN FLOW
     // This keeps the existing slug kitchen working for scans and any assessment that does not use bulk credits.
-    if (isPaidMriSlug(slug)) {
+    // TEMPORARY: Allow SME Business Health MRI beta access without a token.
+    // All other paid MRIs still require a valid access token.
+
+    const isSmeBusinessHealthMri = slug === "sme-business-health-mri";
+
+    if (isPaidMriSlug(slug) && !isSmeBusinessHealthMri) {
       throw new Error(
         ar
           ? "هذا التقييم مدفوع ويتطلب رابط دخول صالح."
           : "This paid assessment requires a valid access token link."
       );
     }
-
     const payload = {
       assessment_id: assessmentId,
       language: urlLang,
