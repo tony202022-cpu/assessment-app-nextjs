@@ -208,7 +208,9 @@ export default function InstructionsPage() {
           return;
         }
 
-        if (isPaidMriSlug(slug)) {
+        const isSmeBusinessHealthMri = slug === "sme-business-health-mri";
+
+if (isPaidMriSlug(slug) && !isSmeBusinessHealthMri) {
           if (!attemptId) {
             router.replace(`/${encodeURIComponent(slug)}/login?lang=${encodeURIComponent(urlLang)}`);
             return;
