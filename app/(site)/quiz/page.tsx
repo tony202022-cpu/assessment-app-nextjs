@@ -478,10 +478,6 @@ setTimeout(() => {
   if (!currentQuestion) return null;
 
   const questionText = isArabic ? (currentQuestion as any).question_ar : (currentQuestion as any).question_en;
-  const lawyerEnglishMobile =
-    !isArabic &&
-    (slug === "lawyer-client-conversion-mri" || assessmentId === LAWYER_MRI_ASSESSMENT_ID);
-
   return (
     <div
       className={`fixed inset-0 h-[100dvh] flex flex-col overflow-hidden
@@ -502,30 +498,30 @@ setTimeout(() => {
 
       {/* TIMER */}
       <div
-        className={`w-full bg-gradient-to-r ${timerColor} text-white px-5 py-3 shadow-md backdrop-blur-xl border-b border-white/20`}
+        className={`w-full bg-gradient-to-r ${timerColor} border-b border-white/20 px-3 py-2 text-white shadow-sm backdrop-blur-xl sm:px-4 sm:py-2.5 md:px-5 md:py-3`}
       >
-        <div className={`${lawyerEnglishMobile ? "max-w-2xl" : "max-w-md"} mx-auto flex items-center justify-between`}>
-          <span className="text-sm font-semibold opacity-90">
+        <div className="mx-auto flex w-full max-w-md items-center justify-between sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
+          <span className="text-xs font-semibold opacity-90 sm:text-sm">
             {currentQuestionIndex + 1}/{questions.length}
           </span>
-          <span className="text-xl font-extrabold tracking-wider drop-shadow-sm">{formatTime(timeRemaining)}</span>
+          <span className="text-lg font-extrabold tracking-wider drop-shadow-sm sm:text-xl">{formatTime(timeRemaining)}</span>
         </div>
       </div>
 
       {/* PROGRESS */}
-      <div className="h-1.5 bg-white/40">
+      <div className="h-1 bg-white/40 md:h-1.5">
         <div className="h-full bg-indigo-600 transition-all duration-500 rounded-r-full" style={{ width: `${progress}%` }} />
       </div>
 
       {/* CONTENT */}
-      <div className={`flex-1 min-h-0 overflow-y-auto ${lawyerEnglishMobile ? "px-3.5 sm:px-4" : "px-4"} py-4`}>
-        <div className={`w-full ${lawyerEnglishMobile ? "max-w-2xl" : "max-w-md"} mx-auto space-y-3`}>
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2.5 sm:px-4 sm:py-4 md:py-5 lg:px-6 lg:py-6 [@media(max-height:700px)]:py-2">
+        <div className="mx-auto w-full max-w-md space-y-2 sm:max-w-xl sm:space-y-3 md:max-w-2xl md:space-y-4 lg:max-w-3xl">
 
           {/* QUESTION */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 p-5">
+          <div className="rounded-xl border border-white/30 bg-gradient-to-r from-blue-600 to-indigo-700 p-3 text-white shadow-md backdrop-blur-xl sm:rounded-2xl sm:p-4 md:p-5 [@media(max-height:700px)]:p-2.5">
             <h2
-              className={`text-[clamp(17px,4.5vw,20px)] font-extrabold ${
-                isArabic ? "text-right leading-loose" : "text-left leading-relaxed"
+              className={`text-[16px] font-extrabold sm:text-[17px] md:text-[18px] lg:text-[20px] ${
+                isArabic ? "text-right leading-[1.55] sm:leading-[1.65]" : "text-left leading-[1.45] sm:leading-relaxed"
               } whitespace-normal break-words`}
             >
               {questionText}
@@ -533,13 +529,13 @@ setTimeout(() => {
           </div>
 
           {/* ANSWERS */}
-          <div className="space-y-3 pb-4">
+          <div className="space-y-2 pb-2 sm:space-y-2.5 sm:pb-4 md:space-y-3">
             {shuffledOptions.map((option, index) => (
               <button
                 key={index}
                 onClick={() => handleOptionSelect(option.index, index)}
                 disabled={isTransitioning || isSubmitting}
-                className={`relative w-full ${lawyerEnglishMobile ? "px-4 sm:px-5" : "px-5"} py-4 rounded-xl border backdrop-blur-xl shadow-md hover:bg-white/90 hover:shadow-lg active:scale-[0.98] transition-all duration-200 focus:outline-none ${
+                className={`relative min-h-12 w-full rounded-xl border px-3 py-2.5 shadow-sm backdrop-blur-xl transition-all duration-200 hover:bg-white/90 hover:shadow-md active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:min-h-14 sm:px-4 sm:py-3 md:px-5 md:py-3.5 lg:py-4 [@media(max-height:700px)]:py-2 ${
                   selectedOptionIndex === index
                     ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200"
                     : "border-white/40 bg-white/70"
@@ -547,11 +543,11 @@ setTimeout(() => {
               >
                 <div
                   className={`absolute top-1/2 -translate-y-1/2 ${
-                    isArabic ? "right-4" : lawyerEnglishMobile ? "left-3.5 sm:left-4" : "left-4"
+                    isArabic ? "right-3 sm:right-4" : "left-3 sm:left-4"
                   }`}
                 >
                   <div
-                    className={`${lawyerEnglishMobile ? "w-10 h-10 sm:w-11 sm:h-11" : "w-11 h-11"} rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-200 to-blue-200 text-indigo-900 shadow-sm font-extrabold text-base`}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-200 to-blue-200 text-sm font-extrabold text-indigo-900 shadow-sm sm:h-10 sm:w-10 sm:text-base md:h-11 md:w-11"
                     dir="ltr"
                   >
                     {String.fromCharCode(65 + index)}
@@ -560,10 +556,10 @@ setTimeout(() => {
 
                 <div
                   className={`${
-                    isArabic ? "pr-16 text-right" : lawyerEnglishMobile ? "pl-14 sm:pl-16 text-left" : "pl-16 text-left"
+                    isArabic ? "pr-12 text-right sm:pr-14 md:pr-16" : "pl-12 text-left sm:pl-14 md:pl-16"
                   }`}
                 >
-                  <span className="block text-[clamp(15px,4vw,17px)] font-semibold text-gray-900 leading-snug whitespace-normal break-words">
+                  <span className={`block whitespace-normal break-words text-[14px] font-semibold text-gray-900 sm:text-[15px] lg:text-[16px] ${isArabic ? "leading-[1.5]" : "leading-[1.4]"}`}>
                     {option.text}
                   </span>
                 </div>
