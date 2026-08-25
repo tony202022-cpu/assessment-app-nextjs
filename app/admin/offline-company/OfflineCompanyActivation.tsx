@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Building2,
   Check,
@@ -74,7 +75,8 @@ function CopyLink({ value, label }: { value: string; label: string }) {
   );
 }
 
-export default function OfflineCompanyActivation() {
+export default function OfflineCompanyActivation({ returnTo }: { returnTo: string | null }) {
+  const router = useRouter();
   const [authState, setAuthState] = useState<"loading" | "signed-out" | "signed-in">("loading");
   const [secret, setSecret] = useState("");
   const [authError, setAuthError] = useState("");
@@ -119,6 +121,11 @@ export default function OfflineCompanyActivation() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Sign-in failed.");
       setSecret("");
+      if (returnTo) {
+        router.replace(returnTo);
+        router.refresh();
+        return;
+      }
       setAuthState("signed-in");
     } catch (caught) {
       setAuthError(caught instanceof Error ? caught.message : "Sign-in failed.");

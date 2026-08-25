@@ -21,6 +21,7 @@ export { AdminActionError, toAdminActionError } from "./action-errors";
 export type { AdminActionErrorCode } from "./action-errors";
 export { createActionAuditRecord } from "./action-audit";
 export type { ActionAudit, ActionAuditOutcome, ActionAuditRecord } from "./action-audit";
+export { SupabaseActionAudit } from "./supabase-action-audit";
 export { adminActionRegistry, createAdminActionService } from "./production-admin-actions";
 export type { RestoreCreditInput, RestoreCreditOutput } from "./actions/restore-credit";
 export type { GenerateComplimentaryTokenInput, GenerateComplimentaryTokenOutput } from "./actions/generate-complimentary-token";

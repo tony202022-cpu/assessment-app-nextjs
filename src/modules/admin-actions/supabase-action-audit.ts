@@ -6,6 +6,7 @@ import { getSupabaseAdmin } from "@/lib/offline-company";
 
 export class SupabaseActionAudit implements ActionAudit {
   async record(event: ActionAuditRecord): Promise<void> {
+    validateAuditEvent(event);
     const supabase = getSupabaseAdmin();
     if (!supabase) throw new AdminActionError("AUDIT_FAILED", "Administrative audit storage is not configured.");
 
@@ -38,5 +39,26 @@ export class SupabaseActionAudit implements ActionAudit {
     if (error && error.code !== "23505") {
       throw new AdminActionError("AUDIT_FAILED", "Could not write the administrative audit record.", { cause: error });
     }
+  }
+}
+
+function validateAuditEvent(event: ActionAuditRecord): void {
+  const required: Array<[string, string, number]> = [
+    ["requestId", event.requestId, 200],
+    ["actionId", event.actionId, 200],
+    ["actor.id", event.actor.id, 300],
+    ["actor.role", event.actor.role, 100],
+    ["resource.type", event.resource.type, 100],
+    ["resource.id", event.resource.id, 300],
+  ];
+  const invalid = required.find(([, value, maximum]) => !value.trim() || value.length > maximum);
+  if (invalid) {
+    throw new AdminActionError("AUDIT_FAILED", `Administrative audit field ${invalid[0]} is invalid.`);
+  }
+  if (event.reason && event.reason.length > 1000) {
+    throw new AdminActionError("AUDIT_FAILED", "Administrative audit reason is too long.");
+  }
+  if (event.errorCode && event.errorCode.length > 200) {
+    throw new AdminActionError("AUDIT_FAILED", "Administrative audit error code is too long.");
   }
 }
