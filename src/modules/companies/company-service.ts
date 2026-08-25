@@ -35,12 +35,27 @@ export type CompanyParticipant = {
   attemptId: string;
   name: string;
   email: string;
-  status: "Completed" | "In progress";
+  status: "Completed" | "In progress" | "Not started" | "Expired";
   startedAt: string;
   completedAt: string | null;
   overallPercentage: number | null;
   assessment: string;
   reportPath: string | null;
+};
+
+export type CompanyAnalytics = {
+  completionRate: number | null;
+  averageScore: number | null;
+  highestScore: number | null;
+  lowestScore: number | null;
+  completedReports: number;
+  completed: number;
+  inProgress: number;
+  notStarted: number;
+  expired: number;
+  strongestCompetency: { name: string; percentage: number } | null;
+  weakestCompetency: { name: string; percentage: number } | null;
+  scoreDistribution: Array<{ label: string; count: number }>;
 };
 
 export type CompanyDetail = {
@@ -56,6 +71,7 @@ export type CompanyDetail = {
   managerDashboardPath: string | null;
   createdAt: string;
   participants: CompanyParticipant[];
+  analytics: CompanyAnalytics;
 };
 
 type CompanyRow = {
@@ -69,8 +85,10 @@ type CompanyRow = {
 };
 
 type AccessTokenRow = {
+  id: string;
   company_id: string | null;
   assessment_type: string | null;
+  expires_at: string | null;
 };
 
 type AssessmentRow = {
@@ -151,7 +169,7 @@ async function getAssessmentContext(
 
   const { data: tokenData, error: tokenError } = await supabase
     .from("access_tokens")
-    .select("company_id, assessment_type")
+    .select("id, company_id, assessment_type, expires_at")
     .in("company_id", companyIds);
 
   if (tokenError) throw new Error("Could not load company assessment access.");
@@ -318,7 +336,7 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
   const company = companyData as CompanyRow;
   const { data: attemptData, error: attemptError } = await supabase
     .from("quiz_attempts")
-    .select("id, assessment_id, full_name, user_email, created_at, completed_at, total_percentage, answers, competency_results")
+    .select("id, assessment_id, access_token_id, full_name, user_email, created_at, completed_at, total_percentage, answers, competency_results")
     .eq("company_id", id)
     .order("created_at", { ascending: false });
   if (attemptError) throw new Error("Could not load company participants.");
@@ -332,11 +350,22 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
   const packageSize = numberOrZero(company.package_size);
   const creditsRemaining = numberOrZero(company.credits_balance);
   const managerToken = String(company.manager_token || "");
+  const tokensById = new Map(tokenRows.map((token) => [String(token.id), token]));
 
   const participants: CompanyParticipant[] = (attemptData || []).map((attempt: any) => {
     const assessmentId = String(attempt.assessment_id || "");
     const assessment = assessmentsById.get(assessmentId);
     const completed = isAttemptCompleted(attempt);
+    const token = tokensById.get(String(attempt.access_token_id || ""));
+    const expired = !completed && Boolean(token?.expires_at && new Date(token.expires_at).getTime() < Date.now());
+    const hasProgress = Array.isArray(attempt.answers) && attempt.answers.length > 0;
+    const status: CompanyParticipant["status"] = completed
+      ? "Completed"
+      : expired
+        ? "Expired"
+        : hasProgress
+          ? "In progress"
+          : "Not started";
     const slug = String(assessment?.slug || "").trim();
     const reportPath = completed && slug
       ? `/${slug}/report?attemptId=${encodeURIComponent(String(attempt.id))}${managerToken ? `&managerToken=${encodeURIComponent(managerToken)}` : ""}`
@@ -345,7 +374,7 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
       attemptId: String(attempt.id),
       name: String(attempt.full_name || "Not provided"),
       email: String(attempt.user_email || "Not provided"),
-      status: completed ? "Completed" : "In progress",
+      status,
       startedAt: String(attempt.created_at || ""),
       completedAt: attempt.completed_at ? String(attempt.completed_at) : null,
       overallPercentage: completed ? numberOrZero(attempt.total_percentage) : null,
@@ -353,6 +382,49 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
       reportPath,
     };
   });
+
+  const completedParticipants = participants.filter((participant) => participant.status === "Completed");
+  const scores = completedParticipants
+    .map((participant) => participant.overallPercentage)
+    .filter((score): score is number => score !== null);
+  const competencyTotals = new Map<string, { total: number; count: number }>();
+  for (const attempt of attemptData || []) {
+    if (!isAttemptCompleted(attempt) || !Array.isArray(attempt.competency_results)) continue;
+    for (let index = 0; index < attempt.competency_results.length; index += 1) {
+      const result = attempt.competency_results[index];
+      const name = String(result?.competency_name || result?.competency || result?.name || result?.competency_id || `Competency ${index + 1}`);
+      const percentage = Number(result?.percentage ?? result?.percentage_score ?? result?.score);
+      if (!Number.isFinite(percentage)) continue;
+      const current = competencyTotals.get(name) || { total: 0, count: 0 };
+      competencyTotals.set(name, { total: current.total + percentage, count: current.count + 1 });
+    }
+  }
+  const competencies = Array.from(competencyTotals, ([name, value]) => ({
+    name,
+    percentage: Math.round((value.total / value.count) * 10) / 10,
+  })).sort((a, b) => b.percentage - a.percentage);
+  const averageScore = scores.length
+    ? Math.round((scores.reduce((total, score) => total + score, 0) / scores.length) * 10) / 10
+    : null;
+  const analytics: CompanyAnalytics = {
+    completionRate: participants.length ? Math.round((completedParticipants.length / participants.length) * 1000) / 10 : null,
+    averageScore,
+    highestScore: scores.length ? Math.max(...scores) : null,
+    lowestScore: scores.length ? Math.min(...scores) : null,
+    completedReports: participants.filter((participant) => participant.reportPath).length,
+    completed: completedParticipants.length,
+    inProgress: participants.filter((participant) => participant.status === "In progress").length,
+    notStarted: participants.filter((participant) => participant.status === "Not started").length,
+    expired: participants.filter((participant) => participant.status === "Expired").length,
+    strongestCompetency: competencies[0] || null,
+    weakestCompetency: competencies.length ? competencies[competencies.length - 1] : null,
+    scoreDistribution: [
+      { label: "0–24%", count: scores.filter((score) => score < 25).length },
+      { label: "25–49%", count: scores.filter((score) => score >= 25 && score < 50).length },
+      { label: "50–74%", count: scores.filter((score) => score >= 50 && score < 75).length },
+      { label: "75–100%", count: scores.filter((score) => score >= 75).length },
+    ],
+  };
 
   return {
     id,
@@ -369,5 +441,6 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
       : null,
     createdAt: String(company.created_at || ""),
     participants,
+    analytics,
   };
 }

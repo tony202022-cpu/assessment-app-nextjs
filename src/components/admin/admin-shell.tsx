@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Building2, Coins, FlaskConical, Gift, LayoutDashboard, Settings, ShieldCheck, Users } from "lucide-react";
 
 const navigation = [
-  { label: "Overview", href: "#", icon: LayoutDashboard, enabled: false },
+  { label: "Overview", href: "/admin", icon: LayoutDashboard, enabled: true },
   { label: "Companies", href: "/admin/companies", icon: Building2, enabled: true },
   { label: "Participants", href: "/admin/participants", icon: Users, enabled: true },
   { label: "Credits", href: "/admin/credits", icon: Coins, enabled: true },
   { label: "Complimentary Access", href: "/admin/complimentary", icon: Gift, enabled: true },
-  { label: "Developer Test Mode", href: "/admin/assessment-access", icon: FlaskConical, enabled: true },
+  { label: "System Tools", href: "/admin/assessment-access", icon: FlaskConical, enabled: true },
   { label: "Settings", href: "#", icon: Settings, enabled: false },
 ];
 
@@ -42,7 +42,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <span key={item.label} className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-600" aria-disabled="true">
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   {item.label}
-                  <span className="ms-auto text-[10px] uppercase tracking-wide">Soon</span>
                 </span>
               );
             })}
@@ -61,12 +60,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <p className="text-sm font-black tracking-wide text-slate-950">CAREER LABS AI</p>
                 <p className="text-xs text-slate-500">Control Center · Read-only operations</p>
               </div>
-              <nav className="flex items-center gap-2 lg:hidden" aria-label="Mobile administration">
-                <Link href="/admin/companies" className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white">Companies</Link>
+              <nav className="flex max-w-full items-center gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="Mobile administration">
+                <Link href="/admin" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Overview</Link>
+                <Link href="/admin/companies" className="shrink-0 rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white">Companies</Link>
                 <Link href="/admin/participants" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Participants</Link>
                 <Link href="/admin/credits" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Credits</Link>
                 <Link href="/admin/complimentary" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Complimentary</Link>
-                <Link href="/admin/assessment-access" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Developer</Link>
+                <Link href="/admin/assessment-access" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">System Tools</Link>
               </nav>
               <div className="ms-auto hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 sm:flex">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />

@@ -79,12 +79,12 @@ export default function AssessmentAccessConsole() {
         setAuthState("signed-out");
         return;
       }
-      if (!response.ok) throw new Error(data.error || "Could not load Developer Test Mode.");
+      if (!response.ok) throw new Error(data.error || "Could not load System Tools.");
       setAssessments(data.assessments || []);
       setHistory(data.history || []);
       setAssessmentSlug((current) => current || data.assessments?.[0]?.slug || "");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not load Developer Test Mode.");
+      setError(caught instanceof Error ? caught.message : "Could not load System Tools.");
     } finally {
       setLoadingData(false);
     }
@@ -208,7 +208,7 @@ export default function AssessmentAccessConsole() {
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-blue-700">
               Private administrator tool
             </p>
-            <h1 className="mt-2 text-3xl font-black">Developer Test Mode</h1>
+            <h1 className="mt-2 text-3xl font-black">System Tools</h1>
             <p className="mt-2 max-w-2xl text-slate-600">
               Create one fresh internal attempt and launch the normal assessment experience
               without payment, coupons, company credits, or credentials.
@@ -278,7 +278,7 @@ export default function AssessmentAccessConsole() {
 
               {error && (
                 <Alert variant="destructive">
-                  <AlertTitle>Developer Test Mode error</AlertTitle>
+                  <AlertTitle>System Tools error</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}

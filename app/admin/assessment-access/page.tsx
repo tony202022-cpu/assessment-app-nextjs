@@ -3,7 +3,7 @@ import AssessmentAccessConsole from "./AssessmentAccessConsole";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Developer Test Mode",
+  title: "System Tools",
   robots: { index: false, follow: false },
 };
 
