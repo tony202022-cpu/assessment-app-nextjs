@@ -1,0 +1,77 @@
+import Link from "next/link";
+import { Building2, FlaskConical, LayoutDashboard, Settings, ShieldCheck } from "lucide-react";
+
+const navigation = [
+  { label: "Overview", href: "#", icon: LayoutDashboard, enabled: false },
+  { label: "Companies", href: "/admin/companies", icon: Building2, enabled: true },
+  { label: "Developer Test Mode", href: "/admin/assessment-access", icon: FlaskConical, enabled: true },
+  { label: "Settings", href: "#", icon: Settings, enabled: false },
+];
+
+export function AdminShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-slate-100 text-slate-950">
+      <div className="mx-auto flex min-h-screen max-w-[1800px]">
+        <aside className="hidden w-72 shrink-0 border-r border-slate-800 bg-slate-950 px-5 py-7 text-white lg:flex lg:flex-col">
+          <Link href="/admin/companies" className="flex items-center gap-3 rounded-2xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-950/40">
+              <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span>
+              <span className="block text-sm font-black tracking-wide">CAREER LABS AI</span>
+              <span className="block text-xs text-slate-400">Control Center</span>
+            </span>
+          </Link>
+
+          <nav className="mt-10 space-y-1" aria-label="Administration">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              return item.enabled ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {item.label}
+                </Link>
+              ) : (
+                <span key={item.label} className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-600" aria-disabled="true">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {item.label}
+                  <span className="ms-auto text-[10px] uppercase tracking-wide">Soon</span>
+                </span>
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto rounded-2xl border border-slate-800 bg-slate-900 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-300">Milestone 2</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">Companies is read-only. Credits, tokens, participants, and reports cannot be changed here.</p>
+          </div>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          <header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="lg:hidden">
+                <p className="text-sm font-black tracking-wide text-slate-950">CAREER LABS AI</p>
+                <p className="text-xs text-slate-500">Control Center · Companies</p>
+              </div>
+              <nav className="flex items-center gap-2 lg:hidden" aria-label="Mobile administration">
+                <Link href="/admin/companies" className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white">Companies</Link>
+                <Link href="/admin/assessment-access" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Developer</Link>
+              </nav>
+              <div className="ms-auto hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 sm:flex">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                Read-only operations
+              </div>
+            </div>
+          </header>
+          <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+        </div>
+      </div>
+    </div>
+  );
+}
+

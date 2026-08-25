@@ -21,8 +21,7 @@ export interface Question {
 
 export type AnswerPayload = {
   questionId: string;
-  competencyId: string;
-  selectedScore: number;
+  selectedOptionIndex: number | null;
 };
 
 export interface QuizAnswer {
