@@ -1,9 +1,12 @@
 import Link from "next/link";
-import { Building2, FlaskConical, LayoutDashboard, Settings, ShieldCheck } from "lucide-react";
+import { Building2, Coins, FlaskConical, Gift, LayoutDashboard, Settings, ShieldCheck, Users } from "lucide-react";
 
 const navigation = [
   { label: "Overview", href: "#", icon: LayoutDashboard, enabled: false },
   { label: "Companies", href: "/admin/companies", icon: Building2, enabled: true },
+  { label: "Participants", href: "/admin/participants", icon: Users, enabled: true },
+  { label: "Credits", href: "/admin/credits", icon: Coins, enabled: true },
+  { label: "Complimentary Access", href: "/admin/complimentary", icon: Gift, enabled: true },
   { label: "Developer Test Mode", href: "/admin/assessment-access", icon: FlaskConical, enabled: true },
   { label: "Settings", href: "#", icon: Settings, enabled: false },
 ];
@@ -46,8 +49,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="mt-auto rounded-2xl border border-slate-800 bg-slate-900 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-300">Milestone 2</p>
-            <p className="mt-2 text-sm leading-6 text-slate-300">Companies is read-only. Credits, tokens, participants, and reports cannot be changed here.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-300">Milestone 5</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">Companies and participants are read-only. Attempts, reports, credits, and tokens cannot be changed here.</p>
           </div>
         </aside>
 
@@ -56,10 +59,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="lg:hidden">
                 <p className="text-sm font-black tracking-wide text-slate-950">CAREER LABS AI</p>
-                <p className="text-xs text-slate-500">Control Center · Companies</p>
+                <p className="text-xs text-slate-500">Control Center · Read-only operations</p>
               </div>
               <nav className="flex items-center gap-2 lg:hidden" aria-label="Mobile administration">
                 <Link href="/admin/companies" className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white">Companies</Link>
+                <Link href="/admin/participants" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Participants</Link>
+                <Link href="/admin/credits" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Credits</Link>
+                <Link href="/admin/complimentary" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Complimentary</Link>
                 <Link href="/admin/assessment-access" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Developer</Link>
               </nav>
               <div className="ms-auto hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 sm:flex">
@@ -74,4 +80,3 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

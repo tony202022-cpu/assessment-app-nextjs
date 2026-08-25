@@ -1,0 +1,26 @@
+import "server-only";
+
+export { AdminActionService } from "./admin-action-service";
+export type { AdminActionRequest, PreparedAdminAction } from "./admin-action-service";
+export { ActionRegistry, emptyAdminActionRegistry } from "./action-registry";
+export type { AdminActionContext, AdminActionDefinition, InputValidation } from "./action-registry";
+export { PermissionValidator } from "./permission-validator";
+export type { AdminActionActor, AdminActionResource, AdminCapability, AdminRole, PermissionRequirement } from "./permission-validator";
+export { ConfirmationModel } from "./confirmation-model";
+export type { ActionConfirmation, ConfirmationLevel, ConfirmationMode, ConfirmationRequirement, StandardConfirmationPayload } from "./confirmation-model";
+export type { ActionResult, ActionSuccess, ActionFailure, ActionRefresh, ActionWorkflowMetadata } from "./action-result";
+export { ActionExecutionPipeline } from "./action-execution-pipeline";
+export type { ActionPipelineRequest, PreparedActionWorkflow } from "./action-execution-pipeline";
+export { createDryRunPreview } from "./dry-run-model";
+export type { DryRunPreview, DryRunRecord } from "./dry-run-model";
+export { ProgressStateModel } from "./progress-state";
+export type { ActionPhase, ActionPhaseStatus, ActionProgressEvent, ActionProgressState } from "./progress-state";
+export { resolveRollbackMetadata } from "./rollback-metadata";
+export type { RollbackDeclaration, RollbackMetadata, RollbackMode } from "./rollback-metadata";
+export { AdminActionError, toAdminActionError } from "./action-errors";
+export type { AdminActionErrorCode } from "./action-errors";
+export { createActionAuditRecord } from "./action-audit";
+export type { ActionAudit, ActionAuditOutcome, ActionAuditRecord } from "./action-audit";
+export { adminActionRegistry, createAdminActionService } from "./production-admin-actions";
+export type { RestoreCreditInput, RestoreCreditOutput } from "./actions/restore-credit";
+export type { GenerateComplimentaryTokenInput, GenerateComplimentaryTokenOutput } from "./actions/generate-complimentary-token";
