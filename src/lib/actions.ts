@@ -14,8 +14,7 @@ export type Tier = "Strength" | "Opportunity" | "Threat" | "Weakness";
 
 export type AnswerPayload = {
   questionId: string;
-  competencyId: string;
-  selectedScore: number;
+  selectedOptionIndex: number | null;
 };
 
 type CompetencyResult = {
@@ -199,28 +198,50 @@ export async function submitQuiz(
   }
 
   // --------------------------------------------------
-  // 1) Normalize answers (no -1 values)
+  // 1) Validate the answer identifiers supplied by the client.
   // --------------------------------------------------
-  const normalized = (finalAnswers || []).map((a) => ({
-    questionId: a.questionId,
-    competencyId: a.competencyId,
-    selectedScore: a.selectedScore === -1 ? 0 : Number(a.selectedScore || 0),
-  }));
-
-  if (!normalized.length) {
+  if (!Array.isArray(finalAnswers) || !finalAnswers.length) {
     throw new Error("No answers to submit");
   }
 
-  // --------------------------------------------------
-  // 2) Compute per-competency percentages
-  // --------------------------------------------------
-  const questionIds = Array.from(
-    new Set(normalized.map((a) => a.questionId).filter(Boolean))
-  );
+  const normalized = finalAnswers.map((answer) => {
+    if (!answer || typeof answer !== "object") {
+      console.warn("Rejected malformed quiz answer payload", { attemptId });
+      throw new Error("Malformed answer submission.");
+    }
 
+    const questionId = String(answer.questionId || "").trim();
+    const selectedOptionIndex = answer.selectedOptionIndex;
+    const isUnanswered = selectedOptionIndex === null;
+
+    if (
+      !questionId ||
+      (!isUnanswered &&
+        (!Number.isInteger(selectedOptionIndex) || Number(selectedOptionIndex) < 0))
+    ) {
+      console.warn("Rejected malformed quiz answer payload", {
+        attemptId,
+        questionId,
+        selectedOptionIndex,
+      });
+      throw new Error("Malformed answer submission.");
+    }
+
+    return { questionId, selectedOptionIndex };
+  });
+
+  const questionIds = normalized.map((answer) => answer.questionId);
+  if (new Set(questionIds).size !== questionIds.length) {
+    console.warn("Rejected duplicate quiz question submission", { attemptId });
+    throw new Error("Duplicate question submission.");
+  }
+
+  // --------------------------------------------------
+  // 2) Resolve canonical competency IDs and scores from live questions.
+  // --------------------------------------------------
   const { data: qrows, error: qerr } = await supabase
     .from("questions")
-    .select("id, competency_id, options_scores")
+    .select("*")
     .in("id", questionIds);
 
   if (qerr) throw qerr;
@@ -229,6 +250,16 @@ export async function submitQuiz(
     (qrows || []).map((q) => [q.id, q])
   );
 
+  const canonicalAssessmentId = String(existing.assessment_id || assessmentId);
+
+  if (qMap.size !== questionIds.length) {
+    console.warn("Rejected submission containing unexpected question IDs", {
+      attemptId,
+      assessmentId: canonicalAssessmentId,
+    });
+    throw new Error("Invalid question submission.");
+  }
+
   const agg = new Map<
     string,
     { earned: number; possible: number; count: number }
@@ -236,22 +267,49 @@ export async function submitQuiz(
 
   for (const a of normalized) {
     const q = qMap.get(a.questionId);
-    const competencyId = String(
-      a.competencyId || q?.competency_id || ""
-    ).trim();
+    const questionAssessmentId = String(q?.assessment_id || q?.assessmentId || "").trim();
+    const competencyId = normalizeCompetencyId(String(q?.competency_id || ""));
 
-    if (!competencyId) continue;
+    if (questionAssessmentId !== canonicalAssessmentId || !competencyId) {
+      console.warn("Rejected question outside the attempt assessment", {
+        attemptId,
+        questionId: a.questionId,
+        assessmentId: canonicalAssessmentId,
+      });
+      throw new Error("Invalid question submission.");
+    }
 
     const scoresArr = Array.isArray(q?.options_scores)
-      ? q.options_scores
+      ? q.options_scores.map((score: unknown) => Number(score))
       : null;
 
-    const maxScore =
-      scoresArr && scoresArr.length
-        ? Math.max(...scoresArr.map((n: any) => Number(n || 0)))
-        : 5;
+    if (!scoresArr?.length || scoresArr.some((score: number) => !Number.isFinite(score))) {
+      console.warn("Rejected question with invalid live score options", {
+        attemptId,
+        questionId: a.questionId,
+      });
+      throw new Error("Invalid question scoring configuration.");
+    }
 
-    const earned = Number(a.selectedScore || 0);
+    const optionCounts = [q?.options_en, q?.options_ar]
+      .filter(Array.isArray)
+      .map((options: unknown[]) => options.length);
+    const optionCount = optionCounts.length ? Math.min(...optionCounts) : 0;
+
+    if (
+      a.selectedOptionIndex !== null &&
+      (a.selectedOptionIndex >= scoresArr.length || a.selectedOptionIndex >= optionCount)
+    ) {
+      console.warn("Rejected out-of-range quiz option", {
+        attemptId,
+        questionId: a.questionId,
+        selectedOptionIndex: a.selectedOptionIndex,
+      });
+      throw new Error("Invalid answer option.");
+    }
+
+    const maxScore = Math.max(...scoresArr);
+    const earned = a.selectedOptionIndex === null ? 0 : scoresArr[a.selectedOptionIndex];
 
     const cur = agg.get(competencyId) || {
       earned: 0,
@@ -297,7 +355,10 @@ export async function submitQuiz(
   const { error: updateErr } = await supabase
     .from("quiz_attempts")
     .update({
-      answers: normalized,
+      answers: normalized.map((answer) => ({
+        questionId: answer.questionId,
+        selectedOptionIndex: answer.selectedOptionIndex,
+      })),
       competency_results,
       total_percentage,
       completed_at: new Date().toISOString(),

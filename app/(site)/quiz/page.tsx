@@ -92,7 +92,7 @@ export default function QuizPage({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<
-    Array<{ text: string; score: number; index: number }>
+    Array<{ text: string; index: number }>
   >([]);
 const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   // ✅ NEW: holds the deadline timestamp (ms)
@@ -201,7 +201,9 @@ const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(nu
         }
       }
 
-      const base = supabase.from("questions").select("*");
+      const base = supabase
+        .from("questions")
+        .select("id, competency_id, question_en, question_ar, options_en, options_ar, correct_answer_index, created_at");
 
       // Attempt 1: assessment_id
       let { data, error } = await base
@@ -215,7 +217,7 @@ const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(nu
         // Attempt 2: assessmentId (camel)
         const res2 = await supabase
           .from("questions")
-          .select("*")
+          .select("id, competency_id, question_en, question_ar, options_en, options_ar, correct_answer_index, created_at")
           .eq("assessmentId", assessmentId)
           .order("created_at", { ascending: true })
           .limit(questionLimit);
@@ -236,8 +238,7 @@ const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(nu
       setSelectedAnswers(
         shuffled.map((qItem: any) => ({
           questionId: qItem.id,
-          competencyId: qItem.competency_id,
-          selectedScore: -1,
+          selectedOptionIndex: null,
         }))
       );
 
@@ -338,7 +339,7 @@ useEffect(() => {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  // 5) Shuffle answers per question (keep score)
+  // 5) Shuffle answers per question (keep the original database option index)
   useEffect(() => {
     if (!currentQuestion || isTransitioning || isSubmitting) return;
 
@@ -347,14 +348,11 @@ useEffect(() => {
         ? (currentQuestion as any).options_en
         : (currentQuestion as any).options_ar;
 
-    const scores = (currentQuestion as any).options_scores || [];
-
     const opts = (Array.isArray(raw) ? raw : []).map((item, idx) => ({
       text:
         typeof item === "object" && item !== null && "text" in item
           ? String((item as any).text)
           : String(item),
-      score: scores[idx] ?? 0,
       index: idx,
     }));
 
@@ -406,20 +404,14 @@ useEffect(() => {
             const existing = answersByQuestionId.get(String((q as any).id)) || answersToSubmit[index];
             return {
               questionId: String((q as any).id || existing?.questionId || ""),
-              competencyId: String((q as any).competency_id || existing?.competencyId || ""),
-              selectedScore: existing?.selectedScore ?? 0,
+              selectedOptionIndex: existing?.selectedOptionIndex ?? null,
             };
           })
         : answersToSubmit;
 
-    const finalAnswers = paddedAnswers.map((a) => ({
-      ...a,
-      selectedScore: a.selectedScore === -1 ? 0 : a.selectedScore,
-    }));
-
     try {
       // ✅ NEW: submitQuiz answers INTO the existing attempt
-      await submitQuiz(finalAnswers, attemptId, urlLang, assessmentId);
+      await submitQuiz(paddedAnswers, attemptId, urlLang, assessmentId);
 
       // ✅ NEW: clear deadline so a new attempt starts fresh
       clearStoredDeadline();
@@ -440,14 +432,13 @@ useEffect(() => {
   };
 
   // 7) Option select
-  const handleOptionSelect = (score: number, optionIndex?: number) => {
+  const handleOptionSelect = (originalOptionIndex: number, displayedOptionIndex: number) => {
     if (isTransitioning || isSubmitting) return;
-setSelectedOptionIndex(optionIndex ?? null);
+setSelectedOptionIndex(displayedOptionIndex);
     const copy = [...selectedAnswers];
     copy[currentQuestionIndex] = {
       questionId: (currentQuestion as any).id,
-      competencyId: (currentQuestion as any).competency_id ?? "",
-      selectedScore: score,
+      selectedOptionIndex: originalOptionIndex,
     };
     setSelectedAnswers(copy);
 
@@ -546,7 +537,7 @@ setTimeout(() => {
             {shuffledOptions.map((option, index) => (
               <button
                 key={index}
-                onClick={() => handleOptionSelect(option.score, index)}
+                onClick={() => handleOptionSelect(option.index, index)}
                 disabled={isTransitioning || isSubmitting}
                 className={`relative w-full ${lawyerEnglishMobile ? "px-4 sm:px-5" : "px-5"} py-4 rounded-xl border backdrop-blur-xl shadow-md hover:bg-white/90 hover:shadow-lg active:scale-[0.98] transition-all duration-200 focus:outline-none ${
                   selectedOptionIndex === index

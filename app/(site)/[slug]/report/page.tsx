@@ -1887,7 +1887,9 @@ function buildLawyerConversionTreatmentPlan(
 
 
 function mriBehaviorFamily(row: CompetencyRow, lang: Language) {
-  const id = row.competencyId;
+  const id = row.competencyId === "manager_communication_upward_reporting"
+    ? "manager_communication_executive_reporting"
+    : row.competencyId;
 
   const en: Record<string, string> = {
     sales_coaching_rep_development: "Coaching & rep development",
@@ -2197,7 +2199,9 @@ function getBusinessHealthTreatmentMeta(row: CompetencyRow, lang: Language) {
 
 
 function getMriTreatmentMeta(row: CompetencyRow, lang: Language, weakestLabel?: string, strongestLabel?: string) {
-  const id = row.competencyId;
+  const id = row.competencyId === "manager_communication_upward_reporting"
+    ? "manager_communication_executive_reporting"
+    : row.competencyId;
 
   const businessMeta = getBusinessHealthTreatmentMeta(row, lang);
   if (businessMeta) return businessMeta;
