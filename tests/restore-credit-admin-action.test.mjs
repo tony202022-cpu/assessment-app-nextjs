@@ -8,6 +8,7 @@ const action = read("src/modules/admin-actions/actions/restore-credit.ts");
 const production = read("src/modules/admin-actions/production-admin-actions.ts");
 const route = read("app/api/admin/actions/credits/restore/route.ts");
 const framework = read("src/modules/admin-actions/action-execution-pipeline.ts");
+const component = read("src/components/admin/restore-credit-action.tsx");
 
 test("credits.restore is registered and executed only through AdminActionService", () => {
   assert.match(action, /id: "credits\.restore"/);
@@ -23,9 +24,32 @@ test("restore requires capability, reason, and explicit confirmation", () => {
   assert.match(action, /reasonRequired: true/);
   assert.match(action, /expectedPhrase: "Restore Credit"/);
   assert.match(action, /rollback:[\s\S]*mode: "manual"/);
+  assert.match(action, /async dryRun\(input\)/);
+  assert.match(action, /createDryRunPreview/);
   assert.match(action, /if \(!reason\) fields\.reason/);
   assert.match(route, /ADMIN_ACTION_CAPABILITIES/);
   assert.match(route, /capabilities,/);
+});
+
+test("restore reuses one operation ID across preview and execution", () => {
+  assert.match(component, /crypto\.randomUUID\(\)/);
+  assert.match(component, /operationId/);
+  assert.match(component, /submit\("preview"\)/);
+  assert.match(component, /submit\("execute"\)/);
+  assert.match(route, /suppliedOperationId/);
+  assert.match(route, /if \(!UUID_PATTERN\.test\(suppliedOperationId\)\)/);
+  assert.match(route, /service\.prepare/);
+  assert.match(migration, /v_existing_audit/);
+  assert.match(migration, /request_id_conflict/);
+});
+
+test("production requires an accountable actor and success is structured", () => {
+  assert.match(route, /process\.env\.NODE_ENV === "production"/);
+  assert.match(route, /Administrative actor identity is not configured/);
+  assert.doesNotMatch(route, /unidentified-admin-session/);
+  for (const field of ["previousBalance", "newBalance", "packageSize", "companyName", "administrator", "reason", "timestamp"]) {
+    assert.match(action, new RegExp(field));
+  }
 });
 
 test("restore is atomic, row-locked, capped, and ledger-backed", () => {

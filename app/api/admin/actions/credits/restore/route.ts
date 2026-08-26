@@ -6,6 +6,8 @@ import { isValidAdminSession, OFFLINE_ADMIN_COOKIE } from "@/lib/offline-company
 import { consumeRateLimit } from "@/lib/offline-company-rate-limit";
 
 export const dynamic = "force-dynamic";
+const ACTION_ID = "credits.restore";
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function responseStatus(code: string) {
   if (code === "ACTION_FORBIDDEN") return 403;
@@ -16,20 +18,22 @@ function responseStatus(code: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = randomUUID();
   const now = new Date();
   const origin = request.headers.get("origin");
   if (origin && origin !== request.nextUrl.origin) {
-    return NextResponse.json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Invalid request origin.", requestId, actionId: "credits.restore", failedAt: now.toISOString() }), { status: 403 });
+    const requestId = randomUUID();
+    return NextResponse.json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Invalid request origin.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 403 });
   }
   if (!isValidAdminSession(request.cookies.get(OFFLINE_ADMIN_COOKIE)?.value)) {
-    return NextResponse.json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Administrator authentication is required.", requestId, actionId: "credits.restore", failedAt: now.toISOString() }), { status: 401 });
+    const requestId = randomUUID();
+    return NextResponse.json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Administrator authentication is required.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 401 });
   }
 
   const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
   const rate = consumeRateLimit(`admin-action:credits.restore:${ipAddress}`, 20, 60 * 60 * 1000);
   if (!rate.allowed) {
-    return NextResponse.json(actionFailure({ code: "ACTION_CONFLICT", message: "Too many restore attempts. Try again later.", requestId, actionId: "credits.restore", failedAt: now.toISOString() }), { status: 429, headers: { "Retry-After": String(rate.retryAfter) } });
+    const requestId = randomUUID();
+    return NextResponse.json(actionFailure({ code: "ACTION_CONFLICT", message: "Too many restore attempts. Try again later.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 429, headers: { "Retry-After": String(rate.retryAfter) } });
   }
 
   let body: Record<string, unknown>;
@@ -41,20 +45,27 @@ export async function POST(request: NextRequest) {
   }
   const companyId = String(body.companyId || "").trim();
   const reason = String(body.reason || "").trim();
+  const suppliedOperationId = String(body.operationId || "").trim();
+  const requestId = UUID_PATTERN.test(suppliedOperationId) ? suppliedOperationId : randomUUID();
+  if (!UUID_PATTERN.test(suppliedOperationId)) {
+    return NextResponse.json(actionFailure({ code: "INPUT_INVALID", message: "The operation ID is invalid.", fields: { operationId: "Restart the action and try again." }, requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 400 });
+  }
+  const configuredActorId = String(process.env.ADMIN_ACTION_ACTOR_ID || "").trim();
+  const actorId = configuredActorId || (process.env.NODE_ENV === "production" ? "" : "development-admin");
+  if (!actorId) {
+    return NextResponse.json(actionFailure({ code: "ACTION_FAILED", message: "Administrative actor identity is not configured.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 500 });
+  }
   const capabilities = String(process.env.ADMIN_ACTION_CAPABILITIES || "")
     .split(",")
     .map((capability) => capability.trim())
     .filter(Boolean);
   const service = createAdminActionService();
-  const result = await service.execute({
-    actionId: "credits.restore",
-    input: { companyId, reason },
-    confirmation: { acknowledged: true, phrase: "Restore Credit", reason },
-    context: {
+  const input = { companyId, reason };
+  const context = {
       requestId,
       actor: {
-        id: String(process.env.ADMIN_ACTION_ACTOR_ID || "unidentified-admin-session"),
-        role: "admin",
+        id: actorId,
+        role: "admin" as const,
         capabilities,
       },
       resource: { type: "company", id: companyId, companyId },
@@ -62,8 +73,10 @@ export async function POST(request: NextRequest) {
       ipAddress,
       userAgent: request.headers.get("user-agent") || undefined,
       correlationId: request.headers.get("x-correlation-id") || undefined,
-    },
-  });
+  };
+  const result = body.mode === "preview"
+    ? await service.prepare(ACTION_ID, input, context)
+    : await service.execute({ actionId: ACTION_ID, input, confirmation: { acknowledged: true, phrase: "Restore Credit", reason }, context });
 
   return NextResponse.json(result, {
     status: result.ok ? 200 : responseStatus(result.error.code),

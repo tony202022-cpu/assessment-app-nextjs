@@ -47,6 +47,7 @@ as $$
 declare
   v_company public.companies%rowtype;
   v_audit_id uuid;
+  v_existing_audit public.admin_action_audit%rowtype;
   v_reason text := btrim(coalesce(p_reason, ''));
 begin
   if p_company_id is null then
@@ -70,6 +71,35 @@ begin
   if not found then
     raise exception using errcode = 'P0002', message = 'company_not_found';
   end if;
+
+  -- The request ID is the operation's idempotency key. Re-check only after
+  -- taking the company row lock so concurrent retries serialize safely.
+  select * into v_existing_audit
+  from public.admin_action_audit a
+  where a.request_id = p_request_id
+    and a.action_id = 'credits.restore'
+    and a.outcome = 'succeeded'
+  limit 1;
+
+  if found then
+    if v_existing_audit.company_id is distinct from v_company.id
+       or v_existing_audit.administrator_id is distinct from p_administrator_id
+       or btrim(coalesce(v_existing_audit.reason, '')) is distinct from v_reason
+       or v_existing_audit.old_balance is null
+       or v_existing_audit.new_balance is null then
+      raise exception using errcode = '23505', message = 'request_id_conflict';
+    end if;
+
+    return query select
+      v_company.id,
+      coalesce(v_existing_audit.metadata ->> 'companyName', v_company.name),
+      coalesce((v_existing_audit.metadata ->> 'packageSize')::integer, v_company.package_size),
+      v_existing_audit.old_balance,
+      v_existing_audit.new_balance,
+      v_existing_audit.id;
+    return;
+  end if;
+
   if v_company.package_size is null or v_company.package_size < 1 or
      v_company.credits_balance is null or v_company.credits_balance < 0 or
      v_company.credits_balance > v_company.package_size then
@@ -88,6 +118,7 @@ begin
     v_company.id,
     1,
     'Admin action credits.restore by ' || p_administrator_id ||
+    '; operation ' || p_request_id ||
     '; old balance ' || v_company.credits_balance ||
     '; new balance ' || (v_company.credits_balance + 1) ||
     '; reason: ' || v_reason
