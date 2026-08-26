@@ -12,6 +12,9 @@ export const metadata: Metadata = {
 export default async function CompanyPage({ params }: { params: { id: string } }) {
   const company = await getCompanyDetail(params.id);
   if (!company) notFound();
-  return <CompanyDetail company={company} />;
+  const capabilities = String(process.env.ADMIN_ACTION_CAPABILITIES || "")
+    .split(",")
+    .map((capability) => capability.trim())
+    .filter(Boolean);
+  return <CompanyDetail company={company} canRestoreCredit={capabilities.includes("credits.restore")} />;
 }
-

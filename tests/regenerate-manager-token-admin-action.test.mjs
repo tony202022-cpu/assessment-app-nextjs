@@ -8,6 +8,7 @@ const registry = read("src/modules/admin-actions/production-admin-actions.ts");
 const route = read("app/api/admin/actions/companies/regenerate-manager-token/route.ts");
 const ui = read("src/components/admin/regenerate-manager-token-action.tsx");
 const futureActions = read("src/components/admin/future-actions.tsx");
+const companyPage = read("app/admin/companies/[id]/page.tsx");
 
 test("manager token regeneration uses the existing Admin Actions workflow", () => {
   assert.match(action, /id: "companies\.manager-token\.regenerate"/);
@@ -46,8 +47,12 @@ test("route enforces session, same origin, rate limiting, and capability context
   assert.match(route, /Cache-Control": "no-store"/);
 });
 
-test("only Regenerate Manager Token is enabled on the company action panel", () => {
+test("only Regenerate Manager Token and authorized Restore Credit are enabled on the company action panel", () => {
   assert.match(futureActions, /RegenerateManagerTokenAction/);
+  assert.match(futureActions, /RestoreCreditAction/);
+  assert.match(futureActions, /canRestoreCredit \? <RestoreCreditAction/);
+  assert.match(companyPage, /capabilities\.includes\("credits\.restore"\)/);
+  assert.match(futureActions, /All other actions remain unavailable/);
   assert.match(futureActions, /actions\.map/);
   assert.match(futureActions, /disabled className="h-11/);
   assert.match(ui, /Preview/);
