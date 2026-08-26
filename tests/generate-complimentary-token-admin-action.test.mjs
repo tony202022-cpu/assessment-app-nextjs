@@ -17,7 +17,7 @@ test("complimentary.generate uses the complete Admin Actions workflow", () => {
   assert.match(action, /mode: "reason-required"/);
   assert.match(action, /reasonRequired: true/);
   assert.match(action, /rollback:[\s\S]*mode: "manual"/);
-  assert.match(registry, /new ActionRegistry\(\[restoreCreditAction, generateComplimentaryTokenAction\]\)/);
+  assert.match(registry, /new ActionRegistry\(\[[^\]]*restoreCreditAction[^\]]*generateComplimentaryTokenAction[^\]]*\]\)/);
   assert.match(route, /service\.prepare/);
   assert.match(route, /service\.execute/);
 });
