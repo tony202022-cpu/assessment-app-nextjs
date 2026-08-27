@@ -57,10 +57,9 @@ test("sample headings use explicit readable colors on dark and light backgrounds
 });
 
 test("existing paid and Developer Test report authorization remains protected", () => {
-  assert.match(protectedReport, /isAuthorizedPaidMriAttempt/);
-  assert.match(protectedReport, /readDeveloperTestAccess/);
-  assert.match(protectedReport, /DEVELOPER_TEST_ACCESS_COOKIE/);
-  assert.match(protectedReport, /isAuthorizedOfflineManager/);
+  assert.match(protectedReport, /ReportAuthorizationService/);
+  assert.match(protectedReport, /authorizeAttemptAccess/);
+  assert.match(protectedReport, /expectedAssessmentSlug: slug/);
   assert.doesNotMatch(protectedReport, /sample-report/);
 });
 

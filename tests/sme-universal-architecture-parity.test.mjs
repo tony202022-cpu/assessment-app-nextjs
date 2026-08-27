@@ -46,13 +46,12 @@ function reportInput(locale = "en") {
   };
 }
 
-test("SME is the only registered production definition and passes canonical validation", () => {
-  const definitions = assessmentRegistry.list();
-  assert.equal(definitions.length, 1);
-  assert.equal(definitions[0].metadata.id, "sme_business_health_mri");
+test("SME remains registered and passes canonical validation", () => {
+  const definition = assessmentRegistry.getCurrent("sme_business_health_mri");
+  assert.ok(definition);
   assert.equal(new AssessmentLoader().validate(sme.smeBusinessHealthAssessmentDefinition).length, 0);
-  assert.equal(definitions[0].questionSource.questionCount, 96);
-  assert.equal(definitions[0].competencyModel.competencies.length, 12);
+  assert.equal(definition.questionSource.questionCount, 96);
+  assert.equal(definition.competencyModel.competencies.length, 12);
 });
 
 test("question and scoring adapters delegate to the existing providers without copying logic", async () => {

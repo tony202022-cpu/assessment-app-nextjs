@@ -13,3 +13,10 @@ export { AssessmentRegistry, assessmentRegistry } from "./assessment-registry";
 export { AssessmentLoader, AssessmentDefinitionValidationError } from "./assessment-loader";
 export type { AssessmentValidationIssue } from "./assessment-loader";
 export * from "./sme";
+export {
+  legacyProductionAssessmentDefinitions,
+  lawyerClientConversionMriAssessmentDefinition,
+  outdoorSalesMriAssessmentDefinition,
+  outdoorSalesScanAssessmentDefinition,
+  salesManagerMriAssessmentDefinition,
+} from "./production/production-assessment-definitions";

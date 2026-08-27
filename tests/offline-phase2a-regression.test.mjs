@@ -14,6 +14,7 @@ const login = read("app/(site)/[slug]/login/page.tsx");
 const resultsGate = read("app/(site)/[slug]/results/page.tsx");
 const resultsClient = read("app/(site)/[slug]/results/ResultsClient.tsx");
 const report = read("app/(site)/[slug]/report/page.tsx");
+const reportAuthorization = read("src/modules/report-authorization/report-authorization-service.ts");
 const dashboard = read("app/company/outdoor-mri-dashboard/page.tsx");
 
 test("offline classification uses only the authoritative assessment/company marker", () => {
@@ -62,11 +63,10 @@ test("offline results are server-gated before the unchanged client renders", () 
 });
 
 test("offline reports require a same-company manager token", () => {
-  assert.match(report, /offlineContext\?\.isOfflineActivated/);
-  assert.match(report, /isAuthorizedOfflineManager\(/);
-  assert.match(helper, /\.eq\("id", context\.companyId\)/);
-  assert.match(helper, /\.eq\("manager_token", token\)/);
-  assert.match(helper, /return company\?\.id === context\.companyId/);
+  assert.match(report, /ReportAuthorizationService/);
+  assert.match(reportAuthorization, /attempt\.isOfflineCompany/);
+  assert.match(reportAuthorization, /findManagerByToken/);
+  assert.match(reportAuthorization, /attempt\.companyId !== manager\.companyId/);
 });
 
 test("manager report links carry tokens only for offline companies", () => {
@@ -81,7 +81,7 @@ test("manager report links carry tokens only for offline companies", () => {
 test("individual and online corporate attempts retain the existing result/report branches", () => {
   assert.match(sharedQuiz, /\/\$\{slug\}\/results\?attemptId=/);
   assert.match(login, /: `\/\$\{slug\}\/results\?attemptId=/);
-  assert.match(report, /if \(offlineContext\?\.isOfflineActivated\)/);
+  assert.match(report, /authorization\.actorType === "offline-company"/);
 });
 
 test("credit and duplicate-credit protection remain in the existing start RPC flow", () => {

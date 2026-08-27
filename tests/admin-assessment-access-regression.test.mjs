@@ -181,6 +181,7 @@ test("Developer Test authorization survives instructions, Continue, quiz, submit
   const actions = read("src/lib/actions.ts");
   const results = read("app/(site)/[slug]/results/ResultsClient.tsx");
   const report = read("app/(site)/[slug]/report/page.tsx");
+  const reportAuthorization = read("src/modules/report-authorization/report-authorization-service.ts");
   const binding = read("app/api/admin/assessment-access/bind/route.ts");
 
   assert.match(instructions, /supabase\.auth\.getUser\(\)/);
@@ -193,7 +194,9 @@ test("Developer Test authorization survives instructions, Continue, quiz, submit
   assert.match(quiz, /isTokenBackedPaidAttempt\(attempt, authenticatedUserId\)/);
   assert.match(actions, /readDeveloperTestAccess/);
   assert.match(results, /authenticatedUserId/);
-  assert.match(report, /readDeveloperTestAccess/);
+  assert.match(report, /ReportAuthorizationService/);
+  assert.match(reportAuthorization, /readDeveloperTestAccess/);
+  assert.match(reportAuthorization, /attempt\.isDeveloperTest/);
 });
 
 test("history is developer-only and exposes launch/report links by status", () => {

@@ -1,7 +1,22 @@
 import type { AssessmentDefinition } from "./assessment-definition";
 import { assessmentDefinitionKey } from "./assessment-definition";
 import { AssessmentLoader } from "./assessment-loader";
+import { legacyProductionAssessmentDefinitions } from "./production/production-assessment-definitions";
 import { smeBusinessHealthAssessmentDefinition } from "./sme/sme-assessment-definition";
+
+function compareSemanticVersions(left: string, right: string): number {
+  const [leftCore, leftPre] = left.split("-", 2);
+  const [rightCore, rightPre] = right.split("-", 2);
+  const leftParts = leftCore.split(".").map(Number);
+  const rightParts = rightCore.split(".").map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    const difference = leftParts[index] - rightParts[index];
+    if (difference) return difference;
+  }
+  if (leftPre === undefined && rightPre !== undefined) return 1;
+  if (leftPre !== undefined && rightPre === undefined) return -1;
+  return String(leftPre || "").localeCompare(String(rightPre || ""), "en", { numeric: true });
+}
 
 export class AssessmentRegistry {
   private readonly byKey = new Map<string, Readonly<AssessmentDefinition>>();
@@ -32,6 +47,24 @@ export class AssessmentRegistry {
 
   list(): ReadonlyArray<Readonly<AssessmentDefinition>> { return Array.from(this.byKey.values()); }
 
+  getCurrent(id: string): Readonly<AssessmentDefinition> | undefined {
+    return this.list()
+      .filter((definition) => definition.metadata.id === id && definition.metadata.status === "published")
+      .sort((left, right) => compareSemanticVersions(right.metadata.version, left.metadata.version))[0];
+  }
+
+  findCurrentBySlug(slug: string): Readonly<AssessmentDefinition> | undefined {
+    const owner = this.slugOwners.get(slug);
+    return owner ? this.getCurrent(owner) : undefined;
+  }
+
+  listCurrent(): ReadonlyArray<Readonly<AssessmentDefinition>> {
+    return Array.from(this.idSlugs.keys())
+      .map((id) => this.getCurrent(id))
+      .filter((definition): definition is Readonly<AssessmentDefinition> => Boolean(definition))
+      .sort((left, right) => left.metadata.name.localeCompare(right.metadata.name));
+  }
+
   private registerValidated(definition: Readonly<AssessmentDefinition>) {
     const key = assessmentDefinitionKey(definition);
     if (this.byKey.has(key)) throw new Error(`Duplicate assessment ID and version: ${key}.`);
@@ -45,5 +78,7 @@ export class AssessmentRegistry {
   }
 }
 
-/** SME is the sole characterized production definition in this proof of concept. */
-export const assessmentRegistry = new AssessmentRegistry([smeBusinessHealthAssessmentDefinition]);
+export const assessmentRegistry = new AssessmentRegistry([
+  ...legacyProductionAssessmentDefinitions,
+  smeBusinessHealthAssessmentDefinition,
+]);

@@ -42,8 +42,18 @@ function definition(overrides = {}) {
   return { ...base, ...overrides };
 }
 
-test("production assessment registry contains only the characterized SME definition", () => {
-  assert.deepEqual(assessmentRegistry.list().map((entry) => entry.metadata.id), ["sme_business_health_mri"]);
+test("production assessment registry contains every supported production assessment", () => {
+  assert.deepEqual(
+    assessmentRegistry.listCurrent().map((entry) => entry.metadata.id).sort(),
+    [
+      "lawyer_client_conversion_mri",
+      "outdoor_sales_mri",
+      "outdoor_sales_scan",
+      "sales_manager_mri",
+      "sme_business_health_mri",
+    ],
+  );
+  assert.ok(assessmentRegistry.listCurrent().every((entry) => entry.metadata.status === "published"));
 });
 
 test("loader accepts and freezes a complete canonical definition", () => {
@@ -75,14 +85,51 @@ test("registry rejects duplicate IDs and slugs while supporting versions", () =>
   assert.throws(() => registry.register(definition()), /Duplicate assessment ID and version/);
   const secondId = definition({ metadata: { ...definition().metadata, id: "another_assessment" } });
   assert.throws(() => registry.register(secondId), /Duplicate assessment slug/);
-  const versionTwo = definition({ metadata: { ...definition().metadata, version: "2.0.0" }, competencyModel: { ...definition().competencyModel, version: "2.0.0" }, questionSource: { ...definition().questionSource, version: "2.0.0" }, scoringStrategy: { ...definition().scoringStrategy, version: "2.0.0" }, report: { ...definition().report, version: "2.0.0" } });
+  const versionTwo = definition({ metadata: { ...definition().metadata, version: "2.0.0", status: "published" }, competencyModel: { ...definition().competencyModel, version: "2.0.0" }, questionSource: { ...definition().questionSource, version: "2.0.0" }, scoringStrategy: { ...definition().scoringStrategy, version: "2.0.0" }, report: { ...definition().report, version: "2.0.0" } });
   registry.register(versionTwo);
   assert.equal(registry.require("test_capability_assessment", "2.0.0").metadata.version, "2.0.0");
+  assert.equal(registry.getCurrent("test_capability_assessment")?.metadata.version, "2.0.0");
+  assert.equal(registry.findCurrentBySlug("test-capability-assessment")?.metadata.version, "2.0.0");
+  assert.deepEqual(registry.listCurrent().map((entry) => entry.metadata.id), ["test_capability_assessment"]);
 });
 
-test("module registers no production assessment other than SME and contains no data access or scoring", () => {
-  const source = readdirSync(moduleRoot).filter((name) => name.endsWith(".ts")).map((name) => readFileSync(path.join(moduleRoot, name), "utf8")).join("\n");
-  assert.doesNotMatch(source, /outdoor_sales|outdoor-mri|sales_manager|lawyer_client/i);
+test("current-version selection ignores draft versions and prefers a release over its prerelease", () => {
+  const registry = new AssessmentRegistry();
+  const publishedOne = definition({ metadata: { ...definition().metadata, status: "published" } });
+  const prerelease = definition({
+    metadata: { ...definition().metadata, version: "2.0.0-rc.1", status: "published" },
+    competencyModel: { ...definition().competencyModel, version: "2.0.0-rc.1" },
+    questionSource: { ...definition().questionSource, version: "2.0.0-rc.1" },
+    scoringStrategy: { ...definition().scoringStrategy, version: "2.0.0-rc.1" },
+    report: { ...definition().report, version: "2.0.0-rc.1" },
+  });
+  const release = definition({
+    metadata: { ...definition().metadata, version: "2.0.0", status: "published" },
+    competencyModel: { ...definition().competencyModel, version: "2.0.0" },
+    questionSource: { ...definition().questionSource, version: "2.0.0" },
+    scoringStrategy: { ...definition().scoringStrategy, version: "2.0.0" },
+    report: { ...definition().report, version: "2.0.0" },
+  });
+  const futureDraft = definition({
+    metadata: { ...definition().metadata, version: "3.0.0", status: "draft" },
+    competencyModel: { ...definition().competencyModel, version: "3.0.0" },
+    questionSource: { ...definition().questionSource, version: "3.0.0" },
+    scoringStrategy: { ...definition().scoringStrategy, version: "3.0.0" },
+    report: { ...definition().report, version: "3.0.0" },
+  });
+  registry.register(publishedOne).register(prerelease).register(release).register(futureDraft);
+  assert.equal(registry.getCurrent("test_capability_assessment")?.metadata.version, "2.0.0");
+});
+
+test("production definitions validate without data access or scoring implementation", () => {
+  for (const definition of assessmentRegistry.list()) {
+    assert.equal(new AssessmentLoader().validate(definition).length, 0);
+  }
+  const sourceFiles = readdirSync(moduleRoot, { recursive: true })
+    .filter((name) => String(name).endsWith(".ts"))
+    .map((name) => readFileSync(path.join(moduleRoot, String(name)), "utf8"))
+    .join("\n");
+  const source = sourceFiles;
   assert.doesNotMatch(source, /@supabase|\.from\(["']|\.rpc\(["']|fetch\(/);
   assert.doesNotMatch(source, /calculateScore|total_percentage\s*[+*/-]/i);
 });

@@ -22,15 +22,8 @@ import {
   type SmeBusinessRevivalDay,
 } from "@/lib/sme-business-revival-90day";
 import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
-import { cookies } from "next/headers";
-import {
-  DEVELOPER_TEST_ACCESS_COOKIE,
-  readDeveloperTestAccess,
-} from "@/lib/admin-assessment-access";
-import {
-  getOfflineAttemptContext,
-  isAuthorizedOfflineManager,
-} from "@/lib/offline-attempt-access";
+import { cookies, headers } from "next/headers";
+import { ReportAuthorizationService } from "@/modules/report-authorization";
 import { ApprovedOutdoorSalesScanReport } from "../../outdoor-scan/report-preview/ApprovedOutdoorSalesScanReport";
 
 export const runtime = "nodejs";
@@ -2900,6 +2893,55 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     return <div className="p-10 text-center">Missing attemptId</div>;
   }
 
+  const authorization = await new ReportAuthorizationService().authorizeAttemptAccess({
+    attemptId,
+    expectedAssessmentSlug: slug,
+    cookies: cookies(),
+    headers: headers(),
+    managerToken: searchParams?.managerToken?.trim() || "",
+    purpose: "view",
+  });
+  const compatibilityAllowed =
+    !authorization.authorized &&
+    authorization.decision === "PARTICIPANT_PROOF_UNAVAILABLE" &&
+    !!authorization.attempt &&
+    (!isPaidMriSlug(slug) || isAuthorizedPaidMriAttempt(slug, authorization.attempt));
+
+  if (!authorization.authorized && !compatibilityAllowed) {
+    if ("actorType" in authorization && authorization.actorType === "offline-company") {
+      redirect(`/outdoor-mri/completed?attemptId=${encodeURIComponent(attemptId)}`);
+    }
+    if (authorization.decision === "NOT_FOUND") {
+      const notFoundAr = urlLang === "ar";
+      return (
+        <div className="min-h-screen bg-slate-50 p-8 text-center" data-rtl={notFoundAr ? "true" : "false"}>
+          <div className="max-w-2xl mx-auto bg-white border rounded-3xl shadow-xl p-8">
+            <h1 className="text-3xl font-black text-slate-900">
+              {notFoundAr ? "التقرير غير موجود" : "Report not found"}
+            </h1>
+            <Link className="mt-6 inline-flex rounded-2xl bg-slate-900 text-white px-6 py-3 font-black" href={`/${slug}?lang=${notFoundAr ? "ar" : "en"}`}>
+              {notFoundAr ? "العودة إلى التقييم" : "Back to Assessment"}
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="min-h-screen bg-slate-950 p-8 text-center text-white">
+        <div className="max-w-2xl mx-auto rounded-3xl border border-white/15 bg-white/10 p-8 shadow-xl">
+          <h1 className="text-3xl font-black">
+            {urlLang === "ar" ? "رابط التقرير غير صالح" : "Report access blocked"}
+          </h1>
+          <p className="mt-4 text-white/75">
+            {urlLang === "ar"
+              ? "هذا التقرير المدفوع يتطلب محاولة مصرح بها ومطابقة لهذا التشخيص."
+              : "This paid report requires an authorised attempt for this exact diagnostic."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const supabase = getSupabaseAdmin();
 
   const { data: attempt, error } = await supabase
@@ -2927,50 +2969,6 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
         </div>
       </div>
     );
-  }
-
-  const developerAccess = readDeveloperTestAccess(
-    cookies().get(DEVELOPER_TEST_ACCESS_COOKIE)?.value,
-  );
-  const authenticatedDeveloperUserId =
-    developerAccess?.attemptId === attemptId &&
-    developerAccess?.assessmentId === (attempt as any).assessment_id
-      ? developerAccess.userId
-      : "";
-
-  if (
-    isPaidMriSlug(slug) &&
-    !isAuthorizedPaidMriAttempt(slug, attempt, authenticatedDeveloperUserId)
-  ) {
-    return (
-      <div className="min-h-screen bg-slate-950 p-8 text-center text-white">
-        <div className="max-w-2xl mx-auto rounded-3xl border border-white/15 bg-white/10 p-8 shadow-xl">
-          <h1 className="text-3xl font-black">
-            {urlLang === "ar" ? "رابط التقرير غير صالح" : "Report access blocked"}
-          </h1>
-          <p className="mt-4 text-white/75">
-            {urlLang === "ar"
-              ? "هذا التقرير المدفوع يتطلب محاولة مصرح بها ومطابقة لهذا التشخيص."
-              : "This paid report requires an authorised attempt for this exact diagnostic."}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const offlineContext = await getOfflineAttemptContext(attemptId);
-  if (offlineContext?.isOfflineActivated) {
-    const managerToken = searchParams?.managerToken?.trim() || "";
-    const managerAuthorized = await isAuthorizedOfflineManager(
-      attemptId,
-      managerToken,
-    );
-
-    if (!managerAuthorized) {
-      redirect(
-        `/outdoor-mri/completed?attemptId=${encodeURIComponent(attemptId)}`,
-      );
-    }
   }
 
   const assessment = await getAssessmentConfigServer(supabase, slug);
