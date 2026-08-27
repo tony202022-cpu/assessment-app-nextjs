@@ -29,8 +29,8 @@ function loadValidation() {
 
 const { validateAssessmentAccessWizardStep } = loadValidation();
 const assessments = [
-  { id: "company_assessment", version: "1.0.0", name: "Company", slug: "company", languages: ["en"], individualAvailable: false, companyAvailable: true, complimentaryAvailable: false },
-  { id: "individual_assessment", version: "1.0.0", name: "Individual", slug: "individual", languages: ["en", "ar"], individualAvailable: true, companyAvailable: false, complimentaryAvailable: true },
+  { id: "company_assessment", version: "1.0.0", name: "Company", slug: "company", languages: ["en"], individualAvailable: false, companyAvailable: true, companyIssuanceAvailable: true, complimentaryAvailable: false },
+  { id: "individual_assessment", version: "1.0.0", name: "Individual", slug: "individual", languages: ["en", "ar"], individualAvailable: true, companyAvailable: false, companyIssuanceAvailable: false, complimentaryAvailable: true },
 ];
 
 const base = { assessmentId: "company_assessment", accessType: "company", companyName: "Acme", managerName: "A Manager", managerEmail: "manager@example.com", credits: "2", participantName: "", participantEmail: "", fundingType: "paid", commercialReference: "PO-42", reportVisibility: "manager-only" };
@@ -45,8 +45,8 @@ test("wizard supports all five approved steps and both dynamic branches", () => 
   for (const label of ["Assessment", "Access Type", "Configure", "Report Visibility", "Summary"]) assert.match(component, new RegExp(label));
   assert.match(component, /state\.accessType === "company"/);
   assert.match(component, /state\.accessType === "individual"/);
-  assert.match(component, /Ready for implementation in Milestone 4\./);
-  assert.doesNotMatch(component, /fetch\(|supabase|axios|\.rpc\(|\.insert\(/i);
+  assert.match(component, /Individual issuance is not available in this milestone\./);
+  assert.match(component, /fetch\("\/api\/admin\/actions\/assessment-access\/company\/issue"/);
 });
 
 test("company validation requires manager, email, credits, and commercial reference", () => {

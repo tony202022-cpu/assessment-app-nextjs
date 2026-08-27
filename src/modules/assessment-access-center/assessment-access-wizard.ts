@@ -15,6 +15,7 @@ export type AssessmentAccessCatalogItem = {
   languages: string[];
   individualAvailable: boolean;
   companyAvailable: boolean;
+  companyIssuanceAvailable: boolean;
   complimentaryAvailable: boolean;
 };
 
@@ -62,8 +63,8 @@ export function validateAssessmentAccessWizardStep(
   if (step >= 2) {
     if (!ASSESSMENT_ACCESS_TYPES.includes(state.accessType as AssessmentAccessType)) {
       errors.accessType = "Select Company or Individual access.";
-    } else if (state.accessType === "company" && !assessment?.companyAvailable) {
-      errors.accessType = "Company access is not available for this assessment.";
+    } else if (state.accessType === "company" && (!assessment?.companyAvailable || !assessment.companyIssuanceAvailable)) {
+      errors.accessType = "Company issuance is not connected to the existing production manager dashboard for this assessment.";
     } else if (state.accessType === "individual" && !assessment?.individualAvailable) {
       errors.accessType = "Individual access is not available for this assessment.";
     }
@@ -74,7 +75,7 @@ export function validateAssessmentAccessWizardStep(
     if (!state.managerName.trim()) errors.managerName = "Manager name is required.";
     if (!EMAIL_PATTERN.test(state.managerEmail.trim())) errors.managerEmail = "Enter a valid manager email.";
     const credits = Number(state.credits);
-    if (!Number.isSafeInteger(credits) || credits < 2) errors.credits = "Credits must be a whole number of at least 2.";
+    if (!Number.isSafeInteger(credits) || credits < 2 || credits > 100000) errors.credits = "Credits must be a whole number between 2 and 100,000.";
   }
 
   if (step >= 3 && state.accessType === "individual") {

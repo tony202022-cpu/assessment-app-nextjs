@@ -17,6 +17,8 @@ export default function AssessmentAccessCenterPage() {
     languages: [...definition.localization.supportedLocales],
     individualAvailable: definition.capabilities.individualAvailability,
     companyAvailable: definition.capabilities.corporateAvailability,
+    companyIssuanceAvailable:
+      definition.capabilities.corporateAvailability && definition.capabilities.managerDashboard,
     complimentaryAvailable: definition.capabilities.complimentaryAccess,
   }));
   return <AssessmentAccessCenter assessments={assessments} />;
