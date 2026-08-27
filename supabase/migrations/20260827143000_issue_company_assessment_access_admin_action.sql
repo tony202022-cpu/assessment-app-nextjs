@@ -127,7 +127,7 @@ begin
     null
   );
 
-  insert into public.assessment_issuance_policies (
+  insert into public.assessment_issuance_policies as policy (
     assessment_definition_id,
     assessment_definition_version,
     access_type,
@@ -144,7 +144,7 @@ begin
     v_commercial_reference,
     p_administrator_id
   )
-  returning id, issued_at into v_policy_id, v_issued_at;
+  returning policy.id, policy.issued_at into v_policy_id, v_issued_at;
 
   insert into public.admin_action_audit (
     request_id,

@@ -69,6 +69,7 @@ export type CompanyDetail = {
   creditsRemaining: number;
   managerTokenStatus: "Active" | "Not configured";
   managerDashboardPath: string | null;
+  participantAccessPath: string | null;
   createdAt: string;
   participants: CompanyParticipant[];
   analytics: CompanyAnalytics;
@@ -87,8 +88,10 @@ type CompanyRow = {
 type AccessTokenRow = {
   id: string;
   company_id: string | null;
+  token_string: string | null;
   assessment_type: string | null;
   expires_at: string | null;
+  created_at: string | null;
 };
 
 type AssessmentRow = {
@@ -169,8 +172,9 @@ async function getAssessmentContext(
 
   const { data: tokenData, error: tokenError } = await supabase
     .from("access_tokens")
-    .select("id, company_id, assessment_type, expires_at")
-    .in("company_id", companyIds);
+    .select("id, company_id, token_string, assessment_type, expires_at, created_at")
+    .in("company_id", companyIds)
+    .order("created_at", { ascending: false });
 
   if (tokenError) throw new Error("Could not load company assessment access.");
 
@@ -351,6 +355,13 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
   const creditsRemaining = numberOrZero(company.credits_balance);
   const managerToken = String(company.manager_token || "");
   const tokensById = new Map(tokenRows.map((token) => [String(token.id), token]));
+  const participantAccessToken = tokenRows.find((token) => {
+    const assessment = assessmentsById.get(String(token.assessment_type || ""));
+    return Boolean(token.token_string && assessment?.slug);
+  });
+  const participantAssessment = participantAccessToken
+    ? assessmentsById.get(String(participantAccessToken.assessment_type || ""))
+    : undefined;
 
   const participants: CompanyParticipant[] = (attemptData || []).map((attempt: any) => {
     const assessmentId = String(attempt.assessment_id || "");
@@ -438,6 +449,9 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
     managerTokenStatus: managerToken ? "Active" : "Not configured",
     managerDashboardPath: managerToken
       ? `/company/outdoor-mri-dashboard?managerToken=${encodeURIComponent(managerToken)}`
+      : null,
+    participantAccessPath: participantAccessToken?.token_string && participantAssessment?.slug
+      ? `/${participantAssessment.slug}?token=${encodeURIComponent(participantAccessToken.token_string)}`
       : null,
     createdAt: String(company.created_at || ""),
     participants,
