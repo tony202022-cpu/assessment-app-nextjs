@@ -16,5 +16,6 @@ export const config = {
     "/admin/participants/:path*",
     "/admin/credits/:path*",
     "/admin/complimentary/:path*",
+    "/admin/access-center/:path*",
   ],
 };

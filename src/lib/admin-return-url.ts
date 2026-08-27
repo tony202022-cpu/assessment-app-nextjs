@@ -3,6 +3,7 @@ const CONTROL_CENTER_PREFIXES = [
   "/admin/participants",
   "/admin/credits",
   "/admin/complimentary",
+  "/admin/access-center",
 ] as const;
 
 export const CONTROL_CENTER_RETURN_HEADER = "x-control-center-return-url";

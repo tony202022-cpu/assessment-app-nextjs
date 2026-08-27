@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { Building2, Coins, FlaskConical, Gift, LayoutDashboard, Settings, ShieldCheck, Users } from "lucide-react";
+import { Building2, Coins, FlaskConical, Gift, KeyRound, LayoutDashboard, Settings, ShieldCheck, Users } from "lucide-react";
 
 const navigation = [
   { label: "Overview", href: "/admin", icon: LayoutDashboard, enabled: true },
   { label: "Companies", href: "/admin/companies", icon: Building2, enabled: true },
   { label: "Participants", href: "/admin/participants", icon: Users, enabled: true },
   { label: "Credits", href: "/admin/credits", icon: Coins, enabled: true },
+  { label: "Assessment Access", href: "/admin/access-center", icon: KeyRound, enabled: true },
   { label: "Complimentary Access", href: "/admin/complimentary", icon: Gift, enabled: true },
   { label: "System Tools", href: "/admin/assessment-access", icon: FlaskConical, enabled: true },
   { label: "Settings", href: "#", icon: Settings, enabled: false },
@@ -65,6 +66,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <Link href="/admin/companies" className="shrink-0 rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white">Companies</Link>
                 <Link href="/admin/participants" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Participants</Link>
                 <Link href="/admin/credits" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Credits</Link>
+                <Link href="/admin/access-center" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Assessment Access</Link>
                 <Link href="/admin/complimentary" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Complimentary</Link>
                 <Link href="/admin/assessment-access" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">System Tools</Link>
               </nav>
