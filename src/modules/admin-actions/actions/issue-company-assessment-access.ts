@@ -195,7 +195,16 @@ export const issueCompanyAssessmentAccessAction: AdminActionDefinition<
       p_administrator_id: context.actor.id,
       p_administrator_role: context.actor.role,
     });
-    if (error) mapIssueError(error);
+    if (error) {
+      console.error("Company issuance RPC diagnostic", {
+        requestId: context.requestId,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      });
+      mapIssueError(error);
+    }
     const row = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null;
     if (!row?.company_id || !row?.policy_id || !row?.manager_token || !row?.employee_token || !row?.audit_id) {
       throw new AdminActionError("ACTION_FAILED", "Company issuance returned an incomplete result.");
