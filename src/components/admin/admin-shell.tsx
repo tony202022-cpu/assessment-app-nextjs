@@ -59,7 +59,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="lg:hidden">
                 <p className="text-sm font-black tracking-wide text-slate-950">CAREER LABS AI</p>
-                <p className="text-xs text-slate-500">Control Center · Read-only operations</p>
+                <p className="text-xs text-slate-500">Admin Control Center</p>
               </div>
               <nav className="flex max-w-full items-center gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="Mobile administration">
                 <Link href="/admin" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Overview</Link>
@@ -72,7 +72,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               </nav>
               <div className="ms-auto hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 sm:flex">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                Read-only operations
+                Admin Control Center
               </div>
             </div>
           </header>

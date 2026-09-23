@@ -65,6 +65,22 @@ test("existing-company validation accepts zero and positive top-ups but rejects 
   assert.match(component, /Available credits/);
 });
 
+test("existing-company selector is layered, opaque, scrollable, and preserves UUID selection details", () => {
+  const selectPrimitive = readFileSync(path.join(root, "src/components/ui/select.tsx"), "utf8");
+  assert.match(component, /value=\{state\.existingCompanyId\|\|"new"\}/);
+  assert.match(component, /value=\{c\.id\}/);
+  assert.match(component, /z-\[100\]/);
+  assert.match(component, /bg-white/);
+  assert.match(component, /max-h-72/);
+  assert.match(component, /overflow-y-auto/);
+  assert.match(component, /textValue=/);
+  assert.match(component, /manager_name/);
+  assert.match(component, /billing_email/);
+  assert.match(component, /credits_balance/);
+  assert.match(component, /package_size/);
+  assert.match(selectPrimitive, /viewportClassName/);
+});
+
 test("new-company validation requires at least one credit", () => {
   assert.ok(validateAssessmentAccessWizardStep(4, { ...base, existingCompanyId: "", credits: "0" }, assessments).credits);
   assert.deepEqual(validateAssessmentAccessWizardStep(4, { ...base, existingCompanyId: "", credits: "1" }, assessments), {});
