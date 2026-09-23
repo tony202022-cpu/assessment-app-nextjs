@@ -5,6 +5,7 @@ const CONTROL_CENTER_PREFIXES = [
   "/admin/complimentary",
   "/admin/access-center",
   "/admin/system-tools",
+  "/admin/offline-company",
 ] as const;
 
 export const CONTROL_CENTER_RETURN_HEADER = "x-control-center-return-url";
@@ -30,6 +31,6 @@ export function normalizeControlCenterReturnUrl(value: unknown): string | null {
 export function offlineAdminLoginUrl(value: unknown, fallback: string): string {
   const returnUrl = normalizeControlCenterReturnUrl(value) || normalizeControlCenterReturnUrl(fallback);
   return returnUrl
-    ? `/admin/offline-company?returnTo=${encodeURIComponent(returnUrl)}`
-    : "/admin/offline-company";
+    ? `/admin/login?returnTo=${encodeURIComponent(returnUrl)}`
+    : "/admin/login";
 }

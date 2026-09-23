@@ -19,5 +19,6 @@ export const config = {
     "/admin/complimentary/:path*",
     "/admin/access-center/:path*",
     "/admin/system-tools/:path*",
+    "/admin/offline-company/:path*",
   ],
 };

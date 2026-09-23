@@ -22,14 +22,15 @@ const { normalizeControlCenterReturnUrl, offlineAdminLoginUrl } = loadReturnUrlM
 
 test("return URLs preserve Control Center detail paths and query strings", () => {
   assert.equal(normalizeControlCenterReturnUrl("/admin"), "/admin");
-  assert.equal(offlineAdminLoginUrl(null, "/admin"), "/admin/offline-company?returnTo=%2Fadmin");
+  assert.equal(offlineAdminLoginUrl(null, "/admin"), "/admin/login?returnTo=%2Fadmin");
   assert.equal(normalizeControlCenterReturnUrl("/admin/companies/abc?q=Acme&page=2"), "/admin/companies/abc?q=Acme&page=2");
   assert.equal(normalizeControlCenterReturnUrl("/admin/participants/user-1"), "/admin/participants/user-1");
-  assert.equal(offlineAdminLoginUrl("/admin/credits/company-1?sort=used", "/admin/credits"), "/admin/offline-company?returnTo=%2Fadmin%2Fcredits%2Fcompany-1%3Fsort%3Dused");
+  assert.equal(offlineAdminLoginUrl("/admin/credits/company-1?sort=used", "/admin/credits"), "/admin/login?returnTo=%2Fadmin%2Fcredits%2Fcompany-1%3Fsort%3Dused");
 });
 
 test("return URL validation rejects open redirects and unrelated admin paths", () => {
-  for (const value of ["https://evil.example/admin/companies", "//evil.example/path", "/\\evil.example", "/admin/offline-company", "/admin/assessment-access", "/dashboard", "companies"]) {
+  assert.equal(normalizeControlCenterReturnUrl("/admin/offline-company"), "/admin/offline-company");
+  for (const value of ["https://evil.example/admin/companies", "//evil.example/path", "/\\evil.example", "/admin/login", "/admin/assessment-access", "/dashboard", "companies"]) {
     assert.equal(normalizeControlCenterReturnUrl(value), null, value);
   }
 });
@@ -40,7 +41,8 @@ test("middleware only captures protected Control Center routes", () => {
   for (const route of ["companies", "participants", "credits", "complimentary"]) assert.match(middleware, new RegExp(`/admin/${route}/:path\\*`));
   assert.match(middleware, /["']\/admin["']/);
   assert.ok(middleware.includes('"/admin/system-tools/:path*"'));
-  assert.doesNotMatch(middleware, /offline-company\/:path/);
+  assert.ok(middleware.includes('"/admin/offline-company/:path*"'));
+  assert.doesNotMatch(middleware, /\/admin\/login\/:path/);
 });
 
 test("authenticated authorized /admin renders the Control Center overview", () => {
@@ -70,9 +72,16 @@ test("server layouts preserve authentication and redirect through the validated 
   }
 });
 
-test("existing login redirects only after a successful session response", () => {
-  const login = read("app/admin/offline-company/OfflineCompanyActivation.tsx");
-  assert.ok(login.indexOf("if (!response.ok)") < login.indexOf("router.replace(returnTo)"));
-  assert.match(login, /router\.replace\(returnTo\)/);
-  assert.match(login, /router\.refresh\(\)/);
+test("complete authentication flow returns to the Control Center, never the legacy activation tool", () => {
+  const login = read("app/admin/login/AdminLogin.tsx");
+  const loginPage = read("app/admin/login/page.tsx");
+  const adminPage = read("app/admin/page.tsx");
+  const legacyPage = read("app/admin/offline-company/page.tsx");
+  assert.match(loginPage, /returnTo=.*\|\| ["']\/admin["']/);
+  assert.ok(login.indexOf("if (!response.ok)") < login.indexOf("window.location.assign(returnTo)"));
+  assert.match(login, /window\.location\.assign\(returnTo\)/);
+  assert.doesNotMatch(login, /Offline Company Activation/);
+  assert.match(adminPage, /ControlCenterDashboardView/);
+  assert.match(legacyPage, /isValidAdminSession\(session\)/);
+  assert.match(legacyPage, /<OfflineCompanyActivation/);
 });

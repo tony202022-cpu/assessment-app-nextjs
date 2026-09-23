@@ -1,14 +1,12 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Building2,
   Check,
   Copy,
-  KeyRound,
   Loader2,
-  LockKeyhole,
   LogOut,
   Plus,
   ShieldAlert,
@@ -75,12 +73,8 @@ function CopyLink({ value, label }: { value: string; label: string }) {
   );
 }
 
-export default function OfflineCompanyActivation({ returnTo }: { returnTo: string | null }) {
+export default function OfflineCompanyActivation() {
   const router = useRouter();
-  const [authState, setAuthState] = useState<"loading" | "signed-out" | "signed-in">("loading");
-  const [secret, setSecret] = useState("");
-  const [authError, setAuthError] = useState("");
-  const [authBusy, setAuthBusy] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [billingEmail, setBillingEmail] = useState("");
   const [packageSize, setPackageSize] = useState("25");
@@ -93,13 +87,6 @@ export default function OfflineCompanyActivation({ returnTo }: { returnTo: strin
   const [result, setResult] = useState<Result | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/admin/offline-company/session", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((data) => setAuthState(data.authenticated ? "signed-in" : "signed-out"))
-      .catch(() => setAuthState("signed-out"));
-  }, []);
-
   const formattedCreatedAt = useMemo(() => {
     if (!duplicate?.createdAt) return "Unknown";
     const date = new Date(duplicate.createdAt);
@@ -108,36 +95,10 @@ export default function OfflineCompanyActivation({ returnTo }: { returnTo: strin
       : new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(date);
   }, [duplicate]);
 
-  async function signIn(event: FormEvent) {
-    event.preventDefault();
-    setAuthBusy(true);
-    setAuthError("");
-    try {
-      const response = await fetch("/api/admin/offline-company/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ secret }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Sign-in failed.");
-      setSecret("");
-      if (returnTo) {
-        router.replace(returnTo);
-        router.refresh();
-        return;
-      }
-      setAuthState("signed-in");
-    } catch (caught) {
-      setAuthError(caught instanceof Error ? caught.message : "Sign-in failed.");
-    } finally {
-      setAuthBusy(false);
-    }
-  }
-
   async function signOut() {
     await fetch("/api/admin/offline-company/session", { method: "DELETE" });
-    setResult(null);
-    setAuthState("signed-out");
+    router.replace("/admin/login");
+    router.refresh();
   }
 
   function chooseSize(value: "10" | "25" | "50" | "custom") {
@@ -168,7 +129,8 @@ export default function OfflineCompanyActivation({ returnTo }: { returnTo: strin
       });
       const data = await response.json();
       if (response.status === 401) {
-        setAuthState("signed-out");
+        router.replace("/admin/login?returnTo=%2Fadmin%2Foffline-company");
+        router.refresh();
         throw new Error("Your admin session expired. Please sign in again.");
       }
       if (!response.ok) {
@@ -195,51 +157,6 @@ export default function OfflineCompanyActivation({ returnTo }: { returnTo: strin
     setError("");
     setDuplicate(null);
     setResult(null);
-  }
-
-  if (authState === "loading") {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-        <Loader2 className="h-8 w-8 animate-spin" aria-label="Loading" />
-      </main>
-    );
-  }
-
-  if (authState === "signed-out") {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-5 py-12">
-        <Card className="w-full max-w-md border-white/10 shadow-2xl">
-          <CardHeader>
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white">
-              <LockKeyhole />
-            </div>
-            <CardTitle className="text-2xl">Admin access required</CardTitle>
-            <CardDescription>Enter the private activation secret to continue.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={signIn} className="space-y-4">
-              <div>
-                <Label htmlFor="admin-secret">Admin activation secret</Label>
-                <Input
-                  id="admin-secret"
-                  type="password"
-                  autoComplete="current-password"
-                  className="mt-2 h-11"
-                  value={secret}
-                  onChange={(event) => setSecret(event.target.value)}
-                  required
-                />
-              </div>
-              {authError && <p className="text-sm text-red-600">{authError}</p>}
-              <Button className="h-11 w-full" disabled={authBusy}>
-                {authBusy ? <Loader2 className="animate-spin" /> : <KeyRound />}
-                {authBusy ? "Checking…" : "Continue securely"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </main>
-    );
   }
 
   return (
