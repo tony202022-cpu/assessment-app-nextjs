@@ -21,6 +21,8 @@ function loadReturnUrlModule() {
 const { normalizeControlCenterReturnUrl, offlineAdminLoginUrl } = loadReturnUrlModule();
 
 test("return URLs preserve Control Center detail paths and query strings", () => {
+  assert.equal(normalizeControlCenterReturnUrl("/admin"), "/admin");
+  assert.equal(offlineAdminLoginUrl(null, "/admin"), "/admin/offline-company?returnTo=%2Fadmin");
   assert.equal(normalizeControlCenterReturnUrl("/admin/companies/abc?q=Acme&page=2"), "/admin/companies/abc?q=Acme&page=2");
   assert.equal(normalizeControlCenterReturnUrl("/admin/participants/user-1"), "/admin/participants/user-1");
   assert.equal(offlineAdminLoginUrl("/admin/credits/company-1?sort=used", "/admin/credits"), "/admin/offline-company?returnTo=%2Fadmin%2Fcredits%2Fcompany-1%3Fsort%3Dused");
@@ -36,7 +38,28 @@ test("middleware only captures protected Control Center routes", () => {
   const middleware = read("middleware.ts");
   assert.match(middleware, /x-control-center-return-url|CONTROL_CENTER_RETURN_HEADER/);
   for (const route of ["companies", "participants", "credits", "complimentary"]) assert.match(middleware, new RegExp(`/admin/${route}/:path\\*`));
+  assert.match(middleware, /["']\/admin["']/);
+  assert.ok(middleware.includes('"/admin/system-tools/:path*"'));
   assert.doesNotMatch(middleware, /offline-company\/:path/);
+});
+
+test("authenticated authorized /admin renders the Control Center overview", () => {
+  const page = read("app/admin/page.tsx");
+  const authGuard = page.indexOf("if (!isValidAdminSession(session))");
+  const dashboardLoad = page.indexOf("getControlCenterDashboard()");
+  const overviewRender = page.indexOf("<ControlCenterDashboardView dashboard={dashboard}");
+  assert.ok(authGuard >= 0);
+  assert.ok(dashboardLoad > authGuard);
+  assert.ok(overviewRender > dashboardLoad);
+  assert.doesNotMatch(page, /redirect\(["']\/admin\/offline-company["']\)/);
+});
+
+test("Admin navigation resolves the completed modules and System Tools route", () => {
+  const shell = read("src/components/admin/admin-shell.tsx");
+  for (const route of ["/admin", "/admin/companies", "/admin/participants", "/admin/credits", "/admin/access-center", "/admin/complimentary", "/admin/system-tools"]) {
+    assert.match(shell, new RegExp(`href: ["']${route.replaceAll("/", "\\/")}["']|href=["']${route.replaceAll("/", "\\/")}["']`));
+  }
+  assert.match(read("app/admin/system-tools/page.tsx"), /AssessmentAccessConsole/);
 });
 
 test("server layouts preserve authentication and redirect through the validated helper", () => {

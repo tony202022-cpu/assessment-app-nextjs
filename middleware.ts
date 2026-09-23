@@ -12,10 +12,12 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/admin",
     "/admin/companies/:path*",
     "/admin/participants/:path*",
     "/admin/credits/:path*",
     "/admin/complimentary/:path*",
     "/admin/access-center/:path*",
+    "/admin/system-tools/:path*",
   ],
 };

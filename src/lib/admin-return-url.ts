@@ -4,6 +4,7 @@ const CONTROL_CENTER_PREFIXES = [
   "/admin/credits",
   "/admin/complimentary",
   "/admin/access-center",
+  "/admin/system-tools",
 ] as const;
 
 export const CONTROL_CENTER_RETURN_HEADER = "x-control-center-return-url";
@@ -17,7 +18,7 @@ export function normalizeControlCenterReturnUrl(value: unknown): string | null {
     const base = new URL("https://control-center.invalid");
     const parsed = new URL(candidate, base);
     if (parsed.origin !== base.origin || parsed.username || parsed.password) return null;
-    const allowed = CONTROL_CENTER_PREFIXES.some(
+    const allowed = parsed.pathname === "/admin" || CONTROL_CENTER_PREFIXES.some(
       (prefix) => parsed.pathname === prefix || parsed.pathname.startsWith(`${prefix}/`),
     );
     return allowed ? `${parsed.pathname}${parsed.search}` : null;

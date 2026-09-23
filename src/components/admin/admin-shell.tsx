@@ -8,7 +8,7 @@ const navigation = [
   { label: "Credits", href: "/admin/credits", icon: Coins, enabled: true },
   { label: "Assessment Access", href: "/admin/access-center", icon: KeyRound, enabled: true },
   { label: "Complimentary Access", href: "/admin/complimentary", icon: Gift, enabled: true },
-  { label: "System Tools", href: "/admin/assessment-access", icon: FlaskConical, enabled: true },
+  { label: "System Tools", href: "/admin/system-tools", icon: FlaskConical, enabled: true },
   { label: "Settings", href: "#", icon: Settings, enabled: false },
 ];
 
@@ -68,7 +68,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <Link href="/admin/credits" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Credits</Link>
                 <Link href="/admin/access-center" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Assessment Access</Link>
                 <Link href="/admin/complimentary" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">Complimentary</Link>
-                <Link href="/admin/assessment-access" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">System Tools</Link>
+                <Link href="/admin/system-tools" className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700">System Tools</Link>
               </nav>
               <div className="ms-auto hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 sm:flex">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
