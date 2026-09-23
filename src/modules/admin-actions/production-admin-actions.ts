@@ -6,15 +6,19 @@ import { ConfirmationModel } from "./confirmation-model";
 import { PermissionValidator } from "./permission-validator";
 import { SupabaseActionAudit } from "./supabase-action-audit";
 import { restoreCreditAction } from "./actions/restore-credit";
-import { generateComplimentaryTokenAction } from "./actions/generate-complimentary-token";
 import { regenerateManagerTokenAction } from "./actions/regenerate-manager-token";
 import { issueCompanyAssessmentAccessAction } from "./actions/issue-company-assessment-access";
+import { addCreditsAction, removeCreditsAction } from "./actions/adjust-credits";
+import { issueComplimentaryAssessmentAccessAction, issueIndividualAssessmentAccessAction } from "./actions/issue-individual-assessment-access";
 
 export const adminActionRegistry = new ActionRegistry([
   restoreCreditAction,
-  generateComplimentaryTokenAction,
+  addCreditsAction,
+  removeCreditsAction,
   regenerateManagerTokenAction,
   issueCompanyAssessmentAccessAction,
+  issueIndividualAssessmentAccessAction,
+  issueComplimentaryAssessmentAccessAction,
 ]);
 
 export function createAdminActionService() {

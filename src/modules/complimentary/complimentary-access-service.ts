@@ -1,12 +1,14 @@
 import "server-only";
 
 import { getSupabaseAdmin } from "@/lib/offline-company";
+import { assessmentRegistry } from "@/modules/assessment-definition";
 
 export type ComplimentaryHistoryFilter = "all" | "active" | "used" | "expired";
 export type ComplimentaryTokenStatus = "Active" | "Used" | "Expired";
 
 export type ComplimentaryAssessment = {
   id: string;
+  version: string;
   name: string;
   slug: string;
   status: string;
@@ -66,6 +68,7 @@ function normalizeFilter(value: unknown): ComplimentaryHistoryFilter {
 
 function toAssessment(row: AssessmentRow & { allows_complimentary_access?: boolean }, corporateAssessmentIds: Set<string>): ComplimentaryAssessment {
   const id = String(row.id);
+  const definition = assessmentRegistry.getCurrent(id);
   const slug = String(row.slug || id).trim();
   const active = String(row.status || "unknown").toLocaleLowerCase() === "active";
   const corporate = corporateAssessmentIds.has(id);
@@ -73,13 +76,14 @@ function toAssessment(row: AssessmentRow & { allows_complimentary_access?: boole
   if (row.title_ar || row.name_ar) languages.push("Arabic");
   return {
     id,
+    version: definition?.metadata.version || "",
     name: String(row.title_en || row.name_en || slug || id),
     slug,
     status: String(row.status || "Unknown"),
     languages,
     individualAvailability: active ? "Assessment entry available" : "Not currently active",
     corporateAvailability: corporate ? "Corporate token access configured" : "No corporate token access found",
-    complimentaryCapability: row.allows_complimentary_access ? "Available" : "Not permitted",
+    complimentaryCapability: row.allows_complimentary_access && definition?.capabilities.individualAvailability && definition.capabilities.complimentaryAccess ? "Available" : "Not permitted",
     currentAccessModel: [active ? "Individual assessment entry" : null, corporate ? "Corporate token-backed access" : null].filter(Boolean).join(" + ") || String(row.type || "No active access evidence"),
     individualFlow: active ? `Participants enter through /${slug}.` : "The assessment is not currently active.",
     corporateFlow: corporate ? "Company access uses the existing token and credit flow." : "No company access token is linked to this assessment.",

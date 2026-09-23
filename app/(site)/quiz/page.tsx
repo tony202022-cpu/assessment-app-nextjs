@@ -7,18 +7,10 @@ import { Question, AnswerPayload } from "@/types";
 import { useLocale } from "@/contexts/LocaleContext";
 import { toast } from "sonner";
 import { submitQuiz } from "@/lib/actions";
-import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
 import { isPaidMriAssessmentId, isTokenBackedPaidAttempt } from "@/lib/paid-mri-access";
 
-const arabicFont = IBM_Plex_Sans_Arabic({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const latinFont = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+const arabicFontFamily = '"Cairo", "IBM Plex Sans Arabic", Arial, sans-serif';
+const latinFontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 
 // ✅ DB truth (menu IDs)
 const MRI_ASSESSMENT_ID = "outdoor_sales_mri";
@@ -481,9 +473,9 @@ setTimeout(() => {
   return (
     <div
       className={`fixed inset-0 h-[100dvh] flex flex-col overflow-hidden
-        ${isArabic ? arabicFont.className : latinFont.className}
         bg-gradient-to-br from-slate-100 via-white to-slate-200`}
       dir={isArabic ? "rtl" : "ltr"}
+      style={{ fontFamily: isArabic ? arabicFontFamily : latinFontFamily }}
     >
       {/* SUBMIT OVERLAY */}
       {isSubmitting && (

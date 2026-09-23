@@ -24,5 +24,5 @@ export type { ActionAudit, ActionAuditOutcome, ActionAuditRecord } from "./actio
 export { SupabaseActionAudit } from "./supabase-action-audit";
 export { adminActionRegistry, createAdminActionService } from "./production-admin-actions";
 export type { RestoreCreditInput, RestoreCreditOutput } from "./actions/restore-credit";
-export type { GenerateComplimentaryTokenInput, GenerateComplimentaryTokenOutput } from "./actions/generate-complimentary-token";
+export type { CreditAdjustmentInput, CreditAdjustmentOutput } from "./actions/adjust-credits";
 export type { RegenerateManagerTokenInput, RegenerateManagerTokenOutput } from "./actions/regenerate-manager-token";

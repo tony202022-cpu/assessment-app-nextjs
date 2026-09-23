@@ -91,6 +91,23 @@ test("authorizes a company manager only for the matching company", async () => {
   assert.equal(mismatch.decision, "DENIED");
 });
 
+test("enforces all four persisted report visibility policies", async () => {
+  const participantRequest = request({ headers: { authorization: "Bearer valid" } });
+  const managerRequest = request({ managerToken: "manager-token" });
+  const participant = { status: "valid", userId: "participant-1" };
+  const manager = { companyId: "company-1", offline: false };
+  for (const [visibility, participantDecision, managerDecision] of [
+    ["participant-only", "AUTHORIZED", "DENIED"],
+    ["manager-only", "DENIED", "AUTHORIZED"],
+    ["participant-and-manager", "AUTHORIZED", "AUTHORIZED"],
+    ["admin-only", "DENIED", "DENIED"],
+  ]) {
+    const service = harness({ attempt: attempt({ reportVisibility: visibility }), participant, manager });
+    assert.equal((await service.authorizeAttemptAccess(participantRequest)).decision, participantDecision, `${visibility} participant`);
+    assert.equal((await service.authorizeAttemptAccess(managerRequest)).decision, managerDecision, `${visibility} manager`);
+  }
+});
+
 test("rejects missing and invalid manager proofs", async () => {
   assert.equal((await harness().authorizeAttemptAccess(request({ actorHint: "company-manager" }))).decision, "INVALID_PROOF");
   assert.equal((await harness({ manager: null }).authorizeAttemptAccess(request({ managerToken: "unknown" }))).decision, "INVALID_PROOF");
@@ -160,6 +177,6 @@ test("future entitlement is a deny-by-default compatibility placeholder", async 
 
 test("the production lookup selects identity fields only", () => {
   const source = readFileSync(sourcePath, "utf8");
-  assert.match(source, /select\("id, user_id, assessment_id, company_id, access_token_id, is_developer_test, completed_at"\)/);
+  assert.match(source, /select\("id, user_id, assessment_id, company_id, access_token_id, issuance_policy_id, is_developer_test, completed_at"\)/);
   assert.doesNotMatch(source, /competency_results|strengths|weaknesses|recommendations|report_content|from\("profiles"\)/);
 });

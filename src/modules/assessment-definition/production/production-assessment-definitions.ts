@@ -60,7 +60,7 @@ function legacyProductionDefinition(input: LegacyDefinitionInput): AssessmentDef
       executiveReport: false,
       timed: true,
       bilingual: true,
-      complimentaryAccess: false,
+      complimentaryAccess: input.individualAvailability,
       developerTesting: true,
     },
     audience: {

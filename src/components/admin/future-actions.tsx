@@ -1,12 +1,11 @@
-import { AlertCircle, Coins, FileDown, Gift, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { AlertCircle, Coins, FileDown, Gift, KeyRound, Trash2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RegenerateManagerTokenAction } from "@/components/admin/regenerate-manager-token-action";
 import { RestoreCreditAction } from "@/components/admin/restore-credit-action";
 
 const actions = [
-  { label: "Add Credits", icon: Coins },
-  { label: "Remove Credits", icon: Coins },
   { label: "Generate Complimentary Link", icon: Gift },
   { label: "Export Reports", icon: FileDown },
   { label: "Delete Company", icon: Trash2 },
@@ -21,6 +20,8 @@ export function FutureActions({ companyId, companyName, canRegenerateManagerToke
         <AlertDescription>Regenerate Manager Token and Restore Credit are available to authorized administrators. All other actions remain unavailable.</AlertDescription>
       </Alert>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <Button asChild variant="outline" className="h-11 justify-start gap-2 bg-white"><Link href={`/admin/credits/${companyId}`}><Coins className="h-4 w-4"/>Add / Remove Credits</Link></Button>
+        <Button asChild variant="outline" className="h-11 justify-start gap-2 bg-white"><Link href={`/admin/access-center?companyId=${encodeURIComponent(companyId)}`}><KeyRound className="h-4 w-4"/>Issue Assessment</Link></Button>
         <RegenerateManagerTokenAction companyId={companyId} companyName={companyName} disabled={!canRegenerateManagerToken} />
         {canRestoreCredit ? <RestoreCreditAction companyId={companyId} companyName={companyName} disabled={false} /> : null}
         {actions.map((action) => {

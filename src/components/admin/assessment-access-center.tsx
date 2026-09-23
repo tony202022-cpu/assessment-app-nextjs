@@ -1,185 +1,38 @@
 "use client";
-
-import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Building2, Check, Copy, ExternalLink, KeyRound, Loader2, UserRound } from "lucide-react";
+import { useMemo,useState } from "react";
+import { ArrowLeft,ArrowRight,Building2,Check,Copy,KeyRound,Loader2,UserRound } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  ASSESSMENT_REPORT_VISIBILITIES,
-  type AssessmentAccessType,
-  type AssessmentFundingType,
-  type AssessmentReportVisibility,
-} from "@/modules/assessment-issuance-policy/assessment-issuance-policy";
-import {
-  EMPTY_ASSESSMENT_ACCESS_WIZARD,
-  validateAssessmentAccessWizardStep,
-  type AssessmentAccessCatalogItem,
-  type AssessmentAccessWizardErrors,
-  type AssessmentAccessWizardState,
-} from "@/modules/assessment-access-center";
-
-const steps = ["Assessment", "Access Type", "Configure", "Report Visibility", "Summary"];
-
-type IssuancePreview = {
-  expectedResult: Record<string, unknown>;
-  affectedRecords: Array<{ type: string; id: string; label?: string }>;
-  warnings: string[];
-};
-
-type IssuanceResult = {
-  policyId: string;
-  companyId: string;
-  companyName: string;
-  managerName: string;
-  managerEmail: string;
-  credits: number;
-  employeeAssessmentPath: string;
-  managerDashboardPath: string;
-  issuedAt: string;
-};
-
-function ErrorText({ id, message }: { id: string; message?: string }) {
-  return message ? <p id={id} role="alert" className="mt-1.5 text-sm font-semibold text-rose-700">{message}</p> : null;
-}
-
-function SummaryRow({ label, value }: { label: string; value?: string | number }) {
-  if (value === undefined || value === "") return null;
-  return <div className="grid gap-1 border-b border-slate-100 py-3 last:border-0 sm:grid-cols-[180px_1fr]"><dt className="text-sm font-semibold text-slate-500">{label}</dt><dd className="text-sm font-bold text-slate-950">{value}</dd></div>;
-}
-
-export function AssessmentAccessCenter({ assessments }: { assessments: AssessmentAccessCatalogItem[] }) {
-  const [started, setStarted] = useState(false);
-  const [step, setStep] = useState(1);
-  const [state, setState] = useState<AssessmentAccessWizardState>(EMPTY_ASSESSMENT_ACCESS_WIZARD);
-  const [errors, setErrors] = useState<AssessmentAccessWizardErrors>({});
-  const [operationId, setOperationId] = useState("");
-  const [preview, setPreview] = useState<IssuancePreview | null>(null);
-  const [issued, setIssued] = useState<IssuanceResult | null>(null);
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [actionError, setActionError] = useState("");
-  const selectedAssessment = useMemo(
-    () => assessments.find((assessment) => assessment.id === state.assessmentId),
-    [assessments, state.assessmentId],
-  );
-
-  function update<K extends keyof AssessmentAccessWizardState>(field: K, value: AssessmentAccessWizardState[K]) {
-    setState((current) => ({ ...current, [field]: value }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
-    setPreview(null);
-    setIssued(null);
-    setActionError("");
-  }
-
-  function chooseAssessment(id: string) {
-    const assessment = assessments.find((item) => item.id === id);
-    setState((current) => ({
-      ...current,
-      assessmentId: id,
-      accessType:
-        current.accessType === "company" && (!assessment?.companyAvailable || !assessment.companyIssuanceAvailable)
-          ? ""
-          : current.accessType === "individual" && !assessment?.individualAvailable
-            ? ""
-            : current.accessType,
-      fundingType:
-        current.fundingType === "complimentary" && !assessment?.complimentaryAvailable
-          ? ""
-          : current.fundingType,
-    }));
-    setErrors({});
-  }
-
-  async function submitCompanyIssuance(mode: "preview" | "execute") {
-    if (!selectedAssessment || state.accessType !== "company") return;
-    const id = operationId || crypto.randomUUID();
-    if (!operationId) setOperationId(id);
-    setSubmitting(true);
-    setActionError("");
-    try {
-      const response = await fetch("/api/admin/actions/assessment-access/company/issue", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode,
-          operationId: id,
-          assessmentDefinitionId: selectedAssessment.id,
-          assessmentDefinitionVersion: selectedAssessment.version,
-          companyName: state.companyName,
-          managerName: state.managerName,
-          managerEmail: state.managerEmail,
-          credits: Number(state.credits),
-          commercialReference: state.commercialReference,
-          reportVisibility: state.reportVisibility,
-        }),
-      });
-      const result = await response.json();
-      if (!response.ok || !result.ok) {
-        setActionError(result?.error?.message || "Company assessment access could not be issued.");
-        return;
-      }
-      if (mode === "preview") {
-        setPreview(result.data.dryRun);
-        setConfirmationOpen(true);
-      } else {
-        setIssued(result.data);
-        setConfirmationOpen(false);
-        toast.success("Company assessment access issued successfully.");
-      }
-    } catch {
-      setActionError("Company assessment access could not be issued. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function copyLink(path: string, label: string) {
-    await navigator.clipboard.writeText(`${window.location.origin}${path}`);
-    toast.success(`${label} copied.`);
-  }
-
-  function chooseAccessType(value: AssessmentAccessType) {
-    setState((current) => ({
-      ...current,
-      accessType: value,
-      fundingType: value === "company" ? "paid" : current.fundingType,
-    }));
-    setErrors({});
-  }
-
-  function next() {
-    const nextErrors = validateAssessmentAccessWizardStep(step, state, assessments);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length === 0) setStep((current) => Math.min(5, current + 1));
-  }
-
-  if (!started) {
-    return <div className="space-y-7"><section className="overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-xl sm:p-8 lg:p-10"><div className="max-w-3xl"><Badge className="border-blue-400/30 bg-blue-500/15 text-blue-100 hover:bg-blue-500/15">Version 1.0 · Company Issuance</Badge><h1 className="mt-5 text-3xl font-black tracking-tight sm:text-4xl">Assessment Access Center</h1><p className="mt-3 max-w-2xl text-base leading-7 text-slate-300">Issue governed company assessment access through the existing production company, credit, token, and manager-dashboard architecture.</p><Button type="button" size="lg" onClick={() => setStarted(true)} disabled={!assessments.length} className="mt-7 bg-blue-600 font-bold hover:bg-blue-500"><KeyRound className="mr-2 h-5 w-5" />Create Assessment Access</Button></div></section><section className="grid gap-4 sm:grid-cols-3"><Card><CardHeader><CardTitle className="text-base">Dynamic catalog</CardTitle><CardDescription>{assessments.length} current published assessments loaded from the Assessment Definition Engine.</CardDescription></CardHeader></Card><Card><CardHeader><CardTitle className="text-base">Company issuance</CardTitle><CardDescription>Available only where the current definition and existing production manager dashboard are both supported.</CardDescription></CardHeader></Card><Card><CardHeader><CardTitle className="text-base">Individual locked</CardTitle><CardDescription>Individual and complimentary issuance remain unavailable in this milestone.</CardDescription></CardHeader></Card></section></div>;
-  }
-
-  return <div className="mx-auto max-w-5xl space-y-6"><header><p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-700">Assessment Access Center</p><h1 className="mt-2 text-3xl font-black tracking-tight">Create Assessment Access</h1><p className="mt-2 text-sm leading-6 text-slate-600">Complete all five steps, review the dry run, and explicitly confirm company issuance.</p></header>
-    <nav aria-label="Assessment access progress" className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-3"><ol className="flex min-w-[680px] items-center gap-2">{steps.map((label, index) => { const number = index + 1; const active = number === step; const complete = number < step; return <li key={label} className="flex flex-1 items-center"><span aria-current={active ? "step" : undefined} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${active ? "bg-blue-600 text-white" : complete ? "bg-emerald-50 text-emerald-800" : "text-slate-500"}`}><span className={`flex h-7 w-7 items-center justify-center rounded-full ${active ? "bg-white/20" : complete ? "bg-emerald-600 text-white" : "bg-slate-100"}`}>{complete ? <Check className="h-4 w-4" aria-hidden="true" /> : number}</span>{label}</span></li>; })}</ol></nav>
-    <Card className="border-slate-200 shadow-sm"><CardHeader><CardTitle>{steps[step - 1]}</CardTitle><CardDescription>{step === 1 ? "Select a current published production assessment." : step === 2 ? "Choose how access will be issued." : step === 3 ? "Enter the operational details for this access." : step === 4 ? "Choose the report audience for this issuance." : "Review the validated request before the execution milestone."}</CardDescription></CardHeader><CardContent className="space-y-6">
-      {step === 1 && <fieldset><legend className="sr-only">Select assessment</legend><div className="grid gap-3 md:grid-cols-2">{assessments.map((assessment) => <button key={`${assessment.id}@${assessment.version}`} type="button" onClick={() => chooseAssessment(assessment.id)} aria-pressed={state.assessmentId === assessment.id} className={`rounded-2xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${state.assessmentId === assessment.id ? "border-blue-600 bg-blue-50 shadow-sm" : "border-slate-200 bg-white hover:border-blue-300"}`}><span className="flex items-start justify-between gap-3"><span><span className="block font-black text-slate-950">{assessment.name}</span><span className="mt-1 block text-xs text-slate-500">/{assessment.slug} · v{assessment.version}</span></span>{state.assessmentId === assessment.id && <Check className="h-5 w-5 text-blue-700" aria-hidden="true" />}</span><span className="mt-4 flex flex-wrap gap-2"><Badge variant="outline">{assessment.languages.join(" · ").toUpperCase()}</Badge>{assessment.individualAvailable && <Badge variant="outline">Individual</Badge>}{assessment.companyAvailable && <Badge variant="outline">Company</Badge>}</span></button>)}</div><ErrorText id="assessment-error" message={errors.assessmentId} /></fieldset>}
-      {step === 2 && <RadioGroup value={state.accessType} onValueChange={(value) => chooseAccessType(value as AssessmentAccessType)} className="grid gap-4 md:grid-cols-2" aria-describedby={errors.accessType ? "access-type-error" : undefined}>{(["company", "individual"] as const).map((type) => { const available = type === "company" ? selectedAssessment?.companyAvailable && selectedAssessment.companyIssuanceAvailable : selectedAssessment?.individualAvailable; const Icon = type === "company" ? Building2 : UserRound; return <Label key={type} htmlFor={`access-${type}`} className={`flex min-h-36 cursor-pointer items-start gap-4 rounded-2xl border p-5 ${available ? "hover:border-blue-400" : "cursor-not-allowed bg-slate-50 text-slate-400"}`}><RadioGroupItem id={`access-${type}`} value={type} disabled={!available} className="mt-1" /><span><Icon className="mb-3 h-6 w-6" aria-hidden="true" /><span className="block text-lg font-black capitalize">{type}</span><span className="mt-1 block text-sm font-normal leading-6">{type === "company" ? "Company wallet, manager, and employee access configuration." : "Named participant with paid or complimentary funding."}</span>{!available && <span className="mt-2 block text-xs font-bold">{type === "company" && selectedAssessment?.companyAvailable ? "Existing manager-dashboard activation is not available for this assessment yet." : "Not supported by this assessment definition."}</span>}</span></Label>; })}<ErrorText id="access-type-error" message={errors.accessType} /></RadioGroup>}
-      {step === 3 && state.accessType === "company" && <div className="grid gap-5 sm:grid-cols-2"><Field id="company-name" label="Company Name" value={state.companyName} error={errors.companyName} onChange={(value) => update("companyName", value)} /><Field id="manager-name" label="Manager Name" value={state.managerName} error={errors.managerName} onChange={(value) => update("managerName", value)} /><Field id="manager-email" label="Manager Email" type="email" value={state.managerEmail} error={errors.managerEmail} onChange={(value) => update("managerEmail", value)} /><Field id="credits" label="Credits" type="number" min="2" max="100000" step="1" value={state.credits} error={errors.credits} onChange={(value) => update("credits", value)} hint="Any whole number from 2 to 100,000. No package presets." /><div className="sm:col-span-2"><Field id="company-commercial-reference" label="Commercial Reference" value={state.commercialReference} error={errors.commercialReference} onChange={(value) => update("commercialReference", value)} hint="Invoice, PO, Cash, Bank Transfer, Stripe, Manual Sale, or Corporate Contract." /></div></div>}
-      {step === 3 && state.accessType === "individual" && <div className="grid gap-5 sm:grid-cols-2"><Field id="participant-name" label="Participant Name" value={state.participantName} error={errors.participantName} onChange={(value) => update("participantName", value)} /><Field id="participant-email" label="Participant Email" type="email" value={state.participantEmail} error={errors.participantEmail} onChange={(value) => update("participantEmail", value)} /><fieldset className="sm:col-span-2"><legend className="mb-2 text-sm font-bold">Funding Type</legend><RadioGroup value={state.fundingType} onValueChange={(value) => update("fundingType", value as AssessmentFundingType)} className="grid gap-3 sm:grid-cols-2" aria-describedby={errors.fundingType ? "funding-error" : undefined}>{(["paid", "complimentary"] as const).map((type) => { const disabled = type === "complimentary" && !selectedAssessment?.complimentaryAvailable; return <Label key={type} htmlFor={`funding-${type}`} className={`flex items-center gap-3 rounded-xl border p-4 font-bold capitalize ${disabled ? "cursor-not-allowed bg-slate-50 text-slate-400" : "cursor-pointer"}`}><RadioGroupItem id={`funding-${type}`} value={type} disabled={disabled} />{type}{disabled && <span className="text-xs font-normal">Not supported</span>}</Label>; })}</RadioGroup><ErrorText id="funding-error" message={errors.fundingType} /></fieldset><div className="sm:col-span-2"><Field id="individual-commercial-reference" label="Commercial Reference" value={state.commercialReference} error={errors.commercialReference} onChange={(value) => update("commercialReference", value)} hint="Invoice, PO, Cash, Bank Transfer, Stripe, Manual Sale, or Corporate Contract." /></div></div>}
-      {step === 4 && <div className="max-w-xl"><Label htmlFor="report-visibility" className="font-bold">Report Visibility</Label><Select value={state.reportVisibility} onValueChange={(value) => update("reportVisibility", value as AssessmentReportVisibility)}><SelectTrigger id="report-visibility" className="mt-2 h-11" aria-describedby={errors.reportVisibility ? "visibility-error" : "visibility-help"}><SelectValue placeholder="Select report visibility" /></SelectTrigger><SelectContent>{ASSESSMENT_REPORT_VISIBILITIES.map((value) => <SelectItem key={value} value={value}>{value === "participant" ? "Participant" : "Manager Only"}</SelectItem>)}</SelectContent></Select><p id="visibility-help" className="mt-2 text-sm leading-6 text-slate-500">This policy belongs to this issuance. It is not inherited from the assessment.</p><ErrorText id="visibility-error" message={errors.reportVisibility} /></div>}
-      {step === 5 && <div className="space-y-5"><dl className="rounded-2xl border border-slate-200 bg-slate-50 px-5"><SummaryRow label="Assessment" value={selectedAssessment ? `${selectedAssessment.name} · v${selectedAssessment.version}` : ""} /><SummaryRow label="Access Type" value={state.accessType === "company" ? "Company" : "Individual"} />{state.accessType === "company" ? <><SummaryRow label="Company" value={state.companyName} /><SummaryRow label="Manager" value={`${state.managerName} · ${state.managerEmail}`} /><SummaryRow label="Credits" value={state.credits} /><SummaryRow label="Funding Type" value="Paid" /></> : <><SummaryRow label="Participant" value={`${state.participantName} · ${state.participantEmail}`} /><SummaryRow label="Funding Type" value={state.fundingType === "paid" ? "Paid" : "Complimentary"} /></>}<SummaryRow label="Commercial Reference" value={state.commercialReference} /><SummaryRow label="Report Visibility" value={state.reportVisibility === "participant" ? "Participant" : "Manager Only"} /></dl>{state.accessType === "company" ? issued ? <div role="status" className="space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><div><p className="font-black text-emerald-950">Company assessment access issued</p><p className="mt-1 text-sm leading-6 text-emerald-800">{issued.companyName} now has {issued.credits} credits. The issuance policy and administrative audit were saved.</p></div><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => copyLink(issued.employeeAssessmentPath, "Participant assessment link")}><Copy className="mr-2 h-4 w-4" />Copy Participant Link</Button><Button type="button" variant="outline" onClick={() => copyLink(issued.managerDashboardPath, "Manager dashboard link")}><Copy className="mr-2 h-4 w-4" />Copy Manager Link</Button><Button asChild><a href={issued.managerDashboardPath} target="_blank" rel="noreferrer"><ExternalLink className="mr-2 h-4 w-4" />Open Manager Dashboard</a></Button></div></div> : <div className="space-y-3 rounded-2xl border border-blue-200 bg-blue-50 p-5"><div role="status"><p className="font-black text-blue-950">Ready to issue company access</p><p className="mt-1 text-sm leading-6 text-blue-800">Preview the live records first. Confirmation is required before anything is created.</p></div>{actionError && <p role="alert" className="text-sm font-semibold text-rose-700">{actionError}</p>}<Button type="button" onClick={() => submitCompanyIssuance("preview")} disabled={submitting} className="bg-blue-700 font-bold hover:bg-blue-800">{submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Checking…</> : "Preview Issuance"}</Button></div> : <div role="status" className="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p className="font-black text-slate-950">Individual issuance is not available in this milestone.</p><p className="mt-1 text-sm leading-6 text-slate-600">No individual or complimentary access has been created.</p></div>}</div>}
-      <div className="flex flex-col-reverse justify-between gap-3 border-t border-slate-200 pt-5 sm:flex-row"><Button type="button" variant="outline" onClick={() => step === 1 ? setStarted(false) : setStep((current) => current - 1)}><ArrowLeft className="mr-2 h-4 w-4" />{step === 1 ? "Exit wizard" : "Back"}</Button>{step < 5 && <Button type="button" onClick={next} className="bg-slate-950 font-bold hover:bg-slate-800">Continue<ArrowRight className="ml-2 h-4 w-4" /></Button>}</div>
-    </CardContent></Card>
-    <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}><DialogContent className="max-w-xl"><DialogHeader><DialogTitle>Issue company assessment access?</DialogTitle><DialogDescription>This creates live company access and cannot be automatically rolled back.</DialogDescription></DialogHeader>{preview && <div className="space-y-4"><dl className="rounded-xl border border-slate-200 px-4"><SummaryRow label="Company" value={String(preview.expectedResult.company || "")} /><SummaryRow label="Manager" value={String(preview.expectedResult.manager || "")} /><SummaryRow label="Credits" value={Number(preview.expectedResult.credits || 0)} /><SummaryRow label="Report Visibility" value={String(preview.expectedResult.reportVisibility || "")} /></dl><div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">{preview.warnings.map((warning) => <p key={warning} className="mb-2 last:mb-0"><strong>Warning:</strong> {warning}</p>)}</div></div>}{actionError && <p role="alert" className="text-sm font-semibold text-rose-700">{actionError}</p>}<DialogFooter><Button type="button" variant="outline" onClick={() => setConfirmationOpen(false)} disabled={submitting}>Cancel</Button><Button type="button" onClick={() => submitCompanyIssuance("execute")} disabled={submitting} className="bg-rose-700 font-bold hover:bg-rose-800">{submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Issuing…</> : "Issue Company Access"}</Button></DialogFooter></DialogContent></Dialog>
-  </div>;
-}
-
-function Field({ id, label, value, onChange, error, hint, type = "text", min, max, step }: { id: string; label: string; value: string; onChange(value: string): void; error?: string; hint?: string; type?: string; min?: string; max?: string; step?: string }) {
-  const describedBy = [hint ? `${id}-hint` : "", error ? `${id}-error` : ""].filter(Boolean).join(" ") || undefined;
-  return <div><Label htmlFor={id} className="font-bold">{label}</Label><Input id={id} type={type} min={min} max={max} step={step} value={value} onChange={(event) => onChange(event.target.value)} aria-invalid={Boolean(error)} aria-describedby={describedBy} className="mt-2 h-11" />{hint && <p id={`${id}-hint`} className="mt-1.5 text-xs leading-5 text-slate-500">{hint}</p>}<ErrorText id={`${id}-error`} message={error} /></div>;
+import { Badge } from "@/components/ui/badge"; import { Button } from "@/components/ui/button"; import { Card,CardContent,CardDescription,CardHeader,CardTitle } from "@/components/ui/card"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle } from "@/components/ui/dialog"; import { RadioGroup,RadioGroupItem } from "@/components/ui/radio-group"; import { Select,SelectContent,SelectItem,SelectTrigger,SelectValue } from "@/components/ui/select";
+import { ASSESSMENT_REPORT_VISIBILITIES,type AssessmentAccessType,type AssessmentFundingType,type AssessmentReportVisibility } from "@/modules/assessment-issuance-policy/assessment-issuance-policy";
+import { EMPTY_ASSESSMENT_ACCESS_WIZARD,validateAssessmentAccessWizardStep,type AssessmentAccessCatalogItem,type AssessmentAccessWizardErrors,type AssessmentAccessWizardState } from "@/modules/assessment-access-center";
+const steps=["Assessment","Recipient Type","Configure","Report Visibility","Confirmation"];
+type Preview={expectedResult:Record<string,unknown>;warnings:string[]}; type Result={policyId:string;employeeAssessmentPath?:string;managerDashboardPath?:string;assessmentUrl?:string;[key:string]:unknown};
+const labels:Record<string,string>={"participant-only":"Participant only","manager-only":"Manager / Company only","participant-and-manager":"Participant + Manager / Company","admin-only":"Admin only / no automatic visibility"};
+function ErrorText({message}:{message?:string}){return message?<p role="alert" className="mt-1 text-sm font-semibold text-rose-700">{message}</p>:null;}
+function Row({label,value}:{label:string;value:unknown}){if(value==null||value==="")return null;return <div className="grid gap-1 border-b py-3 last:border-0 sm:grid-cols-[180px_1fr]"><dt className="text-sm font-semibold text-slate-500">{label}</dt><dd className="break-all text-sm font-bold">{String(value)}</dd></div>;}
+function Field({id,label,value,onChange,error,type="text",disabled=false}:{id:string;label:string;value:string;onChange:(v:string)=>void;error?:string;type?:string;disabled?:boolean}){return <div><Label htmlFor={id} className="font-bold">{label}</Label><Input id={id} type={type} value={value} onChange={e=>onChange(e.target.value)} disabled={disabled} className="mt-2 h-11" aria-invalid={!!error}/><ErrorText message={error}/></div>;}
+type CompanyOption={id:string;name:string;billing_email:string;manager_name?:string|null;package_size:number;credits_balance:number};
+export function AssessmentAccessCenter({assessments,companies=[]}:{assessments:AssessmentAccessCatalogItem[];companies?:CompanyOption[]}){
+ const [started,setStarted]=useState(false),[step,setStep]=useState(1),[state,setState]=useState<AssessmentAccessWizardState>(EMPTY_ASSESSMENT_ACCESS_WIZARD),[errors,setErrors]=useState<AssessmentAccessWizardErrors>({}),[operationId,setOperationId]=useState(""),[preview,setPreview]=useState<Preview|null>(null),[issued,setIssued]=useState<Result|null>(null),[confirm,setConfirm]=useState(false),[busy,setBusy]=useState(false),[actionError,setActionError]=useState("");
+ const assessment=useMemo(()=>assessments.find(a=>a.id===state.assessmentId),[assessments,state.assessmentId]);
+ const selectedCompany=useMemo(()=>companies.find(c=>c.id===state.existingCompanyId),[companies,state.existingCompanyId]);
+ const update=<K extends keyof AssessmentAccessWizardState>(key:K,value:AssessmentAccessWizardState[K])=>{setState(s=>({...s,[key]:value}));setErrors(e=>({...e,[key]:undefined}));setPreview(null);setIssued(null);};
+ const chooseType=(kind:"company"|"individual"|"complimentary")=>setState(s=>({...s,accessType:(kind==="company"?"company":"individual") as AssessmentAccessType,fundingType:(kind==="complimentary"?"complimentary":"paid") as AssessmentFundingType,issuanceType:kind==="complimentary"?"complimentary":kind==="individual"?"online-paid":"offline-paid",reportVisibility:kind==="company"?"manager-only":"participant-only"}));
+ async function submit(mode:"preview"|"execute"){
+  if(!assessment)return; const id=operationId||crypto.randomUUID();if(!operationId)setOperationId(id);setBusy(true);setActionError("");
+  const company=state.accessType==="company"; const endpoint=company?"/api/admin/actions/assessment-access/company/issue":"/api/admin/actions/assessment-access/individual/issue";
+  const body=company?{mode,operationId:id,existingCompanyId:state.existingCompanyId||null,assessmentDefinitionId:assessment.id,assessmentDefinitionVersion:assessment.version,companyName:state.companyName,managerName:state.managerName,managerEmail:state.managerEmail,credits:Number(state.credits),commercialReference:state.commercialReference,reportVisibility:state.reportVisibility,issuanceType:state.issuanceType,languageMode:state.languageMode,expiresAt:state.expiresAt||null}:{mode,operationId:id,assessmentDefinitionId:assessment.id,assessmentDefinitionVersion:assessment.version,participantName:state.participantName,participantEmail:state.participantEmail,fundingType:state.fundingType,issuanceType:state.issuanceType,reportVisibility:state.reportVisibility,languageMode:state.languageMode,expiresAt:state.expiresAt||null,reason:state.commercialReference};
+  try{const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const result=await response.json();if(!response.ok||!result.ok){setActionError(result?.error?.message||"Access could not be issued.");return;}if(mode==="preview"){setPreview(result.data.dryRun);setConfirm(true);}else{setIssued(result.data);setConfirm(false);toast.success("Assessment access issued.");}}catch{setActionError("Access could not be issued. Please try again.");}finally{setBusy(false);}
+ }
+ const copy=async(value:string,label:string)=>{await navigator.clipboard.writeText(value.startsWith("http")?value:`${window.location.origin}${value}`);toast.success(`${label} copied.`);};
+ const next=()=>{const found=validateAssessmentAccessWizardStep(step,state,assessments);setErrors(found);if(!Object.keys(found).length)setStep(s=>Math.min(5,s+1));};
+ if(!started)return <div className="space-y-7"><section className="rounded-3xl bg-slate-950 p-8 text-white"><Badge className="bg-blue-500/20">Unified Issuance</Badge><h1 className="mt-5 text-4xl font-black">Assessment Access Center</h1><p className="mt-3 max-w-2xl text-slate-300">Issue company, individual paid, and complimentary access through the existing production token, credit, and report authorization architecture.</p><Button onClick={()=>setStarted(true)} className="mt-7 bg-blue-600"><KeyRound className="mr-2 h-5 w-5"/>Issue Assessment</Button></section><div className="grid gap-4 sm:grid-cols-3">{[["Company / Team","One team link, manager dashboard, and credit wallet."],["Individual paid","One named single-use link without a company package."],["Complimentary","Audited free access with no company credit consumed."]].map(([title,description])=><Card key={title}><CardHeader><CardTitle className="text-base">{title}</CardTitle><CardDescription>{description}</CardDescription></CardHeader></Card>)}</div></div>;
+ return <div className="mx-auto max-w-5xl space-y-6"><header><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Assessment Access</p><h1 className="mt-2 text-3xl font-black">Issue Assessment</h1></header><nav className="overflow-x-auto rounded-2xl border bg-white p-3"><ol className="flex min-w-[700px] gap-2">{steps.map((label,index)=>{const n=index+1;return <li className="flex-1" key={label}><span className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold ${n===step?"bg-blue-600 text-white":n<step?"bg-emerald-50 text-emerald-800":"text-slate-500"}`}><span>{n<step?<Check className="h-4 w-4"/>:n}</span>{label}</span></li>;})}</ol></nav><Card><CardHeader><CardTitle>{steps[step-1]}</CardTitle><CardDescription>Review each setting carefully; no write occurs until final confirmation.</CardDescription></CardHeader><CardContent className="space-y-6">
+ {step===1&&<div className="grid gap-3 md:grid-cols-2">{assessments.map(a=><button key={a.id} onClick={()=>update("assessmentId",a.id)} className={`rounded-2xl border p-5 text-left ${state.assessmentId===a.id?"border-blue-600 bg-blue-50":""}`}><span className="font-black">{a.name}</span><span className="mt-1 block text-xs text-slate-500">/{a.slug} · v{a.version}</span><span className="mt-3 flex gap-2">{a.companyAvailable&&<Badge variant="outline">Company</Badge>}{a.individualAvailable&&<Badge variant="outline">Individual</Badge>}{a.complimentaryAvailable&&<Badge variant="outline">Complimentary</Badge>}</span></button>)}<ErrorText message={errors.assessmentId}/></div>}
+ {step===2&&<RadioGroup className="grid gap-4 md:grid-cols-3" value={state.accessType==="company"?"company":state.fundingType==="complimentary"?"complimentary":"individual"} onValueChange={v=>chooseType(v as any)}>{(["company","individual","complimentary"] as const).map(kind=>{const available=kind==="company"?assessment?.companyAvailable:kind==="individual"?assessment?.individualAvailable:assessment?.individualAvailable&&assessment?.complimentaryAvailable;const Icon=kind==="company"?Building2:UserRound;return <Label key={kind} className={`min-h-36 rounded-2xl border p-5 ${available?"cursor-pointer":"cursor-not-allowed bg-slate-50 text-slate-400"}`}><RadioGroupItem value={kind} disabled={!available}/><Icon className="mt-4 h-6 w-6"/><span className="mt-2 block text-lg font-black capitalize">{kind}</span></Label>})}<ErrorText message={errors.accessType}/></RadioGroup>}
+ {step===3&&state.accessType==="company"&&<div className="grid gap-5 sm:grid-cols-2"><div className="sm:col-span-2"><Label className="font-bold">Existing Company (optional)</Label><Select value={state.existingCompanyId||"new"} onValueChange={id=>{const c=companies.find(item=>item.id===id);setState(s=>c?{...s,existingCompanyId:c.id,companyName:c.name,managerName:c.manager_name||"",managerEmail:c.billing_email,credits:""}:{...s,existingCompanyId:"",companyName:"",managerName:"",managerEmail:"",credits:""});setErrors({});setPreview(null);setIssued(null);}}><SelectTrigger className="mt-2"><SelectValue placeholder="Create a new company or select an existing one"/></SelectTrigger><SelectContent><SelectItem value="new">Create a new company</SelectItem>{companies.map(c=><SelectItem key={c.id} value={c.id}>{c.name} · {c.billing_email} · {c.credits_balance}/{c.package_size} credits</SelectItem>)}</SelectContent></Select>{selectedCompany&&<div className="mt-3 grid gap-3 rounded-xl border bg-slate-50 p-4 sm:grid-cols-2"><Row label="Current package" value={selectedCompany.package_size}/><Row label="Available credits" value={selectedCompany.credits_balance}/></div>}<ErrorText message={errors.existingCompanyId}/></div><Field id="company" label="Company Name" value={state.companyName} onChange={v=>update("companyName",v)} error={errors.companyName} disabled={!!selectedCompany}/><Field id="manager" label="Manager Name" value={state.managerName} onChange={v=>update("managerName",v)} error={errors.managerName} disabled={!!selectedCompany?.manager_name}/><Field id="manager-email" label="Manager Email" type="email" value={state.managerEmail} onChange={v=>update("managerEmail",v)} error={errors.managerEmail} disabled={!!selectedCompany}/><Field id="credits" label={selectedCompany?"Additional Credits / Seats":"Credits / Seats"} type="number" value={state.credits} onChange={v=>update("credits",v)} error={errors.credits}/><div className="sm:col-span-2"><Field id="reference" label="Mandatory Reason / Commercial Reference" value={state.commercialReference} onChange={v=>update("commercialReference",v)} error={errors.commercialReference}/></div></div>}
+ {step===3&&state.accessType==="individual"&&<div className="grid gap-5 sm:grid-cols-2"><Field id="participant" label="Participant Name" value={state.participantName} onChange={v=>update("participantName",v)} error={errors.participantName}/><Field id="participant-email" label="Participant Email" type="email" value={state.participantEmail} onChange={v=>update("participantEmail",v)} error={errors.participantEmail}/><div><Label className="font-bold">Issuance Type</Label><Select value={state.issuanceType} onValueChange={v=>update("issuanceType",v as any)} disabled={state.fundingType==="complimentary"}><SelectTrigger className="mt-2"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="online-paid">Online paid</SelectItem><SelectItem value="offline-paid">Offline / manually paid</SelectItem><SelectItem value="complimentary">Complimentary</SelectItem></SelectContent></Select><ErrorText message={errors.issuanceType}/></div><div><Label className="font-bold">Language</Label><Select value={state.languageMode} onValueChange={v=>update("languageMode",v as any)}><SelectTrigger className="mt-2"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="participant-choice">Participant chooses English / Arabic</SelectItem><SelectItem value="en">Force English</SelectItem><SelectItem value="ar">Force Arabic</SelectItem></SelectContent></Select></div><Field id="expiry" label="Optional Expiry" type="datetime-local" value={state.expiresAt} onChange={v=>update("expiresAt",v)}/><div className="sm:col-span-2"><Field id="reason" label="Mandatory Reason / Issuance Note" value={state.commercialReference} onChange={v=>update("commercialReference",v)} error={errors.commercialReference}/></div></div>}
+ {step===4&&<div className="grid max-w-3xl gap-5 sm:grid-cols-2"><div className="sm:col-span-2"><Label className="font-bold">Report Visibility</Label><Select value={state.reportVisibility} onValueChange={v=>update("reportVisibility",v as AssessmentReportVisibility)}><SelectTrigger className="mt-2"><SelectValue placeholder="Select visibility"/></SelectTrigger><SelectContent>{ASSESSMENT_REPORT_VISIBILITIES.map(v=><SelectItem key={v} value={v}>{labels[v]}</SelectItem>)}</SelectContent></Select><p className="mt-2 text-sm text-slate-500">Stored per issuance and enforced server-side.</p><ErrorText message={errors.reportVisibility}/></div>{state.accessType==="company"&&<><div><Label className="font-bold">Issuance Type</Label><Select value={state.issuanceType} onValueChange={v=>update("issuanceType",v as any)}><SelectTrigger className="mt-2"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="offline-paid">Offline / manually sold</SelectItem><SelectItem value="online-paid">Online</SelectItem><SelectItem value="complimentary">Complimentary company package</SelectItem></SelectContent></Select></div><div><Label className="font-bold">Language</Label><Select value={state.languageMode} onValueChange={v=>update("languageMode",v as any)}><SelectTrigger className="mt-2"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="participant-choice">Participant chooses English / Arabic</SelectItem><SelectItem value="en">Force English</SelectItem><SelectItem value="ar">Force Arabic</SelectItem></SelectContent></Select></div><Field id="company-expiry" label="Optional Expiry" type="datetime-local" value={state.expiresAt} onChange={v=>update("expiresAt",v)}/></>}</div>}
+ {step===5&&<div className="space-y-5"><dl className="rounded-2xl border bg-slate-50 px-5"><Row label="Recipient" value={state.accessType==="company"?"Company / Team":state.fundingType==="complimentary"?"Complimentary":"Individual"}/><Row label="Assessment" value={assessment?.name}/><Row label="Company / Participant" value={state.accessType==="company"?state.companyName:`${state.participantName} · ${state.participantEmail}`}/><Row label="Manager" value={state.accessType==="company"?`${state.managerName} · ${state.managerEmail}`:""}/><Row label="Credits" value={state.accessType==="company"?state.credits:""}/><Row label="Language" value={state.languageMode}/><Row label="Report Visibility" value={labels[state.reportVisibility]}/><Row label="Reason / Reference" value={state.commercialReference}/></dl>{issued?<div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><p className="font-black text-emerald-950">Assessment access issued</p><p className="mt-1 text-sm text-emerald-800">Policy and audit records were saved.</p><div className="mt-4 flex flex-wrap gap-2">{issued.employeeAssessmentPath&&<Button variant="outline" onClick={()=>copy(issued.employeeAssessmentPath!,"Participant link")}><Copy className="mr-2 h-4 w-4"/>Copy Participant Link</Button>}{issued.assessmentUrl&&<Button variant="outline" onClick={()=>copy(issued.assessmentUrl!,"Participant link")}><Copy className="mr-2 h-4 w-4"/>Copy Participant Link</Button>}{issued.managerDashboardPath&&<Button variant="outline" onClick={()=>copy(issued.managerDashboardPath!,"Manager link")}><Copy className="mr-2 h-4 w-4"/>Copy Manager Link</Button>}</div></div>:<div className="rounded-2xl border border-blue-200 bg-blue-50 p-5"><p className="font-black text-blue-950">Ready to preview</p>{actionError&&<ErrorText message={actionError}/>}<Button onClick={()=>submit("preview")} disabled={busy} className="mt-3 bg-blue-700">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:null}Preview Issuance</Button></div>}</div>}
+ <div className="flex justify-between border-t pt-5"><Button variant="outline" onClick={()=>step===1?setStarted(false):setStep(s=>s-1)}><ArrowLeft className="mr-2 h-4 w-4"/>Back</Button>{step<5&&<Button onClick={next} className="bg-slate-950">Continue<ArrowRight className="ml-2 h-4 w-4"/></Button>}</div></CardContent></Card><Dialog open={confirm} onOpenChange={setConfirm}><DialogContent><DialogHeader><DialogTitle>Generate live assessment access?</DialogTitle><DialogDescription>This creates a live credential and immutable audit record.</DialogDescription></DialogHeader>{preview&&<><dl className="rounded-xl border px-4">{Object.entries(preview.expectedResult).map(([k,v])=><Row key={k} label={k} value={v}/>)}</dl><div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">{preview.warnings.map(w=><p key={w}>{w}</p>)}</div></>}<DialogFooter><Button variant="outline" onClick={()=>setConfirm(false)}>Cancel</Button><Button onClick={()=>submit("execute")} disabled={busy} className="bg-rose-700">Confirm and Generate Access</Button></DialogFooter></DialogContent></Dialog></div>;
 }

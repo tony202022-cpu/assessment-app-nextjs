@@ -39,6 +39,7 @@ export type ReportAuthorizationAttempt = {
   isDeveloperTest: boolean;
   completedAt: string | null;
   isOfflineCompany: boolean;
+  reportVisibility?: "participant-only" | "manager-only" | "participant-and-manager" | "admin-only" | null;
 };
 
 export type ReportAuthorizationActor = {
@@ -135,12 +136,13 @@ function defaultDependencies(): ReportAuthorizationDependencies {
     async findAttempt(attemptId) {
       const { data, error } = await requireClient()
         .from("quiz_attempts")
-        .select("id, user_id, assessment_id, company_id, access_token_id, is_developer_test, completed_at")
+        .select("id, user_id, assessment_id, company_id, access_token_id, issuance_policy_id, is_developer_test, completed_at")
         .eq("id", attemptId)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
       let isOfflineCompany = false;
+      let reportVisibility: ReportAuthorizationAttempt["reportVisibility"] = null;
       if (data.company_id && String(data.assessment_id || "") === "outdoor_sales_mri") {
         const { data: company, error: companyError } = await requireClient()
           .from("companies")
@@ -149,6 +151,31 @@ function defaultDependencies(): ReportAuthorizationDependencies {
           .maybeSingle();
         if (companyError) throw companyError;
         isOfflineCompany = company?.is_offline_activated === true;
+      }
+      if (data.issuance_policy_id) {
+        const { data: policy, error: policyError } = await requireClient()
+          .from("assessment_issuance_policies")
+          .select("report_visibility")
+          .eq("id", data.issuance_policy_id)
+          .maybeSingle();
+        if (policyError) throw policyError;
+        reportVisibility = policy?.report_visibility as ReportAuthorizationAttempt["reportVisibility"];
+      } else if (data.access_token_id) {
+        const { data: token, error: tokenError } = await requireClient()
+          .from("access_tokens")
+          .select("issuance_policy_id")
+          .eq("id", data.access_token_id)
+          .maybeSingle();
+        if (tokenError) throw tokenError;
+        if (token?.issuance_policy_id) {
+          const { data: policy, error: policyError } = await requireClient()
+            .from("assessment_issuance_policies")
+            .select("report_visibility")
+            .eq("id", token.issuance_policy_id)
+            .maybeSingle();
+          if (policyError) throw policyError;
+          reportVisibility = policy?.report_visibility as ReportAuthorizationAttempt["reportVisibility"];
+        }
       }
       return {
         id: String(data.id),
@@ -159,6 +186,7 @@ function defaultDependencies(): ReportAuthorizationDependencies {
         isDeveloperTest: data.is_developer_test === true,
         completedAt: data.completed_at ? String(data.completed_at) : null,
         isOfflineCompany,
+        reportVisibility,
       };
     },
     async findAssessmentIdBySlug(slug) {
@@ -254,6 +282,9 @@ export class ReportAuthorizationService {
       return this.authorizeManager(attempt, purpose, managerToken, "offline-company");
     }
     if (input.actorHint === "company-manager" || input.actorHint === "offline-company" || managerToken) {
+      if (attempt.reportVisibility === "participant-only" || attempt.reportVisibility === "admin-only") {
+        return { authorized: false, decision: "DENIED", purpose, actorType: "company-manager", attempt };
+      }
       return this.authorizeManager(attempt, purpose, managerToken, input.actorHint);
     }
 
@@ -278,6 +309,9 @@ export class ReportAuthorizationService {
     }
     if (!attempt.userId || participant.userId !== attempt.userId) {
       return { authorized: false, decision: "DENIED", purpose, actorType: "participant" };
+    }
+    if (attempt.reportVisibility === "manager-only" || attempt.reportVisibility === "admin-only") {
+      return { authorized: false, decision: "DENIED", purpose, actorType: "participant", attempt };
     }
     return this.allowed(attempt, purpose, { type: "participant", id: participant.userId });
   }

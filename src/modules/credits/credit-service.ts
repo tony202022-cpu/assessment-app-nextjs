@@ -34,11 +34,21 @@ export type CreditListResult = {
 };
 
 export type CreditHistoryItem = { amount: number; description: string };
+export type CreditAuditItem = {
+  id: string;
+  action: string;
+  administrator: string;
+  reason: string;
+  previousBalance: number;
+  newBalance: number;
+  createdAt: string;
+};
 
 export type CreditDetail = CreditListItem & {
   managerDashboardPath: string | null;
   history: CreditHistoryItem[];
   historyNetChange: number;
+  auditTrail: CreditAuditItem[];
 };
 
 type CompanyRow = {
@@ -53,6 +63,7 @@ type CompanyRow = {
 type AccessRow = { company_id: string | null; assessment_type: string | null };
 type AssessmentRow = { id: string; title_en: string | null; name_en: string | null };
 type HistoryRow = { amount: number | null; description: string | null };
+type AuditRow = { id: string; action_id: string; administrator_id: string; reason: string | null; old_balance: number | null; new_balance: number | null; created_at: string };
 
 function requireAdmin() {
   const client = getSupabaseAdmin();
@@ -177,9 +188,10 @@ export async function getCreditDetail(companyId: string): Promise<CreditDetail |
   const id = String(companyId || "").trim();
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return null;
   const supabase = requireAdmin();
-  const [companyResult, historyResult] = await Promise.all([
+  const [companyResult, historyResult, auditResult] = await Promise.all([
     supabase.from("companies").select("id, name, billing_email, package_size, credits_balance, manager_token, created_at").eq("id", id).maybeSingle(),
     supabase.from("credit_transactions").select("amount, description").eq("company_id", id),
+    supabase.from("admin_action_audit").select("id, action_id, administrator_id, reason, old_balance, new_balance, created_at").eq("company_id", id).eq("outcome", "succeeded").in("action_id", ["credits.add", "credits.remove", "credits.restore"]).order("created_at", { ascending: false }).limit(100),
   ]);
   if (companyResult.error) throw new Error("Could not load the credit account.");
   if (!companyResult.data) return null;
@@ -187,6 +199,10 @@ export async function getCreditDetail(companyId: string): Promise<CreditDetail |
   const company = companyResult.data as CompanyRow;
   const base = toListItem(company, context);
   const history = historyResult.error ? [] : ((historyResult.data || []) as HistoryRow[]).map((row) => ({ amount: Number(row.amount || 0), description: String(row.description || "Credit transaction") }));
+  const auditTrail = auditResult.error ? [] : ((auditResult.data || []) as AuditRow[]).map((row) => ({
+    id: String(row.id), action: String(row.action_id).replace("credits.", ""), administrator: String(row.administrator_id),
+    reason: String(row.reason || "No reason recorded"), previousBalance: Number(row.old_balance), newBalance: Number(row.new_balance), createdAt: String(row.created_at),
+  }));
   const managerToken = String(company.manager_token || "");
-  return { ...base, managerDashboardPath: managerToken ? `/company/outdoor-mri-dashboard?managerToken=${encodeURIComponent(managerToken)}` : null, history, historyNetChange: history.reduce((sum, entry) => sum + entry.amount, 0) };
+  return { ...base, managerDashboardPath: managerToken ? `/company/outdoor-mri-dashboard?managerToken=${encodeURIComponent(managerToken)}` : null, history, historyNetChange: history.reduce((sum, entry) => sum + entry.amount, 0), auditTrail };
 }

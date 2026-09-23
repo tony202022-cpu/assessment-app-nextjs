@@ -22,6 +22,7 @@ export type AssessmentAccessCatalogItem = {
 export type AssessmentAccessWizardState = {
   assessmentId: string;
   accessType: AssessmentAccessType | "";
+  existingCompanyId: string;
   companyName: string;
   managerName: string;
   managerEmail: string;
@@ -31,6 +32,9 @@ export type AssessmentAccessWizardState = {
   fundingType: AssessmentFundingType | "";
   commercialReference: string;
   reportVisibility: AssessmentReportVisibility | "";
+  issuanceType: "offline-paid" | "online-paid" | "complimentary" | "";
+  languageMode: "participant-choice" | "en" | "ar";
+  expiresAt: string;
 };
 
 export type AssessmentAccessWizardErrors = Partial<Record<keyof AssessmentAccessWizardState, string>>;
@@ -38,6 +42,7 @@ export type AssessmentAccessWizardErrors = Partial<Record<keyof AssessmentAccess
 export const EMPTY_ASSESSMENT_ACCESS_WIZARD: AssessmentAccessWizardState = {
   assessmentId: "",
   accessType: "",
+  existingCompanyId: "",
   companyName: "",
   managerName: "",
   managerEmail: "",
@@ -47,6 +52,9 @@ export const EMPTY_ASSESSMENT_ACCESS_WIZARD: AssessmentAccessWizardState = {
   fundingType: "",
   commercialReference: "",
   reportVisibility: "",
+  issuanceType: "",
+  languageMode: "participant-choice",
+  expiresAt: "",
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -75,7 +83,10 @@ export function validateAssessmentAccessWizardStep(
     if (!state.managerName.trim()) errors.managerName = "Manager name is required.";
     if (!EMAIL_PATTERN.test(state.managerEmail.trim())) errors.managerEmail = "Enter a valid manager email.";
     const credits = Number(state.credits);
-    if (!Number.isSafeInteger(credits) || credits < 2 || credits > 100000) errors.credits = "Credits must be a whole number between 2 and 100,000.";
+    const minimumCredits = state.existingCompanyId ? 0 : 1;
+    if (!Number.isSafeInteger(credits) || credits < minimumCredits || credits > 100000) {
+      errors.credits = `Credits must be a whole number between ${minimumCredits} and 100,000.`;
+    }
   }
 
   if (step >= 3 && state.accessType === "individual") {
@@ -86,6 +97,7 @@ export function validateAssessmentAccessWizardStep(
     } else if (state.fundingType === "complimentary" && !assessment?.complimentaryAvailable) {
       errors.fundingType = "Complimentary funding is not available for this assessment.";
     }
+    if (!["offline-paid", "online-paid", "complimentary"].includes(state.issuanceType)) errors.issuanceType = "Select an issuance type.";
   }
 
   if (step >= 3) {

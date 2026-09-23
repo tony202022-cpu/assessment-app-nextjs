@@ -9,5 +9,6 @@ export const metadata: Metadata = { title: "Credit Account | Career Labs AI", ro
 export default async function CreditDetailPage({ params }: { params: { companyId: string } }) {
   const credit = await getCreditDetail(params.companyId);
   if (!credit) notFound();
-  return <CreditDetail credit={credit} />;
+  const capabilities = String(process.env.ADMIN_ACTION_CAPABILITIES || "").split(",").map((item) => item.trim()).filter(Boolean);
+  return <CreditDetail credit={credit} canAdd={capabilities.includes("credits.add")} canRemove={capabilities.includes("credits.remove")} canRestore={capabilities.includes("credits.restore")} />;
 }

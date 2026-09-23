@@ -78,7 +78,7 @@ test("schema requires the complete Version 1.0 policy and protects it from brows
 test("domain exposes only approved Version 1.0 values", () => {
   assert.deepEqual(domain.ASSESSMENT_ACCESS_TYPES, ["company", "individual"]);
   assert.deepEqual(domain.ASSESSMENT_FUNDING_TYPES, ["paid", "complimentary"]);
-  assert.deepEqual(domain.ASSESSMENT_REPORT_VISIBILITIES, ["participant", "manager-only"]);
+  assert.deepEqual(domain.ASSESSMENT_REPORT_VISIBILITIES, ["participant-only", "manager-only", "participant-and-manager", "admin-only"]);
 });
 
 test("domain validation normalizes a complete policy", () => {
