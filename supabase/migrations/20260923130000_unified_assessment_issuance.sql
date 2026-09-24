@@ -90,6 +90,7 @@ declare
   v_audit uuid; v_issued timestamptz; v_name text := regexp_replace(btrim(coalesce(p_participant_name,'')), '\s+', ' ', 'g');
   v_email text := lower(btrim(coalesce(p_participant_email,''))); v_reason text := btrim(coalesce(p_reason,''));
   v_existing public.admin_action_audit%rowtype;
+  v_action_id text := case when p_funding_type='complimentary' then 'assessment-access.complimentary.issue' else 'assessment-access.individual.issue' end;
 begin
   if btrim(coalesce(p_request_id,'')) = '' then raise exception 'request_id_required'; end if;
   if btrim(coalesce(p_administrator_id,'')) = '' then raise exception 'administrator_required'; end if;
@@ -102,7 +103,7 @@ begin
   if v_reason = '' or char_length(v_reason) > 500 then raise exception 'reason_required'; end if;
   if p_expires_at is not null and (p_expires_at <= now() or p_expires_at > now() + interval '366 days') then raise exception 'invalid_expiry'; end if;
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_request_id, 0));
-  select * into v_existing from public.admin_action_audit where request_id=p_request_id and action_id='assessment-access.individual.issue' and outcome='succeeded' limit 1;
+  select * into v_existing from public.admin_action_audit where request_id=p_request_id and action_id=v_action_id and outcome='succeeded' limit 1;
   if found then
     if v_existing.administrator_id is distinct from p_administrator_id
        or v_existing.metadata->>'assessmentId' is distinct from p_assessment_id
@@ -130,7 +131,7 @@ begin
   returning id into v_token;
   update public.assessment_issuance_policies set access_token_id=v_token where id=v_policy;
   insert into public.admin_action_audit(request_id,action_id,administrator_id,administrator_role,resource_type,resource_id,outcome,reason,metadata)
-  values(p_request_id,'assessment-access.individual.issue',p_administrator_id,p_administrator_role,'access_token',v_token::text,'succeeded',v_reason,
+  values(p_request_id,v_action_id,p_administrator_id,p_administrator_role,'access_token',v_token::text,'succeeded',v_reason,
     pg_catalog.jsonb_build_object('policyId',v_policy,'tokenId',v_token,'assessmentId',v_assessment.id,'participantEmail',v_email,'fundingType',p_funding_type,'reportVisibility',p_report_visibility,'issuanceType',p_issuance_type)) returning id into v_audit;
   return query select v_policy,v_token,v_value,v_assessment.slug,v_name,v_email,p_report_visibility,p_language_mode,v_issued,v_audit;
 end; $$;

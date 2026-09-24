@@ -105,7 +105,7 @@ async function loadRegisteredAssessments() {
 
 export async function listComplimentaryAssessments(input: { search?: unknown } = {}) {
   const search = safeSearch(input.search);
-  const assessments = await loadRegisteredAssessments();
+  const assessments = (await loadRegisteredAssessments()).filter((assessment) => assessment.complimentaryCapability === "Available");
   return {
     search,
     assessments: search

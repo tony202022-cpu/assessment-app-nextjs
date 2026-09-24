@@ -11,6 +11,7 @@ const historicalMigration = read("supabase/migrations/20260825141734_generate_co
 const service = read("src/modules/complimentary/complimentary-access-service.ts");
 const detail = read("src/components/admin/complimentary-detail.tsx");
 const ui = read("src/components/admin/complimentary-future-actions.tsx");
+const actionMigration = read("supabase/migrations/20260924180000_complete_complimentary_issuance.sql");
 
 test("Complimentary Center uses unified individual issuance end to end", () => {
   assert.match(ui, /participantName/);
@@ -19,11 +20,15 @@ test("Complimentary Center uses unified individual issuance end to end", () => {
   assert.match(ui, /\/api\/admin\/actions\/assessment-access\/individual\/issue/);
   assert.match(ui, /fundingType: "complimentary"/);
   assert.match(ui, /issuanceType: "complimentary"/);
-  assert.match(ui, /reportVisibility: "participant-only"/);
-  assert.match(ui, /languageMode: "participant-choice"/);
+  assert.match(ui, /reportVisibility,/);
+  assert.match(ui, /languageMode,/);
+  assert.match(ui, /participant-only/);
+  assert.match(ui, /admin-only/);
+  assert.match(ui, /participant-choice/);
   assert.match(ui, /operationId: id/);
   assert.match(ui, /mode === "preview"/);
   assert.match(ui, /Confirm and Generate/);
+  assert.match(ui, /Leave blank for No Expiry/);
 });
 
 test("current assessment definition version is supplied to the dedicated page", () => {
@@ -51,6 +56,36 @@ test("unified database path creates a typed single-use token without company cre
   assert.match(migration, /remaining_uses=0/);
   const individualBranch = migration.slice(migration.indexOf("if v_token.entitlement_type in ('individual','complimentary')"), migration.indexOf("select * into v_company"));
   assert.doesNotMatch(individualBranch, /credits_balance|credit_transactions/);
+});
+
+test("complimentary preview is explicit and complete", () => {
+  for (const field of ["assessment", "accessType", "participantName", "participantEmail", "language", "reportVisibility", "expiry", "accessQuantity", "companyCreditsConsumed", "reason"]) {
+    assert.match(action, new RegExp(`${field}:`));
+  }
+  assert.match(action, /COMPLIMENTARY/);
+  assert.match(action, /companyCreditsConsumed:"No"/);
+  assert.match(action, /No company credit is consumed/);
+  assert.match(ui, /Object\.entries\(preview\.expectedResult\)/);
+});
+
+test("only Definition Engine assessments with complimentary capability are selectable", () => {
+  assert.match(service, /assessmentRegistry\.getCurrent\(id\)/);
+  assert.match(service, /definition\.capabilities\.complimentaryAccess/);
+  assert.match(service, /filter\(\(assessment\) => assessment\.complimentaryCapability === "Available"\)/);
+});
+
+test("complimentary action identity drives idempotency and authoritative audit", () => {
+  assert.match(migration, /v_action_id text := case when p_funding_type='complimentary' then 'assessment-access\.complimentary\.issue' else 'assessment-access\.individual\.issue' end/);
+  assert.match(migration, /action_id=v_action_id/);
+  assert.match(migration, /values\(p_request_id,v_action_id,p_administrator_id/);
+  assert.match(actionMigration, /pg_catalog\.pg_get_functiondef/);
+  assert.match(actionMigration, /unexpected_individual_issuance_function_definition/);
+});
+
+test("complimentary issuance stays company- and manager-token-free", () => {
+  const individualRpc = migration.slice(migration.indexOf("create or replace function public.issue_individual_assessment_access_admin_action"), migration.indexOf("revoke all on function public.issue_individual_assessment_access_admin_action"));
+  assert.match(individualRpc, /values\(null,v_value/);
+  assert.doesNotMatch(individualRpc, /credit_transactions|credits_balance|package_size|manager_token/);
 });
 
 test("history remains filtered to complimentary entitlements without token values", () => {
