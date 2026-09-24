@@ -52,7 +52,7 @@ test("successful offline submit redirects to completion and other submits keep r
   assert.match(quizWrapper, /offlineCorporate=\{offlineCorporate\}/);
   assert.match(sharedQuiz, /window\.location\.href = offlineCorporate\s*\?/);
   assert.match(sharedQuiz, /\/outdoor-mri\/completed\?attemptId=/);
-  assert.match(sharedQuiz, /\/\$\{slug\}\/results\?attemptId=/);
+  assert.match(sharedQuiz, /\/\$\{slug\}\/\$\{destination\}\?attemptId=/);
 });
 
 test("offline results are server-gated before the unchanged client renders", () => {
@@ -79,7 +79,7 @@ test("manager report links carry tokens only for offline companies", () => {
 });
 
 test("individual and online corporate attempts retain the existing result/report branches", () => {
-  assert.match(sharedQuiz, /\/\$\{slug\}\/results\?attemptId=/);
+  assert.match(sharedQuiz, /const destination = isOutdoorScan \? "report" : "results";/);
   assert.match(login, /: `\/\$\{slug\}\/results\?attemptId=/);
   assert.match(report, /authorization\.actorType === "offline-company"/);
 });
