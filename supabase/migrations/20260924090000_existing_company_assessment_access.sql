@@ -56,10 +56,10 @@ begin
       raise exception 'company_identity_mismatch';
     end if;
     if p_credits > 0 then
-      update public.companies
+      update public.companies as c
          set package_size=coalesce(package_size,0)+p_credits,
              credits_balance=coalesce(credits_balance,0)+p_credits,
-             manager_name=coalesce(nullif(btrim(manager_name),''),v_mname)
+             manager_name=coalesce(nullif(btrim(c.manager_name),''),v_mname)
        where id=v_company.id returning * into v_company;
       insert into public.credit_transactions(company_id,amount,description)
         values(v_company.id,p_credits,'Assessment access issuance: '||v_ref);
@@ -76,15 +76,15 @@ begin
   if v_company.manager_token is null then
     update public.companies set manager_token=encode(extensions.gen_random_bytes(32),'hex') where id=v_company.id returning * into v_company;
   end if;
-  select id,token_string into v_access,v_employee from public.access_tokens where company_id=v_company.id and assessment_type=v_assessment.id and revoked_at is null order by created_at limit 1;
+  select id,token_string into v_access,v_employee from public.access_tokens at where at.company_id=v_company.id and assessment_type=v_assessment.id and revoked_at is null order by created_at limit 1;
   if v_access is null then
     v_employee:=encode(extensions.gen_random_bytes(32),'hex');
     insert into public.access_tokens(company_id,token_string,assessment_type,is_used,entitlement_type,expires_at)
       values(v_company.id,v_employee,v_assessment.id,false,'company',p_expires_at) returning id into v_access;
   end if;
-  insert into public.assessment_issuance_policies(assessment_definition_id,assessment_definition_version,access_type,funding_type,report_visibility,commercial_reference,issued_by,company_id,access_token_id,manager_name,manager_email,quantity,issuance_type,language_mode,internal_note)
-    values(v_assessment.id,p_assessment_definition_version,'company',case when p_issuance_type='complimentary' then 'complimentary' else 'paid' end,p_report_visibility,v_ref,p_administrator_id,v_company.id,v_access,coalesce(v_company.manager_name,v_mname),v_company.billing_email,p_credits,p_issuance_type,p_language_mode,p_expires_at,v_ref)
-    returning id,issued_at into v_policy,v_issued;
+  insert into public.assessment_issuance_policies as aip(assessment_definition_id,assessment_definition_version,access_type,funding_type,report_visibility,commercial_reference,issued_by,company_id,access_token_id,manager_name,manager_email,quantity,issuance_type,language_mode,expires_at,internal_note)
+    values(v_assessment.id,p_assessment_definition_version,'company',case when p_issuance_type='complimentary' then 'complimentary' else 'paid' end,p_report_visibility,v_ref,p_administrator_id,v_company.id,v_access,coalesce(v_company.manager_name,v_mname),v_company.billing_email,case when p_existing_company_id is not null and p_credits = 0 then 1 else p_credits end,p_issuance_type,p_language_mode,p_expires_at,v_ref)
+    returning aip.id,aip.issued_at into v_policy,v_issued;
   update public.access_tokens set issuance_policy_id=v_policy where id=v_access;
   insert into public.admin_action_audit(request_id,action_id,administrator_id,administrator_role,resource_type,resource_id,company_id,outcome,reason,metadata)
     values(p_request_id,'assessment-access.company.issue',p_administrator_id,p_administrator_role,'company',v_company.id::text,v_company.id,'succeeded',v_ref,

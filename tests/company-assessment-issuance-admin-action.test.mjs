@@ -6,6 +6,10 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 const migration = read("supabase/migrations/20260827143000_issue_company_assessment_access_admin_action.sql");
 const unifiedMigration = read("supabase/migrations/20260923130000_unified_assessment_issuance.sql");
 const existingCompanyMigration = read("supabase/migrations/20260924090000_existing_company_assessment_access.sql");
+const expiryColumnHotfix = read("supabase/migrations/20260924130000_fix_existing_company_issuance_policy_expiry_column.sql");
+const companyIdQualificationHotfix = read("supabase/migrations/20260924140000_qualify_existing_company_access_token_company_id.sql");
+const remainingOutputQualificationHotfix = read("supabase/migrations/20260924150000_qualify_remaining_existing_company_rpc_outputs.sql");
+const zeroTopUpPolicyQuantityHotfix = read("supabase/migrations/20260924160000_set_existing_company_zero_topup_policy_quantity.sql");
 const individualAction = read("src/modules/admin-actions/actions/issue-individual-assessment-access.ts");
 const action = read("src/modules/admin-actions/actions/issue-company-assessment-access.ts");
 const registry = read("src/modules/admin-actions/production-admin-actions.ts");
@@ -109,9 +113,47 @@ test("zero-credit existing-company issuance skips every balance and ledger mutat
   assert.equal((existingBranch.match(/insert into public\.credit_transactions/gi) || []).length, 1);
 });
 
+test("existing-company policy issuance aligns the expiry target column with its value", () => {
+  assert.match(existingCompanyMigration, /issuance_type,language_mode,expires_at,internal_note\)/i);
+  assert.match(existingCompanyMigration, /p_issuance_type,p_language_mode,p_expires_at,v_ref\)/i);
+  assert.match(expiryColumnHotfix, /v_defective_fragment constant text := 'issuance_type,language_mode,internal_note\)'/i);
+  assert.match(expiryColumnHotfix, /v_corrected_fragment constant text := 'issuance_type,language_mode,expires_at,internal_note\)'/i);
+  assert.match(expiryColumnHotfix, /unexpected_existing_company_issuance_function_definition/i);
+  assert.doesNotMatch(expiryColumnHotfix, /insert into|update public\.|delete from|truncate /i);
+});
+
+test("normal token reuse qualifies company_id against access_tokens", () => {
+  assert.match(existingCompanyMigration, /from public\.access_tokens at where at\.company_id=v_company\.id and assessment_type=v_assessment\.id/i);
+  assert.doesNotMatch(existingCompanyMigration, /from public\.access_tokens where company_id=v_company\.id/i);
+  assert.match(companyIdQualificationHotfix, /v_defective_fragment constant text := 'from public\.access_tokens where company_id=v_company\.id/i);
+  assert.match(companyIdQualificationHotfix, /v_corrected_fragment constant text := 'from public\.access_tokens at where at\.company_id=v_company\.id/i);
+  assert.match(companyIdQualificationHotfix, /unexpected_existing_company_issuance_function_definition/i);
+  assert.doesNotMatch(companyIdQualificationHotfix, /insert into|update public\.|delete from|truncate /i);
+});
+
+test("policy returning and top-up manager reads qualify RETURNS TABLE collisions", () => {
+  assert.match(existingCompanyMigration, /update public\.companies as c[\s\S]*btrim\(c\.manager_name\)/i);
+  assert.match(existingCompanyMigration, /insert into public\.assessment_issuance_policies as aip\(/i);
+  assert.match(existingCompanyMigration, /returning aip\.id,aip\.issued_at into v_policy,v_issued/i);
+  assert.doesNotMatch(existingCompanyMigration, /returning id,issued_at into v_policy,v_issued/i);
+  assert.match(remainingOutputQualificationHotfix, /v_manager_to constant text := 'nullif\(btrim\(c\.manager_name\)/i);
+  assert.match(remainingOutputQualificationHotfix, /v_returning_to constant text := 'returning aip\.id,aip\.issued_at/i);
+  assert.match(remainingOutputQualificationHotfix, /unexpected_existing_company_issuance_function_definition/i);
+});
+
+test("zero top-up records one policy event without changing credit semantics", () => {
+  assert.match(existingCompanyMigration, /case when p_existing_company_id is not null and p_credits = 0 then 1 else p_credits end/i);
+  assert.match(existingCompanyMigration, /if p_credits > 0 then[\s\S]*insert into public\.credit_transactions/i);
+  assert.match(existingCompanyMigration, /'credits',p_credits/i);
+  assert.match(existingCompanyMigration, /\(v_existing\.metadata->>'credits'\)::integer is distinct from p_credits/i);
+  assert.match(unifiedMigration, /assessment_issuance_policies_quantity_check check \(quantity between 1 and 100000\)/i);
+  assert.match(zeroTopUpPolicyQuantityHotfix, /v_to constant text := 'v_company\.billing_email,case when p_existing_company_id is not null and p_credits = 0 then 1 else p_credits end/i);
+  assert.match(zeroTopUpPolicyQuantityHotfix, /unexpected_existing_company_issuance_function_definition/i);
+});
+
 test("existing-company issuance preserves manager and access credentials", () => {
   assert.match(existingCompanyMigration, /if v_company\.manager_token is null then/i);
-  assert.match(existingCompanyMigration, /where company_id=v_company\.id and assessment_type=v_assessment\.id and revoked_at is null/i);
+  assert.match(existingCompanyMigration, /where at\.company_id=v_company\.id and assessment_type=v_assessment\.id and revoked_at is null/i);
   assert.match(existingCompanyMigration, /if v_access is null then/i);
   assert.match(existingCompanyMigration, /if exists\(select 1 from public\.companies/i);
   assert.match(existingCompanyMigration, /raise exception 'duplicate_company'/i);
