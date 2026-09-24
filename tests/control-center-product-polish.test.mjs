@@ -21,6 +21,29 @@ test("dashboard presents all approved executive KPIs and explicit unavailable st
   assert.match(dashboard, /Not Available/);
 });
 
+test("overview uses existing production records for recent operations and product activity", () => {
+  const service = read("src/modules/control-center/dashboard-service.ts");
+  const dashboard = read("src/components/admin/control-center-dashboard.tsx");
+  assert.match(service, /admin_action_audit/);
+  assert.match(service, /\.eq\("outcome", "succeeded"\)/);
+  assert.match(service, /\.eq\("entitlement_type", "complimentary"\)/);
+  assert.match(service, /recentActivity/);
+  assert.match(service, /recentCompletions/);
+  assert.match(service, /productActivity/);
+  assert.doesNotMatch(service, /\.insert\(|\.update\(|\.delete\(|\.rpc\(/);
+  for (const label of ["Recent activity", "Recent completions", "Assessment activity", "Assessment Access", "Complimentary Access", "System Tools"]) {
+    assert.match(dashboard, new RegExp(label));
+  }
+});
+
+test("admin shell links its identity to Overview and describes governed operational writes", () => {
+  const shell = read("src/components/admin/admin-shell.tsx");
+  assert.match(shell, /<Link href="\/admin" className="flex items-center gap-3/);
+  assert.match(shell, /Operational safety/);
+  assert.match(shell, /permission, preview, confirmation, and an immutable audit record/);
+  assert.doesNotMatch(shell, /Milestone 5/);
+});
+
 test("company analytics use stored results without mutating production data", () => {
   const service = read("src/modules/companies/company-service.ts");
   const detail = read("src/components/admin/company-detail.tsx");

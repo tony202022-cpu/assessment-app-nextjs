@@ -17,7 +17,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-100 text-slate-950">
       <div className="mx-auto flex min-h-screen max-w-[1800px]">
         <aside className="hidden w-72 shrink-0 border-r border-slate-800 bg-slate-950 px-5 py-7 text-white lg:flex lg:flex-col">
-          <Link href="/admin/companies" className="flex items-center gap-3 rounded-2xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
+          <Link href="/admin" className="flex items-center gap-3 rounded-2xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-950/40">
               <ShieldCheck className="h-5 w-5" aria-hidden="true" />
             </span>
@@ -49,8 +49,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="mt-auto rounded-2xl border border-slate-800 bg-slate-900 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-300">Milestone 5</p>
-            <p className="mt-2 text-sm leading-6 text-slate-300">Companies and participants are read-only. Attempts, reports, credits, and tokens cannot be changed here.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-300">Operational safety</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">Administrative writes require permission, preview, confirmation, and an immutable audit record.</p>
           </div>
         </aside>
 
