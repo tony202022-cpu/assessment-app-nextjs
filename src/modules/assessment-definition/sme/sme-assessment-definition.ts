@@ -48,8 +48,8 @@ export const smeBusinessHealthAssessmentDefinition: AssessmentDefinition = {
     roleTags: ["sme-owner", "general-manager"],
   },
   accessPolicy: {
-    channels: ["public", "authenticated", "entitlement", "developer"],
-    authenticationRequired: false,
+    channels: ["authenticated", "entitlement", "developer"],
+    authenticationRequired: true,
     individualEnabled: true,
     corporateEnabled: false,
     managerAccessEnabled: false,
@@ -58,7 +58,7 @@ export const smeBusinessHealthAssessmentDefinition: AssessmentDefinition = {
       { type: "complimentary", enabled: true, usage: "single-use", maximumUses: 1 },
       { type: "internal-qa", enabled: true, usage: "single-use", maximumUses: 1 },
     ],
-    tokenPolicy: { required: false, exchangeForSession: false, purpose: "Preserve the current SME beta-access behavior." },
+    tokenPolicy: { required: true, exchangeForSession: false, purpose: "Require governed individual or complimentary assessment access." },
   },
   localization: {
     defaultLocale: "en",

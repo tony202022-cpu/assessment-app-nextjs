@@ -21,7 +21,6 @@ import {
   buildSmeBusinessRevival90DayPlan,
   type SmeBusinessRevivalDay,
 } from "@/lib/sme-business-revival-90day";
-import { isAuthorizedPaidMriAttempt, isPaidMriSlug } from "@/lib/paid-mri-access";
 import { cookies, headers } from "next/headers";
 import { ReportAuthorizationService } from "@/modules/report-authorization";
 import { ApprovedOutdoorSalesScanReport } from "../../outdoor-scan/report-preview/ApprovedOutdoorSalesScanReport";
@@ -2901,13 +2900,7 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
     managerToken: searchParams?.managerToken?.trim() || "",
     purpose: "view",
   });
-  const compatibilityAllowed =
-    !authorization.authorized &&
-    authorization.decision === "PARTICIPANT_PROOF_UNAVAILABLE" &&
-    !!authorization.attempt &&
-    (!isPaidMriSlug(slug) || isAuthorizedPaidMriAttempt(slug, authorization.attempt));
-
-  if (!authorization.authorized && !compatibilityAllowed) {
+  if (!authorization.authorized) {
     if ("actorType" in authorization && authorization.actorType === "offline-company") {
       redirect(`/outdoor-mri/completed?attemptId=${encodeURIComponent(attemptId)}`);
     }

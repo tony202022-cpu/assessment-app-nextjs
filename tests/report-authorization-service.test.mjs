@@ -20,6 +20,9 @@ function loadService() {
     if (specifier === "@/lib/admin-assessment-access") {
       return { DEVELOPER_TEST_ACCESS_COOKIE: "developer_test_attempt_access", readDeveloperTestAccess: () => null };
     }
+    if (specifier === "@/lib/participant-report-access") {
+      return { PARTICIPANT_REPORT_ACCESS_COOKIE: "participant_report_access", readParticipantReportAccess: () => null };
+    }
     throw new Error(`Unexpected dependency: ${specifier}`);
   };
   new Function("require", "exports", "module", output)(localRequire, module.exports, module);
@@ -45,13 +48,14 @@ function attempt(overrides = {}) {
 }
 
 function harness(overrides = {}) {
-  const state = { attempt: attempt(), assessmentId: "assessment-1", manager: null, participant: { status: "unavailable" }, adminValid: false, capabilities: [], adminId: "admin-1", developer: { status: "invalid" } };
+  const state = { attempt: attempt(), assessmentId: "assessment-1", manager: null, participant: { status: "unavailable" }, participantReport: null, adminValid: false, capabilities: [], adminId: "admin-1", developer: { status: "invalid" } };
   Object.assign(state, overrides);
   const dependencies = {
     findAttempt: async () => state.attempt,
     findAssessmentIdBySlug: async () => state.assessmentId,
     findManagerByToken: async () => state.manager,
     verifyParticipantProof: async () => state.participant,
+    verifyParticipantReportProof: () => state.participantReport,
     verifyAdministratorSession: () => state.adminValid,
     administratorCapabilities: () => state.capabilities,
     administratorId: () => state.adminId,
@@ -59,6 +63,17 @@ function harness(overrides = {}) {
   };
   return new ReportAuthorizationService(dependencies);
 }
+
+test("authorizes a matching signed participant report proof without trusting the attempt UUID alone", async () => {
+  const participantReport = { attemptId: ATTEMPT_ID, userId: "participant-1", assessmentId: "assessment-1", expires: 1 };
+  const allowed = await harness({ participantReport }).authorizeAttemptAccess(request({ cookies: { participant_report_access: "signed" } }));
+  assert.equal(allowed.decision, "AUTHORIZED");
+  assert.equal(allowed.actor.type, "participant");
+
+  const mismatch = await harness({ participantReport: { ...participantReport, attemptId: OTHER_ATTEMPT_ID } })
+    .authorizeAttemptAccess(request({ cookies: { participant_report_access: "signed" } }));
+  assert.equal(mismatch.decision, "DENIED");
+});
 
 const request = (overrides = {}) => ({ attemptId: ATTEMPT_ID, purpose: "view", ...overrides });
 

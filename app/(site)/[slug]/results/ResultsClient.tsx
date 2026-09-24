@@ -759,8 +759,26 @@ function ResultsContent() {
     }
   };
 
-  const goToFullReport = () => {
+  const goToFullReport = async () => {
     if (!attemptId) return;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token || "";
+    if (!accessToken) {
+      toast.error(ar ? "يرجى تسجيل الدخول لفتح التقرير." : "Please sign in to open your report.");
+      return;
+    }
+    const binding = await fetch("/api/report-access/bind", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ attemptId }),
+    });
+    if (!binding.ok) {
+      toast.error(ar ? "تعذر التحقق من صلاحية التقرير." : "Report access could not be verified.");
+      return;
+    }
     window.location.href = `/${routeSlug}/report?attemptId=${encodeURIComponent(attemptId)}&lang=${encodeURIComponent(language)}`;
   };
 

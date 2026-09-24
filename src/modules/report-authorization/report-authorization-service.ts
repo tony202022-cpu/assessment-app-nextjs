@@ -5,6 +5,11 @@ import {
   DEVELOPER_TEST_ACCESS_COOKIE,
   readDeveloperTestAccess,
 } from "@/lib/admin-assessment-access";
+import {
+  PARTICIPANT_REPORT_ACCESS_COOKIE,
+  readParticipantReportAccess,
+  type ParticipantReportAccess,
+} from "@/lib/participant-report-access";
 
 export const REPORT_ACCESS_PURPOSES = ["view", "print", "pdf", "data", "email", "preview"] as const;
 export type ReportAccessPurpose = (typeof REPORT_ACCESS_PURPOSES)[number];
@@ -99,6 +104,7 @@ export type ReportAuthorizationDependencies = {
   findAssessmentIdBySlug(slug: string): Promise<string | null>;
   findManagerByToken(token: string): Promise<ManagerIdentity | null>;
   verifyParticipantProof(headers?: ReportAuthorizationHeaders): Promise<ParticipantProof>;
+  verifyParticipantReportProof(cookieValue: string | undefined): ParticipantReportAccess | null;
   verifyAdministratorSession(cookieValue: string | undefined): boolean;
   administratorCapabilities(): readonly string[];
   administratorId(): string;
@@ -220,6 +226,9 @@ function defaultDependencies(): ReportAuthorizationDependencies {
         ? { status: "invalid" }
         : { status: "valid", userId: String(data.user.id) };
     },
+    verifyParticipantReportProof(cookieValue) {
+      return readParticipantReportAccess(cookieValue);
+    },
     verifyAdministratorSession: isValidAdminSession,
     administratorCapabilities() {
       return String(process.env.ADMIN_ACTION_CAPABILITIES || "")
@@ -300,6 +309,21 @@ export class ReportAuthorizationService {
       return { authorized: false, decision: "ENTITLEMENT_NOT_SUPPORTED", purpose, actorType: "future-entitlement" };
     }
 
+    const participantReportProof = this.dependencies.verifyParticipantReportProof(
+      readCookie(input.cookies, PARTICIPANT_REPORT_ACCESS_COOKIE),
+    );
+    if (participantReportProof) {
+      if (
+        participantReportProof.attemptId !== attempt.id ||
+        participantReportProof.assessmentId !== attempt.assessmentId ||
+        !attempt.userId ||
+        participantReportProof.userId !== attempt.userId
+      ) {
+        return { authorized: false, decision: "DENIED", purpose, actorType: "participant" };
+      }
+      return this.authorizeParticipant(attempt, purpose, participantReportProof.userId);
+    }
+
     const participant = await this.dependencies.verifyParticipantProof(input.headers);
     if (participant.status === "unavailable") {
       return { authorized: false, decision: "PARTICIPANT_PROOF_UNAVAILABLE", purpose, actorType: "participant", attempt };
@@ -310,10 +334,18 @@ export class ReportAuthorizationService {
     if (!attempt.userId || participant.userId !== attempt.userId) {
       return { authorized: false, decision: "DENIED", purpose, actorType: "participant" };
     }
+    return this.authorizeParticipant(attempt, purpose, participant.userId);
+  }
+
+  private authorizeParticipant(
+    attempt: ReportAuthorizationAttempt,
+    purpose: ReportAccessPurpose,
+    userId: string,
+  ): ReportAuthorizationResult {
     if (attempt.reportVisibility === "manager-only" || attempt.reportVisibility === "admin-only") {
       return { authorized: false, decision: "DENIED", purpose, actorType: "participant", attempt };
     }
-    return this.allowed(attempt, purpose, { type: "participant", id: participant.userId });
+    return this.allowed(attempt, purpose, { type: "participant", id: userId });
   }
 
   private authorizeDeveloper(

@@ -55,9 +55,7 @@ export default async function SlugQuizPage({
   const attemptId = String(searchParams?.attemptId || "").trim();
   let offlineCorporate = false;
 
-  const isSmeBusinessHealthMri = slug === "sme-business-health-mri";
-
-if (isPaidMriSlug(slug) && !isSmeBusinessHealthMri) {
+  if (isPaidMriSlug(slug)) {
     if (!attemptId) {
       return <BlockedPaidAssessment lang={lang} />;
     }
