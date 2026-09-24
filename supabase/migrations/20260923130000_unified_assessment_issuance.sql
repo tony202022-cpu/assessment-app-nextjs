@@ -121,9 +121,9 @@ begin
   if not found then raise exception 'assessment_not_found'; end if;
   if not v_assessment.allows_individual_access then raise exception 'individual_access_not_supported'; end if;
   if p_funding_type='complimentary' and not v_assessment.allows_complimentary_access then raise exception 'complimentary_access_not_permitted'; end if;
-  insert into public.assessment_issuance_policies(assessment_definition_id,assessment_definition_version,access_type,funding_type,report_visibility,commercial_reference,issued_by,recipient_name,recipient_email,quantity,issuance_type,language_mode,expires_at,internal_note)
+  insert into public.assessment_issuance_policies as aip(assessment_definition_id,assessment_definition_version,access_type,funding_type,report_visibility,commercial_reference,issued_by,recipient_name,recipient_email,quantity,issuance_type,language_mode,expires_at,internal_note)
   values(v_assessment.id,p_assessment_version,'individual',p_funding_type,p_report_visibility,v_reason,p_administrator_id,v_name,v_email,1,p_issuance_type,p_language_mode,p_expires_at,v_reason)
-  returning id,issued_at into v_policy,v_issued;
+  returning aip.id,aip.issued_at into v_policy,v_issued;
   v_value := encode(extensions.gen_random_bytes(32),'hex');
   insert into public.access_tokens(company_id,token_string,assessment_type,is_used,expires_at,entitlement_type,issued_by,issuance_reason,remaining_uses,issuance_policy_id,recipient_name,recipient_email)
   values(null,v_value,v_assessment.id,false,p_expires_at,case when p_funding_type='complimentary' then 'complimentary' else 'individual' end,p_administrator_id,v_reason,1,v_policy,v_name,v_email)
