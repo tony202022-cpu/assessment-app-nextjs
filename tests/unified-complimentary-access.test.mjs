@@ -12,6 +12,7 @@ const service = read("src/modules/complimentary/complimentary-access-service.ts"
 const detail = read("src/components/admin/complimentary-detail.tsx");
 const ui = read("src/components/admin/complimentary-future-actions.tsx");
 const actionMigration = read("supabase/migrations/20260924180000_complete_complimentary_issuance.sql");
+const eligibilityMigration = read("supabase/migrations/20260925090000_enable_complimentary_for_all_active_assessments.sql");
 
 test("Complimentary Center uses unified individual issuance end to end", () => {
   assert.match(ui, /participantName/);
@@ -70,8 +71,22 @@ test("complimentary preview is explicit and complete", () => {
 
 test("only Definition Engine assessments with complimentary capability are selectable", () => {
   assert.match(service, /assessmentRegistry\.getCurrent\(id\)/);
-  assert.match(service, /definition\.capabilities\.complimentaryAccess/);
+  assert.match(service, /definition\?\.capabilities\.complimentaryAccess/);
+  assert.doesNotMatch(service, /definition\?\.capabilities\.individualAvailability && definition\.capabilities\.complimentaryAccess/);
   assert.match(service, /filter\(\(assessment\) => assessment\.complimentaryCapability === "Available"\)/);
+});
+
+test("complimentary eligibility is independent from paid individual eligibility and enables active database assessments", () => {
+  assert.match(action, /value\.fundingType==="paid"&&!definition\?\.capabilities\.individualAvailability/);
+  assert.match(action, /value\.fundingType==="complimentary"&&!definition\?\.capabilities\.complimentaryAccess/);
+  assert.match(eligibilityMigration, /update public\.assessments/);
+  assert.match(eligibilityMigration, /where status = 'active'/);
+  for (const assessmentId of ["outdoor_sales_mri", "sales_manager_mri", "sme_business_health_mri", "lawyer_client_conversion_mri", "outdoor_sales_scan"]) {
+    assert.match(eligibilityMigration, new RegExp(`'${assessmentId}'`));
+  }
+  assert.match(eligibilityMigration, /allows_complimentary_access is distinct from true/);
+  assert.match(eligibilityMigration, /p_funding_type=''paid'' and not v_assessment\.allows_individual_access/);
+  assert.doesNotMatch(eligibilityMigration, /credits|company|access_tokens|assessment_issuance_policies|admin_action_audit/i);
 });
 
 test("complimentary action identity drives idempotency and authoritative audit", () => {

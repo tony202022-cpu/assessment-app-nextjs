@@ -120,7 +120,7 @@ begin
   end if;
   select * into v_assessment from public.assessments where id=btrim(p_assessment_id) and status='active' for share;
   if not found then raise exception 'assessment_not_found'; end if;
-  if not v_assessment.allows_individual_access then raise exception 'individual_access_not_supported'; end if;
+  if p_funding_type='paid' and not v_assessment.allows_individual_access then raise exception 'individual_access_not_supported'; end if;
   if p_funding_type='complimentary' and not v_assessment.allows_complimentary_access then raise exception 'complimentary_access_not_permitted'; end if;
   insert into public.assessment_issuance_policies as aip(assessment_definition_id,assessment_definition_version,access_type,funding_type,report_visibility,commercial_reference,issued_by,recipient_name,recipient_email,quantity,issuance_type,language_mode,expires_at,internal_note)
   values(v_assessment.id,p_assessment_version,'individual',p_funding_type,p_report_visibility,v_reason,p_administrator_id,v_name,v_email,1,p_issuance_type,p_language_mode,p_expires_at,v_reason)

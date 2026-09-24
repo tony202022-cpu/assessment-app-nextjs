@@ -56,6 +56,26 @@ test("production assessment registry contains every supported production assessm
   assert.ok(assessmentRegistry.listCurrent().every((entry) => entry.metadata.status === "published"));
 });
 
+test("every active production assessment supports complimentary access without changing paid or company eligibility", () => {
+  const eligibility = Object.fromEntries(
+    assessmentRegistry.listCurrent().map((entry) => [entry.metadata.id, {
+      individual: entry.capabilities.individualAvailability,
+      company: entry.capabilities.corporateAvailability,
+      complimentary: entry.capabilities.complimentaryAccess,
+    }]),
+  );
+  assert.deepEqual(eligibility, {
+    outdoor_sales_scan: { individual: true, company: false, complimentary: true },
+    outdoor_sales_mri: { individual: false, company: true, complimentary: true },
+    sales_manager_mri: { individual: false, company: true, complimentary: true },
+    lawyer_client_conversion_mri: { individual: false, company: true, complimentary: true },
+    sme_business_health_mri: { individual: true, company: false, complimentary: true },
+  });
+  for (const entry of assessmentRegistry.listCurrent()) {
+    assert.ok(entry.accessPolicy.entitlementPolicies.some((policy) => policy.type === "complimentary" && policy.enabled && policy.usage === "single-use" && policy.maximumUses === 1));
+  }
+});
+
 test("loader accepts and freezes a complete canonical definition", () => {
   const loaded = new AssessmentLoader().load(definition());
   assert.equal(loaded.metadata.slug, "test-capability-assessment");

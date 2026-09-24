@@ -46,7 +46,7 @@ export const issueIndividualAssessmentAccessAction: AdminActionDefinition<IssueI
     };
     const fields:Record<string,string>={}; const definition=assessmentRegistry.getCurrent(value.assessmentDefinitionId);
     if(!definition||definition.metadata.version!==value.assessmentDefinitionVersion)fields.assessmentDefinitionId="Select a current assessment.";
-    if(!definition?.capabilities.individualAvailability)fields.assessmentDefinitionId="This assessment does not support individual access.";
+    if(value.fundingType==="paid"&&!definition?.capabilities.individualAvailability)fields.assessmentDefinitionId="This assessment does not support paid individual access.";
     if(value.fundingType==="complimentary"&&!definition?.capabilities.complimentaryAccess)fields.fundingType="Complimentary access is not enabled for this assessment.";
     if(value.participantName.length<2||value.participantName.length>200)fields.participantName="Enter the participant name.";
     if(!EMAIL.test(value.participantEmail))fields.participantEmail="Enter a valid participant email.";

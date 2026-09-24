@@ -83,7 +83,7 @@ function toAssessment(row: AssessmentRow & { allows_complimentary_access?: boole
     languages,
     individualAvailability: active ? "Assessment entry available" : "Not currently active",
     corporateAvailability: corporate ? "Corporate token access configured" : "No corporate token access found",
-    complimentaryCapability: row.allows_complimentary_access && definition?.capabilities.individualAvailability && definition.capabilities.complimentaryAccess ? "Available" : "Not permitted",
+    complimentaryCapability: row.allows_complimentary_access && definition?.capabilities.complimentaryAccess ? "Available" : "Not permitted",
     currentAccessModel: [active ? "Individual assessment entry" : null, corporate ? "Corporate token-backed access" : null].filter(Boolean).join(" + ") || String(row.type || "No active access evidence"),
     individualFlow: active ? `Participants enter through /${slug}.` : "The assessment is not currently active.",
     corporateFlow: corporate ? "Company access uses the existing token and credit flow." : "No company access token is linked to this assessment.",

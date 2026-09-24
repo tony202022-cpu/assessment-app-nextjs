@@ -14,6 +14,7 @@ type LegacyDefinitionInput = {
   timeLimitMinutes: number;
   individualAvailability: boolean;
   corporateAvailability: boolean;
+  complimentaryAccess: boolean;
   managerDashboard?: boolean;
   pricing: AssessmentDefinition["pricing"];
   features: Pick<
@@ -27,6 +28,9 @@ function legacyProductionDefinition(input: LegacyDefinitionInput): AssessmentDef
   const entitlementPolicies: AssessmentDefinition["accessPolicy"]["entitlementPolicies"] = [];
   if (input.individualAvailability) {
     entitlementPolicies.push({ type: "purchased", enabled: true, usage: "single-use", maximumUses: 1 });
+  }
+  if (input.complimentaryAccess) {
+    entitlementPolicies.push({ type: "complimentary", enabled: true, usage: "single-use", maximumUses: 1 });
   }
   if (input.corporateAvailability) {
     entitlementPolicies.push({
@@ -60,7 +64,7 @@ function legacyProductionDefinition(input: LegacyDefinitionInput): AssessmentDef
       executiveReport: false,
       timed: true,
       bilingual: true,
-      complimentaryAccess: input.individualAvailability,
+      complimentaryAccess: input.complimentaryAccess,
       developerTesting: true,
     },
     audience: {
@@ -70,7 +74,9 @@ function legacyProductionDefinition(input: LegacyDefinitionInput): AssessmentDef
     accessPolicy: {
       channels: input.corporateAvailability
         ? ["authenticated", "entitlement", "company", "developer"]
-        : ["authenticated", "developer"],
+        : input.complimentaryAccess
+          ? ["authenticated", "entitlement", "developer"]
+          : ["authenticated", "developer"],
       authenticationRequired: true,
       individualEnabled: input.individualAvailability,
       corporateEnabled: input.corporateAvailability,
@@ -224,6 +230,7 @@ export const outdoorSalesScanAssessmentDefinition = legacyProductionDefinition({
   timeLimitMinutes: 20,
   individualAvailability: true,
   corporateAvailability: false,
+  complimentaryAccess: true,
   pricing: { model: "free" },
   features: { ninetyDayPlan: false, dailySchedule: false, pdfExport: true, emailDelivery: true },
 });
@@ -240,6 +247,7 @@ export const outdoorSalesMriAssessmentDefinition = legacyProductionDefinition({
   timeLimitMinutes: 90,
   individualAvailability: false,
   corporateAvailability: true,
+  complimentaryAccess: true,
   managerDashboard: true,
   pricing: { model: "package", corporate: { minimumPackageSize: 1, quoteRequired: true } },
   features: { ninetyDayPlan: true, dailySchedule: true, pdfExport: true, emailDelivery: true },
@@ -257,6 +265,7 @@ export const salesManagerMriAssessmentDefinition = legacyProductionDefinition({
   timeLimitMinutes: 90,
   individualAvailability: false,
   corporateAvailability: true,
+  complimentaryAccess: true,
   pricing: { model: "package", corporate: { minimumPackageSize: 1, quoteRequired: true } },
   features: { ninetyDayPlan: true, dailySchedule: true, pdfExport: true, emailDelivery: true },
 });
@@ -273,6 +282,7 @@ export const lawyerClientConversionMriAssessmentDefinition = legacyProductionDef
   timeLimitMinutes: 90,
   individualAvailability: false,
   corporateAvailability: true,
+  complimentaryAccess: true,
   pricing: { model: "package", corporate: { minimumPackageSize: 1, quoteRequired: true } },
   features: { ninetyDayPlan: true, dailySchedule: true, pdfExport: true, emailDelivery: true },
 });
