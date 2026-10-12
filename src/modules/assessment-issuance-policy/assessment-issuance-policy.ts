@@ -12,6 +12,14 @@ export const ASSESSMENT_REPORT_VISIBILITIES = [
 ] as const;
 export type AssessmentReportVisibility = (typeof ASSESSMENT_REPORT_VISIBILITIES)[number];
 
+export const ASSESSMENT_ISSUANCE_TYPES = [
+  "offline-paid",
+  "online-paid",
+  "complimentary",
+  "internal-test",
+] as const;
+export type AssessmentIssuanceType = (typeof ASSESSMENT_ISSUANCE_TYPES)[number];
+
 export type AssessmentDefinitionReference = {
   id: string;
   version: string;
@@ -22,6 +30,7 @@ export type AssessmentIssuancePolicy = {
   assessmentDefinition: AssessmentDefinitionReference;
   accessType: AssessmentAccessType;
   fundingType: AssessmentFundingType;
+  issuanceType: AssessmentIssuanceType;
   reportVisibility: AssessmentReportVisibility;
   commercialReference: string;
   issuedBy: string;
@@ -40,6 +49,7 @@ export type CreateAssessmentIssuancePolicyInput = {
   assessmentDefinition: AssessmentDefinitionReference;
   accessType: AssessmentAccessType;
   fundingType: AssessmentFundingType;
+  issuanceType: AssessmentIssuanceType;
   reportVisibility: AssessmentReportVisibility;
   commercialReference: string;
 };

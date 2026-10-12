@@ -41,6 +41,7 @@ export type CompanyParticipant = {
   overallPercentage: number | null;
   assessment: string;
   reportPath: string | null;
+  reportVisibility: string;
 };
 
 export type CompanyAnalytics = {
@@ -62,6 +63,7 @@ export type CompanyDetail = {
   id: string;
   name: string;
   managerContact: string;
+  managerName: string;
   assessment: string;
   packageSize: number;
   creditsPurchased: number;
@@ -82,6 +84,7 @@ type CompanyRow = {
   package_size: number | null;
   credits_balance: number | null;
   manager_token: string | null;
+  manager_name: string | null;
   created_at: string | null;
 };
 
@@ -282,7 +285,7 @@ export async function listCompanies(input: {
 
   let companyQuery = supabase
     .from("companies")
-    .select("id, name, billing_email, package_size, credits_balance, manager_token, created_at")
+    .select("id, name, billing_email, manager_name, package_size, credits_balance, manager_token, created_at")
     .order(databaseSort(sort), { ascending: direction === "asc" })
     .range(from, to);
   if (filters.length) companyQuery = companyQuery.or(filters.join(","));
@@ -331,7 +334,7 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
   const supabase = requireSupabaseAdmin();
   const { data: companyData, error: companyError } = await supabase
     .from("companies")
-    .select("id, name, billing_email, package_size, credits_balance, manager_token, created_at")
+    .select("id, name, billing_email, manager_name, package_size, credits_balance, manager_token, created_at")
     .eq("id", id)
     .maybeSingle();
   if (companyError) throw new Error("Could not load the company.");
@@ -340,7 +343,7 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
   const company = companyData as CompanyRow;
   const { data: attemptData, error: attemptError } = await supabase
     .from("quiz_attempts")
-    .select("id, assessment_id, access_token_id, full_name, user_email, created_at, completed_at, total_percentage, answers, competency_results")
+    .select("id, assessment_id, access_token_id, issuance_policy_id, full_name, user_email, created_at, completed_at, total_percentage, answers, competency_results")
     .eq("company_id", id)
     .order("created_at", { ascending: false });
   if (attemptError) throw new Error("Could not load company participants.");
@@ -354,6 +357,12 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
   const packageSize = numberOrZero(company.package_size);
   const creditsRemaining = numberOrZero(company.credits_balance);
   const managerToken = String(company.manager_token || "");
+  const policyIds = Array.from(new Set((attemptData || []).map((attempt: any) => String(attempt.issuance_policy_id || "")).filter(Boolean)));
+  const { data: policyData, error: policyError } = policyIds.length
+    ? await supabase.from("assessment_issuance_policies").select("id, report_visibility").in("id", policyIds)
+    : { data: [], error: null };
+  if (policyError) throw new Error("Could not load report visibility policies.");
+  const visibilityByPolicy = new Map((policyData || []).map((policy: any) => [String(policy.id), String(policy.report_visibility)]));
   const tokensById = new Map(tokenRows.map((token) => [String(token.id), token]));
   const participantAccessToken = tokenRows.find((token) => {
     const assessment = assessmentsById.get(String(token.assessment_type || ""));
@@ -391,6 +400,7 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
       overallPercentage: completed ? numberOrZero(attempt.total_percentage) : null,
       assessment: labelForAssessment(assessment, assessmentId),
       reportPath,
+      reportVisibility: visibilityByPolicy.get(String(attempt.issuance_policy_id || "")) || "Legacy / participant default",
     };
   });
 
@@ -441,6 +451,7 @@ export async function getCompanyDetail(companyId: string): Promise<CompanyDetail
     id,
     name: String(company.name || "Unnamed company"),
     managerContact: String(company.billing_email || "Not provided"),
+    managerName: String(company.manager_name || "Not provided"),
     assessment: assessmentLabelForCompany(id, tokenRows, assessmentsById),
     packageSize,
     creditsPurchased: packageSize,

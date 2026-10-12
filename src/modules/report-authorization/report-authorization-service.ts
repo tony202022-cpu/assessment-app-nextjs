@@ -33,6 +33,7 @@ export type ReportAuthorizationDecision =
   | "EXPIRED_PROOF"
   | "MISSING_CAPABILITY"
   | "PARTICIPANT_PROOF_UNAVAILABLE"
+  | "REPORT_VISIBILITY_DENIED"
   | "ENTITLEMENT_NOT_SUPPORTED";
 
 export type ReportAuthorizationAttempt = {
@@ -44,7 +45,8 @@ export type ReportAuthorizationAttempt = {
   isDeveloperTest: boolean;
   completedAt: string | null;
   isOfflineCompany: boolean;
-  reportVisibility?: "participant-only" | "manager-only" | "participant-and-manager" | "admin-only" | null;
+  issuancePolicyId: string | null;
+  reportVisibility: "participant" | "participant-only" | "manager-only" | "participant-and-manager" | "admin-only" | null;
 };
 
 export type ReportAuthorizationActor = {
@@ -113,6 +115,22 @@ export type ReportAuthorizationDependencies = {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const REPORT_READ_CAPABILITY = "reports.read";
+const OUTDOOR_SCAN_ASSESSMENT_ID = "outdoor_sales_scan";
+
+function canonicalAssessmentSlug(slug: string): string {
+  const normalized = String(slug || "").trim().toLowerCase();
+  if (normalized === "scan") return "outdoor-scan";
+  if (normalized === "mri") return "outdoor-mri";
+  return normalized;
+}
+
+function participantMayView(attempt: ReportAuthorizationAttempt): boolean {
+  return !attempt.reportVisibility || ["participant", "participant-only", "participant-and-manager"].includes(attempt.reportVisibility);
+}
+
+function managerMayView(attempt: ReportAuthorizationAttempt): boolean {
+  return !attempt.reportVisibility || ["participant", "manager-only", "participant-and-manager"].includes(attempt.reportVisibility);
+}
 
 function readHeader(headers: ReportAuthorizationHeaders | undefined, name: string): string {
   if (!headers) return "";
@@ -142,13 +160,22 @@ function defaultDependencies(): ReportAuthorizationDependencies {
     async findAttempt(attemptId) {
       const { data, error } = await requireClient()
         .from("quiz_attempts")
-        .select("id, user_id, assessment_id, company_id, access_token_id, issuance_policy_id, is_developer_test, completed_at")
+        .select("id, user_id, assessment_id, company_id, access_token_id, is_developer_test, completed_at, issuance_policy_id")
         .eq("id", attemptId)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      let isOfflineCompany = false;
       let reportVisibility: ReportAuthorizationAttempt["reportVisibility"] = null;
+      if (data.issuance_policy_id) {
+        const { data: policy, error: policyError } = await requireClient()
+          .from("assessment_issuance_policies")
+          .select("report_visibility")
+          .eq("id", data.issuance_policy_id)
+          .maybeSingle();
+        if (policyError) throw policyError;
+        reportVisibility = (policy?.report_visibility || null) as ReportAuthorizationAttempt["reportVisibility"];
+      }
+      let isOfflineCompany = false;
       if (data.company_id && String(data.assessment_id || "") === "outdoor_sales_mri") {
         const { data: company, error: companyError } = await requireClient()
           .from("companies")
@@ -157,31 +184,6 @@ function defaultDependencies(): ReportAuthorizationDependencies {
           .maybeSingle();
         if (companyError) throw companyError;
         isOfflineCompany = company?.is_offline_activated === true;
-      }
-      if (data.issuance_policy_id) {
-        const { data: policy, error: policyError } = await requireClient()
-          .from("assessment_issuance_policies")
-          .select("report_visibility")
-          .eq("id", data.issuance_policy_id)
-          .maybeSingle();
-        if (policyError) throw policyError;
-        reportVisibility = policy?.report_visibility as ReportAuthorizationAttempt["reportVisibility"];
-      } else if (data.access_token_id) {
-        const { data: token, error: tokenError } = await requireClient()
-          .from("access_tokens")
-          .select("issuance_policy_id")
-          .eq("id", data.access_token_id)
-          .maybeSingle();
-        if (tokenError) throw tokenError;
-        if (token?.issuance_policy_id) {
-          const { data: policy, error: policyError } = await requireClient()
-            .from("assessment_issuance_policies")
-            .select("report_visibility")
-            .eq("id", token.issuance_policy_id)
-            .maybeSingle();
-          if (policyError) throw policyError;
-          reportVisibility = policy?.report_visibility as ReportAuthorizationAttempt["reportVisibility"];
-        }
       }
       return {
         id: String(data.id),
@@ -192,15 +194,20 @@ function defaultDependencies(): ReportAuthorizationDependencies {
         isDeveloperTest: data.is_developer_test === true,
         completedAt: data.completed_at ? String(data.completed_at) : null,
         isOfflineCompany,
+        issuancePolicyId: data.issuance_policy_id ? String(data.issuance_policy_id) : null,
         reportVisibility,
       };
     },
     async findAssessmentIdBySlug(slug) {
-      const { data, error } = await requireClient()
-        .from("assessments")
-        .select("id")
-        .eq("slug", slug)
-        .maybeSingle();
+      const routeId: Record<string, string> = {
+        scan: "outdoor_sales_scan",
+        "outdoor-scan": "outdoor_sales_scan",
+        mri: "outdoor_sales_mri",
+        "outdoor-mri": "outdoor_sales_mri",
+      };
+      let query = requireClient().from("assessments").select("id");
+      query = routeId[slug] ? query.eq("id", routeId[slug]) : query.eq("slug", slug);
+      const { data, error } = await query.maybeSingle();
       if (error) throw error;
       return data?.id ? String(data.id) : null;
     },
@@ -272,7 +279,7 @@ export class ReportAuthorizationService {
 
     const expectedSlug = String(input.expectedAssessmentSlug || "").trim().toLowerCase();
     if (expectedSlug) {
-      const expectedAssessmentId = await this.dependencies.findAssessmentIdBySlug(expectedSlug);
+      const expectedAssessmentId = await this.dependencies.findAssessmentIdBySlug(canonicalAssessmentSlug(expectedSlug));
       if (!expectedAssessmentId || expectedAssessmentId !== attempt.assessmentId) {
         return { authorized: false, decision: "WRONG_ASSESSMENT", purpose };
       }
@@ -291,9 +298,6 @@ export class ReportAuthorizationService {
       return this.authorizeManager(attempt, purpose, managerToken, "offline-company");
     }
     if (input.actorHint === "company-manager" || input.actorHint === "offline-company" || managerToken) {
-      if (attempt.reportVisibility === "participant-only" || attempt.reportVisibility === "admin-only") {
-        return { authorized: false, decision: "DENIED", purpose, actorType: "company-manager", attempt };
-      }
       return this.authorizeManager(attempt, purpose, managerToken, input.actorHint);
     }
 
@@ -326,6 +330,14 @@ export class ReportAuthorizationService {
 
     const participant = await this.dependencies.verifyParticipantProof(input.headers);
     if (participant.status === "unavailable") {
+      if (
+        attempt.assessmentId === OUTDOOR_SCAN_ASSESSMENT_ID &&
+        !attempt.issuancePolicyId &&
+        !attempt.companyId &&
+        !attempt.accessTokenId
+      ) {
+        return this.allowed(attempt, purpose, { type: "participant", id: attempt.userId || `attempt:${attempt.id}` });
+      }
       return { authorized: false, decision: "PARTICIPANT_PROOF_UNAVAILABLE", purpose, actorType: "participant", attempt };
     }
     if (participant.status === "invalid") {
@@ -342,8 +354,8 @@ export class ReportAuthorizationService {
     purpose: ReportAccessPurpose,
     userId: string,
   ): ReportAuthorizationResult {
-    if (attempt.reportVisibility === "manager-only" || attempt.reportVisibility === "admin-only") {
-      return { authorized: false, decision: "DENIED", purpose, actorType: "participant", attempt };
+    if (!participantMayView(attempt)) {
+      return { authorized: false, decision: "REPORT_VISIBILITY_DENIED", purpose, actorType: "participant", attempt };
     }
     return this.allowed(attempt, purpose, { type: "participant", id: userId });
   }
@@ -393,6 +405,9 @@ export class ReportAuthorizationService {
     }
     if (!attempt.companyId || attempt.companyId !== manager.companyId) {
       return { authorized: false, decision: "DENIED", purpose, actorType };
+    }
+    if (!managerMayView(attempt)) {
+      return { authorized: false, decision: "REPORT_VISIBILITY_DENIED", purpose, actorType, attempt };
     }
     return this.allowed(attempt, purpose, { type: actorType, id: manager.companyId, companyId: manager.companyId });
   }

@@ -1,5 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
+import { cookies, headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { getRecommendations as getPdfRecommendations } from "@/lib/pdf-recommendations";
+import { ReportAuthorizationService } from "@/modules/report-authorization";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -188,8 +191,18 @@ export default async function ScanPdfReport({
   searchParams,
 }: {
   params: { attemptId: string };
-  searchParams?: { lang?: string };
+  searchParams?: { lang?: string; managerToken?: string };
 }) {
+  const authorization = await new ReportAuthorizationService().authorizeAttemptAccess({
+    attemptId: params.attemptId,
+    expectedAssessmentSlug: "outdoor-scan",
+    managerToken: String(searchParams?.managerToken || ""),
+    cookies: cookies(),
+    headers: headers(),
+    purpose: "pdf",
+  });
+  if (!authorization.authorized) notFound();
+
   const row = await fetchReportRow(params.attemptId);
   if (!row) return <div style={{ padding: 40, textAlign: "center" }}>Report not found</div>;
 

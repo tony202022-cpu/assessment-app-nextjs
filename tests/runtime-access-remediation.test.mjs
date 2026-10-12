@@ -21,15 +21,15 @@ test("SME Business Health MRI requires governed token access on every assessment
   }
 });
 
-test("governed issuance validates token state and links the attempt to its token", () => {
-  const migration = read("supabase/migrations/20260923130000_unified_assessment_issuance.sql");
-  assert.match(migration, /from public\.access_tokens at[\s\S]*for update/);
-  assert.match(migration, /v_token\.revoked_at is not null/);
-  assert.match(migration, /v_token\.expires_at is not null/);
-  assert.match(migration, /v_token\.assessment_type<>v_assessment\.id/);
-  assert.match(migration, /coalesce\(v_token\.remaining_uses,0\)<>1/);
-  assert.match(migration, /access_token_id/);
-  assert.match(migration, /issuance_policy_id/);
+test("governed start validates free-Scan token state, links the attempt, and preserves the generic paid RPC", () => {
+  const route = read("app/api/start-assessment/route.ts");
+  assert.match(route, /entitlement_type, issuance_policy_id, revoked_at, expires_at/);
+  assert.match(route, /access\.assessment_type !== assessmentId/);
+  assert.match(route, /if \(access\.revoked_at\)/);
+  assert.match(route, /if \(access\.expires_at/);
+  assert.match(route, /access_token_id: access\.id/);
+  assert.match(route, /issuance_policy_id: access\.issuance_policy_id/);
+  assert.match(route, /\.rpc\("start_assessment_with_credit"/);
 });
 
 test("SME production capability alignment is guarded and does not touch credits", () => {
@@ -40,8 +40,9 @@ test("SME production capability alignment is guarded and does not touch credits"
   assert.doesNotMatch(migration, /credits|package_size|credit_transactions/i);
 });
 
-test("Complimentary availability is independent from Individual Paid availability", () => {
+test("free Scans hide paid-versus-complimentary choices while generic assessments honor explicit capabilities", () => {
   const center = read("src/components/admin/assessment-access-center.tsx");
-  assert.match(center, /kind==="individual"\?assessment\?\.individualAvailable:assessment\?\.complimentaryAvailable/);
-  assert.doesNotMatch(center, /individualAvailable\s*&&\s*assessment\?\.complimentaryAvailable/);
+  assert.match(center, /freeCompanyScan[\s\S]*\["company", "individual"\]/);
+  assert.match(center, /type === "complimentary" \? selectedAssessment\?\.individualAvailable && selectedAssessment\.complimentaryAvailable/);
+  assert.match(center, /!freeCompanyScan && <IssuanceTypeField/);
 });

@@ -9,16 +9,15 @@ import { restoreCreditAction } from "./actions/restore-credit";
 import { regenerateManagerTokenAction } from "./actions/regenerate-manager-token";
 import { issueCompanyAssessmentAccessAction } from "./actions/issue-company-assessment-access";
 import { addCreditsAction, removeCreditsAction } from "./actions/adjust-credits";
-import { issueComplimentaryAssessmentAccessAction, issueIndividualAssessmentAccessAction } from "./actions/issue-individual-assessment-access";
+import { issueIndividualAssessmentAccessAction } from "./actions/issue-individual-assessment-access";
 
 export const adminActionRegistry = new ActionRegistry([
-  restoreCreditAction,
   addCreditsAction,
   removeCreditsAction,
+  restoreCreditAction,
   regenerateManagerTokenAction,
   issueCompanyAssessmentAccessAction,
   issueIndividualAssessmentAccessAction,
-  issueComplimentaryAssessmentAccessAction,
 ]);
 
 export function createAdminActionService() {

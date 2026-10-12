@@ -13,6 +13,7 @@ type PolicyRow = {
   assessment_definition_version: string;
   access_type: AssessmentIssuancePolicy["accessType"];
   funding_type: AssessmentIssuancePolicy["fundingType"];
+  issuance_type: AssessmentIssuancePolicy["issuanceType"];
   report_visibility: AssessmentIssuancePolicy["reportVisibility"];
   commercial_reference: string;
   issued_by: string;
@@ -32,7 +33,7 @@ type IssuancePolicyClient = {
 };
 
 const POLICY_FIELDS =
-  "id, assessment_definition_id, assessment_definition_version, access_type, funding_type, report_visibility, commercial_reference, issued_by, issued_at";
+  "id, assessment_definition_id, assessment_definition_version, access_type, funding_type, issuance_type, report_visibility, commercial_reference, issued_by, issued_at";
 
 function toPolicy(row: PolicyRow): AssessmentIssuancePolicy {
   return {
@@ -43,6 +44,7 @@ function toPolicy(row: PolicyRow): AssessmentIssuancePolicy {
     },
     accessType: row.access_type,
     fundingType: row.funding_type,
+    issuanceType: row.issuance_type,
     reportVisibility: row.report_visibility,
     commercialReference: row.commercial_reference,
     issuedBy: row.issued_by,
@@ -74,6 +76,7 @@ export class SupabaseAssessmentIssuancePolicyRepository
         assessment_definition_version: input.assessmentDefinition.version,
         access_type: input.accessType,
         funding_type: input.fundingType,
+        issuance_type: input.issuanceType,
         report_visibility: input.reportVisibility,
         commercial_reference: input.commercialReference,
         issued_by: actor.id,

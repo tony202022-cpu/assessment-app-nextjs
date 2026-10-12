@@ -52,6 +52,7 @@ test("successful offline submit redirects to completion and other submits keep r
   assert.match(quizWrapper, /offlineCorporate=\{offlineCorporate\}/);
   assert.match(sharedQuiz, /window\.location\.href = offlineCorporate\s*\?/);
   assert.match(sharedQuiz, /\/outdoor-mri\/completed\?attemptId=/);
+  assert.match(sharedQuiz, /const destination = isOutdoorScan \? "report" : "results"/);
   assert.match(sharedQuiz, /\/\$\{slug\}\/\$\{destination\}\?attemptId=/);
 });
 
@@ -79,9 +80,10 @@ test("manager report links carry tokens only for offline companies", () => {
 });
 
 test("individual and online corporate attempts retain the existing result/report branches", () => {
-  assert.match(sharedQuiz, /const destination = isOutdoorScan \? "report" : "results";/);
+  assert.match(sharedQuiz, /const destination = isOutdoorScan \? "report" : "results"/);
+  assert.match(sharedQuiz, /\/\$\{slug\}\/\$\{destination\}\?attemptId=/);
   assert.match(login, /: `\/\$\{slug\}\/results\?attemptId=/);
-  assert.match(report, /authorization\.actorType === "offline-company"/);
+  assert.match(report, /authorization\.authorized/);
 });
 
 test("credit and duplicate-credit protection remain in the existing start RPC flow", () => {
@@ -90,12 +92,11 @@ test("credit and duplicate-credit protection remain in the existing start RPC fl
   assert.doesNotMatch(helper, /credits|deduct|start_or_resume_company_assessment/);
 });
 
-test("explicitly excluded legacy report surfaces are untouched", () => {
+test("unrelated legacy report surfaces are untouched while the Scan PDF is authorized", () => {
   const excluded = [
     "app/(site)/premium-report",
     "app/(site)/premium-pdf",
     "app/reports/pdf/mri",
-    "app/reports/pdf/scan",
     "app/print-report",
     "app/api/report-data",
     "app/(site)/dashboard",
@@ -104,4 +105,7 @@ test("explicitly excluded legacy report surfaces are untouched", () => {
   execFileSync("git", ["diff", "--quiet", "--", ...excluded], {
     stdio: "pipe",
   });
+  const scanPdf = read("app/reports/pdf/scan/[attemptId]/page.tsx");
+  assert.match(scanPdf, /ReportAuthorizationService/);
+  assert.match(scanPdf, /purpose: "pdf"/);
 });

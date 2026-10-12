@@ -23,6 +23,7 @@ export type CompanyAssessmentDashboardData = {
   company: { id: string; name: string };
   assessment: { id: string; slug: string; name: string; scoreSupported: boolean; managerReportSupported: boolean };
   credits: { allocated: number; used: number; remaining: number };
+  capacityKind: "tracking" | "credits";
   participants: CompanyAssessmentParticipant[];
 };
 
@@ -34,6 +35,7 @@ export type CompanyAssessmentDashboardDependencies = {
   findCompanyByManagerToken(token: string): Promise<CompanyRow | null>;
   hasActiveAssessmentAccess(companyId: string, assessmentId: string, now: string): Promise<boolean>;
   findAttempts(companyId: string, assessmentId: string): Promise<AttemptRow[]>;
+  findTrackingAllocation(companyId: string, assessmentId: string): Promise<number>;
   authorizeManagerReport(attemptId: string, assessmentSlug: string, managerToken: string): Promise<boolean>;
 };
 
@@ -73,13 +75,21 @@ function defaultDependencies(): CompanyAssessmentDashboardDependencies {
       if (error) throw error;
       return (data || []) as AttemptRow[];
     },
+    async findTrackingAllocation(companyId, assessmentId) {
+      const { data, error } = await client()
+        .from("assessment_issuance_policies")
+        .select("quantity")
+        .eq("company_id", companyId)
+        .eq("assessment_definition_id", assessmentId)
+        .eq("status", "active")
+        .order("issued_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return Math.max(0, Number(data?.quantity || 0));
+    },
     async authorizeManagerReport(attemptId, assessmentSlug, managerToken) {
-      const result = await reports.authorizeAttemptAccess({
-        attemptId,
-        expectedAssessmentSlug: assessmentSlug,
-        managerToken,
-        purpose: "view",
-      });
+      const result = await reports.authorizeAttemptAccess({ attemptId, expectedAssessmentSlug: assessmentSlug, managerToken, purpose: "view" });
       return result.authorized;
     },
   };
@@ -132,14 +142,23 @@ export async function loadCompanyAssessmentDashboard(
         reportPath: reportAllowed ? `/${definition.metadata.slug}/report?attemptId=${encodeURIComponent(attempt.id)}&managerToken=${encodeURIComponent(managerToken)}` : null,
       };
     }));
-    const allocated = Math.max(0, Number(company.package_size || 0));
-    const remaining = Math.max(0, Number(company.credits_balance || 0));
+    const capacityKind = definition.pricing.model === "free" ? "tracking" : "credits";
+    const allocated = capacityKind === "tracking"
+      ? await dependencies.findTrackingAllocation(company.id, definition.metadata.id)
+      : Math.max(0, Number(company.package_size || 0));
+    const used = capacityKind === "tracking"
+      ? participants.length
+      : Math.max(0, allocated - Math.max(0, Number(company.credits_balance || 0)));
+    const remaining = capacityKind === "tracking"
+      ? Math.max(0, allocated - used)
+      : Math.max(0, Number(company.credits_balance || 0));
     return {
       ok: true,
       data: {
         company: { id: company.id, name: String(company.name || "Company") },
         assessment: { id: definition.metadata.id, slug: definition.metadata.slug, name: definition.metadata.name, scoreSupported, managerReportSupported },
-        credits: { allocated, used: Math.max(0, allocated - remaining), remaining },
+        credits: { allocated, used, remaining },
+        capacityKind,
         participants,
       },
     };

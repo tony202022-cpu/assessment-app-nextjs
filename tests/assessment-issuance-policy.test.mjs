@@ -44,6 +44,7 @@ function validInput() {
     assessmentDefinition: { id: "outdoor_sales_mri", version: "1.0.0" },
     accessType: "company",
     fundingType: "paid",
+    issuanceType: "offline-paid",
     reportVisibility: "manager-only",
     commercialReference: "PO-2026-0042",
   };
@@ -78,6 +79,7 @@ test("schema requires the complete Version 1.0 policy and protects it from brows
 test("domain exposes only approved Version 1.0 values", () => {
   assert.deepEqual(domain.ASSESSMENT_ACCESS_TYPES, ["company", "individual"]);
   assert.deepEqual(domain.ASSESSMENT_FUNDING_TYPES, ["paid", "complimentary"]);
+  assert.deepEqual(domain.ASSESSMENT_ISSUANCE_TYPES, ["offline-paid", "online-paid", "complimentary", "internal-test"]);
   assert.deepEqual(domain.ASSESSMENT_REPORT_VISIBILITIES, ["participant-only", "manager-only", "participant-and-manager", "admin-only"]);
 });
 
@@ -116,6 +118,7 @@ test("repository inserts only policy fields and maps the stored database timesta
     assessment_definition_version: "1.0.0",
     access_type: "company",
     funding_type: "paid",
+    issuance_type: "offline-paid",
     report_visibility: "manager-only",
     commercial_reference: "PO-2026-0042",
     issued_by: "production-admin",
@@ -139,6 +142,7 @@ test("repository inserts only policy fields and maps the stored database timesta
     assessment_definition_version: "1.0.0",
     access_type: "company",
     funding_type: "paid",
+    issuance_type: "offline-paid",
     report_visibility: "manager-only",
     commercial_reference: "PO-2026-0042",
     issued_by: "production-admin",

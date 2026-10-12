@@ -6,14 +6,16 @@ const reportPage = readFileSync(new URL("../app/(site)/[slug]/report/page.tsx", 
 const resultsClient = readFileSync(new URL("../app/(site)/[slug]/results/ResultsClient.tsx", import.meta.url), "utf8");
 const bindRoute = readFileSync(new URL("../app/api/report-access/bind/route.ts", import.meta.url), "utf8");
 
-test("the primary report is the only production report route integrated in Milestone 1B", () => {
+test("the primary report and Outdoor Sales Scan PDF use centralized authorization", () => {
   assert.match(reportPage, /new ReportAuthorizationService\(\)\.authorizeAttemptAccess/);
+  const scanPdf = readFileSync(new URL("../app/reports/pdf/scan/[attemptId]/page.tsx", import.meta.url), "utf8");
+  assert.match(scanPdf, /ReportAuthorizationService/);
+  assert.match(scanPdf, /expectedAssessmentSlug: "outdoor-scan"/);
   const untouchedRoutes = [
     "../app/(site)/[slug]/premium-report/page.tsx",
     "../app/(site)/[slug]/premium-pdf/route.ts",
     "../app/(site)/print-report/page.tsx",
     "../app/reports/pdf/mri/[attemptId]/page.tsx",
-    "../app/reports/pdf/scan/[attemptId]/page.tsx",
     "../app/api/report-data/route.ts",
     "../app/api/send-report/route.ts",
   ];

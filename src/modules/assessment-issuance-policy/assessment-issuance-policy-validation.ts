@@ -1,6 +1,7 @@
 import {
   ASSESSMENT_ACCESS_TYPES,
   ASSESSMENT_FUNDING_TYPES,
+  ASSESSMENT_ISSUANCE_TYPES,
   ASSESSMENT_REPORT_VISIBILITIES,
   type AssessmentIssuanceActor,
   type CreateAssessmentIssuancePolicyInput,
@@ -10,6 +11,7 @@ export type AssessmentIssuancePolicyValidationErrorCode =
   | "INVALID_ASSESSMENT_DEFINITION"
   | "INVALID_ACCESS_TYPE"
   | "INVALID_FUNDING_TYPE"
+  | "INVALID_ISSUANCE_TYPE"
   | "INVALID_REPORT_VISIBILITY"
   | "COMMERCIAL_REFERENCE_REQUIRED"
   | "INVALID_ACTOR";
@@ -44,6 +46,9 @@ export function validateAssessmentIssuancePolicy(
   }
   if (!ASSESSMENT_FUNDING_TYPES.includes(input.fundingType)) {
     throw new AssessmentIssuancePolicyValidationError("INVALID_FUNDING_TYPE", "Choose a supported funding type.");
+  }
+  if (!ASSESSMENT_ISSUANCE_TYPES.includes(input.issuanceType)) {
+    throw new AssessmentIssuancePolicyValidationError("INVALID_ISSUANCE_TYPE", "Choose a supported issuance type.");
   }
   if (!ASSESSMENT_REPORT_VISIBILITIES.includes(input.reportVisibility)) {
     throw new AssessmentIssuancePolicyValidationError(

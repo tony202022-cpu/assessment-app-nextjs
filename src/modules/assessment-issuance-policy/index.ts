@@ -1,12 +1,14 @@
 export {
   ASSESSMENT_ACCESS_TYPES,
   ASSESSMENT_FUNDING_TYPES,
+  ASSESSMENT_ISSUANCE_TYPES,
   ASSESSMENT_REPORT_VISIBILITIES,
 } from "./assessment-issuance-policy";
 export type {
   AssessmentAccessType,
   AssessmentDefinitionReference,
   AssessmentFundingType,
+  AssessmentIssuanceType,
   AssessmentIssuanceActor,
   AssessmentIssuancePolicy,
   AssessmentReportVisibility,

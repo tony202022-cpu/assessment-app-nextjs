@@ -50,13 +50,14 @@ test("production assessment registry contains every supported production assessm
       "outdoor_sales_mri",
       "outdoor_sales_scan",
       "sales_manager_mri",
+      "sales_manager_scan",
       "sme_business_health_mri",
     ],
   );
   assert.ok(assessmentRegistry.listCurrent().every((entry) => entry.metadata.status === "published"));
 });
 
-test("every active production assessment supports complimentary access without changing paid or company eligibility", () => {
+test("production assessment capabilities preserve the approved paid, company, and free-Scan eligibility matrix", () => {
   const eligibility = Object.fromEntries(
     assessmentRegistry.listCurrent().map((entry) => [entry.metadata.id, {
       individual: entry.capabilities.individualAvailability,
@@ -65,15 +66,18 @@ test("every active production assessment supports complimentary access without c
     }]),
   );
   assert.deepEqual(eligibility, {
-    outdoor_sales_scan: { individual: true, company: false, complimentary: true },
-    outdoor_sales_mri: { individual: false, company: true, complimentary: true },
-    sales_manager_mri: { individual: false, company: true, complimentary: true },
-    lawyer_client_conversion_mri: { individual: false, company: true, complimentary: true },
+    outdoor_sales_scan: { individual: true, company: true, complimentary: true },
+    outdoor_sales_mri: { individual: false, company: true, complimentary: false },
+    sales_manager_mri: { individual: false, company: true, complimentary: false },
+    sales_manager_scan: { individual: false, company: true, complimentary: false },
+    lawyer_client_conversion_mri: { individual: false, company: true, complimentary: false },
     sme_business_health_mri: { individual: true, company: false, complimentary: true },
   });
-  for (const entry of assessmentRegistry.listCurrent()) {
-    assert.ok(entry.accessPolicy.entitlementPolicies.some((policy) => policy.type === "complimentary" && policy.enabled && policy.usage === "single-use" && policy.maximumUses === 1));
-  }
+  const sme = assessmentRegistry.listCurrent().find((entry) => entry.metadata.id === "sme_business_health_mri");
+  assert.ok(sme.accessPolicy.entitlementPolicies.some((policy) => policy.type === "complimentary" && policy.enabled && policy.usage === "single-use" && policy.maximumUses === 1));
+  const outdoorScan = assessmentRegistry.listCurrent().find((entry) => entry.metadata.id === "outdoor_sales_scan");
+  assert.equal(outdoorScan.pricing.model, "free");
+  assert.equal(outdoorScan.capabilities.complimentaryAccess, true);
 });
 
 test("loader accepts and freezes a complete canonical definition", () => {

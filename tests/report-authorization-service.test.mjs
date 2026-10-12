@@ -43,6 +43,8 @@ function attempt(overrides = {}) {
     isDeveloperTest: false,
     completedAt: "2026-08-27T00:00:00.000Z",
     isOfflineCompany: false,
+    issuancePolicyId: null,
+    reportVisibility: null,
     ...overrides,
   };
 }
@@ -64,6 +66,8 @@ function harness(overrides = {}) {
   return new ReportAuthorizationService(dependencies);
 }
 
+const request = (overrides = {}) => ({ attemptId: ATTEMPT_ID, purpose: "view", ...overrides });
+
 test("authorizes a matching signed participant report proof without trusting the attempt UUID alone", async () => {
   const participantReport = { attemptId: ATTEMPT_ID, userId: "participant-1", assessmentId: "assessment-1", expires: 1 };
   const allowed = await harness({ participantReport }).authorizeAttemptAccess(request({ cookies: { participant_report_access: "signed" } }));
@@ -74,8 +78,6 @@ test("authorizes a matching signed participant report proof without trusting the
     .authorizeAttemptAccess(request({ cookies: { participant_report_access: "signed" } }));
   assert.equal(mismatch.decision, "DENIED");
 });
-
-const request = (overrides = {}) => ({ attemptId: ATTEMPT_ID, purpose: "view", ...overrides });
 
 test("authorizes the participant who owns the attempt for every access purpose", async () => {
   const service = harness({ participant: { status: "valid", userId: "participant-1" } });
@@ -106,23 +108,6 @@ test("authorizes a company manager only for the matching company", async () => {
   assert.equal(mismatch.decision, "DENIED");
 });
 
-test("enforces all four persisted report visibility policies", async () => {
-  const participantRequest = request({ headers: { authorization: "Bearer valid" } });
-  const managerRequest = request({ managerToken: "manager-token" });
-  const participant = { status: "valid", userId: "participant-1" };
-  const manager = { companyId: "company-1", offline: false };
-  for (const [visibility, participantDecision, managerDecision] of [
-    ["participant-only", "AUTHORIZED", "DENIED"],
-    ["manager-only", "DENIED", "AUTHORIZED"],
-    ["participant-and-manager", "AUTHORIZED", "AUTHORIZED"],
-    ["admin-only", "DENIED", "DENIED"],
-  ]) {
-    const service = harness({ attempt: attempt({ reportVisibility: visibility }), participant, manager });
-    assert.equal((await service.authorizeAttemptAccess(participantRequest)).decision, participantDecision, `${visibility} participant`);
-    assert.equal((await service.authorizeAttemptAccess(managerRequest)).decision, managerDecision, `${visibility} manager`);
-  }
-});
-
 test("rejects missing and invalid manager proofs", async () => {
   assert.equal((await harness().authorizeAttemptAccess(request({ actorHint: "company-manager" }))).decision, "INVALID_PROOF");
   assert.equal((await harness({ manager: null }).authorizeAttemptAccess(request({ managerToken: "unknown" }))).decision, "INVALID_PROOF");
@@ -145,7 +130,7 @@ test("an offline attempt never falls through to participant compatibility", asyn
 
 test("requires the existing administrator session and reports.read capability", async () => {
   const cookies = { offline_company_admin: "admin-cookie" };
-  assert.equal((await harness({ adminValid: false }).authorizeAttemptAccess(request({ cookies }))).decision, "INVALID_PROOF");
+  assert.equal((await harness({ adminValid: false }).authorizeAttemptAccess(request({ actorHint: "administrator", cookies }))).decision, "INVALID_PROOF");
   assert.equal((await harness({ adminValid: true, capabilities: [] }).authorizeAttemptAccess(request({ cookies }))).decision, "MISSING_CAPABILITY");
   const allowed = await harness({ adminValid: true, capabilities: ["reports.read"] }).authorizeAttemptAccess(request({ cookies }));
   assert.equal(allowed.decision, "AUTHORIZED");
@@ -190,8 +175,57 @@ test("future entitlement is a deny-by-default compatibility placeholder", async 
   assert.equal(result.actorType, "future-entitlement");
 });
 
+test("public Outdoor Sales Scan legacy attempts default to participant report access", async () => {
+  const publicAttempt = attempt({
+    assessmentId: "outdoor_sales_scan",
+    companyId: null,
+    accessTokenId: null,
+    issuancePolicyId: null,
+    reportVisibility: null,
+  });
+  const result = await harness({ attempt: publicAttempt, assessmentId: "outdoor_sales_scan" })
+    .authorizeAttemptAccess(request({ expectedAssessmentSlug: "scan" }));
+  assert.equal(result.decision, "AUTHORIZED");
+  assert.equal(result.actor.type, "participant");
+});
+
+test("controlled Outdoor Sales Scan attempts never use the public legacy fallback", async () => {
+  const controlledAttempt = attempt({
+    assessmentId: "outdoor_sales_scan",
+    companyId: "company-1",
+    accessTokenId: "token-1",
+    issuancePolicyId: "policy-1",
+    reportVisibility: "participant-only",
+  });
+  const result = await harness({ attempt: controlledAttempt, assessmentId: "outdoor_sales_scan" })
+    .authorizeAttemptAccess(request({ expectedAssessmentSlug: "scan" }));
+  assert.equal(result.decision, "PARTICIPANT_PROOF_UNAVAILABLE");
+});
+
+test("enforces all four report visibility policies", async () => {
+  const manager = { companyId: "company-1", offline: false };
+  const participant = { status: "valid", userId: "participant-1" };
+  const participantOnly = harness({ attempt: attempt({ reportVisibility: "participant-only" }), manager, participant });
+  assert.equal((await participantOnly.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "AUTHORIZED");
+  assert.equal((await participantOnly.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "REPORT_VISIBILITY_DENIED");
+
+  const managerOnly = harness({ attempt: attempt({ reportVisibility: "manager-only" }), manager, participant });
+  assert.equal((await managerOnly.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "REPORT_VISIBILITY_DENIED");
+  assert.equal((await managerOnly.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "AUTHORIZED");
+
+  const both = harness({ attempt: attempt({ reportVisibility: "participant-and-manager" }), manager, participant });
+  assert.equal((await both.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "AUTHORIZED");
+  assert.equal((await both.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "AUTHORIZED");
+
+  const adminOnly = harness({ attempt: attempt({ reportVisibility: "admin-only" }), manager, participant, adminValid: true, capabilities: ["reports.read"] });
+  assert.equal((await adminOnly.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "REPORT_VISIBILITY_DENIED");
+  assert.equal((await adminOnly.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "REPORT_VISIBILITY_DENIED");
+  assert.equal((await adminOnly.authorizeAttemptAccess(request({ actorHint: "administrator", cookies: { offline_company_admin: "valid" } }))).decision, "AUTHORIZED");
+});
+
 test("the production lookup selects identity fields only", () => {
   const source = readFileSync(sourcePath, "utf8");
-  assert.match(source, /select\("id, user_id, assessment_id, company_id, access_token_id, issuance_policy_id, is_developer_test, completed_at"\)/);
+  assert.match(source, /if \(normalized === "scan"\) return "outdoor-scan"/);
+  assert.match(source, /select\("id, user_id, assessment_id, company_id, access_token_id, is_developer_test, completed_at, issuance_policy_id"\)/);
   assert.doesNotMatch(source, /competency_results|strengths|weaknesses|recommendations|report_content|from\("profiles"\)/);
 });

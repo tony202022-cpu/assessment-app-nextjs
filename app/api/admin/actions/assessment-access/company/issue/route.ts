@@ -62,7 +62,6 @@ export async function POST(request: NextRequest) {
     .map((capability) => capability.trim())
     .filter(Boolean);
   const input = {
-    existingCompanyId: body.existingCompanyId,
     assessmentDefinitionId: body.assessmentDefinitionId,
     assessmentDefinitionVersion: body.assessmentDefinitionVersion,
     companyName: body.companyName,
@@ -72,13 +71,11 @@ export async function POST(request: NextRequest) {
     commercialReference: body.commercialReference,
     reportVisibility: body.reportVisibility,
     issuanceType: body.issuanceType,
-    languageMode: body.languageMode,
-    expiresAt: body.expiresAt,
   };
   const context = {
     requestId,
     actor: { id: actorId, role: "admin" as const, capabilities },
-    resource: { type: "company-issuance", id: String(body.existingCompanyId || requestId) },
+    resource: { type: "company-issuance", id: requestId },
     now,
     ipAddress,
     userAgent: request.headers.get("user-agent") || undefined,
