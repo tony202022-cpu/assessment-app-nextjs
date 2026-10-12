@@ -40,6 +40,8 @@ function attempt(overrides = {}) {
     isDeveloperTest: false,
     completedAt: "2026-08-27T00:00:00.000Z",
     isOfflineCompany: false,
+    issuancePolicyId: null,
+    reportVisibility: null,
     ...overrides,
   };
 }
@@ -113,7 +115,7 @@ test("an offline attempt never falls through to participant compatibility", asyn
 
 test("requires the existing administrator session and reports.read capability", async () => {
   const cookies = { offline_company_admin: "admin-cookie" };
-  assert.equal((await harness({ adminValid: false }).authorizeAttemptAccess(request({ cookies }))).decision, "INVALID_PROOF");
+  assert.equal((await harness({ adminValid: false }).authorizeAttemptAccess(request({ actorHint: "administrator", cookies }))).decision, "INVALID_PROOF");
   assert.equal((await harness({ adminValid: true, capabilities: [] }).authorizeAttemptAccess(request({ cookies }))).decision, "MISSING_CAPABILITY");
   const allowed = await harness({ adminValid: true, capabilities: ["reports.read"] }).authorizeAttemptAccess(request({ cookies }));
   assert.equal(allowed.decision, "AUTHORIZED");
@@ -158,8 +160,44 @@ test("future entitlement is a deny-by-default compatibility placeholder", async 
   assert.equal(result.actorType, "future-entitlement");
 });
 
+test("public Outdoor Sales Scan legacy attempts default to participant report access", async () => {
+  const publicAttempt = attempt({
+    assessmentId: "outdoor_sales_scan",
+    companyId: null,
+    accessTokenId: null,
+    issuancePolicyId: null,
+    reportVisibility: null,
+  });
+  const result = await harness({ attempt: publicAttempt, assessmentId: "outdoor_sales_scan" })
+    .authorizeAttemptAccess(request({ expectedAssessmentSlug: "scan" }));
+  assert.equal(result.decision, "AUTHORIZED");
+  assert.equal(result.actor.type, "participant");
+});
+
+test("enforces all four report visibility policies", async () => {
+  const manager = { companyId: "company-1", offline: false };
+  const participant = { status: "valid", userId: "participant-1" };
+  const participantOnly = harness({ attempt: attempt({ reportVisibility: "participant-only" }), manager, participant });
+  assert.equal((await participantOnly.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "AUTHORIZED");
+  assert.equal((await participantOnly.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "REPORT_VISIBILITY_DENIED");
+
+  const managerOnly = harness({ attempt: attempt({ reportVisibility: "manager-only" }), manager, participant });
+  assert.equal((await managerOnly.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "REPORT_VISIBILITY_DENIED");
+  assert.equal((await managerOnly.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "AUTHORIZED");
+
+  const both = harness({ attempt: attempt({ reportVisibility: "participant-and-manager" }), manager, participant });
+  assert.equal((await both.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "AUTHORIZED");
+  assert.equal((await both.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "AUTHORIZED");
+
+  const adminOnly = harness({ attempt: attempt({ reportVisibility: "admin-only" }), manager, participant, adminValid: true, capabilities: ["reports.read"] });
+  assert.equal((await adminOnly.authorizeAttemptAccess(request({ headers: { authorization: "Bearer valid" } }))).decision, "REPORT_VISIBILITY_DENIED");
+  assert.equal((await adminOnly.authorizeAttemptAccess(request({ managerToken: "manager" }))).decision, "REPORT_VISIBILITY_DENIED");
+  assert.equal((await adminOnly.authorizeAttemptAccess(request({ actorHint: "administrator", cookies: { offline_company_admin: "valid" } }))).decision, "AUTHORIZED");
+});
+
 test("the production lookup selects identity fields only", () => {
   const source = readFileSync(sourcePath, "utf8");
-  assert.match(source, /select\("id, user_id, assessment_id, company_id, access_token_id, is_developer_test, completed_at"\)/);
+  assert.match(source, /if \(normalized === "scan"\) return "outdoor-scan"/);
+  assert.match(source, /select\("id, user_id, assessment_id, company_id, access_token_id, is_developer_test, completed_at, issuance_policy_id"\)/);
   assert.doesNotMatch(source, /competency_results|strengths|weaknesses|recommendations|report_content|from\("profiles"\)/);
 });

@@ -50,6 +50,7 @@ test("production assessment registry contains every supported production assessm
       "outdoor_sales_mri",
       "outdoor_sales_scan",
       "sales_manager_mri",
+      "sales_manager_scan",
       "sme_business_health_mri",
     ],
   );

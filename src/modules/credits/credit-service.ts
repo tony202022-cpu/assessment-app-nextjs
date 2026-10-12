@@ -33,7 +33,18 @@ export type CreditListResult = {
   direction: SortDirection;
 };
 
-export type CreditHistoryItem = { amount: number; description: string };
+export type CreditHistoryItem = {
+  key: string;
+  occurredAt: string | null;
+  company: string;
+  action: string;
+  quantity: number;
+  balanceBefore: number | null;
+  balanceAfter: number | null;
+  reason: string;
+  administrator: string | null;
+  referenceId: string | null;
+};
 
 export type CreditDetail = CreditListItem & {
   managerDashboardPath: string | null;
@@ -52,7 +63,18 @@ type CompanyRow = {
 };
 type AccessRow = { company_id: string | null; assessment_type: string | null };
 type AssessmentRow = { id: string; title_en: string | null; name_en: string | null };
-type HistoryRow = { amount: number | null; description: string | null };
+type LedgerRow = { amount: number | null; description: string | null };
+type AuditRow = {
+  id: string;
+  request_id: string;
+  action_id: string;
+  administrator_id: string;
+  reason: string | null;
+  old_balance: number | null;
+  new_balance: number | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string | null;
+};
 
 function requireAdmin() {
   const client = getSupabaseAdmin();
@@ -177,16 +199,55 @@ export async function getCreditDetail(companyId: string): Promise<CreditDetail |
   const id = String(companyId || "").trim();
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return null;
   const supabase = requireAdmin();
-  const [companyResult, historyResult] = await Promise.all([
+  const [companyResult, ledgerResult, auditResult] = await Promise.all([
     supabase.from("companies").select("id, name, billing_email, package_size, credits_balance, manager_token, created_at").eq("id", id).maybeSingle(),
     supabase.from("credit_transactions").select("amount, description").eq("company_id", id),
+    supabase.from("admin_action_audit").select("id, request_id, action_id, administrator_id, reason, old_balance, new_balance, metadata, created_at").eq("company_id", id).eq("outcome", "succeeded").in("action_id", ["credits.add", "credits.remove", "credits.restore"]).order("created_at", { ascending: false }),
   ]);
   if (companyResult.error) throw new Error("Could not load the credit account.");
   if (!companyResult.data) return null;
   const context = await loadAssessmentContext([id]);
   const company = companyResult.data as CompanyRow;
   const base = toListItem(company, context);
-  const history = historyResult.error ? [] : ((historyResult.data || []) as HistoryRow[]).map((row) => ({ amount: Number(row.amount || 0), description: String(row.description || "Credit transaction") }));
+  const companyName = base.company;
+  const audits = auditResult.error ? [] : (auditResult.data || []) as AuditRow[];
+  const auditedRequestIds = new Set(audits.map((row) => String(row.request_id)));
+  const auditHistory: CreditHistoryItem[] = audits.map((row) => {
+    const metadata = row.metadata && typeof row.metadata === "object" ? row.metadata : {};
+    const amount = Number(metadata.amount || (row.action_id === "credits.restore" ? 1 : Math.abs(Number(row.new_balance || 0) - Number(row.old_balance || 0))));
+    return {
+      key: `audit:${row.id}`,
+      occurredAt: row.created_at || null,
+      company: companyName,
+      action: row.action_id === "credits.add" ? "Add Credits" : row.action_id === "credits.remove" ? "Remove Credits" : "Restore Credit",
+      quantity: row.action_id === "credits.remove" ? -Math.abs(amount) : Math.abs(amount),
+      balanceBefore: row.old_balance !== null && Number.isInteger(Number(row.old_balance)) ? Number(row.old_balance) : null,
+      balanceAfter: row.new_balance !== null && Number.isInteger(Number(row.new_balance)) ? Number(row.new_balance) : null,
+      reason: String(row.reason || "Unavailable"),
+      administrator: row.administrator_id ? String(row.administrator_id) : null,
+      referenceId: row.request_id ? String(row.request_id) : null,
+    };
+  });
+  const ledgerHistory: CreditHistoryItem[] = (ledgerResult.error ? [] : (ledgerResult.data || []) as LedgerRow[]).flatMap((row, index) => {
+    const description = String(row.description || "Credit transaction");
+    const requestId = description.match(/operation ([0-9a-f-]{36})/i)?.[1] || null;
+    if (requestId && auditedRequestIds.has(requestId)) return [];
+    const amount = Number(row.amount || 0);
+    const manualAction = description.match(/^Admin action (credits\.(?:add|remove|restore))/i)?.[1]?.toLowerCase();
+    return [{
+      key: `ledger:${index}:${description}`,
+      occurredAt: null,
+      company: companyName,
+      action: manualAction === "credits.add" ? "Add Credits" : manualAction === "credits.remove" ? "Remove Credits" : manualAction === "credits.restore" ? "Restore Credit" : amount < 0 ? "Assessment Credit Consumption" : "Credit Transaction",
+      quantity: amount,
+      balanceBefore: null,
+      balanceAfter: null,
+      reason: description,
+      administrator: null,
+      referenceId: requestId,
+    }];
+  });
+  const history = [...auditHistory, ...ledgerHistory];
   const managerToken = String(company.manager_token || "");
-  return { ...base, managerDashboardPath: managerToken ? `/company/outdoor-mri-dashboard?managerToken=${encodeURIComponent(managerToken)}` : null, history, historyNetChange: history.reduce((sum, entry) => sum + entry.amount, 0) };
+  return { ...base, managerDashboardPath: managerToken ? `/company/outdoor-mri-dashboard?managerToken=${encodeURIComponent(managerToken)}` : null, history, historyNetChange: history.reduce((sum, entry) => sum + entry.quantity, 0) };
 }

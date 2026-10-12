@@ -9,6 +9,8 @@ const registry = read("src/modules/admin-actions/production-admin-actions.ts");
 const route = read("app/api/admin/actions/assessment-access/company/issue/route.ts");
 const component = read("src/components/admin/assessment-access-center.tsx");
 const page = read("app/admin/access-center/page.tsx");
+const individualAction = read("src/modules/admin-actions/actions/issue-individual-assessment-access.ts");
+const individualRoute = read("app/api/admin/actions/assessment-access/individual/issue/route.ts");
 
 test("company issuance is registered and uses the existing Admin Actions Framework", () => {
   assert.match(action, /id: "assessment-access\.company\.issue"/);
@@ -54,11 +56,15 @@ test("only current manager-dashboard-backed company definitions can execute", ()
   assert.match(migration, /p_assessment_definition_id <> 'outdoor_sales_mri'/);
 });
 
-test("individual and complimentary issuance remain unimplemented", () => {
-  assert.match(component, /Individual issuance is not available in this milestone/);
-  assert.doesNotMatch(route, /participantName|participantEmail|complimentary/i);
-  assert.doesNotMatch(action, /accessType:\s*"individual"|fundingType:\s*"complimentary"/i);
-  assert.doesNotMatch(migration, /'individual'|'complimentary'/i);
+test("Outdoor Sales Scan individual and complimentary issuance reuse the governed token system", () => {
+  assert.match(component, /assessment-access\/individual\/issue/);
+  assert.match(individualAction, /assessment-access\.individual\.issue/);
+  assert.match(individualRoute, /createAdminActionService/);
+  assert.match(individualAction, /issue_individual_assessment_access_admin_action/);
+  assert.match(individualAction, /p_funding_type/);
+  assert.match(individualAction, /accessType: "individual"/);
+  assert.doesNotMatch(individualAction, /p_recipient_type|start_outdoor_sales_scan_with_access/i);
+  assert.doesNotMatch(individualAction, /credit_transactions|credits_balance/);
 });
 
 test("route enforces session, origin, rate limit, capability and accountable actor", () => {

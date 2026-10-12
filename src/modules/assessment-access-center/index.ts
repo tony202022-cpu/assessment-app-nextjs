@@ -4,6 +4,7 @@ export {
 } from "./assessment-access-wizard";
 export type {
   AssessmentAccessCatalogItem,
+  AssessmentRecipientType,
   AssessmentAccessWizardErrors,
   AssessmentAccessWizardState,
 } from "./assessment-access-wizard";

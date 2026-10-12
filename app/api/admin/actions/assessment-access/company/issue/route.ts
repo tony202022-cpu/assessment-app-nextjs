@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
     credits: body.credits,
     commercialReference: body.commercialReference,
     reportVisibility: body.reportVisibility,
+    issuanceType: body.issuanceType,
   };
   const context = {
     requestId,

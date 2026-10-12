@@ -15,6 +15,8 @@ type LegacyDefinitionInput = {
   individualAvailability: boolean;
   corporateAvailability: boolean;
   managerDashboard?: boolean;
+  complimentaryAccess?: boolean;
+  publicAccess?: boolean;
   pricing: AssessmentDefinition["pricing"];
   features: Pick<
     AssessmentDefinition["features"],
@@ -60,7 +62,7 @@ function legacyProductionDefinition(input: LegacyDefinitionInput): AssessmentDef
       executiveReport: false,
       timed: true,
       bilingual: true,
-      complimentaryAccess: false,
+      complimentaryAccess: input.complimentaryAccess === true,
       developerTesting: true,
     },
     audience: {
@@ -77,11 +79,13 @@ function legacyProductionDefinition(input: LegacyDefinitionInput): AssessmentDef
       managerAccessEnabled: managerDashboard,
       entitlementPolicies,
       tokenPolicy: {
-        required: input.corporateAvailability,
+        required: input.corporateAvailability && !input.publicAccess,
         exchangeForSession: false,
-        purpose: input.corporateAvailability
+        purpose: input.corporateAvailability && !input.publicAccess
           ? "Preserve the existing company-token assessment entry flow."
-          : "Preserve the existing authenticated participant entry flow.",
+          : input.corporateAvailability
+            ? "Preserve free authenticated entry while accepting governed company or individual tokens."
+            : "Preserve the existing authenticated participant entry flow.",
       },
     },
     localization: {
@@ -194,6 +198,16 @@ const salesManagerCompetencies: readonly Competency[] = [
   ["decision_making_under_pressure", "Decision-Making Under Pressure", "اتخاذ القرار تحت الضغط"],
 ];
 
+const salesManagerScanCompetencies: readonly Competency[] = [
+  ["sales_coaching_rep_development", "Sales Coaching & Rep Development", "تدريب وتطوير مندوبي المبيعات"],
+  ["pipeline_visibility_deal_inspection", "Pipeline Visibility & Deal Inspection", "وضوح مسار الفرص البيعية وفحص الصفقات", ["pipeline_management_deal_inspection"]],
+  ["forecast_judgment", "Forecast Judgment", "دقة التوقعات والحكم التجاري", ["forecast_accuracy_judgment"]],
+  ["performance_accountability", "Performance Accountability", "المساءلة على الأداء"],
+  ["motivation_team_energy", "Motivation & Team Energy", "تحفيز الفريق وطاقة الأداء"],
+  ["managing_difficult_salespeople", "Managing Difficult Salespeople", "إدارة مندوبي المبيعات الصعبين"],
+  ["manager_communication_upward_reporting", "Manager Communication & Upward Reporting", "تواصل المدير والتقارير للإدارة", ["manager_communication_executive_reporting"]],
+];
+
 const lawyerCompetencies: readonly Competency[] = [
   ["legal_inquiry_handling", "First Legal Inquiry Response", "الاستجابة الأولى للاستفسار القانوني"],
   ["consultation_opening_control", "Consultation Opening & Conversation Structure", "إدارة بداية الاستشارة وتنظيم الحوار"],
@@ -223,7 +237,10 @@ export const outdoorSalesScanAssessmentDefinition = legacyProductionDefinition({
   questionCount: 30,
   timeLimitMinutes: 20,
   individualAvailability: true,
-  corporateAvailability: false,
+  corporateAvailability: true,
+  managerDashboard: true,
+  complimentaryAccess: true,
+  publicAccess: true,
   pricing: { model: "free" },
   features: { ninetyDayPlan: false, dailySchedule: false, pdfExport: true, emailDelivery: true },
 });
@@ -243,6 +260,23 @@ export const outdoorSalesMriAssessmentDefinition = legacyProductionDefinition({
   managerDashboard: true,
   pricing: { model: "package", corporate: { minimumPackageSize: 1, quoteRequired: true } },
   features: { ninetyDayPlan: true, dailySchedule: true, pdfExport: true, emailDelivery: true },
+});
+
+export const salesManagerScanAssessmentDefinition = legacyProductionDefinition({
+  id: "sales_manager_scan",
+  slug: "sales-manager-scan",
+  name: "Sales Manager Leadership Scan",
+  description: "A short leadership diagnostic across seven core sales-management signals.",
+  primaryAudience: "manager",
+  supportedAudiences: ["manager", "executive", "professional"],
+  competencies: salesManagerScanCompetencies,
+  questionCount: 30,
+  timeLimitMinutes: 20,
+  individualAvailability: false,
+  corporateAvailability: true,
+  managerDashboard: true,
+  pricing: { model: "free" },
+  features: { ninetyDayPlan: false, dailySchedule: false, pdfExport: true, emailDelivery: true },
 });
 
 export const salesManagerMriAssessmentDefinition = legacyProductionDefinition({
@@ -280,6 +314,7 @@ export const lawyerClientConversionMriAssessmentDefinition = legacyProductionDef
 export const legacyProductionAssessmentDefinitions = [
   outdoorSalesScanAssessmentDefinition,
   outdoorSalesMriAssessmentDefinition,
+  salesManagerScanAssessmentDefinition,
   salesManagerMriAssessmentDefinition,
   lawyerClientConversionMriAssessmentDefinition,
 ] as const;

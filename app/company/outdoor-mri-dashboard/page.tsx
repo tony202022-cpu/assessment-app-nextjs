@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Outdoor Sales MRI | Company Results",
+  title: "Company Assessment Results | Career Labs AI",
   robots: { index: false, follow: false },
 };
 
@@ -31,6 +31,7 @@ type CompanyRow = {
   package_size: number | null;
   credits_balance: number | null;
   is_offline_activated: boolean;
+  manager_name: string | null;
 };
 
 type AttemptRow = {
@@ -42,7 +43,12 @@ type AttemptRow = {
   completed_at: string | null;
   total_percentage: number | null;
   competency_results: unknown;
+  assessment_id: string;
+  issuance_policy_id: string | null;
 };
+
+type AssessmentRow = { id: string; slug: string; title_en: string | null; name_en: string | null };
+type PolicyRow = { id: string; report_visibility: string };
 
 type WeakCompetency = {
   id: string;
@@ -175,7 +181,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
 
   const { data: companyData, error: companyError } = await supabase
     .from("companies")
-    .select("id, name, package_size, credits_balance, is_offline_activated")
+    .select("id, name, package_size, credits_balance, is_offline_activated, manager_name")
     .eq("manager_token", managerToken)
     .maybeSingle();
 
@@ -183,26 +189,27 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
 
   const company = companyData as CompanyRow;
 
-  const { data: assessment, error: assessmentError } = await supabase
-    .from("assessments")
-    .select("id")
-    .eq("slug", "outdoor-mri")
-    .maybeSingle();
-
-  if (assessmentError || !assessment?.id) return <AccessDenied />;
-
   const { data: attemptData, error: attemptsError } = await supabase
     .from("quiz_attempts")
     .select(
-      "id, full_name, user_email, company, created_at, completed_at, total_percentage, competency_results"
+      "id, full_name, user_email, company, created_at, completed_at, total_percentage, competency_results, assessment_id, issuance_policy_id"
     )
     .eq("company_id", company.id)
-    .eq("assessment_id", assessment.id)
     .order("created_at", { ascending: false });
 
   if (attemptsError) return <AccessDenied />;
 
   const attempts = (attemptData || []) as AttemptRow[];
+  const assessmentIds = Array.from(new Set(attempts.map((attempt) => attempt.assessment_id)));
+  const policyIds = Array.from(new Set(attempts.map((attempt) => attempt.issuance_policy_id).filter(Boolean))) as string[];
+  const { data: assessmentData } = assessmentIds.length
+    ? await supabase.from("assessments").select("id, slug, title_en, name_en").in("id", assessmentIds)
+    : { data: [] };
+  const { data: policyData } = policyIds.length
+    ? await supabase.from("assessment_issuance_policies").select("id, report_visibility").in("id", policyIds)
+    : { data: [] };
+  const assessments = new Map(((assessmentData || []) as AssessmentRow[]).map((item) => [item.id, item]));
+  const policies = new Map(((policyData || []) as PolicyRow[]).map((item) => [item.id, item.report_visibility]));
   const packageSize = Math.max(0, Number(company.package_size ?? 0));
   const creditsRemaining = Math.max(0, Number(company.credits_balance ?? 0));
   const creditsUsed = Math.max(0, packageSize - creditsRemaining);
@@ -221,7 +228,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
                 className="h-auto w-[150px] object-contain sm:w-[190px] lg:w-[210px]"
               />
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-                Outdoor Sales MRI Results
+                Company Assessment Results
               </h1>
               <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#D7E1EF] bg-[#E8EEF7] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#173B70]">
                 <ShieldCheck size={15} /> Private Manager / HR Dashboard
@@ -230,6 +237,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
                 <Building2 size={18} className="text-[#173B70]" />
                 <span className="font-semibold">{company.name || "Company"}</span>
               </div>
+              {company.manager_name && <p className="mt-2 text-sm font-semibold text-[#53627A]">Manager: {company.manager_name}</p>}
             </div>
             <div className="rounded-2xl border border-[#DCE4EF] bg-white px-5 py-4">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#53627A]">
@@ -249,7 +257,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
           <SummaryCard
             label="Package size"
             value={packageSize}
-            helper="Outdoor Sales MRI assessments"
+            helper="Allocated assessment seats"
             icon={<PackageCheck size={22} />}
           />
           <SummaryCard
@@ -277,7 +285,7 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
             <div>
               <h2 className="text-xl font-black">Participant results</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Participants connected to this company&apos;s Outdoor Sales MRI package.
+                Participants connected to this company&apos;s assessment access.
               </p>
             </div>
             <span className="w-fit rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">
@@ -298,9 +306,16 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
               {attempts.map((attempt) => {
                 const completed = isCompleted(attempt);
                 const weakCompetencies = weakestSix(attempt.competency_results);
-                const reportUrl = company.is_offline_activated
-                  ? `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}&managerToken=${encodeURIComponent(managerToken)}`
-                  : `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}`;
+                const assessment = assessments.get(attempt.assessment_id);
+                const reportVisibility = attempt.issuance_policy_id ? policies.get(attempt.issuance_policy_id) : null;
+                const managerAllowed = !reportVisibility || ["participant", "manager-only", "participant-and-manager"].includes(reportVisibility);
+                const reportUrl = !managerAllowed
+                  ? null
+                  : attempt.assessment_id === "outdoor_sales_scan"
+                    ? `/outdoor-scan/report?attemptId=${attempt.id}&managerToken=${encodeURIComponent(managerToken)}`
+                    : company.is_offline_activated
+                      ? `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}&managerToken=${encodeURIComponent(managerToken)}`
+                      : `https://app.careerlabsai.com/outdoor-mri/report?attemptId=${attempt.id}`;
 
                 return (
                   <article
@@ -331,10 +346,11 @@ export default async function OutdoorMriCompanyDashboard({ searchParams }: PageP
                         <p className="mt-1 break-all text-sm text-slate-600">
                           {attempt.user_email || "—"}
                         </p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">{assessment?.title_en || assessment?.name_en || assessment?.slug || attempt.assessment_id}</p>
                       </div>
 
                       <div className="shrink-0">
-                        {completed ? (
+                        {completed && reportUrl ? (
                           <a
                             href={reportUrl}
                             target="_blank"

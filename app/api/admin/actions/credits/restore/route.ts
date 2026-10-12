@@ -17,23 +17,27 @@ function responseStatus(code: string) {
   return 500;
 }
 
+function json(body: unknown, status: number, headers?: Record<string, string>) {
+  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
+}
+
 export async function POST(request: NextRequest) {
   const now = new Date();
   const origin = request.headers.get("origin");
   if (origin && origin !== request.nextUrl.origin) {
     const requestId = randomUUID();
-    return NextResponse.json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Invalid request origin.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 403 });
+    return json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Invalid request origin.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), 403);
   }
   if (!isValidAdminSession(request.cookies.get(OFFLINE_ADMIN_COOKIE)?.value)) {
     const requestId = randomUUID();
-    return NextResponse.json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Administrator authentication is required.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 401 });
+    return json(actionFailure({ code: "ACTION_FORBIDDEN", message: "Administrator authentication is required.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), 401);
   }
 
   const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
   const rate = consumeRateLimit(`admin-action:credits.restore:${ipAddress}`, 20, 60 * 60 * 1000);
   if (!rate.allowed) {
     const requestId = randomUUID();
-    return NextResponse.json(actionFailure({ code: "ACTION_CONFLICT", message: "Too many restore attempts. Try again later.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 429, headers: { "Retry-After": String(rate.retryAfter) } });
+    return json(actionFailure({ code: "ACTION_CONFLICT", message: "Too many restore attempts. Try again later.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), 429, { "Retry-After": String(rate.retryAfter) });
   }
 
   let body: Record<string, unknown>;
@@ -48,12 +52,12 @@ export async function POST(request: NextRequest) {
   const suppliedOperationId = String(body.operationId || "").trim();
   const requestId = UUID_PATTERN.test(suppliedOperationId) ? suppliedOperationId : randomUUID();
   if (!UUID_PATTERN.test(suppliedOperationId)) {
-    return NextResponse.json(actionFailure({ code: "INPUT_INVALID", message: "The operation ID is invalid.", fields: { operationId: "Restart the action and try again." }, requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 400 });
+    return json(actionFailure({ code: "INPUT_INVALID", message: "The operation ID is invalid.", fields: { operationId: "Restart the action and try again." }, requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), 400);
   }
   const configuredActorId = String(process.env.ADMIN_ACTION_ACTOR_ID || "").trim();
   const actorId = configuredActorId || (process.env.NODE_ENV === "production" ? "" : "development-admin");
   if (!actorId) {
-    return NextResponse.json(actionFailure({ code: "ACTION_FAILED", message: "Administrative actor identity is not configured.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), { status: 500 });
+    return json(actionFailure({ code: "ACTION_FAILED", message: "Administrative actor identity is not configured.", requestId, actionId: ACTION_ID, failedAt: now.toISOString() }), 500);
   }
   const capabilities = String(process.env.ADMIN_ACTION_CAPABILITIES || "")
     .split(",")
@@ -78,8 +82,5 @@ export async function POST(request: NextRequest) {
     ? await service.prepare(ACTION_ID, input, context)
     : await service.execute({ actionId: ACTION_ID, input, confirmation: { acknowledged: true, phrase: "Restore Credit", reason }, context });
 
-  return NextResponse.json(result, {
-    status: result.ok ? 200 : responseStatus(result.error.code),
-    headers: { "Cache-Control": "no-store" },
-  });
+  return json(result, result.ok ? 200 : responseStatus(result.error.code));
 }

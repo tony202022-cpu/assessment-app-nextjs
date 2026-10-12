@@ -2934,8 +2934,8 @@ export default async function ReportPage({ params, searchParams }: PageProps) {
           </h1>
           <p className="mt-4 text-white/75">
             {urlLang === "ar"
-              ? "هذا التقرير المدفوع يتطلب محاولة مصرح بها ومطابقة لهذا التشخيص."
-              : "This paid report requires an authorised attempt for this exact diagnostic."}
+              ? "يتطلب هذا التقرير محاولة مصرح بها وسياسة وصول تسمح لهذا المستخدم."
+              : "This report requires an authorised attempt and a report policy that permits this viewer."}
           </p>
         </div>
       </div>
